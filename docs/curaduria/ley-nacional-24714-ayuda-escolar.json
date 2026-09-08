@@ -171,7 +171,7 @@
    "clave": "PAGO-EN-MARZO",
    "tipo": "FECHA_PAGO",
    "ruta_evidencia": "articulo-10",
-   "texto_literal": "La asignación por ayuda escolar anual consistirá en el pago de una suma de dinero que se hará efectiva en el mes de marzo de cada año. Esta asignación se abonará por cada hijo que concurra regularmente a establecimientos de enseñanza básica y polimodal o bien, cualquiera sea su edad, si concurre a establecimientos oficiales o privados donde se imparta educación diferencial. (párrafo modificado por art. 3° de la Ley N° 25.231 B.O. 31/12/1999)",
+   "texto_literal": "La asignación por ayuda escolar anual consistirá en el pago de una suma de dinero que se hará efectiva en el mes de marzo de cada año.",
    "cantidad": 1,
    "unidad": "dias",
    "tipo_dia": "NO_INFORMADO",

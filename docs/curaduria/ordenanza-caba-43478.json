@@ -126,7 +126,7 @@
    "clave": "BECA-TOTAL-POR-EXCOMBATIENTE-DE-MALVINAS",
    "categoria": "APLICABILIDAD",
    "ruta_evidencia": "capitulo-VI/articulo-16/parrafo-40",
-   "texto_literal": "Alumnos que sean hijos de ex combatientes de Malvinas. Alumnos a cargo de jubilados y/o pensionados que perciban un haber hasta dos sueldos mínimos. Alumnos cuyas familias tengan ingresos hasta dos (2) sueldos mínimos.",
+   "texto_literal": "Alumnos que sean hijos de ex combatientes de Malvinas.",
    "descripcion": "Corresponde beca total al alumno hijo de ex combatientes de Malvinas.",
    "ast": {
     "schema_version": "1.0",
@@ -173,7 +173,7 @@
    "clave": "MEDIA-BECA-POR-INGRESO-HASTA-CUATRO-SUELDOS",
    "categoria": "APLICABILIDAD",
    "ruta_evidencia": "capitulo-VI/articulo-16/parrafo-42",
-   "texto_literal": "Alumnos cuyas familias perciban un haber hasta cuatro (4) sueldos mínimos. Alumnos que provengan de familias numerosas, con hermanos en edad escolar cuando hicieran uso del comedor dos o más hermanos. Alumnos discapacitados o bajo tratamiento médico prolongado. Alumnos hijos de personal docente o no docente de la Escuela.",
+   "texto_literal": "Alumnos cuyas familias perciban un haber hasta cuatro (4) sueldos mínimos.",
    "descripcion": "Corresponde media beca al alumno cuya familia percibe un haber de hasta cuatro sueldos mínimos.",
    "ast": {
     "schema_version": "1.0",
@@ -214,7 +214,7 @@
    "clave": "MEDIA-BECA-POR-DISCAPACIDAD-O-TRATAMIENTO",
    "categoria": "APLICABILIDAD",
    "ruta_evidencia": "capitulo-VI/articulo-16/parrafo-42",
-   "texto_literal": "Alumnos discapacitados o bajo tratamiento médico prolongado. Alumnos hijos de personal docente o no docente de la Escuela.",
+   "texto_literal": "Alumnos discapacitados o bajo tratamiento médico prolongado.",
    "descripcion": "Corresponde media beca al alumno con discapacidad o bajo tratamiento médico prolongado.",
    "ast": {
     "schema_version": "1.0",

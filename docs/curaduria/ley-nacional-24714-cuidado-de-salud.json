@@ -167,7 +167,7 @@
    "clave": "UNA-VEZ-AL-ANIO",
    "tipo": "FECHA_PAGO",
    "ruta_evidencia": "articulo-14-octies",
-   "texto_literal": "consistirá en el pago de una suma de dinero que se abonará una (1) vez al año a las personas titulares comprendidas en el artículo 1° de la presente ley, por cada niño o niña menor de tres (3) años de edad que se encuentre a su cargo, siempre que hayan tenido derecho al cobro de la prestación establecida en el inciso i) del artículo 6º de la presente dentro del año calendario, y siempre que acrediten el cumplimiento del plan de vacunación y control sanitario, de conformidad con los requisitos que la Administración Nacional de la Seguridad Social (ANSES) establecerá a tales efectos.",
+   "texto_literal": "consistirá en el pago de una suma de dinero que se abonará una (1) vez al año a las personas titulares comprendidas en el artículo 1° de la presente ley",
    "cantidad": 1,
    "unidad": "dias",
    "tipo_dia": "NO_INFORMADO",

@@ -375,7 +375,7 @@ que «la atención presencial de las sedes permanecerá cerrada hasta el comienz
 del nuevo periodo de inscripción». Eso es el dato de hoy. Rescatar el listado de
 una captura anterior lo presentaría como vigente.
 
-## Doce beneficios curados
+## Dieciséis beneficios curados
 
 La lectura jurídica vive en `docs/curaduria/`, un archivo por beneficio, y no en
 el código: se puede discutir contra la ley sin leer Python. Cada regla, cada
@@ -398,6 +398,10 @@ siempre—.
 | Asignación por maternidad | Ley 24.714 | 7 | 1 | 0 | el propio sueldo |
 | Asignación prenatal | Ley 24.714 | 8 | 1 | 1 | fórmula sin valor |
 | Cuidado de Salud Integral | Ley 24.714 | 5 | 2 | 1 | fórmula sin valor |
+| Asignación por nacimiento | Ley 24.714 | 5 | 2 | 0 | fórmula sin valor |
+| Asignación por adopción | Ley 24.714 | 5 | 2 | 0 | fórmula sin valor |
+| Asignación por matrimonio | Ley 24.714 | 6 | 1 | 0 | fórmula sin valor |
+| Asignación por cónyuge (SIJP) | Ley 24.714 | 4 | 2 | 0 | fórmula sin valor |
 
 **Ninguna cuantía tiene monto**, y una no lo tiene por otra razón: la de
 maternidad es el propio sueldo de la persona, no una escala que alguien
@@ -408,10 +412,11 @@ cincuenta pesos de 2006. Los montos vigentes salen de resoluciones que no están
 en el corpus. Servir esos números como «lo que vas a cobrar» sería peor que
 decir que no se sabe.
 
-**Ocho prestaciones de la misma ley, curadas por separado.** La Ley 24.714
-regula catorce; curarla entera como un beneficio haría que las condiciones de la
-asignación por matrimonio se le aplicaran a un chico de cuatro años. La
-diferencia no es teórica:
+**Las doce prestaciones de la misma ley, curadas por separado.** La Ley 24.714
+define doce prestaciones y las doce están curadas, una por archivo. Curarla
+entera como un beneficio haría que las condiciones de la asignación por
+matrimonio se le aplicaran a un chico de cuatro años. La diferencia no es
+teórica:
 
 - La Asignación por Embarazo pide tres años de residencia legal y la Asignación
   Universal por Hijo pide dos, en la misma ley.
@@ -436,8 +441,15 @@ diferencia no es teórica:
   empleo y acreditación entre el tercer y el cuarto mes; la otra, tres años de
   residencia legal y solicitud desde la semana doce. Y el artículo 3 exceptúa
   del tope de ingresos a la maternidad y no a la prenatal.
+- El artículo 14 septies extiende al subsistema no contributivo las asignaciones
+  por nacimiento y adopción, y no la de matrimonio. Copiarle la segunda puerta
+  al matrimonio sería darle un derecho que la ley no le da.
+- La de matrimonio pide seis meses de antigüedad, el doble que la maternidad y
+  la prenatal, es la única que cobran los dos cónyuges por el mismo hecho y la
+  única de las tres de pago único que sigue acreditándose ante el empleador: las
+  otras dos pasaron a ANSES con la Ley 27.611 y ésta no se tocó.
 
-**Lo que las normas no resuelven queda declarado.** De las 118 reglas vigentes,
+**Lo que las normas no resuelven queda declarado.** De las 138 reglas vigentes,
 poco más de la mitad tiene condición ejecutable escrita; el resto conserva su
 texto literal y el motivo por el que no se formalizó. Tres casos que muestran
 por qué:

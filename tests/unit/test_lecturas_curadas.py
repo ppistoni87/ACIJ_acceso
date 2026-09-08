@@ -148,6 +148,29 @@ def test_una_cita_no_elide(lectura: dict) -> None:
             assert "..." not in literal and "…" not in literal, pieza["clave"]
 
 
+def test_ninguna_cita_se_come_a_otra_de_la_misma_lectura(lectura: dict) -> None:
+    """Una cita que contiene a otra está recortada de más.
+
+    Pasa cuando se cita desde una frase hasta el final de la unidad en vez de
+    hasta donde termina la condición: la regla queda respaldada por un texto que
+    dice también lo que dice la regla de al lado, y la evidencia deja de señalar
+    qué parte del artículo la sostiene. El cargador no lo detecta —las dos citas
+    están adentro de la unidad— así que se detecta acá.
+    """
+    citas = [
+        (pieza["clave"], " ".join(pieza["texto_literal"].split()))
+        for grupo in ("reglas", "plazos")
+        for pieza in lectura.get(grupo, ())
+    ]
+    engullidas = [
+        (clave, otra)
+        for clave, texto in citas
+        for otra, otro in citas
+        if clave != otra and otro in texto and otro != texto
+    ]
+    assert engullidas == []
+
+
 def test_ningun_codigo_de_beneficio_se_repite_entre_lecturas() -> None:
     """Dos lecturas con el mismo código serían el mismo beneficio en la base, y
     la segunda pisaría a la primera sin que nadie se entere."""

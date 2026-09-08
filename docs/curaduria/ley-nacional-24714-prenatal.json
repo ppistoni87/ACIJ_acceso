@@ -71,7 +71,7 @@
    "clave": "ACREDITAR-EL-EMBARAZO-ENTRE-EL-TERCER-Y-CUARTO-MES",
    "categoria": "APLICABILIDAD",
    "ruta_evidencia": "articulo-9",
-   "texto_literal": "Este estado debe ser acreditado entre el tercer y cuarto mes de embarazo, mediante certificado médico. Para el goce de esta asignación se requerirá una antigüedad mínima y continuada en el empleo de tres meses.",
+   "texto_literal": "Este estado debe ser acreditado entre el tercer y cuarto mes de embarazo, mediante certificado médico.",
    "descripcion": "El estado de embarazo se acredita entre el tercer y el cuarto mes, mediante certificado médico.",
    "ast": {
     "schema_version": "1.0",
@@ -192,7 +192,7 @@
    "clave": "VENTANA-DE-ACREDITACION",
    "tipo": "PRESENTACION_DOCUMENTAL",
    "ruta_evidencia": "articulo-9",
-   "texto_literal": "Este estado debe ser acreditado entre el tercer y cuarto mes de embarazo, mediante certificado médico. Para el goce de esta asignación se requerirá una antigüedad mínima y continuada en el empleo de tres meses.",
+   "texto_literal": "Este estado debe ser acreditado entre el tercer y cuarto mes de embarazo, mediante certificado médico.",
    "cantidad": 4,
    "unidad": "meses",
    "tipo_dia": "NO_INFORMADO",
