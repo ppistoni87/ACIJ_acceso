@@ -8,9 +8,9 @@ si una historia declara evidencia en una ruta que ya no existe.
 
 | Estado | Transversales | Por fuente |
 | --- | --- | --- |
-| NO_INICIADA | 3 | 46 |
+| NO_INICIADA | 2 | 46 |
 | BLOQUEADA | 0 | 15 |
-| EN_CURSO | 9 | 17 |
+| EN_CURSO | 10 | 17 |
 | ALIAS_REGISTRADO | 0 | 4 |
 | CERRADA | 28 | 1 |
 
@@ -54,7 +54,7 @@ si una historia declara evidencia en una ruta que ya no existe.
 | HU-034 | Medir calidad y alertar fallos observables | calidad_qa | P0 | CERRADA | `src/backend_normativo/calidad/cobertura.py`<br>`src/backend_normativo/publicacion/gates.py`<br>`tests/integracion/test_campos_y_cobertura.py`<br>`bn calidad cobertura` |
 | HU-035 | Poblar el corpus con datos reales y conciliar | orquestacion | P0 | EN_CURSO | `scripts/poblar_corpus.sh`<br>`src/backend_normativo/ingesta/importadores/infoleg.py`<br>`docs/operacion/poblacion_real.md`<br>`docs/reportes/actualizacion_controlada.md`<br>`bn ingesta importar-infoleg`<br>`bn calidad ensayo-actualizacion`<br>_Falta: El catálogo nacional está importado entero y ocho normas del alcance tienen texto, campos y release. Faltan las fuentes que dependen del adaptador PDF (HU-007) y de los importadores de trámites y directorios (HU-019 a HU-021)._ |
 | HU-036 | Verificar con corpus experto y casos adversos | calidad_qa | P0 | EN_CURSO | `docs/calidad/trazabilidad_at.json`<br>`docs/calidad/consultas_conversacionales.json`<br>`tests/aceptacion/test_casos_aceptacion.py`<br>`tests/aceptacion/test_conversacional.py`<br>`docs/calidad/trazabilidad_at.md`<br>`docs/calidad/consultas_conversacionales.md`<br>`bn calidad trazabilidad --ejecutar`<br>`bn calidad consultas`<br>_Falta: El conjunto conversacional cumple la gate DQ18 (98 consultas, 59 críticas, todas pasan) y 51 de los 80 casos AT están cubiertos con 12 parciales. Los 17 restantes esperan capacidades que este alcance no construyó: adaptador PDF, importadores de trámites y directorios, padrón RENABAP y prueba de restauración._ |
-| HU-037 | Asegurar rendimiento y recuperación | seguridad_operacion | P1 | NO_INICIADA | <br>_Falta: No hay procedimiento de backup ni prueba de restauración en entorno aislado, ni medición de rendimiento. Afecta AT-074._ |
+| HU-037 | Asegurar rendimiento y recuperación | seguridad_operacion | P1 | EN_CURSO | `src/backend_normativo/operacion/respaldo.py`<br>`tests/aceptacion/test_respaldo.py`<br>`docs/reportes/restauracion.md`<br>`bn operacion respaldar`<br>`bn operacion restaurar`<br>_Falta: El respaldo y la restauración verificada están y se corrieron sobre la base real: 22 objetos, 1 release, 6.968 evidencias y 98 fragmentos restaurados e íntegros. Falta la medición de rendimiento bajo carga._ |
 | HU-038 | Gestionar carga manual y fuentes bloqueadas | ingesta | P0 | EN_CURSO | `src/backend_normativo/ingesta/capturador.py`<br>`src/backend_normativo/catalogo/reconciliacion.py`<br>`tests/integracion/test_captura.py`<br>_Falta: Una fuente bloqueada se pausa, se registra con motivo y responsable y no se convierte en «sin datos». La vía de carga manual con la misma cadena de evidencia no está implementada._ |
 | HU-039 | Entregar documentación y operación reproducible | orquestacion | P0 | EN_CURSO | `docs/operacion/runbook.md`<br>`docs/operacion/diccionario_de_datos.md`<br>`docs/adr`<br>`src/backend_normativo/calidad/backlog.py`<br>`docs/calidad/estado_backlog.json`<br>`bn calidad backlog`<br>`bn calidad trazabilidad`<br>_Falta: La documentación y los reportes están, y `bn calidad ensayo-actualizacion` levanta un entorno limpio desde cero —crea la base, la migra y opera sobre ella— con lo que la reproducibilidad de las migraciones queda probada. Falta la corrida completa del ciclo de población en una máquina distinta de la de desarrollo._ |
 | HU-040 | Registrar decisiones de dominio y versionar políticas | analisis_funcional | P0 | CERRADA | `docs/adr`<br>`src/backend_normativo/politicas/vigencia.py`<br>`docs/decisiones.md`<br>`tests/integracion/test_publicacion.py` |

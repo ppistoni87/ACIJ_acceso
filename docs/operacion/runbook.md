@@ -107,7 +107,26 @@ bn calidad backlog --salida docs/calidad/estado_backlog.md
 bn calidad diccionario --salida docs/operacion/diccionario_de_datos.md
 ```
 
-## 8. Qué hacer cuando algo falla
+## 8. Respaldo y restauración
+
+```bash
+bn operacion respaldar var/respaldo/$(date +%F)
+bn operacion restaurar var/respaldo/2026-09-08 --base backend_normativo_prueba \
+    --salida docs/reportes/restauracion.md
+```
+
+El respaldo vuelca la base y deja junto a ella el inventario del almacén de
+objetos: qué SHA-256 tiene que haber y de qué tamaño. El almacén no se copia
+—es direccionado por contenido y puede ser enorme—, pero sin ese inventario una
+base restaurada afirma cosas sobre bytes que nadie sabe si están.
+
+La restauración crea la base destino desde cero y después **verifica**: que cada
+objeto esté y hashee a lo que declara, que el release traiga sus fragmentos y
+evidencias, que los eventos ya entregados sigan entregados y que los checkpoints
+de ingesta conserven su posición. Si algo de eso falla, el comando termina con
+error: una restauración que nadie verificó no es una restauración.
+
+## 9. Qué hacer cuando algo falla
 
 | Síntoma | Qué significa | Qué hacer |
 | --- | --- | --- |
@@ -119,7 +138,7 @@ bn calidad diccionario --salida docs/operacion/diccionario_de_datos.md
 | `alembic check` reporta diferencias | Un modelo cambió sin migración | Generar la migración; no editar `0001` a mano |
 | Una prueba de trazabilidad falla por nodeid inexistente | Se renombró una prueba | Actualizar `docs/calidad/trazabilidad_at.json`: el mapa miente hasta corregirlo |
 
-## 9. Lo que este sistema no hace
+## 10. Lo que este sistema no hace
 
 Está acá para que nadie lo pida por error:
 

@@ -429,7 +429,16 @@
    ]
   },
   "AT-074": {
-   "motivo": "La prueba de restauración (HU-037) exige un procedimiento de backup y un entorno aislado que este alcance no construyó."
+   "pruebas": [
+    "tests/aceptacion/test_respaldo.py::test_una_restauracion_completa_se_declara_integra",
+    "tests/aceptacion/test_respaldo.py::test_una_captura_sin_sus_bytes_no_pasa",
+    "tests/aceptacion/test_respaldo.py::test_un_objeto_alterado_se_detecta",
+    "tests/aceptacion/test_respaldo.py::test_un_release_sin_evidencia_no_pasa",
+    "tests/aceptacion/test_respaldo.py::test_un_evento_ya_entregado_no_se_puede_duplicar",
+    "tests/aceptacion/test_respaldo.py::test_perder_un_evento_entregado_no_pasa_desapercibido",
+    "tests/aceptacion/test_respaldo.py::test_perder_los_checkpoints_no_pasa_desapercibido"
+   ],
+   "falta": "La restauración completa con pg_restore está ejercida por `bn operacion restaurar` y su evidencia está en docs/reportes/restauracion.md; las pruebas automatizadas verifican la comprobación de integridad, no el volcado en sí."
   },
   "AT-075": {
    "pruebas": [

@@ -191,3 +191,90 @@ def cliente_api(engine_pruebas: Engine, conexion: Connection):
     app.dependency_overrides[conexion_administracion] = lambda: conexion
     with TestClient(app) as cliente:
         yield cliente
+
+
+# --- Corpus compartido -------------------------------------------------------
+#
+# Estas dos fixtures construyen el mismo corpus mínimo que usan las pruebas de
+# API, las de aceptación y las de respaldo. Viven acá y no en un módulo de
+# pruebas porque importarlas entre módulos hace que la misma fixture quede
+# registrada dos veces y el linter no pueda distinguir eso de una redefinición
+# por error.
+
+
+@pytest.fixture
+def corpus(conexion: Connection):
+    from backend_normativo.catalogo.carga import cargar_catalogo
+    from backend_normativo.curacion.campos import EvaluadorDeCampos
+    from backend_normativo.curacion.identidad import ResolutorIdentidad
+    from tests.integracion.test_curacion import _documento_norma
+
+    cargar_catalogo(conexion)
+    _documento_norma(
+        conexion,
+        source_id="D06",
+        external_id="normativaba:830431:original",
+        tipo_version="ORIGINAL",
+        identidad={
+            "jurisdiccion": "AR-C",
+            "normativaba_id": "830431",
+            "tipo": "LEY",
+            "numero": "6935",
+            "anio": 2025,
+            "titulo": "CREA EL PROGRAMA DE APOYO PARA PERSONAS EN VULNERABILIDAD",
+            "fechas": {"PUBLICACION": "2025-12-23"},
+        },
+        unidades=[
+            (
+                "ARTICULO",
+                "2",
+                "Art. 2°.- Beneficiarios - Son beneficiarios las personas en situación "
+                "de vulnerabilidad habitacional.",
+                "DISPOSITIVO",
+            ),
+            (
+                "ARTICULO",
+                "3",
+                "Art. 3°.- Prestación económica - La prestación consistirá en el pago "
+                "de una suma mensual.",
+                "DISPOSITIVO",
+            ),
+        ],
+    )
+    ResolutorIdentidad(conexion).resolver_pendientes()
+    EvaluadorDeCampos(conexion).evaluar()
+    return conexion.execute(
+        text("SELECT norma_id, registro_version_id FROM norma_versiones LIMIT 1")
+    ).one()
+
+
+@pytest.fixture
+def corpus_publicado(conexion: Connection, corpus):
+    from backend_normativo.curacion.campos import EvaluadorDeCampos
+    from backend_normativo.curacion.revision import Revisor
+    from backend_normativo.curacion.vigencia import ResolutorVigencia
+    from backend_normativo.db.vocabularios import CAMPOS_SOLICITADOS
+    from backend_normativo.publicacion.release import Publicador
+
+    ResolutorVigencia(conexion).resolver()
+    incidencia = conexion.execute(
+        text("SELECT id FROM incidencias_revision WHERE tipo = 'VIGENCIA_INDETERMINADA'")
+    ).scalar_one()
+    evidencia = conexion.execute(text("SELECT id FROM evidencias LIMIT 1")).scalar_one()
+    revisor = Revisor(conexion)
+    revisor.resolver(
+        incidencia,
+        decision="Publicada el 23/12/2025, sin norma derogatoria registrada.",
+        actor="curacion_juridica:persona",
+        fundamento_evidencia_id=evidencia,
+        vigencia={
+            "valid_tipo": "ABIERTO_FIN",
+            "valid_desde": "2025-12-23",
+            "estado_legal": "VIGENTE",
+        },
+    )
+    for campo in CAMPOS_SOLICITADOS:
+        revisor.aprobar_afirmaciones(corpus.registro_version_id, campo, actor="revisor")
+    EvaluadorDeCampos(conexion).evaluar()
+    Publicador(conexion).publicar(actor="publicador:equipo", motivo="Primer corte.")
+    return corpus

@@ -2,9 +2,9 @@
 
 - Casos del paquete: **80**
 - Cubiertos por pruebas que corren: **55**
-- Cubiertos parcialmente: **14**
-- No ejecutados: **11**
-- Pruebas citadas: **130** (ejecutadas)
+- Cubiertos parcialmente: **15**
+- No ejecutados: **10**
+- Pruebas citadas: **137** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -84,7 +84,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-071 | Jobs caídos y TTL | HU-034 | CUBIERTO | PASSED | `test_vencer_la_frescura_no_deroga_pero_sí_impide_servir`<br>`test_sin_release_publicado_ninguna_capacidad_sirve_datos` |
 | AT-072 | Evento repetido | HU-028 | CUBIERTO | PASSED | `test_una_entrega_exitosa_lleva_la_clave_de_idempotencia`<br>`test_propagar_dos_veces_no_duplica_el_evento`<br>`test_una_entrega_fallida_no_marca_el_evento_como_entregado` |
 | AT-073 | No proveedor Web Push | HU-028 | CUBIERTO | PASSED | `test_sin_consumidor_configurado_no_se_declara_ninguna_entrega`<br>`test_un_evento_que_agoto_los_intentos_pasa_a_la_cola_de_fallos` |
-| AT-074 | Restauración | HU-037 | NO_EJECUTADO | — | _La prueba de restauración (HU-037) exige un procedimiento de backup y un entorno aislado que este alcance no construyó._ |
+| AT-074 | Restauración | HU-037 | CUBIERTO_PARCIAL | PASSED | `test_una_restauracion_completa_se_declara_integra`<br>`test_una_captura_sin_sus_bytes_no_pasa`<br>`test_un_objeto_alterado_se_detecta`<br>`test_un_release_sin_evidencia_no_pasa`<br>`test_un_evento_ya_entregado_no_se_puede_duplicar`<br>`test_perder_un_evento_entregado_no_pasa_desapercibido`<br>`test_perder_los_checkpoints_no_pasa_desapercibido`<br>_Falta: La restauración completa con pg_restore está ejercida por `bn operacion restaurar` y su evidencia está en docs/reportes/restauracion.md; las pruebas automatizadas verifican la comprobación de integridad, no el volcado en sí._ |
 | AT-075 | Fecha de carpeta PDF | HU-F67 | CUBIERTO_PARCIAL | PASSED | `test_la_carpeta_del_archivo_no_fecha_el_documento`<br>`test_la_ruta_de_infoleg_distingue_original_de_actualizado`<br>_Falta: El adaptador deja la fecha pendiente y lo dice; leerla del propio documento o del acto que lo aprueba todavía no está implementado._ |
 | AT-076 | Costo ausente | HU-F45 | CUBIERTO_PARCIAL | PASSED | `test_cuantia_no_informada_no_necesita_inventar_un_monto`<br>_Falta: Los trámites (HU-019) no están poblados: la ficha sin costo ni duración no tiene datos reales donde darse._ |
 | AT-077 | Formulario público sin envío | HU-F04 | CUBIERTO | PASSED | `test_no_se_guardan_cookies_ni_credenciales`<br>`test_el_planificador_ignora_lo_que_no_se_puede_pedir` |

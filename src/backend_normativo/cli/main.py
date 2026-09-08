@@ -29,6 +29,8 @@ app.add_typer(publicacion, name="publicacion")
 monitoreo = typer.Typer(help="Monitoreo y eventos.", no_args_is_help=True)
 app.add_typer(api, name="api")
 app.add_typer(monitoreo, name="monitoreo")
+operacion = typer.Typer(help="Respaldo, restauración y operación.", no_args_is_help=True)
+app.add_typer(operacion, name="operacion")
 
 
 @catalogo.command("validar")
@@ -304,6 +306,101 @@ def curacion_campos(
     )
     for estado, cantidad in sorted(resultado.por_estado.items()):
         typer.echo(f"  {estado}: {cantidad}")
+
+
+@operacion.command("respaldar")
+def operacion_respaldar(
+    destino: Path = typer.Argument(..., help="Directorio donde dejar el volcado y el manifiesto."),
+) -> None:
+    """Vuelca la base y deja el inventario del almacén de objetos junto a ella."""
+    from backend_normativo.config import get_settings
+    from backend_normativo.operacion.respaldo import RespaldoInvalido, respaldar
+
+    ajustes = get_settings()
+    with engine_migrador().connect() as conexion:
+        try:
+            manifiesto = respaldar(
+                conexion,
+                destino,
+                url_base=str(ajustes.database_url),
+                directorio_objetos=ajustes.objetos_dir,
+            )
+        except RespaldoInvalido as exc:
+            typer.echo(str(exc))
+            raise typer.Exit(1) from exc
+    typer.echo(
+        f"Respaldo en {destino}\n"
+        f"Objetos inventariados: {len(manifiesto.objetos)}\n"
+        f"Capturas: {manifiesto.capturas} · releases publicados: {manifiesto.releases}\n"
+        f"Evidencias: {manifiesto.evidencias} · "
+        f"eventos ya entregados: {manifiesto.eventos_entregados}\n"
+        f"Hash del inventario: {manifiesto.hash}"
+    )
+
+
+@operacion.command("restaurar")
+def operacion_restaurar(
+    origen: Path = typer.Argument(..., help="Directorio del respaldo."),
+    base: str = typer.Option("backend_normativo_restaurado", help="Base destino, se recrea."),
+    salida: Path | None = typer.Option(None, help="Archivo donde escribir la verificación."),
+) -> None:
+    """Restaura en una base aislada y verifica que lo restaurado sirva.
+
+    No basta con que la restauración termine: se comprueba que cada captura
+    tenga sus bytes, que el release traiga sus fragmentos y evidencias, y que
+    los eventos ya entregados no se vuelvan a enviar.
+    """
+    from sqlalchemy import create_engine
+    from sqlalchemy import text as sql
+
+    from backend_normativo.config import get_settings
+    from backend_normativo.operacion.respaldo import (
+        RespaldoInvalido,
+        formatear,
+        leer_manifiesto,
+        restaurar,
+        verificar,
+    )
+
+    ajustes = get_settings()
+    url_actual = str(ajustes.database_url)
+    url_destino = url_actual.rsplit("/", 1)[0] + "/" + base
+
+    try:
+        manifiesto = leer_manifiesto(origen)
+    except RespaldoInvalido as exc:
+        typer.echo(str(exc))
+        raise typer.Exit(1) from exc
+
+    admin = create_engine(url_actual.rsplit("/", 1)[0] + "/postgres", isolation_level="AUTOCOMMIT")
+    with admin.connect() as conexion:
+        conexion.execute(sql(f'DROP DATABASE IF EXISTS "{base}" WITH (FORCE)'))
+        conexion.execute(sql(f'CREATE DATABASE "{base}"'))
+    admin.dispose()
+
+    try:
+        restaurar(origen, url_destino=url_destino)
+    except RespaldoInvalido as exc:
+        typer.echo(str(exc))
+        raise typer.Exit(1) from exc
+
+    motor = create_engine(url_destino, future=True)
+    with motor.connect() as conexion:
+        verificacion = verificar(conexion, manifiesto, ajustes.objetos_dir)
+    motor.dispose()
+
+    texto = formatear(manifiesto, verificacion)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto + "\n", encoding="utf-8")
+        typer.echo(
+            f"Verificación escrita en {salida} · "
+            f"{'íntegro' if verificacion.integra else 'CON PROBLEMAS'}"
+        )
+    else:
+        typer.echo(texto)
+    if not verificacion.integra:
+        raise typer.Exit(1)
 
 
 @calidad.command("cobertura")

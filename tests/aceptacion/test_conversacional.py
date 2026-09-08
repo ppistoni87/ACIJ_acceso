@@ -14,8 +14,6 @@ import pytest
 from sqlalchemy import Connection
 
 from backend_normativo.calidad import conversacional
-from tests.integracion.test_api import corpus  # noqa: F401
-from tests.integracion.test_api import corpus_publicado as corpus_publicado
 
 pytestmark = [pytest.mark.integracion, pytest.mark.aceptacion]
 
