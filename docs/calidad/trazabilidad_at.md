@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **70**
-- Cubiertos parcialmente: **10**
+- Cubiertos por pruebas que corren: **71**
+- Cubiertos parcialmente: **9**
 - No ejecutados: **0**
-- Pruebas citadas: **211** (ejecutadas)
+- Pruebas citadas: **216** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -39,7 +39,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-026 | Preámbulo preservado | HU-F23 | CUBIERTO | PASSED | `test_visto_considerando_y_transitorias_se_conservan` |
 | AT-027 | Anexo después de antecedentes | HU-008 | CUBIERTO | PASSED | `test_un_anexo_reinicia_la_numeracion_sin_marcar_ambiguedad`<br>`test_el_texto_no_clasificado_queda_visible` |
 | AT-028 | Identidad resolución 1621 | HU-D04 | CUBIERTO | PASSED | `test_normativaba_detecta_una_transposicion_de_digitos_en_la_sintesis`<br>`test_una_cita_normal_a_otra_norma_no_se_reporta_como_discrepancia` |
-| AT-029 | Anexo separado de resolución | HU-F19 | CUBIERTO_PARCIAL | PASSED | `test_una_version_publicada_se_sirve_solo_en_las_capacidades_que_sustenta`<br>`test_la_ficha_se_abstiene_en_las_capacidades_que_no_sustenta`<br>_Falta: La captura y vinculación del anexo de F19 no está hecha: se prueba que sin el anexo la capacidad PLAZO se abstiene, no que con él se complete._ |
+| AT-029 | Anexo separado de resolución | HU-F19 | CUBIERTO | PASSED | `test_at029_la_remision_al_anexo_se_detecta_aunque_cruce_varias_unidades`<br>`test_at029_el_cuerpo_solo_no_completa_el_procedimiento`<br>`test_at029_el_anexo_queda_identificado_por_su_numero`<br>`test_at029_con_el_anexo_vinculado_la_referencia_queda_resuelta`<br>`test_at029_una_segunda_revision_no_vuelve_a_abrir_la_referencia_resuelta`<br>`test_una_version_publicada_se_sirve_solo_en_las_capacidades_que_sustenta`<br>`test_la_ficha_se_abstiene_en_las_capacidades_que_no_sustenta` |
 | AT-030 | Abrogación y restablecimiento | HU-F33 | CUBIERTO | PASSED | `test_la_nota_produce_la_abrogacion_y_la_restitucion`<br>`test_la_nota_conserva_la_abrogacion_y_la_restitucion`<br>`test_abrogada_y_restablecida_no_tiene_lectura_automatica` |
 | AT-031 | Monto histórico en ley | HU-F33 | CUBIERTO | PASSED | `test_un_valor_de_vigencia_desconocida_no_se_publica`<br>`test_un_valor_de_otro_periodo_no_se_devuelve`<br>`test_cuantia_no_informada_no_necesita_inventar_un_monto` |
 | AT-032 | Renumeración 10 a 9 | HU-F23 | CUBIERTO | PASSED | `test_at032_la_renumeracion_del_10_al_9_queda_registrada`<br>`test_at032_se_consulta_la_unidad_de_la_version_correcta`<br>`test_at032_no_se_sobrescribe_el_articulo_10_actual`<br>`test_una_correspondencia_candidata_no_redirige_la_cita`<br>`test_original_y_actualizado_son_versiones_distintas`<br>`test_la_ficha_no_es_una_version_del_texto` |

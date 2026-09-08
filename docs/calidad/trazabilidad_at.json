@@ -186,10 +186,14 @@
   },
   "AT-029": {
    "pruebas": [
+    "tests/integracion/test_anexos.py::test_at029_la_remision_al_anexo_se_detecta_aunque_cruce_varias_unidades",
+    "tests/integracion/test_anexos.py::test_at029_el_cuerpo_solo_no_completa_el_procedimiento",
+    "tests/integracion/test_anexos.py::test_at029_el_anexo_queda_identificado_por_su_numero",
+    "tests/integracion/test_anexos.py::test_at029_con_el_anexo_vinculado_la_referencia_queda_resuelta",
+    "tests/integracion/test_anexos.py::test_at029_una_segunda_revision_no_vuelve_a_abrir_la_referencia_resuelta",
     "tests/integracion/test_publicacion.py::test_una_version_publicada_se_sirve_solo_en_las_capacidades_que_sustenta",
     "tests/integracion/test_api.py::test_la_ficha_se_abstiene_en_las_capacidades_que_no_sustenta"
-   ],
-   "falta": "La captura y vinculación del anexo de F19 no está hecha: se prueba que sin el anexo la capacidad PLAZO se abstiene, no que con él se complete."
+   ]
   },
   "AT-030": {
    "pruebas": [

@@ -245,3 +245,28 @@ la última, 2025. Es un decreto de 2006.
 fecha —un encabezado de lugar y fecha, o una fórmula de sanción—. Las demás se
 leen, se clasifican y se reportan sin usarse. Las de las notas, además,
 identifican los actos que modificaron: eso no se descarta junto con la fecha.
+
+## D-21 · Un cuerpo que aprueba un anexo no informa lo que el anexo dice
+
+La Resolución 1621/MEDGC/25 no dice cómo se pide una beca. Su artículo 3 aprueba
+los «Procedimientos para el otorgamiento, control y evaluación del Régimen de
+Becas Estudiantiles de la Ley 2917, identificado como Anexo
+(IF-2025-53544032-GCABA-SSGDA) el cual forma parte integrante de la presente».
+Las etapas y los plazos están ahí.
+
+Leer sólo el cuerpo y publicar «no informa plazos» es tan falso como publicar
+plazos inventados: la resolución sí los fija, en un documento que hay que ir a
+buscar.
+
+**Consecuencia:** mientras el anexo no esté capturado y vinculado, los campos
+que dependen de él quedan `NO_INFORMADO` **con el motivo puesto** —remite a un
+anexo que falta— y no por silencio de la norma. El identificador del anexo se
+guarda como referencia pendiente con responsable; que un PDF diga «Anexo» no
+prueba que sea el que esta resolución aprobó, así que vincularlo es una decisión
+con actor y fundamento, no una coincidencia de nombre.
+
+Dos detalles que sólo aparecen con el texto real: la remisión cruza tres
+unidades —empieza en el artículo 3 y termina dos párrafos después—, así que
+buscarla unidad por unidad no encuentra ninguna de las dos mitades; y el PDF
+parte el identificador en dos renglones (`IF-2025-` / `53544032-GCABA-SSGDA`),
+que sigue siendo el mismo documento.

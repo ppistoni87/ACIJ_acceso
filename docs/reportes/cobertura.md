@@ -40,14 +40,14 @@ aprobado para publicar.
 
 | Severidad | Abiertos |
 |---|---:|
-| HIGH | 34 |
+| HIGH | 36 |
 | INFO | 4489 |
 | LOW | 19 |
 | MEDIUM | 48 |
 
 ## (f) Dependencias pendientes
 
-167 referencias normativas citadas que todavía no se resolvieron contra el corpus.
+168 referencias normativas citadas que todavía no se resolvieron contra el corpus.
 
 ## (g) Fidelidad de extracción
 
@@ -84,7 +84,7 @@ de responder cuánto se cobra.
 | documentos | 62 |
 | documento_versiones | 63 |
 | unidades_documentales | 1562 |
-| evidencias | 7493 |
+| evidencias | 7495 |
 | normas | 423718 |
 | norma_versiones | 12 |
 | relaciones_normativas | 185 |

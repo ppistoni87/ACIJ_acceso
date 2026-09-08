@@ -926,6 +926,61 @@ def curacion_beneficios(
             typer.echo(f"  aviso: {aviso}")
 
 
+@curacion.command("anexos")
+def curacion_anexos(
+    norma: str = typer.Argument(..., help="Id de la norma cuyo cuerpo aprueba anexos."),
+) -> None:
+    """Detecta las remisiones a anexos y bloquea los campos que dependen de ellos.
+
+    Un cuerpo que aprueba un anexo con el procedimiento no informa los plazos:
+    los fija en otro documento. Publicar «no informa» sería decir menos de lo
+    que la norma dice.
+    """
+    import uuid as _uuid
+
+    from backend_normativo.curacion.anexos import CuradorDeAnexos
+
+    with engine_migrador().begin() as conexion:
+        resultado = CuradorDeAnexos(conexion).revisar(_uuid.UUID(norma))
+    typer.echo(
+        f"Remisiones a anexo: {resultado.remisiones} · con identificador: "
+        f"{resultado.identificadas}\n"
+        f"Referencias pendientes abiertas: {resultado.pendientes_abiertas}\n"
+        f"Campos bloqueados: {resultado.campos_bloqueados}"
+    )
+    for aviso in resultado.avisos:
+        typer.echo(f"  aviso: {aviso}")
+
+
+@curacion.command("vincular-anexo")
+def curacion_vincular_anexo(
+    referencia: str = typer.Argument(..., help="Id de la referencia pendiente."),
+    version: str = typer.Option(..., help="Id de la versión documental del anexo."),
+    actor: str = typer.Option(..., help="Quién vincula."),
+    fundamento: str = typer.Option(..., help="Por qué ese anexo es el que la norma aprobó."),
+) -> None:
+    """Vincula un anexo capturado con la norma que lo aprueba.
+
+    Que un PDF diga «Anexo» no prueba que sea el anexo de esta resolución.
+    """
+    import uuid as _uuid
+
+    from backend_normativo.curacion.anexos import CuradorDeAnexos
+
+    with engine_migrador().begin() as conexion:
+        try:
+            relacion = CuradorDeAnexos(conexion).resolver(
+                _uuid.UUID(referencia),
+                doc_version_anexo=_uuid.UUID(version),
+                actor=actor,
+                fundamento=fundamento,
+            )
+        except ValueError as exc:
+            typer.echo(str(exc))
+            raise typer.Exit(1) from exc
+    typer.echo(f"Anexo vinculado. Relación {relacion} (COMPLEMENTA).")
+
+
 @curacion.command("equivalencias")
 def curacion_equivalencias(
     norma: str = typer.Argument(..., help="Id de la norma con dos versiones de texto."),

@@ -127,10 +127,14 @@
     "src/backend_normativo/curacion/citas.py",
     "src/backend_normativo/curacion/relaciones.py",
     "tests/unit/test_citas.py",
-    "tests/integracion/test_curacion.py"
+    "tests/integracion/test_curacion.py",
+    "src/backend_normativo/curacion/anexos.py",
+    "tests/integracion/test_anexos.py"
    ],
    "comandos": [
-    "bn curacion relaciones"
+    "bn curacion relaciones",
+    "bn curacion anexos",
+    "bn curacion vincular-anexo"
    ]
   },
   "HU-011": {
