@@ -125,12 +125,16 @@
       ]
     },
     "HU-011": {
-      "estado": "EN_CURSO",
+      "estado": "CERRADA",
       "evidencia": [
-        "src/backend_normativo/db/models/beneficios.py",
-        "tests/integracion/test_esquema_hechos.py"
+        "src/backend_normativo/curacion/beneficios.py",
+        "docs/curaduria/ley-caba-6935.json",
+        "tests/integracion/test_curacion_beneficios.py",
+        "src/backend_normativo/db/models/beneficios.py"
       ],
-      "falta": "El modelo de beneficios existe y se ejercita con datos sintéticos. Cargar un beneficio real desde el corpus —con sus normas de base, su población y sus reglas— es trabajo de curación jurídica sobre las normas ya publicadas, y el sistema está construido para que lo haga una persona con fundamento, no para deducirlo."
+      "comandos": [
+        "bn curacion beneficios"
+      ]
     },
     "HU-012": {
       "estado": "CERRADA",
@@ -145,12 +149,17 @@
       ]
     },
     "HU-013": {
-      "estado": "EN_CURSO",
+      "estado": "CERRADA",
       "evidencia": [
-        "src/backend_normativo/db/models/beneficios.py",
-        "src/backend_normativo/reglas/ast.py"
+        "src/backend_normativo/curacion/beneficios.py",
+        "docs/curaduria/ley-caba-6935.json",
+        "tests/integracion/test_curacion_beneficios.py",
+        "src/backend_normativo/reglas/ast.py",
+        "tests/aceptacion/test_casos_reglas.py"
       ],
-      "falta": "El AST distingue variables por rol y las pruebas de AT-041 lo ejercen: la edad del causante y la del representante no se mezclan. Falta una regla real del corpus que lo use, y eso llega con el primer beneficio curado (HU-011)."
+      "comandos": [
+        "bn curacion beneficios"
+      ]
     },
     "HU-014": {
       "estado": "CERRADA",
@@ -183,13 +192,16 @@
       ]
     },
     "HU-017": {
-      "estado": "EN_CURSO",
+      "estado": "CERRADA",
       "evidencia": [
-        "src/backend_normativo/curacion/campos.py",
-        "src/backend_normativo/reglas/beneficio.py",
-        "tests/unit/test_reglas.py"
+        "src/backend_normativo/curacion/beneficios.py",
+        "docs/curaduria/ley-caba-6935.json",
+        "tests/integracion/test_curacion_beneficios.py",
+        "src/backend_normativo/reglas/beneficio.py"
       ],
-      "falta": "La distinción entre suspensión, cese y revocación está en el vocabulario, en la evaluación y en la abstención de la API. Falta una versión del corpus con criterios_revocacion sustantivos: ninguna de las normas publicadas los declara, y el sistema informa esa ausencia en vez de suplirla."
+      "comandos": [
+        "bn curacion beneficios"
+      ]
     },
     "HU-018": {
       "estado": "CERRADA",

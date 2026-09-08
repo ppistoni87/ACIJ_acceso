@@ -10,9 +10,9 @@ si una historia declara evidencia en una ruta que ya no existe.
 | --- | --- | --- |
 | NO_INICIADA | 0 | 0 |
 | BLOQUEADA | 0 | 17 |
-| EN_CURSO | 8 | 61 |
+| EN_CURSO | 5 | 61 |
 | ALIAS_REGISTRADO | 0 | 4 |
-| CERRADA | 32 | 1 |
+| CERRADA | 35 | 1 |
 
 ## Historias transversales
 
@@ -28,13 +28,13 @@ si una historia declara evidencia en una ruta que ya no existe.
 | HU-008 | Segmentar normativa sin perder jerarquía | curacion_juridica | P0 | CERRADA | `src/backend_normativo/curacion/segmentacion.py`<br>`tests/unit/test_segmentacion.py`<br>`bn ingesta extraer` |
 | HU-009 | Resolver identidad y versiones de normas | curacion_juridica | P0 | CERRADA | `src/backend_normativo/curacion/identidad.py`<br>`tests/integracion/test_curacion.py`<br>`tests/aceptacion/test_casos_aceptacion.py`<br>`bn curacion identidad` |
 | HU-010 | Construir relaciones normativas y resolver dependencias | curacion_juridica | P0 | CERRADA | `src/backend_normativo/curacion/citas.py`<br>`src/backend_normativo/curacion/relaciones.py`<br>`tests/unit/test_citas.py`<br>`tests/integracion/test_curacion.py`<br>`bn curacion relaciones` |
-| HU-011 | Registrar todos los beneficios y sus bases | analisis_funcional | P0 | EN_CURSO | `src/backend_normativo/db/models/beneficios.py`<br>`tests/integracion/test_esquema_hechos.py`<br>_Falta: El modelo de beneficios existe y se ejercita con datos sintéticos. Cargar un beneficio real desde el corpus —con sus normas de base, su población y sus reglas— es trabajo de curación jurídica sobre las normas ya publicadas, y el sistema está construido para que lo haga una persona con fundamento, no para deducirlo._ |
+| HU-011 | Registrar todos los beneficios y sus bases | analisis_funcional | P0 | CERRADA | `src/backend_normativo/curacion/beneficios.py`<br>`docs/curaduria/ley-caba-6935.json`<br>`tests/integracion/test_curacion_beneficios.py`<br>`src/backend_normativo/db/models/beneficios.py`<br>`bn curacion beneficios` |
 | HU-012 | Completar los siete campos con estados explícitos | analisis_funcional | P0 | CERRADA | `src/backend_normativo/curacion/campos.py`<br>`src/backend_normativo/db/vocabularios.py`<br>`tests/integracion/test_campos_y_cobertura.py`<br>`bn curacion campos`<br>`bn revision aprobar-campos` |
-| HU-013 | Modelar población y roles del beneficio | analisis_funcional | P0 | EN_CURSO | `src/backend_normativo/db/models/beneficios.py`<br>`src/backend_normativo/reglas/ast.py`<br>_Falta: El AST distingue variables por rol y las pruebas de AT-041 lo ejercen: la edad del causante y la del representante no se mezclan. Falta una regla real del corpus que lo use, y eso llega con el primer beneficio curado (HU-011)._ |
+| HU-013 | Modelar población y roles del beneficio | analisis_funcional | P0 | CERRADA | `src/backend_normativo/curacion/beneficios.py`<br>`docs/curaduria/ley-caba-6935.json`<br>`tests/integracion/test_curacion_beneficios.py`<br>`src/backend_normativo/reglas/ast.py`<br>`tests/aceptacion/test_casos_reglas.py`<br>`bn curacion beneficios` |
 | HU-014 | Representar criterios lógicos y parámetros | datos_sql | P0 | CERRADA | `src/backend_normativo/reglas/ast.py`<br>`src/backend_normativo/reglas/evaluacion.py`<br>`src/backend_normativo/reglas/beneficio.py`<br>`tests/unit/test_reglas.py` |
 | HU-015 | Preservar excepciones y salvaguardas de no exclusión | analisis_funcional | P0 | CERRADA | `src/backend_normativo/reglas/beneficio.py`<br>`tests/unit/test_reglas.py` |
 | HU-016 | Representar y calcular plazos distintos | datos_sql | P0 | CERRADA | `src/backend_normativo/plazos/computo.py`<br>`src/backend_normativo/plazos/calendarios.py`<br>`tests/unit/test_computo_plazos.py`<br>`tests/integracion/test_calendarios.py`<br>`tests/integracion/test_esquema_hechos.py`<br>`bn plazos calendario 2026`<br>`bn plazos calcular` |
-| HU-017 | Separar suspensión, cese y revocación | analisis_funcional | P0 | EN_CURSO | `src/backend_normativo/curacion/campos.py`<br>`src/backend_normativo/reglas/beneficio.py`<br>`tests/unit/test_reglas.py`<br>_Falta: La distinción entre suspensión, cese y revocación está en el vocabulario, en la evaluación y en la abstención de la API. Falta una versión del corpus con criterios_revocacion sustantivos: ninguna de las normas publicadas los declara, y el sistema informa esa ausencia en vez de suplirla._ |
+| HU-017 | Separar suspensión, cese y revocación | analisis_funcional | P0 | CERRADA | `src/backend_normativo/curacion/beneficios.py`<br>`docs/curaduria/ley-caba-6935.json`<br>`tests/integracion/test_curacion_beneficios.py`<br>`src/backend_normativo/reglas/beneficio.py`<br>`bn curacion beneficios` |
 | HU-018 | Modelar cuantías y fórmulas reproducibles | datos_sql | P0 | CERRADA | `src/backend_normativo/db/models/hechos.py`<br>`src/backend_normativo/reglas/evaluacion.py`<br>`tests/integracion/test_esquema_hechos.py`<br>`tests/unit/test_reglas.py` |
 | HU-019 | Cargar trámites y documentos exigidos | ingesta | P0 | CERRADA | `src/backend_normativo/ingesta/adaptadores/tramite_argentina.py`<br>`src/backend_normativo/curacion/tramites.py`<br>`tests/unit/test_adaptador_tramite.py`<br>`tests/integracion/test_tramites.py`<br>`bn ingesta extraer`<br>`bn curacion tramites` |
 | HU-020 | Cargar directorios sin mezclar entidades | ingesta | P0 | CERRADA | `src/backend_normativo/ingesta/importadores/directorios.py`<br>`tests/integracion/test_importador_directorios.py`<br>`bn ingesta capturar F20 F60`<br>`bn ingesta importar-directorio` |

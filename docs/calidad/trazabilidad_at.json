@@ -217,7 +217,9 @@
   "AT-034": {
    "pruebas": [
     "tests/integracion/test_esquema_temporalidad.py::test_condicionado_exige_declarar_la_condicion",
-    "tests/integracion/test_publicacion.py::test_sin_estado_declarado_la_vigencia_va_a_revision"
+    "tests/integracion/test_publicacion.py::test_sin_estado_declarado_la_vigencia_va_a_revision",
+    "tests/integracion/test_curacion_beneficios.py::test_lo_que_la_ley_remite_a_la_reglamentacion_no_se_formaliza",
+    "tests/integracion/test_curacion_beneficios.py::test_las_normas_que_faltan_quedan_como_incidencia_abierta"
    ]
   },
   "AT-035": {
@@ -240,7 +242,8 @@
   "AT-038": {
    "pruebas": [
     "tests/integracion/test_campos_y_cobertura.py::test_un_campo_sin_senales_dice_donde_se_busco",
-    "tests/integracion/test_esquema_hechos.py::test_no_informado_exige_decir_que_fuentes_se_revisaron"
+    "tests/integracion/test_esquema_hechos.py::test_no_informado_exige_decir_que_fuentes_se_revisaron",
+    "tests/integracion/test_curacion_beneficios.py::test_cada_regla_cita_el_articulo_que_la_sostiene"
    ]
   },
   "AT-039": {
@@ -259,9 +262,9 @@
    "pruebas": [
     "tests/aceptacion/test_casos_reglas.py::test_at041_cada_edad_se_evalua_contra_su_propia_variable",
     "tests/aceptacion/test_casos_reglas.py::test_at041_la_edad_del_adulto_no_excluye_por_la_del_nino",
-    "tests/aceptacion/test_casos_reglas.py::test_at041_falta_la_edad_del_adulto_y_se_pide_esa_y_no_otra"
-   ],
-   "falta": "La regla es sintética: ninguna norma del corpus tiene todavía una regla real con roles de población poblada desde fuente (HU-013)."
+    "tests/aceptacion/test_casos_reglas.py::test_at041_falta_la_edad_del_adulto_y_se_pide_esa_y_no_otra",
+    "tests/integracion/test_curacion_beneficios.py::test_la_poblacion_distingue_al_titular_del_grupo_familiar"
+   ]
   },
   "AT-042": {
    "pruebas": [
@@ -293,13 +296,16 @@
    "pruebas": [
     "tests/unit/test_reglas.py::test_con_la_excepcion_cumplida_el_bloqueo_no_aplica",
     "tests/unit/test_reglas.py::test_no_se_niega_sin_haber_evaluado_las_excepciones",
-    "tests/unit/test_reglas.py::test_con_todas_las_excepciones_descartadas_si_hay_negativa_explicable"
+    "tests/unit/test_reglas.py::test_con_todas_las_excepciones_descartadas_si_hay_negativa_explicable",
+    "tests/integracion/test_curacion_beneficios.py::test_la_excepcion_sabe_de_que_regla_es_excepcion"
    ]
   },
   "AT-047": {
    "pruebas": [
     "tests/unit/test_reglas.py::test_una_salvaguarda_nunca_excluye_y_siempre_se_informa",
-    "tests/unit/test_reglas.py::test_falta_un_dato_y_el_resultado_pide_datos_en_vez_de_negar"
+    "tests/unit/test_reglas.py::test_falta_un_dato_y_el_resultado_pide_datos_en_vez_de_negar",
+    "tests/integracion/test_curacion_beneficios.py::test_la_salvaguarda_no_excluye_y_esta_declarada",
+    "tests/integracion/test_curacion_beneficios.py::test_lo_que_la_ley_remite_a_la_reglamentacion_no_se_formaliza"
    ]
   },
   "AT-048": {
@@ -310,9 +316,10 @@
   },
   "AT-049": {
    "pruebas": [
-    "tests/unit/test_reglas.py::test_una_causal_de_revocacion_no_decide_el_acceso"
-   ],
-   "falta": "Distinguir suspensión de revocación y detallar el remedio exige el campo criterios_revocacion poblado con texto real: hoy ninguna versión del corpus lo tiene sustantivo."
+    "tests/unit/test_reglas.py::test_una_causal_de_revocacion_no_decide_el_acceso",
+    "tests/integracion/test_curacion_beneficios.py::test_los_criterios_de_revocacion_quedan_no_informados_con_su_motivo",
+    "tests/integracion/test_curacion_beneficios.py::test_el_texto_literal_se_conserva_aunque_no_haya_ast"
+   ]
   },
   "AT-050": {
    "pruebas": [
@@ -372,7 +379,8 @@
    "pruebas": [
     "tests/aceptacion/test_casos_reglas.py::test_at057_un_tope_es_el_limite_de_una_condicion_no_una_cuantia",
     "tests/aceptacion/test_casos_reglas.py::test_at057_estar_bajo_el_tope_no_dice_cuanto_se_cobra",
-    "tests/integracion/test_esquema_hechos.py::test_cuantia_no_informada_no_necesita_inventar_un_monto"
+    "tests/integracion/test_esquema_hechos.py::test_cuantia_no_informada_no_necesita_inventar_un_monto",
+    "tests/integracion/test_curacion_beneficios.py::test_la_cuantia_no_sirve_un_piso_como_si_fuera_el_monto"
    ]
   },
   "AT-058": {

@@ -91,7 +91,7 @@ El reporte dice qué parte del ensayo es real y cuál es controlada.
 pytest -q
 ```
 
-367 pruebas sobre PostgreSQL real, porque lo que se verifica son restricciones,
+384 pruebas sobre PostgreSQL real, porque lo que se verifica son restricciones,
 disparadores y funciones de la base, y un doble no las ejecuta.
 
 | Dimensión | Dónde |
@@ -109,7 +109,7 @@ disparadores y funciones de la base, y un doble no las ejecuta.
 bn calidad trazabilidad --ejecutar --salida docs/calidad/trazabilidad_at.md
 ```
 
-64 cubiertos y 16 parciales. **Ninguno queda sin ejecutar**; los parciales dicen
+66 cubiertos y 14 parciales. **Ninguno queda sin ejecutar**; los parciales dicen
 qué parte del caso todavía no se ejerce. El comando verifica con pytest que cada nodeid citado
 exista: un mapa que cita una prueba renombrada falla en vez de declarar
 cobertura inexistente.
@@ -141,7 +141,7 @@ aparte que nadie actualiza.
 
 ## Lo que no se construyó
 
-Está enumerado, con su motivo, en `docs/calidad/estado_backlog.md` (8 historias
+Está enumerado, con su motivo, en `docs/calidad/estado_backlog.md` (5 historias
 en curso) y en `docs/calidad/trazabilidad_at.md` (16 casos cubiertos parcialmente). En
 resumen:
 

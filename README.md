@@ -35,10 +35,10 @@ El ciclo completo, con qué hacer cuando algo falla, está en
 
 | | |
 | --- | --- |
-| Historias del paquete | 123: **32 transversales cerradas**, 8 en curso, 61 fuentes en curso, 17 bloqueadas con motivo, 4 alias, 1 cerrada |
-| Casos de aceptación | 80: **64 cubiertos**, 16 parciales, **ninguno sin ejecutar** |
+| Historias del paquete | 123: **35 transversales cerradas**, 5 en curso, 61 fuentes en curso, 17 bloqueadas con motivo, 4 alias, 1 cerrada |
+| Casos de aceptación | 80: **66 cubiertos**, 14 parciales, **ninguno sin ejecutar** |
 | Evaluación conversacional | **98 consultas, 98 pasan**; las 59 críticas pasan todas |
-| Pruebas | 367, sobre PostgreSQL real |
+| Pruebas | 384, sobre PostgreSQL real |
 | Corpus | 423.718 normas · 6.467 barrios · 233 puntos de atención · 827 canales · 7.274 evidencias |
 
 Ninguno de esos números se declara a mano: `bn calidad backlog`,
@@ -60,6 +60,7 @@ que se movió.
 | `src/backend_normativo/monitoreo/` | Diferencias por unidad, impacto y outbox |
 | `src/backend_normativo/operacion/` | Respaldo y restauración verificada |
 | `docs/adr/` | Once decisiones de arquitectura con su contexto |
+| `docs/curaduria/` | Lecturas jurídicas curadas: qué dice cada ley sobre quién accede y con qué condiciones, con el artículo que lo sostiene |
 | `docs/decisiones.md` | Doce decisiones de dominio: qué se puede afirmar y con qué respaldo |
 | `docs/operacion/` | Runbook, diccionario de datos generado y población real |
 | `docs/calidad/` | Trazabilidad de los 80 casos, estado del backlog y conjunto conversacional |

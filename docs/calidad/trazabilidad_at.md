@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **64**
-- Cubiertos parcialmente: **16**
+- Cubiertos por pruebas que corren: **66**
+- Cubiertos parcialmente: **14**
 - No ejecutados: **0**
-- Pruebas citadas: **181** (ejecutadas)
+- Pruebas citadas: **190** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -44,22 +44,22 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-031 | Monto histórico en ley | HU-F33 | CUBIERTO | PASSED | `test_un_valor_de_vigencia_desconocida_no_se_publica`<br>`test_un_valor_de_otro_periodo_no_se_devuelve`<br>`test_cuantia_no_informada_no_necesita_inventar_un_monto` |
 | AT-032 | Renumeración 10 a 9 | HU-F23 | CUBIERTO_PARCIAL | PASSED | `test_original_y_actualizado_son_versiones_distintas`<br>`test_la_ficha_no_es_una_version_del_texto`<br>_Falta: La correspondencia comprobada 10→9 entre versiones (tabla equivalencias_unidades) no está poblada ni ejercida._ |
 | AT-033 | Modificatoria no vigente | HU-D05 | CUBIERTO | PASSED | `test_una_etiqueta_no_vigente_no_alcanza_para_cerrar_la_vigencia`<br>`test_normativaba_separa_el_estado_declarado_de_la_conclusion` |
-| AT-034 | Condición transitoria pendiente | HU-D06 | CUBIERTO | PASSED | `test_condicionado_exige_declarar_la_condicion`<br>`test_sin_estado_declarado_la_vigencia_va_a_revision` |
+| AT-034 | Condición transitoria pendiente | HU-D06 | CUBIERTO | PASSED | `test_condicionado_exige_declarar_la_condicion`<br>`test_sin_estado_declarado_la_vigencia_va_a_revision`<br>`test_lo_que_la_ley_remite_a_la_reglamentacion_no_se_formaliza`<br>`test_las_normas_que_faltan_quedan_como_incidencia_abierta` |
 | AT-035 | Novedad candidata de reglamentación | HU-M02 | CUBIERTO | PASSED | `test_el_impacto_alcanza_a_las_normas_que_la_citan`<br>`test_toda_relacion_nace_candidata_y_con_evidencia` |
 | AT-036 | Ciclo legítimo de citas | HU-010 | CUBIERTO | PASSED | `test_at036_dos_normas_que_se_citan_entre_si_conservan_ambas_aristas`<br>`test_construir_relaciones_dos_veces_no_duplica` |
 | AT-037 | Frontera de dependencias | HU-010 | CUBIERTO | PASSED | `test_una_norma_no_registrada_queda_como_referencia_pendiente` |
-| AT-038 | No aplicabilidad fundada | HU-012 | CUBIERTO | PASSED | `test_un_campo_sin_senales_dice_donde_se_busco`<br>`test_no_informado_exige_decir_que_fuentes_se_revisaron` |
+| AT-038 | No aplicabilidad fundada | HU-012 | CUBIERTO | PASSED | `test_un_campo_sin_senales_dice_donde_se_busco`<br>`test_no_informado_exige_decir_que_fuentes_se_revisaron`<br>`test_cada_regla_cita_el_articulo_que_la_sostiene` |
 | AT-039 | No informado no es no existe | HU-017 | CUBIERTO | PASSED | `test_no_informado_exige_decir_que_fuentes_se_revisaron`<br>`test_una_causal_de_revocacion_no_decide_el_acceso` |
 | AT-040 | Completitud aparente | HU-012 | CUBIERTO | PASSED | `test_evaluacion_completa_no_es_base_completa`<br>`test_cobertura_separa_evaluado_de_sustantivo` |
-| AT-041 | Roles de población | HU-013 | CUBIERTO_PARCIAL | PASSED | `test_at041_cada_edad_se_evalua_contra_su_propia_variable`<br>`test_at041_la_edad_del_adulto_no_excluye_por_la_del_nino`<br>`test_at041_falta_la_edad_del_adulto_y_se_pide_esa_y_no_otra`<br>_Falta: La regla es sintética: ninguna norma del corpus tiene todavía una regla real con roles de población poblada desde fuente (HU-013)._ |
+| AT-041 | Roles de población | HU-013 | CUBIERTO | PASSED | `test_at041_cada_edad_se_evalua_contra_su_propia_variable`<br>`test_at041_la_edad_del_adulto_no_excluye_por_la_del_nino`<br>`test_at041_falta_la_edad_del_adulto_y_se_pide_esa_y_no_otra`<br>`test_la_poblacion_distingue_al_titular_del_grupo_familiar` |
 | AT-042 | AND con desconocido | HU-014 | CUBIERTO | PASSED | `test_la_tabla_de_verdad_es_la_de_la_especificacion`<br>`test_un_dato_que_falta_no_es_un_incumplimiento`<br>`test_falta_un_dato_y_el_resultado_pide_datos_en_vez_de_negar` |
 | AT-043 | OR con alternativa válida | HU-014 | CUBIERTO | PASSED | `test_la_tabla_de_verdad_es_la_de_la_especificacion`<br>`test_una_condicion_falsa_no_arrastra_a_las_desconocidas`<br>`test_una_condicion_cumplida_no_tapa_lo_que_falta` |
 | AT-044 | Negación de desconocido | HU-014 | CUBIERTO | PASSED | `test_la_tabla_de_verdad_es_la_de_la_especificacion`<br>`test_un_dato_declarado_como_nulo_tampoco_lo_es` |
 | AT-045 | Límite inclusivo | HU-014 | CUBIERTO | PASSED | `test_menor_que_no_es_menor_o_igual`<br>`test_los_importes_se_comparan_como_decimales` |
-| AT-046 | Excepción de no exclusión | HU-015 | CUBIERTO | PASSED | `test_con_la_excepcion_cumplida_el_bloqueo_no_aplica`<br>`test_no_se_niega_sin_haber_evaluado_las_excepciones`<br>`test_con_todas_las_excepciones_descartadas_si_hay_negativa_explicable` |
-| AT-047 | Falta documentación subsanable | HU-015 | CUBIERTO | PASSED | `test_una_salvaguarda_nunca_excluye_y_siempre_se_informa`<br>`test_falta_un_dato_y_el_resultado_pide_datos_en_vez_de_negar` |
+| AT-046 | Excepción de no exclusión | HU-015 | CUBIERTO | PASSED | `test_con_la_excepcion_cumplida_el_bloqueo_no_aplica`<br>`test_no_se_niega_sin_haber_evaluado_las_excepciones`<br>`test_con_todas_las_excepciones_descartadas_si_hay_negativa_explicable`<br>`test_la_excepcion_sabe_de_que_regla_es_excepcion` |
+| AT-047 | Falta documentación subsanable | HU-015 | CUBIERTO | PASSED | `test_una_salvaguarda_nunca_excluye_y_siempre_se_informa`<br>`test_falta_un_dato_y_el_resultado_pide_datos_en_vez_de_negar`<br>`test_la_salvaguarda_no_excluye_y_esta_declarada`<br>`test_lo_que_la_ley_remite_a_la_reglamentacion_no_se_formaliza` |
 | AT-048 | Edad oficial en conflicto | HU-F66 | CUBIERTO | PASSED | `test_candidatos_en_conflicto_pueden_coexistir`<br>`test_un_conflicto_abierto_bloquea_la_publicacion_de_ese_hecho` |
-| AT-049 | Suspensión no es revocación | HU-017 | CUBIERTO_PARCIAL | PASSED | `test_una_causal_de_revocacion_no_decide_el_acceso`<br>_Falta: Distinguir suspensión de revocación y detallar el remedio exige el campo criterios_revocacion poblado con texto real: hoy ninguna versión del corpus lo tiene sustantivo._ |
+| AT-049 | Suspensión no es revocación | HU-017 | CUBIERTO | PASSED | `test_una_causal_de_revocacion_no_decide_el_acceso`<br>`test_los_criterios_de_revocacion_quedan_no_informados_con_su_motivo`<br>`test_el_texto_literal_se_conserva_aunque_no_haya_ast` |
 | AT-050 | Cierre conocido sin cambio web | HU-016 | CUBIERTO | PASSED | `test_una_fecha_fuera_del_periodo_no_se_sirve_como_actual`<br>`test_una_fecha_anterior_a_la_vigencia_no_se_sirve_como_actual` |
 | AT-051 | Días hábiles con feriado | HU-016 | CUBIERTO | PASSED | `test_at051_un_feriado_dentro_del_plazo_se_excluye_y_queda_registrado`<br>`test_at051_el_mismo_plazo_sin_el_feriado_vence_antes`<br>`test_at051_el_fundamento_dice_con_que_calendario_se_calculo`<br>`test_un_dia_habil_excepcional_cuenta_aunque_caiga_sabado`<br>`test_el_calendario_cargado_computa_el_vencimiento`<br>`test_cada_feriado_queda_atado_al_fragmento_que_lo_declara` |
 | AT-052 | Calendario sin cobertura | HU-016 | CUBIERTO | PASSED | `test_dias_habiles_sin_calendario_no_producen_una_fecha`<br>`test_at052_pasarse_de_la_cobertura_no_produce_una_fecha`<br>`test_un_inicio_fuera_de_la_cobertura_tampoco`<br>`test_sin_calendario_un_plazo_habil_no_se_computa`<br>`test_sin_calendario_para_esa_fecha_no_se_devuelve_otro` |
@@ -67,7 +67,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-054 | Último tramo salarial | HU-F12 | CUBIERTO | PASSED | `test_un_valor_de_vigencia_desconocida_no_se_publica`<br>`test_abierto_fin_no_admite_fecha_de_cierre` |
 | AT-055 | SMVM versus comercio | HU-018 | CUBIERTO | PASSED | `test_sin_valor_vigente_del_parametro_la_condicion_es_desconocida`<br>`test_el_parametro_se_resuelve_a_la_fecha_consultada` |
 | AT-056 | Períodos mixtos en PDF | HU-F62 | CUBIERTO_PARCIAL | PASSED | `test_dos_periodos_en_la_misma_pagina_dejan_la_asociacion_en_revision`<br>`test_el_ciclo_lectivo_se_reconoce_como_periodo`<br>_Falta: Igual que AT-021: la asociación de período se verifica con un doble de página. En F62, con tres períodos y tres tablas en la misma página, ninguna se resolvió por cercanía._ |
-| AT-057 | Monto versus tope | HU-018 | CUBIERTO | PASSED | `test_at057_un_tope_es_el_limite_de_una_condicion_no_una_cuantia`<br>`test_at057_estar_bajo_el_tope_no_dice_cuanto_se_cobra`<br>`test_cuantia_no_informada_no_necesita_inventar_un_monto` |
+| AT-057 | Monto versus tope | HU-018 | CUBIERTO | PASSED | `test_at057_un_tope_es_el_limite_de_una_condicion_no_una_cuantia`<br>`test_at057_estar_bajo_el_tope_no_dice_cuanto_se_cobra`<br>`test_cuantia_no_informada_no_necesita_inventar_un_monto`<br>`test_la_cuantia_no_sirve_un_piso_como_si_fuera_el_monto` |
 | AT-058 | Cambio de parámetro | HU-028 | CUBIERTO | PASSED | `test_dos_valores_aprobados_no_pueden_regir_a_la_vez`<br>`test_aprobar_una_version_reevalua_el_solapamiento`<br>`test_propagar_dos_veces_no_duplica_el_evento` |
 | AT-059 | No informado operativo | HU-F60 | CUBIERTO | PASSED | `test_at059_un_literal_de_sin_dato_no_se_carga_como_telefono`<br>`test_un_nombre_que_dice_na_no_se_pega_al_programa` |
 | AT-060 | Conflicto de piso | HU-F20 | CUBIERTO_PARCIAL | PASSED | `test_at060_la_direccion_se_conserva_como_la_escribio_la_fuente`<br>`test_candidatos_en_conflicto_pueden_coexistir`<br>_Falta: Se prueba que la dirección no se recomponga y que dos candidatos en conflicto puedan coexistir; el contraste concreto entre el CSV de comunas y la ficha de la misma subsede necesita capturar además esa ficha._ |

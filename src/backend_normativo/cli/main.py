@@ -822,6 +822,49 @@ def curacion_tramites(
         typer.echo(f"  aviso: {aviso}")
 
 
+@curacion.command("beneficios")
+def curacion_beneficios(
+    archivo: Path | None = typer.Option(None, help="Una lectura curada; por defecto, todas."),
+) -> None:
+    """Carga los beneficios desde las lecturas curadas de `docs/curaduria/`.
+
+    Todo entra como candidato: la evaluación de un beneficio decide si alguien
+    puede pedir algo, y que lo haya escrito una curaduría no lo vuelve derecho
+    aplicable.
+    """
+    from backend_normativo.curacion.beneficios import (
+        CuradorDeBeneficios,
+        LecturaInvalida,
+        cargar_todas,
+    )
+
+    with engine_migrador().begin() as conexion:
+        try:
+            resultados = (
+                [CuradorDeBeneficios(conexion).cargar(archivo)]
+                if archivo
+                else cargar_todas(conexion)
+            )
+        except LecturaInvalida as exc:
+            typer.echo(str(exc))
+            raise typer.Exit(1) from exc
+
+    if not resultados:
+        typer.echo("No hay lecturas curadas en docs/curaduria/.")
+        return
+    for resultado in resultados:
+        typer.echo(
+            f"Beneficio {resultado.beneficio_id}\n"
+            f"Poblaciones: {resultado.poblaciones} · reglas: {resultado.reglas} "
+            f"(sin formalizar: {resultado.reglas_sin_formalizar})\n"
+            f"Cuantías: {resultado.cuantias} · plazos: {resultado.plazos}\n"
+            f"Campos no informados: {resultado.campos_no_informados} · "
+            f"dependencias abiertas: {resultado.dependencias}"
+        )
+        for aviso in resultado.avisos:
+            typer.echo(f"  aviso: {aviso}")
+
+
 @curacion.command("vigencia")
 def curacion_vigencia(
     fuente: str | None = typer.Option(None, help="Limitar a una fuente."),

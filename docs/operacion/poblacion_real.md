@@ -237,6 +237,37 @@ que «la atención presencial de las sedes permanecerá cerrada hasta el comienz
 del nuevo periodo de inscripción». Eso es el dato de hoy. Rescatar el listado de
 una captura anterior lo presentaría como vigente.
 
+## Primer beneficio curado
+
+La Ley CABA 6935 publicada dejó de ser solo texto: es un beneficio con 3
+poblaciones, 9 reglas y una cuantía, cada pieza atada al artículo que la
+sostiene. La lectura jurídica vive en `docs/curaduria/ley-caba-6935.json` y no
+en el código, para que se pueda discutir contra la ley sin leer Python.
+
+Cinco reglas se pudieron formalizar: la antigüedad de residencia de dos años, su
+excepción para víctimas de trata o violencia de género, las dos exclusiones del
+artículo 6.c y la salvaguarda de ingreso provisorio del artículo 8.
+
+**Cuatro no.** El ingreso contra la Canasta Básica Total varía según la
+conformación del hogar y el parámetro no está segmentado; la subsanación
+documental, la incompatibilidad del pago único y las corresponsabilidades del
+artículo 7 los remite la ley a una reglamentación que no está en el corpus. Las
+cuatro conservan su texto literal y ninguna condición inventada.
+
+`criterios_revocacion` queda `NO_INFORMADO`. La ley habla de continuidad sujeta
+a corresponsabilidades y de regularización documental, pero suspensión, cese y
+revocación son tres efectos distintos y el texto no elige entre ellos. Que no
+consten no significa que no existan.
+
+La cuantía es una fórmula sin valor. La ley fija un piso para hogares de cuatro
+o más integrantes y remite el resto de la escala a la Autoridad de Aplicación:
+servir el piso como «el monto» diría que todos cobran lo mismo.
+
+Nada de esto entra aprobado. Todo queda candidato, porque la evaluación de un
+beneficio decide si alguien puede pedir algo y que lo haya escrito una curaduría
+no lo vuelve derecho aplicable. El esquema lo impone: una regla con AST solo
+puede quedar sin revisión si ya está aprobada.
+
 ## Lo que falta y por qué
 
 | Falta | Depende de | Afecta |
