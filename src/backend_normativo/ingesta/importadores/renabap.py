@@ -65,6 +65,91 @@ CAMPOS = {
 
 RE_ETIQUETA = re.compile(r"<[^>]+>")
 
+# La página no trae el listado: lo renderiza desde una planilla publicada cuyo
+# identificador declara su propio script. Este es el fragmento que lo declara.
+RE_ID_PLANILLA = re.compile(r"idSpread\"?\s*:\s*\"([A-Za-z0-9_-]{20,})\"")
+
+# La vista CSV de esa misma planilla. Es la que publica el organismo, servida
+# por el mismo identificador que su script declara: no se adivina un formato ni
+# se busca un espejo.
+URL_PLANILLA = "https://docs.google.com/spreadsheets/d/{identificador}/gviz/tq?tqx=out:csv&sheet=1"
+
+
+@dataclass
+class Descubrimiento:
+    """El resultado de buscar la planilla en la página de la fuente."""
+
+    url: str | None = None
+    identificador: str | None = None
+    registrada: bool = False
+    promovida: bool = False
+    avisos: list[str] = field(default_factory=list)
+
+
+def descubrir_planilla(
+    conexion: Connection, captura_id: uuid.UUID, almacen: AlmacenObjetos | None = None
+) -> Descubrimiento:
+    """Registra la planilla del padrón como URL de F39, leyéndola de la página.
+
+    Hasta ahora esta URL entró a mano en una sesión de trabajo, y eso hacía que
+    repoblar la base desde cero dejara la fuente sin padrón sin que nadie se
+    enterara: el importador fallaba con «la planilla no trae columna para
+    id_renabap» porque lo que le llegaba era el HTML de la página.
+
+    La promoción está justificada y acotada: el recurso es el dato de la propia
+    fuente, declarado por el script de la propia fuente. No es un enlace a un
+    tercero ni una URL adivinada, y por eso puede promoverse sola. Cualquier
+    otra candidata sigue necesitando que alguien decida.
+    """
+    resultado = Descubrimiento()
+    almacen = almacen or AlmacenObjetos()
+    fila = (
+        conexion.execute(
+            text("SELECT sha256_raw, mime FROM capturas WHERE id = :c"), {"c": captura_id}
+        )
+        .mappings()
+        .one()
+    )
+    contenido = almacen.leer(fila["sha256_raw"]).decode("utf-8", "replace")
+    coincidencia = RE_ID_PLANILLA.search(contenido)
+    if coincidencia is None:
+        resultado.avisos.append(
+            "La página de F39 no declara el identificador de la planilla. Puede haber "
+            "cambiado de forma de publicar el listado: sin ese identificador no se "
+            "inventa una URL, y el padrón queda sin importar hasta que alguien mire la "
+            "página."
+        )
+        return resultado
+
+    resultado.identificador = coincidencia.group(1)
+    resultado.url = URL_PLANILLA.format(identificador=resultado.identificador)
+    relacion = (
+        "Planilla publicada que la propia página de F39 renderiza: el script de la página "
+        f"declara idSpread={resultado.identificador}. El listado no está en el HTML "
+        "capturado, así que sin este recurso la fuente no tiene padrón que importar."
+    )
+    creada = conexion.execute(
+        text(
+            "INSERT INTO fuentes_candidatas "
+            "(source_id_origen, url, relacion, tipo_esperado, estado, prioridad) "
+            "VALUES (:s, :u, :rel, 'DATASET', 'PROMOVIDA', 'P1') "
+            "ON CONFLICT (source_id_origen, url) DO NOTHING RETURNING id"
+        ),
+        {"s": SOURCE_ID, "u": resultado.url, "rel": relacion},
+    ).scalar_one_or_none()
+    resultado.registrada = creada is not None
+
+    promovida = conexion.execute(
+        text(
+            "INSERT INTO fuente_urls (source_id, url, rol, tipo_acceso) "
+            "VALUES (:s, :u, 'DETALLE', 'DESCARGA_ARCHIVO') "
+            "ON CONFLICT (source_id, url) DO NOTHING RETURNING id"
+        ),
+        {"s": SOURCE_ID, "u": resultado.url},
+    ).scalar_one_or_none()
+    resultado.promovida = promovida is not None
+    return resultado
+
 
 class FormaInesperada(Exception):
     """La planilla no trae las columnas mínimas para identificar un barrio."""

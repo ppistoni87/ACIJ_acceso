@@ -201,6 +201,33 @@ def ingesta_importar_infoleg(
         typer.echo(f"  aviso: {aviso}")
 
 
+@ingesta.command("descubrir-renabap")
+def ingesta_descubrir_renabap(
+    captura: str = typer.Argument(..., help="Id de la captura de la página de F39."),
+) -> None:
+    """Registra la planilla del padrón como URL de F39, leyéndola de la página.
+
+    El listado no viaja en el HTML: la página lo renderiza desde una planilla
+    publicada cuyo identificador declara su propio script. Sin este paso, F39
+    queda con la página capturada y sin padrón.
+    """
+    import uuid as _uuid
+
+    from backend_normativo.ingesta.importadores.renabap import descubrir_planilla
+
+    with engine_migrador().begin() as conexion:
+        resultado = descubrir_planilla(conexion, _uuid.UUID(captura))
+    if resultado.url is None:
+        for aviso in resultado.avisos:
+            typer.echo(f"  aviso: {aviso}")
+        raise typer.Exit(1)
+    typer.echo(
+        f"Planilla de F39: {resultado.url}\n"
+        f"Candidata registrada: {resultado.registrada} · "
+        f"URL de la fuente creada: {resultado.promovida}"
+    )
+
+
 @ingesta.command("importar-renabap")
 def ingesta_importar_renabap(
     captura: str = typer.Argument(..., help="Id de la captura de la planilla de F39."),

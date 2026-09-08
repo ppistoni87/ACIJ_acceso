@@ -11,12 +11,12 @@
 # escrito, cronometrado y con el resultado fuente por fuente, para que la
 # diferencia se pueda medir cuando alguien lo corra allá.
 #
-# Uso: bash scripts/corrida_limpia.sh [base] [salida] [fuentes|TODAS]
+# Uso: bash scripts/corrida_limpia.sh [base] [salida] [--sin-catalogo-nacional]
 set -euo pipefail
 
 BASE="${1:-backend_normativo_limpia}"
 SALIDA="${2:-docs/reportes/corrida_limpia.md}"
-FUENTES="${3:-TODAS}"
+EXTRA="${3:-}"
 
 # El nombre de la base entra en un DROP DATABASE. Que sea un identificador simple
 # no es cosmética: es lo único que separa un argumento de un comando.
@@ -75,9 +75,10 @@ escribir_reporte() {
     echo "# Corrida limpia: de una base vacía a un corpus servible"
     echo
     echo "Lo que esto demuestra es que la puesta en marcha es reproducible: las"
-    echo "migraciones corren desde cero, el catálogo de las 83 fuentes entra, la captura"
-    echo "recorre las fuentes activas contra la red de verdad y la curación carga sobre"
-    echo "lo capturado."
+    echo "migraciones corren desde cero, el catálogo de las 83 fuentes entra, el"
+    echo "planificador recorre la red de verdad, los importadores cargan el catálogo"
+    echo "nacional, el padrón y los directorios, y la curación trabaja sobre lo"
+    echo "capturado."
     echo
     echo "Lo que **no** demuestra es que corra igual en otra máquina o desde otra red."
     echo "Para eso hace falta otra máquina y otra red; lo que queda acá es el"
@@ -92,10 +93,12 @@ escribir_reporte() {
     echo "- Cierre: \`$(date -Iseconds)\`"
     echo "- Resultado: **${ESTADO_FINAL}**"
     echo "- Base: \`${BASE}\`"
-    echo "- Fuentes pedidas a la captura: \`${FUENTES}\`"
     echo "- Fuentes que el planificador deja pendientes al cerrar: \`${PENDIENTES_AL_CIERRE:-—}\`"
     echo
     echo "## Pasos"
+    echo
+    echo "El detalle paso por paso vive en \`scripts/poblar_corpus.sh\`, que es lo que"
+    echo "corre acá. Lo que se mide es cuánto tarda entero y con qué queda."
     echo
     echo "| Paso | Duración | Última línea |"
     echo "| --- | ---: | --- |"
@@ -113,7 +116,10 @@ escribir_reporte() {
     echo
     echo "Las incidencias abiertas no son un fallo de la corrida: son lo que el sistema"
     echo "encontró y no resolvió solo. Una corrida limpia que no abriera ninguna estaría"
-    echo "escondiendo algo."
+    echo "escondiendo algo. La enorme mayoría viene del catálogo nacional, que se importa"
+    echo "entero como metadatos: son normas cuyo tipo se numera por organismo y cuya"
+    echo "clave (tipo, número, año) no las distingue. Quedan marcadas para que ninguna"
+    echo "resuelva una cita por número, que es exactamente lo que la incidencia protege."
     echo
     echo "## Qué pasó fuente por fuente"
     echo
@@ -167,25 +173,13 @@ trap al_salir EXIT
 export BN_DATABASE_URL="${BASE_URL}"
 
 cronometrar "migraciones" ${VENV}/alembic upgrade head
-cronometrar "catálogo de fuentes" ${VENV}/bn catalogo cargar
-cronometrar "conciliación del inventario" ${VENV}/bn catalogo conciliar
 
-# El recorrido no se hace con una lista escrita a mano: se hace con el mismo
-# planificador que corre en producción. Una lista a mano prueba que anda la lista;
-# el ciclo prueba que anda la regla que decide a quién le toca —y que las fuentes
-# que la política no habilita a automatizar, o que no tienen URL, quedan afuera
-# solas en vez de que las saque el script.
-if [ "${FUENTES}" = "TODAS" ]; then
-  cronometrar "recorrido de fuentes (ciclo real)" ${VENV}/bn monitoreo ciclo
-else
-  # shellcheck disable=SC2086
-  cronometrar "captura de red" ${VENV}/bn ingesta capturar ${FUENTES}
-fi
-cronometrar "extracción" ${VENV}/bn ingesta extraer
-cronometrar "identidad de normas" ${VENV}/bn curacion identidad
-cronometrar "relaciones normativas" ${VENV}/bn curacion relaciones
-cronometrar "siete campos" ${VENV}/bn curacion campos
-cronometrar "beneficios curados" ${VENV}/bn curacion beneficios
+# La población no se redefine acá: se llama a `scripts/poblar_corpus.sh`, que es
+# la única definición del procedimiento. Dos listas de pasos garantizan que una
+# de las dos quede vieja, y la que quedaría vieja es siempre la que nadie corre
+# todos los días.
+# shellcheck disable=SC2086
+cronometrar "población completa" bash scripts/poblar_corpus.sh --sin-informes ${EXTRA}
 # Al cerrar, el planificador se vuelve a preguntar a quién le toca. Si el
 # recorrido hizo lo que dice, ya no le toca a nadie: eso es lo que se mira.
 cronometrar "planificación al cierre (en seco)" ${VENV}/bn monitoreo ciclo --en-seco

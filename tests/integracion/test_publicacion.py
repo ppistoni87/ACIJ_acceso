@@ -18,7 +18,11 @@ from backend_normativo.curacion.revision import (
 )
 from backend_normativo.curacion.vigencia import ResolutorVigencia
 from backend_normativo.politicas import vigencia as politica
-from backend_normativo.publicacion.release import PublicacionRechazada, Publicador
+from backend_normativo.publicacion.release import (
+    NadaQuePublicar,
+    PublicacionRechazada,
+    Publicador,
+)
 from tests.integracion.test_curacion import _documento_norma
 
 pytestmark = pytest.mark.integracion
@@ -368,3 +372,24 @@ def test_cada_control_queda_atado_a_la_version_que_evaluo(
     assert all(c.resultado == "PASA" for c in controles)
     assert all(c.registro_version_id is not None for c in controles)
     assert {c.control_id for c in controles} >= {"DQ02", "DQ03", "DQ08", "DQ09"}
+
+
+def test_publicar_sin_candidatos_no_se_confunde_con_un_control_fallido(
+    conexion: Connection,
+) -> None:
+    """No es lo mismo que falten controles a que no haya nada que publicar.
+
+    Decirlo con las palabras de un control fallido —«no pasa los controles de
+    calidad:» seguido de nada— manda a buscar un problema de calidad donde lo
+    que hay es que ya está todo publicado o que todavía no se aprobó nada.
+    """
+    cargar_catalogo(conexion)
+
+    with pytest.raises(NadaQuePublicar) as caido:
+        Publicador(conexion).publicar(actor="publicacion:prueba", motivo="sin nada que publicar")
+
+    mensaje = str(caido.value)
+    assert "No hay ninguna versión para publicar" in mensaje
+    assert "no pasa los controles de calidad" not in mensaje
+    # Sigue siendo un rechazo: quien captura el caso general lo sigue capturando.
+    assert isinstance(caido.value, PublicacionRechazada)

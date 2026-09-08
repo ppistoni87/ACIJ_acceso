@@ -1,9 +1,10 @@
 # Corrida limpia: de una base vacía a un corpus servible
 
 Lo que esto demuestra es que la puesta en marcha es reproducible: las
-migraciones corren desde cero, el catálogo de las 83 fuentes entra, la captura
-recorre las fuentes activas contra la red de verdad y la curación carga sobre
-lo capturado.
+migraciones corren desde cero, el catálogo de las 83 fuentes entra, el
+planificador recorre la red de verdad, los importadores cargan el catálogo
+nacional, el padrón y los directorios, y la curación trabaja sobre lo
+capturado.
 
 Lo que **no** demuestra es que corra igual en otra máquina o desde otra red.
 Para eso hace falta otra máquina y otra red; lo que queda acá es el
@@ -14,41 +15,39 @@ Generado por `scripts/corrida_limpia.sh`. La base se crea y se destruye en la
 misma corrida: si algo de acá se pudiera explicar por estado previo, no habría
 estado previo del que agarrarse.
 
-- Arranque: `2026-09-08T17:09:37+00:00`
-- Cierre: `2026-09-08T17:14:09+00:00`
+- Arranque: `2026-09-08T18:24:17+00:00`
+- Cierre: `2026-09-08T18:30:57+00:00`
 - Resultado: **completa**
 - Base: `backend_normativo_limpia`
-- Fuentes pedidas a la captura: `TODAS`
 - Fuentes que el planificador deja pendientes al cerrar: `2`
 
 ## Pasos
 
+El detalle paso por paso vive en `scripts/poblar_corpus.sh`, que es lo que
+corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
+
 | Paso | Duración | Última línea |
 | --- | ---: | --- |
-| migraciones | 1.4 s | INFO  [alembic.runtime.migration] Running upgrade 0006_indice_de_listado -> 0007_servibl… |
-| catálogo de fuentes | 0.6 s | Brechas registradas como incidencia: 15 |
-| conciliación del inventario | 0.5 s | capturados y validados, y se informa por separado. |
-| recorrido de fuentes (ciclo real) | 263.7 s | alguien corre el comando. |
-| extracción | 1.0 s |   aviso: Ninguna familia de extracción acepta 'https://cdn.buenosaires.gob.ar/datosabie… |
-| identidad de normas | 0.6 s | Incidencias abiertas: 2 |
-| relaciones normativas | 0.9 s | Autorreferencias omitidas: 53 |
-| siete campos | 1.0 s |   PENDIENTE: 35 |
-| beneficios curados | 0.7 s |   aviso: 3 norma(s) de las que este beneficio depende no están en el corpus. Mientras f… |
-| planificación al cierre (en seco) | 0.8 s | alguien corre el comando. |
+| migraciones | 1.3 s | INFO  [alembic.runtime.migration] Running upgrade 0006_indice_de_listado -> 0007_servibl… |
+| población completa | 397.4 s | Incidencias abiertas: 12 |
+| planificación al cierre (en seco) | 0.7 s | alguien corre el comando. |
 
 ## Con qué quedó la base
 
 | Qué | Cuántos |
 | --- | ---: |
-| Fuentes en el catálogo | 83 |
-| Capturas | 55 |
-| Unidades documentales | 1169 |
-| Beneficios curados | 2 |
-| Incidencias abiertas | 89 |
+| Fuentes en el catálogo | 84 |
+| Capturas | 69 |
+| Unidades documentales | 992 |
+| Beneficios curados | 3 |
+| Incidencias abiertas | 4602 |
 
 Las incidencias abiertas no son un fallo de la corrida: son lo que el sistema
 encontró y no resolvió solo. Una corrida limpia que no abriera ninguna estaría
-escondiendo algo.
+escondiendo algo. La enorme mayoría viene del catálogo nacional, que se importa
+entero como metadatos: son normas cuyo tipo se numera por organismo y cuya
+clave (tipo, número, año) no las distingue. Quedan marcadas para que ninguna
+resuelva una cita por número, que es exactamente lo que la incidencia protege.
 
 ## Qué pasó fuente por fuente
 
@@ -60,15 +59,23 @@ algo distinto de los datos.
 | --- | --- | ---: | ---: | ---: | --- |
 | F04 | FALLIDA | 1 | 0 | 1 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL |
 | M05 | FALLIDA | 1 | 0 | 1 | https://www.anses.gob.ar/: HTTP 403. La fuente queda pausada; no se rotan identidades ni se evaden controles d |
+| C01 | COMPLETA | 1 | 1 | 0 |  |
 | D01 | COMPLETA | 1 | 1 | 0 |  |
+| D01 | COMPLETA | 3 | 3 | 0 |  |
 | D02 | COMPLETA | 1 | 1 | 0 |  |
+| D02 | COMPLETA | 2 | 2 | 0 |  |
+| D03 | COMPLETA | 1 | 1 | 0 |  |
 | D03 | COMPLETA | 1 | 1 | 0 |  |
 | D04 | COMPLETA | 1 | 1 | 0 |  |
+| D04 | COMPLETA | 1 | 1 | 0 |  |
 | D05 | COMPLETA | 1 | 1 | 0 |  |
+| D05 | COMPLETA | 1 | 1 | 0 |  |
+| D06 | COMPLETA | 1 | 1 | 0 |  |
 | D06 | COMPLETA | 1 | 1 | 0 |  |
 | D07 | COMPLETA | 1 | 1 | 0 |  |
 | D08 | COMPLETA | 1 | 1 | 0 |  |
 | D09 | COMPLETA | 1 | 1 | 0 |  |
+| D10 | COMPLETA | 1 | 1 | 0 |  |
 | D10 | COMPLETA | 1 | 1 | 0 |  |
 | F01 | COMPLETA | 1 | 1 | 0 |  |
 | F03 | COMPLETA | 1 | 1 | 0 |  |
@@ -87,7 +94,9 @@ algo distinto de los datos.
 | F31 | COMPLETA | 1 | 1 | 0 |  |
 | F32 | COMPLETA | 1 | 1 | 0 |  |
 | F33 | COMPLETA | 1 | 1 | 0 |  |
+| F33 | COMPLETA | 1 | 1 | 0 |  |
 | F36 | COMPLETA | 1 | 1 | 0 |  |
+| F39 | COMPLETA | 2 | 2 | 0 |  |
 | F39 | COMPLETA | 1 | 1 | 0 |  |
 | F40 | COMPLETA | 1 | 1 | 0 |  |
 | F43 | COMPLETA | 1 | 1 | 0 |  |
@@ -126,10 +135,10 @@ convertir un acceso bloqueado en un dato inventado.
 
 | Tipo | Cuántas |
 | --- | ---: |
+| IDENTIDAD_AMBIGUA | 4492 |
 | COBERTURA_EXTRACCION | 43 |
+| VIGENCIA_INDETERMINADA | 24 |
 | ACCESO_BLOQUEADO | 17 |
-| VIGENCIA_INDETERMINADA | 12 |
-| DATO_FALTANTE_CRITICO | 5 |
+| DATO_FALTANTE_CRITICO | 17 |
 | DISCREPANCIA_NUMERACION | 5 |
-| IDENTIDAD_AMBIGUA | 4 |
-| CONFLICTO_DE_FUENTES | 3 |
+| CONFLICTO_DE_FUENTES | 4 |

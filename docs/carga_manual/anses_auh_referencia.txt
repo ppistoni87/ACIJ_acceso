@@ -1,0 +1,9 @@
+Asignación Universal por Hijo para Protección Social — referencia operativa
+
+Este archivo es un marcador de la vía de carga manual. Sustituye al contenido
+que la fuente M05 (ANSES) no permite recorrer automáticamente: el sitio devuelve
+HTTP 403 a la captura y la política del sistema prohíbe rotar identidades o
+evadir controles de acceso.
+
+No contiene datos normativos ni montos. Su función es dejar registrada la vía y
+su procedencia, para que la fuente figure como MANUAL y no como no recorrida.

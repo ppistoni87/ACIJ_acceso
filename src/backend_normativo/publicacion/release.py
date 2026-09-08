@@ -38,6 +38,25 @@ class PublicacionRechazada(Exception):
         self.gates = gates
 
 
+class NadaQuePublicar(PublicacionRechazada):
+    """No hay ninguna versión en condiciones de publicarse.
+
+    Es distinto de que fallen los controles, y decirlo con las palabras de un
+    control fallido —«no pasa los controles de calidad:» seguido de nada— manda
+    a buscar un problema de calidad donde lo que hay es que ya está todo
+    publicado, o que todavía no se aprobó nada.
+    """
+
+    def __init__(self, gates: ResultadoGates, *, en_cuarentena: int) -> None:
+        Exception.__init__(
+            self,
+            "No hay ninguna versión para publicar: o ya están todas publicadas, o las "
+            f"candidatas siguen sin aprobar. Quedan {en_cuarentena} en cuarentena; "
+            "`bn publicacion estado` dice por qué cada una.",
+        )
+        self.gates = gates
+
+
 @dataclass
 class ResultadoPublicacion:
     release_id: uuid.UUID
@@ -122,7 +141,9 @@ class Publicador:
         ahora = ahora or dt.datetime.now(dt.UTC)
         candidatos = candidatos if candidatos is not None else self.candidatos()
         if not candidatos:
-            raise PublicacionRechazada(evaluar_gates(self.conexion, []))
+            raise NadaQuePublicar(
+                evaluar_gates(self.conexion, []), en_cuarentena=len(self.cuarentena())
+            )
 
         gates = evaluar_gates(self.conexion, candidatos)
         self._registrar_controles(gates, candidatos, ahora)

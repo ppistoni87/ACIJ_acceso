@@ -7,38 +7,37 @@ ninguna, o ser un alias de otra.
 
 | Concepto | Cantidad |
 |---|---:|
-| Fuentes en el catálogo | 85 |
-| Fuentes canónicas (sin alias) | 81 |
+| Fuentes en el catálogo | 84 |
+| Fuentes canónicas (sin alias) | 80 |
 | Alias | 4 |
-| URLs registradas | 80 |
-| Documentos capturados | 62 |
+| URLs registradas | 76 |
+| Documentos capturados | 53 |
 | Normas identificadas | 423718 |
-| Beneficios registrados | 1 |
+| Beneficios registrados | 3 |
 | Dependencias normativas pendientes | 168 |
 
 Identificadores originales F01–F67 presentes: 67 de 67.
-Incorporaciones al inventario: 18 (C01, D01, D02, D03, D04, D05, D06, D07, D08, D09, D10, M01, M02, M03, M04, M05, M06, S01).
+Incorporaciones al inventario: 17 (C01, D01, D02, D03, D04, D05, D06, D07, D08, D09, D10, M01, M02, M03, M04, M05, M06).
 
 ## Estado de la fuente
 
 | Valor | Fuentes |
 |---|---:|
-| ACTIVE | 55 |
-| DEGRADED | 2 |
+| ACTIVE | 54 |
+| DEGRADED | 1 |
 | DISCOVERY | 6 |
 | MANUAL | 8 |
 | REFERENCE_ONLY | 13 |
-| RETIRED | 1 |
+| RETIRED | 2 |
 
 ## Disponibilidad observada
 
 | Valor | Fuentes |
 |---|---:|
-| ACCESIBLE | 55 |
+| ACCESIBLE | 54 |
 | ACCESO_LIMITADO | 1 |
 | ERROR_TLS | 1 |
-| NO_ENCONTRADA | 1 |
-| NO_VERIFICADO | 12 |
+| NO_VERIFICADO | 13 |
 | SIN_URL_CONOCIDA | 15 |
 
 ## Prioridad
@@ -47,7 +46,7 @@ Incorporaciones al inventario: 18 (C01, D01, D02, D03, D04, D05, D06, D07, D08, 
 |---|---:|
 | P0 | 33 |
 | P1 | 44 |
-| P2 | 8 |
+| P2 | 7 |
 
 ## Clase
 
@@ -58,7 +57,7 @@ Incorporaciones al inventario: 18 (C01, D01, D02, D03, D04, D05, D06, D07, D08, 
 | CANAL_ATENCION | 5 |
 | DATASET | 6 |
 | DIRECTORIO | 26 |
-| DOCUMENTO | 9 |
+| DOCUMENTO | 8 |
 | FICHA_TRAMITE | 14 |
 | PORTAL_NORMATIVO | 15 |
 
@@ -69,7 +68,7 @@ Incorporaciones al inventario: 18 (C01, D01, D02, D03, D04, D05, D06, D07, D08, 
 | API_JSON | 4 |
 | CARGA_MANUAL | 9 |
 | DATASET_ABIERTO | 6 |
-| HTML_ESTATICO | 39 |
+| HTML_ESTATICO | 38 |
 | PDF | 9 |
 | SIN_ADAPTADOR | 18 |
 

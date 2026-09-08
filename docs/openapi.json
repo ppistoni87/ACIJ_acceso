@@ -699,7 +699,7 @@
           "operativo"
         ],
         "summary": "Puntos Atencion",
-        "description": "Puntos de atención con sus canales.\n\nSin coordenadas válidas no se afirma cercanía. El horario es por canal: el\nde la mesa presencial no se copia al teléfono.",
+        "description": "Puntos de atención con sus canales.\n\nSin coordenadas válidas no se afirma cercanía. El horario es por canal: el\nde la mesa presencial no se copia al teléfono.\n\nPedir alcance municipal no devuelve el organismo provincial de la misma\nprovincia: comparten jurisdicción y no son intercambiables. Cuando no hay\nninguno municipal, la respuesta lo dice en vez de ofrecer el provincial\ncomo equivalente.",
         "operationId": "puntos_atencion_v1_puntos_atencion_get",
         "parameters": [
           {
@@ -749,6 +749,24 @@
               ],
               "title": "Tipo"
             }
+          },
+          {
+            "name": "alcance",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "NACIONAL, PROVINCIAL, MUNICIPAL o NO_DECLARADO.",
+              "title": "Alcance"
+            },
+            "description": "NACIONAL, PROVINCIAL, MUNICIPAL o NO_DECLARADO."
           },
           {
             "name": "as_of",
@@ -2141,6 +2159,21 @@
             ],
             "title": "Organismo Operador"
           },
+          "alcance": {
+            "type": "string",
+            "title": "Alcance"
+          },
+          "ambito": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ambito"
+          },
           "direccion": {
             "anyOf": [
               {
@@ -2215,6 +2248,8 @@
           "tipo",
           "organismo",
           "organismo_operador",
+          "alcance",
+          "ambito",
           "direccion",
           "localidad",
           "lat",

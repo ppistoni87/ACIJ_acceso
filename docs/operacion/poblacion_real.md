@@ -65,9 +65,18 @@ por identificador oficial, no por posición ni por orden de archivo.
 
 ## Corpus con texto
 
-Ocho normas del alcance tienen texto capturado, segmentado, con identidad
+Doce versiones normativas tienen texto capturado, segmentado, con identidad
 resuelta, relaciones candidatas y los siete campos evaluados. Una llegó a
 release publicado y se sirve por la API.
+
+Sobre 84 fuentes del catálogo, 55 tienen al menos una captura y 48 tienen
+documentos extraídos. Las 29 que quedan pendientes no están pendientes por
+igual: 15 no tienen URL inequívoca en el manual, 2 están bloqueadas —una por un
+certificado que no valida y otra por un 403— y el resto son de referencia, de
+carga manual o retiradas, que el planificador no pide porque la política no lo
+habilita. Una corrida anterior mostraba 64 fuentes con captura, y esa diferencia
+no es una pérdida: eran capturas hechas antes de que el catálogo clasificara esas
+fuentes, y hoy pedirlas sería recorrer lo que el manual dice que no se recorre.
 
 Los tres casos difíciles que el paquete nombra están resueltos como pide:
 
@@ -108,8 +117,17 @@ significa que su contenido esté en otro lado.
 
 ## Documentos PDF
 
-Ocho fuentes en PDF capturadas y extraídas: D07, D08, D09, F38, F40, F54, F62 y
-F63. 712 unidades nuevas y 22 incidencias abiertas.
+Seis fuentes en PDF capturadas y extraídas: D07, D08, D09, F40, F54 y F62, con
+261 unidades. F38 y F63 también tienen texto en PDF y no se recorren solas: el
+catálogo las declara de referencia y de carga manual, y el planificador no pide
+lo que la política no habilita.
+
+Las 261 unidades son menos que las 712 de la corrida anterior y dicen más. Antes
+el adaptador de PDF armaba un párrafo por cada línea que devuelve
+`extract_text_lines`, así que una oración quedaba repartida en cuatro unidades y
+ninguna cita de una frase entera entraba en ninguna. Ahora los renglones se unen
+y D09 —la Ley CABA 2917 en PDF— queda con sus artículos completos, de 186
+caracteres promedio en vez de 76.
 
 El caso que el manual describe como «prefijo PDF conocido» no era hipotético.
 El endpoint legacy del Boletín Oficial de CABA

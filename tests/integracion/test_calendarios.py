@@ -192,3 +192,68 @@ def test_la_fuente_del_calendario_no_entra_al_inventario_del_corpus(
     ).one()
     assert fila.origen == "operativa"
     assert "integra el inventario del corpus" in fila.alcance
+
+
+# --- Calendarios jurisdiccionales derivados -------------------------------------
+
+
+def test_deriva_el_calendario_local_de_los_feriados_nacionales(
+    conexion: Connection, captura
+) -> None:
+    """Los feriados nacionales rigen en todo el país, así que repetirlos en un
+    calendario local es cierto en lo que dice. Lo que le falta son las ferias
+    administrativas que fija la propia jurisdicción."""
+    calendarios.importar(conexion, _archivo(FERIADOS), captura_id=captura, anio=2026)
+
+    derivado = calendarios.derivar_jurisdiccional(conexion, jurisdiccion="AR-C", anio=2026)
+
+    assert derivado is not None
+    nombre, feriados = conexion.execute(
+        text(
+            "SELECT c.nombre, count(e.id) FROM calendarios c "
+            "  LEFT JOIN calendario_excepciones e ON e.calendario_id = c.id "
+            " WHERE c.id = :c GROUP BY c.nombre"
+        ),
+        {"c": derivado},
+    ).one()
+    # La limitación viaja en el nombre porque el nombre viaja en el fundamento de
+    # cada cómputo: un calendario incompleto que dice qué le falta es mejor que
+    # ninguno, y uno que no lo dice es peor que ninguno.
+    assert "sin ferias administrativas locales" in nombre
+    assert feriados == len(FERIADOS)
+
+
+def test_derivar_deja_abierta_la_incidencia_de_lo_que_falta(conexion: Connection, captura) -> None:
+    """Que el calendario se derive solo no significa que esté completo. Sin la
+    incidencia, un plazo computado de menos parecería computado bien."""
+    calendarios.importar(conexion, _archivo(FERIADOS), captura_id=captura, anio=2026)
+    calendarios.derivar_jurisdiccional(conexion, jurisdiccion="AR-C", anio=2026)
+
+    abiertas = (
+        conexion.execute(
+            text(
+                "SELECT descripcion FROM incidencias_revision "
+                " WHERE estado = 'ABIERTA' AND descripcion LIKE '%ferias administrativas%'"
+            )
+        )
+        .scalars()
+        .all()
+    )
+    assert len(abiertas) == 1
+    assert "puede vencer más tarde de lo calculado" in abiertas[0]
+
+
+def test_derivar_dos_veces_devuelve_el_mismo_calendario(conexion: Connection, captura) -> None:
+    """Poblar es idempotente: la segunda corrida no puede dejar dos calendarios
+    de la misma jurisdicción compitiendo por el mismo año."""
+    calendarios.importar(conexion, _archivo(FERIADOS), captura_id=captura, anio=2026)
+    primero = calendarios.derivar_jurisdiccional(conexion, jurisdiccion="AR-C", anio=2026)
+    segundo = calendarios.derivar_jurisdiccional(conexion, jurisdiccion="AR-C", anio=2026)
+    assert primero == segundo
+
+
+def test_sin_calendario_nacional_no_se_deriva_nada(conexion: Connection) -> None:
+    """No hay de dónde copiar los feriados. Inventar un calendario vacío diría
+    que ese año no tuvo ninguno."""
+    calendarios.registrar_fuente(conexion)
+    assert calendarios.derivar_jurisdiccional(conexion, jurisdiccion="AR-C", anio=2026) is None

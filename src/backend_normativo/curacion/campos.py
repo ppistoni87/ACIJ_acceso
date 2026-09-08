@@ -291,10 +291,16 @@ class EvaluadorDeCampos:
         inicio = max(0, coincidencia.start() - 60)
         fragmento = unidad["texto"][inicio : coincidencia.end() + 200].strip()
         hash_fragmento = hashlib.sha256(fragmento.encode("utf-8")).hexdigest()
+        # Puede haber más de una fila con el mismo hash para la misma unidad: la
+        # curaduría de beneficios también crea evidencia sobre las unidades que
+        # cita, y cuando el fragmento coincide con el texto entero de la unidad
+        # el hash es el mismo. Son la misma evidencia —mismo documento, misma
+        # unidad, mismo texto—, así que se reusa la más antigua y la elección no
+        # depende del orden en que se hayan corrido los comandos.
         existente = self.conexion.execute(
             text(
                 "SELECT id FROM evidencias WHERE doc_version_id = :dv AND unidad_id = :u "
-                "  AND hash_fragmento = :h"
+                "  AND hash_fragmento = :h ORDER BY creado_en, id LIMIT 1"
             ),
             {"dv": doc_version_id, "u": unidad["id"], "h": hash_fragmento},
         ).scalar_one_or_none()

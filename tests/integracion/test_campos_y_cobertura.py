@@ -169,3 +169,46 @@ def test_sin_release_publicado_ninguna_capacidad_sirve_datos(
         "EXPLICACION_HISTORICA",
     }
     assert all(v == 0 for v in metricas.capacidades_publicables.values())
+
+
+def test_la_evidencia_que_ya_puso_otro_curador_no_rompe_la_evaluacion(
+    conexion: Connection, norma_con_texto
+) -> None:
+    """Dos curadores citan la misma unidad y guardan el mismo fragmento.
+
+    La curaduría de equivalencias también deja evidencia sobre las unidades que
+    empareja, y cuando esa unidad es corta el fragmento que detecta un campo
+    coincide con su texto entero: mismo documento, misma unidad, mismo hash, dos
+    filas. El evaluador pedía exactamente una y se caía, así que curar
+    equivalencias rompía la evaluación de los siete campos de esa misma norma.
+    Son la misma evidencia: se reusa la más antigua.
+    """
+    EvaluadorDeCampos(conexion).evaluar()
+
+    # Otro curador guarda su propia fila con el mismo fragmento y su selector.
+    original = (
+        conexion.execute(
+            text(
+                "SELECT doc_version_id, unidad_id, fragmento, hash_fragmento FROM evidencias "
+                " WHERE offset_inicio IS NOT NULL LIMIT 1"
+            )
+        )
+        .mappings()
+        .one()
+    )
+    conexion.execute(
+        text(
+            "INSERT INTO evidencias (doc_version_id, unidad_id, fragmento, hash_fragmento, "
+            " tipo, selector) VALUES (:d, :u, :f, :h, 'FRAGMENTO_TEXTO', :s)"
+        ),
+        {
+            "d": original["doc_version_id"],
+            "u": original["unidad_id"],
+            "f": original["fragmento"],
+            "h": original["hash_fragmento"],
+            "s": f"equivalencia:{original['unidad_id']}",
+        },
+    )
+
+    resultado = EvaluadorDeCampos(conexion).evaluar()
+    assert resultado.versiones_evaluadas >= 1

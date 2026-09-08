@@ -22,6 +22,7 @@ Tres cosas que el cargador impone y que son la razón de que exista:
 
 from __future__ import annotations
 
+import datetime as dt
 import hashlib
 import json
 import pathlib
@@ -38,6 +39,7 @@ from backend_normativo.db.vocabularios import (
     TipoIncidencia,
     ValidTipo,
 )
+from backend_normativo.plazos.calendarios import derivar_jurisdiccional
 from backend_normativo.reglas.ast import ErrorDeContrato, validar_ast
 
 RUTA_CURADURIA = pathlib.Path("docs/curaduria")
@@ -617,11 +619,26 @@ class CuradorDeBeneficios:
             {"j": jurisdiccion},
         ).scalar_one_or_none()
         if calendario is None:
+            # Se deriva de los feriados nacionales, que rigen en todo el país: el
+            # calendario resultante es cierto en lo que dice y le faltan las
+            # ferias administrativas locales, que alargan el plazo. Por eso el
+            # nombre declara la limitación —viaja en el fundamento de cada
+            # cómputo— y la derivación abre una incidencia con responsable.
+            #
+            # Antes esto no se derivaba solo y había que crearlo a mano, con lo
+            # que una base recién poblada no podía cargar ninguna lectura con un
+            # plazo hábil local. Vincularlo al calendario nacional sigue estando
+            # prohibido: contaría los feriados de otra jurisdicción.
+            calendario = derivar_jurisdiccional(
+                self.conexion, jurisdiccion=jurisdiccion, anio=dt.date.today().year
+            )
+        if calendario is None:
             raise LecturaInvalida(
                 f"El plazo {datos.get('clave')!r} necesita un calendario de {jurisdiccion} y no "
-                "hay ninguno cargado. Vincularlo al calendario nacional contaría los feriados "
-                "de otra jurisdicción y adelantaría el vencimiento, que es el error que hace "
-                "perder un plazo."
+                "hay ninguno cargado, ni uno nacional del que derivarlo. Vincularlo al "
+                "calendario nacional de otro año contaría feriados que no son los de ese "
+                "período, que es el error que hace perder un plazo. Hay que correr "
+                "`bn plazos calendario <año>` antes de cargar las lecturas curadas."
             )
         return calendario
 

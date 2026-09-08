@@ -260,10 +260,12 @@
     "src/backend_normativo/ingesta/importadores/renabap.py",
     "src/backend_normativo/api/routers/operativo.py",
     "tests/integracion/test_importador_renabap.py",
-    "tests/aceptacion/test_casos_aceptacion.py"
+    "tests/aceptacion/test_casos_aceptacion.py",
+    "scripts/poblar_corpus.sh"
    ],
    "comandos": [
     "bn ingesta capturar F39",
+    "bn ingesta descubrir-renabap",
     "bn ingesta importar-renabap"
    ]
   },
@@ -412,15 +414,19 @@
    "estado": "EN_CURSO",
    "evidencia": [
     "scripts/poblar_corpus.sh",
+    "scripts/corrida_limpia.sh",
     "src/backend_normativo/ingesta/importadores/infoleg.py",
     "docs/operacion/poblacion_real.md",
     "docs/reportes/actualizacion_controlada.md",
+    "docs/reportes/corrida_limpia.md",
     "docs/curaduria/ley-caba-6935.json",
     "docs/curaduria/ley-caba-2917.json",
+    "docs/curaduria/ley-nacional-24714-auh.json",
     "src/backend_normativo/curacion/beneficios.py"
    ],
-   "falta": "El catálogo nacional está importado entero (423.718 normas), el padrón RENABAP y tres directorios están cargados, las 83 fuentes fueron recorridas y 31 páginas institucionales, 8 PDF y 2 fichas de trámite están extraídos. Dos beneficios están curados desde el texto capturado —el apoyo habitacional de la Ley 6935 y el Régimen de Becas de la Ley 2917—, con 18 reglas, 6 poblaciones, 5 plazos y 2 cuantías, cada pieza atada a su artículo. Falta curar el resto del corpus con texto: el trabajo es de lectura jurídica sobre cada norma, no de más ingesta.",
+   "falta": "La población entera se corre con un comando: `scripts/poblar_corpus.sh` es la única definición del procedimiento y `scripts/corrida_limpia.sh` lo ejercita sobre una base que se crea vacía. Dos corridas limpias seguidas dieron lo mismo: 84 fuentes en el catálogo, 69 capturas, 992 unidades documentales, 3 beneficios curados, en 6 min 40 s. Están el catálogo nacional entero (423.718 normas), el padrón RENABAP (6.467 barrios) y los tres directorios. Tres beneficios están curados desde el texto capturado —el apoyo habitacional de la Ley CABA 6935, el Régimen de Becas de la Ley CABA 2917 y la Asignación Universal por Hijo de la Ley nacional 24.714—, con 34 reglas, 8 poblaciones, 5 plazos y 3 cuantías, cada pieza atada a su artículo y verificada contra el texto. Falta curar el resto del corpus con texto: el trabajo es de lectura jurídica sobre cada norma, no de más ingesta.",
    "comandos": [
+    "bash scripts/poblar_corpus.sh",
     "bn ingesta importar-infoleg",
     "bn calidad ensayo-actualizacion"
    ]
@@ -481,6 +487,7 @@
     "src/backend_normativo/calidad/backlog.py",
     "docs/calidad/estado_backlog.json",
     "scripts/corrida_limpia.sh",
+    "scripts/poblar_corpus.sh",
     "docs/reportes/corrida_limpia.md"
    ],
    "comandos": [
@@ -488,7 +495,7 @@
     "bn calidad trazabilidad",
     "bash scripts/corrida_limpia.sh"
    ],
-   "falta": "La documentación y los reportes están y se regeneran solos. La puesta en marcha completa se corre con un comando sobre una base que se crea vacía y se destruye al cerrar (`scripts/corrida_limpia.sh`): migraciones desde cero, las 83 fuentes del catálogo, el recorrido por el mismo planificador que corre en producción —53 de 55 fuentes capturadas, 1169 unidades documentales, en 4 min 32 s— y la curación encima de lo capturado, con el resultado fuente por fuente en `docs/reportes/corrida_limpia.md`. Las dos fuentes que no entregan cierran con su motivo escrito en la fila de su corrida: F04 por validación TLS que no se relaja y M05 por un 403 que no se contesta rotando identidad. Lo que sigue sin poder demostrarse acá es que ese mismo recorrido dé lo mismo desde otra máquina y otra red: para eso hace falta otra máquina y otra red, y lo que queda es el procedimiento cronometrado para que la diferencia se pueda medir cuando alguien lo corra allá."
+   "falta": "La documentación y los reportes están y se regeneran solos. La puesta en marcha completa se corre con un comando sobre una base que se crea vacía y se destruye al cerrar (`scripts/corrida_limpia.sh`, que llama a `scripts/poblar_corpus.sh`): migraciones desde cero, las 83 fuentes del catálogo, el recorrido por el mismo planificador que corre en producción, los importadores del catálogo nacional, el padrón y los directorios, y la curación encima de lo capturado. Dos corridas seguidas dieron lo mismo —84 fuentes, 69 capturas, 992 unidades, 3 beneficios, 4.602 incidencias abiertas, 6 min 40 s— con el resultado fuente por fuente en `docs/reportes/corrida_limpia.md`. Reconstruir la base de desarrollo desde cero fue lo que hizo aparecer lo que no era reproducible: la planilla del padrón RENABAP y el calendario jurisdiccional de AR-C se habían creado a mano en una sesión y no los creaba ningún comando. Ahora los crea el procedimiento. Las dos fuentes que no entregan cierran con su motivo escrito en la fila de su corrida: F04 por validación TLS que no se relaja y M05 por un 403 que no se contesta rotando identidad. Lo que sigue sin poder demostrarse acá es que ese mismo recorrido dé lo mismo desde otra máquina y otra red: para eso hace falta otra máquina y otra red, y lo que queda es el procedimiento cronometrado para que la diferencia se pueda medir cuando alguien lo corra allá."
   },
   "HU-040": {
    "estado": "CERRADA",
