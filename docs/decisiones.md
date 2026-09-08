@@ -513,3 +513,83 @@ Lo que el ciclo no hace es dispararse solo, y el reporte lo dice con esas
 palabras. Es una decisión de despliegue —un planificador del sistema llamando
 `bn monitoreo ciclo` cada hora— y no código que falte; dejarlo implícito haría
 creer que el corpus se actualiza sin que nadie lo pida.
+
+## D-35 · Un renglón no es un párrafo
+
+Varios boletines publican el PDF convertido con un `<p>` por línea visual, y el
+adaptador de PDF armaba un párrafo por cada línea que devuelve la biblioteca. En
+las dos vías, una oración quedaba repartida en cuatro unidades documentales.
+
+Eso rompe la promesa de la evidencia. Una afirmación apunta a una unidad; si la
+unidad es media oración, la cita no cabe adentro y la afirmación queda colgada
+de un fragmento que no dice lo que se afirma. De las nueve reglas de la primera
+lectura curada, las nueve citaban texto que no estaba en la unidad citada.
+
+Los renglones se unen con una señal local y sin dos lecturas: el bloque anterior
+no cerró oración y este empieza a mitad de frase —con minúscula, con un
+paréntesis corto que cierra enseguida, o porque el anterior cortó en una palabra
+que ninguna oración puede terminar—. Nunca se une si el bloque abre estructura,
+ni si es un correo o una dirección web.
+
+Se probó antes decidirlo por documento, midiendo qué proporción de bloques
+termina en punto. Eso confundía una guía telefónica con una norma cortada en
+renglones: en las dos casi ningún bloque termina en punto, y unía el mail de una
+defensoría con el interno de la de al lado.
+
+**Consecuencia:** una unidad puede cruzar el corte de página, así que el párrafo
+lleva también dónde termina. Una cita que dice «página 4» cuando la frase sigue
+en la 5 manda a buscar donde no está.
+
+## D-36 · Una cita que no está en la unidad que dice citar no es una cita
+
+Que la lectura jurídica de una norma sea correcta lo decide una persona. Que el
+texto citado exista donde se dice que existe, no: es lo único que una máquina
+puede verificar sola de una lectura curada, y por eso se verifica siempre.
+
+El cargador compara el texto literal de cada regla y de cada plazo contra la
+unidad que su evidencia señala, con los espacios normalizados —el boletín corta
+las líneas donde le queda y eso no cambia lo que dice— y falla si no está.
+Cualquier otra diferencia sí importa: una cita que resume, que elide con puntos
+suspensivos o que le agrega un punto final a una oración que seguía deja de ser
+una cita del texto capturado.
+
+Con el control puesto aparecieron cuatro citas que no eran citas. Una de ellas
+reproduce ahora «Una vezentregado» sin el espacio, porque así lo publica la
+fuente: corregir la errata haría que la cita dejara de coincidir con el texto
+capturado, que es lo único contra lo que se puede verificar.
+
+**Consecuencia:** cambiar la segmentación rompe las lecturas curadas, a propósito.
+El error dice en qué unidad sí está el texto, que distingue los dos casos —la
+cita se movió porque cambió la segmentación, o no está en ninguna parte—.
+
+## D-37 · Aprobar los campos después de publicar no sirve de nada
+
+La publicación es lo que promueve las afirmaciones a `PUBLISHED`, y la API sirve
+sólo las publicadas. Publicar antes de aprobar deja la versión publicada y sus
+afirmaciones aprobadas para siempre fuera de ese release: la ficha se sirve con
+versiones servibles y sin una sola cita, que es indistinguible de una norma sin
+respaldo.
+
+No se prohíbe: una versión puede no tener nada informado que aprobar, y
+bloquearla obligaría a aprobar algo para poder publicar. Lo que no se hace es en
+silencio.
+
+**Consecuencia:** publicar avisa cuando una versión sale con todas sus
+afirmaciones sin aprobar, y dice cómo se arregla. Revertir el release devuelve
+las versiones a aprobadas sin borrar nada: borrarlo dejaría a los consumidores
+citando fragmentos que ya no se pueden explicar.
+
+## D-38 · Lo que se recibe no siempre es dinero
+
+La beca de comedor no paga un importe: da de comer. La ordenanza que la crea no
+fija el valor de la ración —sale de la licitación de cada distrito— y lo único
+que fija es que la ración del alumno no becado no puede costar más que la del
+becado, que es una relación entre dos precios y no la cuantía del beneficio.
+
+Guardarla como fórmula habría obligado a inventar un número, y el número es
+justamente lo que la norma no da.
+
+**Consecuencia:** la cuantía se guarda como prestación en especie, con la
+descripción de lo que se recibe. Un monto fijo, en cambio, se rechaza con su
+motivo hasta que haya un caso real: escribir ese camino a ciegas sería adivinar
+cómo se guarda un número que después se sirve como «lo que vas a cobrar».
