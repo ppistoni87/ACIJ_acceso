@@ -459,3 +459,41 @@ def test_una_lectura_sin_su_norma_no_impide_cargar_las_demas(conexion: Connectio
     for bloqueada in bloqueadas:
         assert any("no se cargó" in a for a in bloqueada.avisos)
     assert any(r.beneficio_id is not None for r in resultados)
+
+
+def test_corregir_una_cita_no_deja_atras_la_regla_vieja(
+    conexion: Connection, norma, tmp_path
+) -> None:
+    """Las reglas se reconocen por su texto literal.
+
+    Corregir una cita —recortarla donde termina la causal, sacarle unos puntos
+    suspensivos— crea una regla nueva y deja la anterior en la base. Nadie la
+    vuelve a escribir en la lectura y nadie la borra: queda una regla candidata
+    que ningún archivo curado reclama, citable como cualquier otra.
+    """
+    lectura = json.loads(LECTURA.read_text())
+    curador = CuradorDeBeneficios(conexion)
+    curador.cargar(LECTURA)
+
+    corregida = json.loads(LECTURA.read_text())
+    original = corregida["reglas"][0]["texto_literal"]
+    corregida["reglas"][0]["texto_literal"] = original[: len(original) // 2].strip()
+    ruta = tmp_path / "corregida.json"
+    ruta.write_text(json.dumps(corregida, ensure_ascii=False), encoding="utf-8")
+
+    resultado = curador.cargar(ruta)
+
+    assert any("SUPERSEDED" in aviso for aviso in resultado.avisos)
+    estados = dict(
+        conexion.execute(
+            text("SELECT estado_revision, count(*) FROM reglas GROUP BY estado_revision")
+        ).all()
+    )
+    assert estados["SUPERSEDED"] == 1
+    assert estados["CANDIDATE"] == len(lectura["reglas"])
+    # No se borra: sigue explicando qué se afirmaba antes de corregir la cita.
+    conservada = conexion.execute(
+        text("SELECT texto_literal, alcance FROM reglas WHERE estado_revision = 'SUPERSEDED'")
+    ).one()
+    assert conservada.texto_literal == original
+    assert "ya no contiene esta regla" in conservada.alcance

@@ -97,6 +97,9 @@ class CuradorDeBeneficios:
             resultado.reglas += 1
             resultado.reglas_sin_formalizar += int(sin_formalizar)
         self._dependencias_entre_reglas(lectura.get("reglas", ()), claves)
+        self._retirar_reglas_que_la_lectura_ya_no_tiene(
+            version_id, lectura.get("reglas", ()), resultado
+        )
 
         if lectura.get("cuantia"):
             self._cuantia(version_id, lectura["cuantia"], doc_version_id, unidades)
@@ -429,6 +432,65 @@ class CuradorDeBeneficios:
                 },
             )
         return regla_id, sin_formalizar
+
+    def _retirar_reglas_que_la_lectura_ya_no_tiene(
+        self, version_id: uuid.UUID, reglas, resultado: ResultadoCuracion
+    ) -> None:
+        """Una cita corregida no deja atrás la versión vieja de la regla.
+
+        Las reglas se reconocen por su texto literal, así que corregir una cita
+        —recortarla donde termina la causal, sacarle unos puntos suspensivos—
+        crea una regla nueva y deja la anterior en la base. Nadie la vuelve a
+        escribir en la lectura y nadie la borra: queda una regla candidata que
+        ningún archivo curado reclama, citable como cualquier otra.
+
+        No se borra: se marca SUPERSEDED, que es lo que el vocabulario tiene
+        para esto. Lo que ya pasó por revisión no se toca por editar un archivo
+        —retirar una regla aprobada es una decisión de revisión, no una
+        consecuencia de guardar un JSON— y se avisa para que alguien lo mire.
+        """
+        vigentes = [" ".join(r["texto_literal"].split()) for r in reglas]
+        sobrantes = (
+            self.conexion.execute(
+                text(
+                    "SELECT id, estado_revision, texto_literal FROM reglas "
+                    " WHERE beneficio_version_id = :bv "
+                    "   AND regexp_replace(btrim(texto_literal), '\\s+', ' ', 'g') "
+                    "       <> ALL(:vigentes)"
+                ),
+                {"bv": version_id, "vigentes": vigentes or [""]},
+            )
+            .mappings()
+            .all()
+        )
+        retiradas = 0
+        for sobrante in sobrantes:
+            if sobrante["estado_revision"] != EstadoRevision.CANDIDATE.value:
+                resultado.avisos.append(
+                    f"La regla «{sobrante['texto_literal'][:60]}…» ya no está en la lectura y "
+                    f"está en {sobrante['estado_revision']}: no se retira sola. Retirar una "
+                    "regla que pasó por revisión es una decisión de revisión."
+                )
+                continue
+            self.conexion.execute(
+                text(
+                    "UPDATE reglas SET estado_revision = :estado, alcance = :motivo  WHERE id = :id"
+                ),
+                {
+                    "estado": EstadoRevision.SUPERSEDED.value,
+                    "motivo": (
+                        "La lectura curada ya no contiene esta regla: su cita se corrigió o se "
+                        "quitó. Se conserva el texto para poder explicar qué se afirmaba antes."
+                    ),
+                    "id": sobrante["id"],
+                },
+            )
+            retiradas += 1
+        if retiradas:
+            resultado.avisos.append(
+                f"{retiradas} regla(s) quedaron fuera de la lectura y pasaron a SUPERSEDED. "
+                "No se borran: siguen explicando qué se afirmaba antes de corregir la cita."
+            )
 
     def _dependencias_entre_reglas(self, reglas, claves: dict[str, uuid.UUID]) -> None:
         """Una excepción sabe de qué regla es excepción.

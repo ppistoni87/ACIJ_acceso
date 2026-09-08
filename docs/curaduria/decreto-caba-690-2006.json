@@ -1,0 +1,288 @@
+{
+ "schema_version": "1.0",
+ "norma": {
+  "external_id": "normativaba:86704:actualizado",
+  "referencia": "Decreto CABA 690/2006",
+  "rol": "CREA"
+ },
+ "nota": "Lectura curada del subsidio del programa Atención para Familias en Situación de Calle, creado por el Decreto CABA 690/06. Es el programa que la Ley CABA 6935/2025 continúa, y las dos normas dicen cosas distintas sobre cuál rige: la Ley 6935 declara en su artículo 1 que el programa «se regirá exclusivamente por las disposiciones de la presente Ley», y su cláusula transitoria dice que hasta que esa Ley se reglamente siguen aplicándose las disposiciones del Decreto 690/06. Cuál de las dos rige hoy depende de si la Ley 6935 fue reglamentada, y eso no está en el corpus. Queda declarado y sin resolver: elegir una cambiaría el monto, los requisitos y las causales de baja que se le informan a alguien que está en la calle. Todo entra como candidato.",
+ "beneficio": {
+  "codigo": "CABA.SUBSIDIO-SITUACION-DE-CALLE",
+  "nombre": "Subsidio del programa Atención para Familias en Situación de Calle",
+  "familia": "HABITACIONAL",
+  "linea": "PRESTACION_ECONOMICA",
+  "jurisdiccion": "AR-C",
+  "naturaleza": "PRESTACION_MONETARIA",
+  "descripcion": "Subsidio para asistir a familias o personas solas en situación de calle, con fines exclusivamente habitacionales, junto con orientación en la búsqueda de soluciones a su problemática habitacional. Se paga en cuotas mensuales iguales y consecutivas y la autoridad de aplicación puede ampliarlo cuando la situación que lo motivó persiste.",
+  "unidad_beneficiaria": "HOGAR",
+  "modalidad": "TRANSFERENCIA",
+  "frecuencia": "MENSUAL",
+  "requiere_solicitud": true,
+  "ruta_evidencia": "articulo-3"
+ },
+ "poblaciones": [
+  {
+   "codigo": "CABA.FAMILIA-EN-SITUACION-DE-CALLE",
+   "nombre": "Familias o personas solas en situación de calle",
+   "definicion": "Familias o personas solas en inminente situación de desamparo habitacional, o transitoriamente sin vivienda ni refugio por desalojo u otras causas, que reúnan las condiciones del artículo 8.",
+   "rol_persona": "GRUPO_FAMILIAR",
+   "alcance": "El decreto asiste al grupo, no a una persona: la composición de la familia entra en el monto y los requisitos se miden sobre el hogar. Quien percibe es una sola persona del grupo, y eso lo decide el artículo 9.",
+   "ruta_evidencia": "articulo-4"
+  },
+  {
+   "codigo": "CABA.JEFE-O-JEFA-DE-FAMILIA",
+   "nombre": "Jefe o jefa de familia",
+   "definicion": "Persona del grupo familiar en quien recae la titularidad del subsidio; en familias biparentales, preferentemente la mujer.",
+   "rol_persona": "TITULAR",
+   "alcance": "Es quien cobra y quien asume las obligaciones del artículo 12 y las corresponsabilidades del artículo 13. Las condiciones de acceso, en cambio, se miden sobre el hogar entero.",
+   "ruta_evidencia": "articulo-9"
+  }
+ ],
+ "reglas": [
+  {
+   "clave": "SITUACION-DE-CALLE",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-11",
+   "texto_literal": "a) encontrarse en \"situación de calle\" de conformidad con lo establecido en el artículo 3° y con las restricciones dispuestas por el artículo 4° del presente decreto;",
+   "descripcion": "Encontrarse en situación de calle según los artículos 3 y 4 del decreto.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "hogar_en_situacion_de_calle"
+   }
+  },
+  {
+   "clave": "RESIDENCIA-CABA-1-ANIO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-11",
+   "texto_literal": "b) ser residente de la Ciudad Autónoma de Buenos Aires con una antigüedad mínima de un (1) año;",
+   "descripcion": "Residir en la Ciudad Autónoma de Buenos Aires con una antigüedad mínima de un año.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "compare",
+    "field": "antiguedad_residencia_caba",
+    "cmp": ">=",
+    "value": 1,
+    "unit": "anios_cumplidos"
+   }
+  },
+  {
+   "clave": "INGRESOS-BAJO-LA-CANASTA-ALIMENTARIA",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-11",
+   "texto_literal": "c) poseer ingresos menores al monto resultante del índice correspondiente a la canasta básica alimentaria, elaborada mensualmente por el INDEC;",
+   "descripcion": "Tener ingresos menores al índice de la canasta básica alimentaria del INDEC.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "compare",
+    "field": "ingreso_mensual_del_hogar",
+    "cmp": "<",
+    "parameter": "AR.CBA",
+    "unit": "ARS"
+   },
+   "parametros": [
+    {
+     "codigo": "AR.CBA",
+     "rol": "UMBRAL"
+    }
+   ],
+   "requiere_revision": true,
+   "motivo_revision": "El umbral es la canasta básica alimentaria, que el INDEC publica todos los meses y que depende de la composición del hogar: no es un número, es una función de cuántas personas adultas equivalentes hay. El AST compara contra el parámetro y no lo calcula; mientras el parámetro no tenga valor aprobado para el período consultado y para ese hogar, la regla devuelve desconocido en vez de excluir a alguien con una canasta de otro mes. Además el decreto dice «canasta básica alimentaria» y no «canasta básica total», que es un umbral más alto: la diferencia decide quién entra."
+  },
+  {
+   "clave": "DOCUMENTACION-DE-LA-REGLAMENTACION",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-11",
+   "texto_literal": "d) presentar la documentación exigida por las normas reglamentarias del presente decreto, a fin de acreditar los requisitos establecidos en el presente artículo;",
+   "descripcion": "Presentar la documentación que exijan las normas reglamentarias para acreditar los requisitos.",
+   "requiere_revision": true,
+   "motivo_revision": "El decreto remite a su reglamentación y no dice qué documentos son. No hay condición que escribir: enumerar los documentos que se piden en la práctica sería afirmar como exigencia normativa algo que esta norma no exige, y a alguien en situación de calle un documento de más lo deja afuera."
+  },
+  {
+   "clave": "INSCRIPCION-EN-EL-REGISTRO-UNICO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-11",
+   "texto_literal": "e) estar inscriptos en el Registro Único de Beneficiarios.",
+   "descripcion": "Estar inscripto en el Registro Único de Beneficiarios.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "inscripto_en_registro_unico_de_beneficiarios"
+   }
+  },
+  {
+   "clave": "TITULARIDAD-PREFERENTE-DE-LA-MUJER",
+   "categoria": "PRIORIDAD",
+   "ruta_evidencia": "articulo-9",
+   "texto_literal": "Artículo 9° - La titularidad del subsidio recaerá en los jefes o jefas de familia, salvo que se trate de familias biparentales, en cuyo caso recaerá preferentemente en la mujer.",
+   "descripcion": "La titularidad recae en los jefes o jefas de familia; en familias biparentales, preferentemente en la mujer.",
+   "requiere_revision": true,
+   "motivo_revision": "«Preferentemente» no es «obligatoriamente»: la norma expresa una preferencia y no una condición que se cumpla o no se cumpla. Formalizarla como regla ejecutable la convertiría en un requisito —y una solicitud a nombre del varón quedaría rechazada por algo que el decreto no prohíbe—. Se conserva el texto y la preferencia queda declarada."
+  },
+  {
+   "clave": "DESTINO-HABITACIONAL-DEL-SUBSIDIO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-10",
+   "texto_literal": "El subsidio que se otorgue puede ser destinado para: a) cubrir gastos de alojamiento, b) cubrir toda índole de gastos emergentes, en los casos en que a los beneficiarios del presente programa, se les otorgue un crédito hipotecario del Instituto de Vivienda de la Ciudad Autónoma de Buenos Aires, o requieran del mismo para la obtención de una solución habitacional definitiva.",
+   "descripcion": "El subsidio se destina a gastos de alojamiento o a gastos emergentes ligados a un crédito hipotecario del Instituto de Vivienda para una solución habitacional definitiva.",
+   "requiere_revision": true,
+   "motivo_revision": "El artículo dice a qué puede destinarse el dinero, no qué tiene que cumplir una persona para cobrarlo. Es una restricción de destino que se verifica después, con los comprobantes del artículo 12: tratarla como condición de acceso pediría acreditar el gasto antes de recibir el dinero con el que se hace."
+  },
+  {
+   "clave": "ACREDITAR-EL-DESTINO",
+   "categoria": "SUSPENSION",
+   "ruta_evidencia": "articulo-12",
+   "texto_literal": "b) acreditar que el subsidio otorgado ha sido destinado a la obtención de una solución habitacional, mediante los comprobantes que disponga la autoridad de aplicación;",
+   "descripcion": "El titular acredita, con los comprobantes que disponga la autoridad de aplicación, que el subsidio se destinó a obtener una solución habitacional.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "titular_acredita_destino_habitacional"
+   },
+   "requiere_revision": true,
+   "motivo_revision": "El decreto pone la obligación y no dice qué pasa si no se cumple: no la nombra entre las causales de caducidad del artículo 14 ni la asocia a una suspensión. Se clasifica como suspensión porque es lo que la práctica sugiere y por eso mismo hay que confirmarlo: incumplir una obligación y perder el beneficio no son lo mismo, y el texto no los une."
+  },
+  {
+   "clave": "CORRESPONSABILIDADES-DE-SALUD-Y-EDUCACION",
+   "categoria": "SUSPENSION",
+   "ruta_evidencia": "articulo-13",
+   "texto_literal": "Los/las titulares del beneficio asumen las siguientes corresponsabilidades: a. En materia de protección de la salud:",
+   "descripcion": "El titular asume corresponsabilidades de control de salud y de escolaridad, con periodicidad según la edad de cada integrante del hogar.",
+   "requiere_revision": true,
+   "motivo_revision": "Son trece obligaciones distintas con periodicidades distintas por edad —control mensual de la embarazada, quincenal del recién nacido, anual del adulto mayor, certificado escolar cada tres meses—. Cada una es una condición separada sobre una persona distinta del hogar, y comprimirlas en un solo booleano diría «cumple» o «no cumple» sin decir qué. Se conserva el texto entero hasta que la revisión decida cómo se modelan y, sobre todo, qué se responde cuando una sola de las trece no se cumple."
+  },
+  {
+   "clave": "CADUCIDAD-POR-CESE-DE-LAS-CAUSAS",
+   "categoria": "CESE",
+   "ruta_evidencia": "articulo-14",
+   "texto_literal": "a) cesación de las causas que dieron origen al otorgamiento del subsidio",
+   "descripcion": "Caduca el beneficio cuando cesan las causas que dieron origen a su otorgamiento.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "not",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "hogar_en_situacion_de_calle"
+     }
+    ]
+   },
+   "requiere_revision": true,
+   "motivo_revision": "«Cesación de las causas» se leyó como que el hogar dejó de estar en situación de calle, que es la causa que el artículo 3 declara. No es la única lectura posible: el subsidio se otorga para conseguir una solución habitacional, así que conseguirla es a la vez el objetivo del programa y, en esta lectura, la causal de su baja. Decidir eso es una lectura jurídica, no una inferencia de texto."
+  },
+  {
+   "clave": "CADUCIDAD-POR-INCUMPLIR-EL-ARTICULO-PRECEDENTE",
+   "categoria": "CESE",
+   "ruta_evidencia": "articulo-14",
+   "texto_literal": "b) que el grupo familiar no cumpla con los requisitos establecidos en el artículo precedente.",
+   "descripcion": "Caduca el beneficio cuando el grupo familiar no cumple con los requisitos del artículo precedente.",
+   "requiere_revision": true,
+   "motivo_revision": "El artículo precedente al 14 es el 13, que no tiene «requisitos» sino corresponsabilidades de salud y educación; los requisitos están en el artículo 11. La remisión no cierra, y las dos lecturas dan resultados opuestos: por el 13, un certificado escolar entregado tarde da de baja el subsidio de una familia en la calle; por el 11, la baja procede cuando el hogar deja de reunir las condiciones de acceso. No se elige ninguna: se declara la ambigüedad con el texto a la vista."
+  },
+  {
+   "clave": "NO-TRABAJO-INFANTIL",
+   "categoria": "SALVAGUARDA",
+   "ruta_evidencia": "articulo-15",
+   "texto_literal": "La autoridad de aplicación debe informar al beneficiario, que es condición necesaria para el mantenimiento del beneficio, que los miembros de su grupo familiar menores de quince (15) años, no realicen actividades que la Ciudad de Buenos Aires ha categorizado como trabajo infantil en la Ley N° 937, conforme declaración jurada que como Anexo forma parte del presente.",
+   "descripcion": "Es condición de mantenimiento del beneficio que los menores de quince años del hogar no realicen las actividades que la Ley 937 categoriza como trabajo infantil.",
+   "requiere_revision": true,
+   "motivo_revision": "La condición está declarada y su contenido no: qué cuenta como trabajo infantil lo define la Ley CABA 937, que no está en el corpus, y la acreditación es una declaración jurada que vive en un anexo del decreto que tampoco está. Además el artículo obliga a la autoridad a informarlo, lo que hace que la condición dependa de un acto del propio organismo. Ninguna de las tres cosas se completa por analogía."
+  },
+  {
+   "clave": "DERIVACION-TRANSITORIA-Y-ADELANTO",
+   "categoria": "SALVAGUARDA",
+   "ruta_evidencia": "articulo-8",
+   "texto_literal": "En aquellos casos en que prima facie la autoridad de aplicación constate que un grupo familiar o persona sola se encuentra en situación de calle y hasta tanto pueda verificar las condiciones y requisitos establecidos en los artículos 7° y 11 respectivamente, o hasta que se efectivice la percepción del subsidio, puede derivar transitoriamente a la familia a paradores u otras alternativas habitacionales transitorias, o bien otorgarles una suma de hasta pesos cuatrocientos cincuenta ($ 450) en concepto de adelanto de la primera cuota.",
+   "descripcion": "Constatada prima facie la situación de calle y hasta verificar las condiciones y requisitos, la autoridad puede derivar a paradores u otras alternativas transitorias, o adelantar la primera cuota.",
+   "requiere_revision": true,
+   "motivo_revision": "Es la salvaguarda del decreto: permite responder antes de terminar de verificar. No se formaliza como condición porque no la cumple la persona sino la autoridad —«puede», no «debe»—, y escribir un AST que devuelva verdadero haría creer que el adelanto está garantizado cuando el texto lo deja a criterio del organismo. Omitirla sería peor: sin ella, la lectura diría que no hay nada hasta que termine la verificación."
+  },
+  {
+   "clave": "SUJETO-A-DISPONIBILIDAD-PRESUPUESTARIA",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-16",
+   "texto_literal": "Artículo 16 - El Ministerio de Derechos Humanos y Sociales, se encuentra facultado para el dictado de la reglamentación del presente decreto, y de aquellos actos administrativos que resulten necesarios para su correcta implementación.",
+   "descripcion": "La reglamentación del decreto está a cargo del Ministerio de Derechos Humanos y Sociales.",
+   "requiere_revision": true,
+   "motivo_revision": "Se conserva porque explica por qué varios campos de esta lectura quedan sin informar: el decreto delega en la reglamentación la documentación exigida, la acreditación de las corresponsabilidades y el procedimiento. No es una condición de acceso y no se formaliza como tal."
+  }
+ ],
+ "cuantia": {
+  "tipo": "FORMULA",
+  "ruta_evidencia": "articulo-5",
+  "formula_version": "decreto-690-06-art5@1",
+  "unidad_beneficiaria": "HOGAR",
+  "descripcion": "Hasta pesos dos mil setecientos ($ 2.700), en hasta seis cuotas iguales y consecutivas de hasta cuatrocientos cincuenta ($ 450), ampliable por la autoridad de aplicación en hasta mil ochocientos ($ 1.800) más, en hasta cuatro cuotas de cuatrocientos cincuenta ($ 450), cuando persista la situación que motivó la entrega. El monto concreto lo determina la autoridad con las condiciones del artículo 7.",
+  "parametros": [
+   {
+    "codigo": "CABA.SUBSIDIO-HABITACIONAL-CUOTA",
+    "rol": "REFERENCIA"
+   },
+   {
+    "codigo": "CABA.SUBSIDIO-HABITACIONAL-TOPE",
+    "rol": "REFERENCIA"
+   }
+  ],
+  "requiere_revision": true,
+  "motivo_revision": "Los importes son de 2006 y hace mucho que no son los que se pagan: cuatrocientos cincuenta pesos por cuota hoy no alcanzan para nada, y decirle a alguien que va a cobrar eso es peor que decirle que no se sabe. Los montos vigentes salen de resoluciones del ministerio —el propio texto registra que está integrado por la Resolución 381/2020— que no están en el corpus. La cuantía queda como fórmula con sus parámetros de referencia y sin valor. Además el artículo dice «hasta»: es un techo, no un importe, y el monto de cada hogar lo determina la autoridad con las seis condiciones del artículo 7."
+ },
+ "plazos": [
+  {
+   "clave": "CUOTAS-DEL-SUBSIDIO",
+   "tipo": "DURACION_BENEFICIO",
+   "ruta_evidencia": "articulo-5",
+   "texto_literal": "el que puede ser otorgado en seis (6) cuotas iguales y consecutivas de hasta pesos cuatrocientos cincuenta ($ 450) cada una, pudiendo la autoridad de aplicación ampliar el presente subsidio inclusive en una suma adicional de pesos mil ochocientos ($ 1.800), pagadera en hasta cuatro (4) cuotas iguales y consecutivas de pesos cuatrocientos cincuenta ($ 450) cada una, en los casos particulares que, a criterio de aquélla, ameriten la mencionada extensión, en orden a la persistencia de la situación que en su momento, motivara la entrega del beneficio.",
+   "cantidad": 6,
+   "unidad": "meses",
+   "tipo_dia": "NO_INFORMADO",
+   "evento_inicio": "otorgamiento del subsidio",
+   "requiere_revision": true,
+   "motivo_revision": "El decreto dice seis cuotas «iguales y consecutivas» y no dice cada cuánto se pagan; el modelo guarda una cantidad y una unidad, y se cargó en meses porque es la periodicidad que el programa declara como mensual. Tampoco dice si el plazo corre en días corridos o hábiles, así que el tipo de día queda no informado. Y la ampliación de hasta cuatro cuotas más no se guarda como plazo: depende de una decisión de la autoridad, no del paso del tiempo."
+  },
+  {
+   "clave": "CERTIFICADO-ESCOLAR-TRIMESTRAL",
+   "tipo": "PRESENTACION_DOCUMENTAL",
+   "ruta_evidencia": "articulo-13",
+   "texto_literal": "presentando certificado de asistencia cada tres (3) meses. 3. Cumplir con la asistencia y permanencia de los/as niños/as o adolescentes de seis (6) a dieciocho (18) años de edad en la escuela, procurando su promoción al año siguiente, certificando asistencia cada tres (3) meses. En todos los casos, el cumplimiento de estas corresponsabilidades se acreditará conforme lo prevea la reglamentación correspondiente.",
+   "cantidad": 3,
+   "unidad": "meses",
+   "tipo_dia": "NO_INFORMADO",
+   "evento_inicio": "presentación anterior del certificado de asistencia",
+   "requiere_revision": true,
+   "motivo_revision": "El decreto fija la periodicidad y no el punto de partida: no dice desde cuándo se cuentan los tres meses —desde el otorgamiento, desde el inicio del ciclo lectivo o desde la entrega anterior—. Se tomó la entrega anterior porque es lo que hace que la obligación sea periódica, y queda dicho porque de ese punto depende si una entrega llegó tarde."
+  }
+ ],
+ "campos_no_informados": [
+  {
+   "campo": "canales",
+   "motivo": "El decreto nombra a la Dirección General de Fortalecimiento Familiar y Socio-Comunitaria como autoridad de aplicación y no dice dónde ni cómo se solicita el subsidio. Para una persona en situación de calle, dónde ir es la mitad de la respuesta, y ponerlo desde el conocimiento general sería mandarla a una dirección que esta norma no da."
+  },
+  {
+   "campo": "criterios_revocacion",
+   "motivo": "El artículo 14 enumera dos causales de caducidad y una de ellas remite al «artículo precedente», que no tiene requisitos. Ninguna dice qué pasa con las cuotas ya percibidas, si la baja es definitiva o si el hogar puede volver a solicitar. Caducidad, suspensión y revocación tienen efectos distintos sobre lo cobrado y el texto no elige entre ellos."
+  }
+ ],
+ "dependencias": [
+  {
+   "referencia": "Ley CABA 6935/2025",
+   "motivo": "Su artículo 1 declara que el programa se rige exclusivamente por ella, y su cláusula transitoria que hasta que se reglamente siguen aplicándose las disposiciones de este decreto. La norma está en el corpus y lo que falta es el hecho: si la Ley 6935 fue reglamentada. Sin eso, cuál de las dos rige hoy no se puede afirmar."
+  },
+  {
+   "referencia": "Ley CABA 937",
+   "motivo": "El artículo 15 remite a ella para saber qué actividades cuentan como trabajo infantil, que es la condición de mantenimiento del beneficio. Sin la norma en el corpus, la condición queda declarada y su contenido no."
+  },
+  {
+   "referencia": "Anexo del Decreto 690/06 (declaración jurada de trabajo infantil)",
+   "motivo": "El artículo 15 dice que la declaración jurada forma parte del decreto como anexo. El anexo no viene en el texto capturado —la ficha remite a un archivo aparte—, así que la vía de acreditación queda nombrada y no leída."
+  },
+  {
+   "referencia": "Resolución 381/2020 del Ministerio de Desarrollo Humano y Hábitat",
+   "motivo": "El propio registro de la norma la declara como integradora. Es de donde salen los montos vigentes, que el artículo 5 fijó en 2006. Sin ella, la cuantía queda declarada y sin valor."
+  },
+  {
+   "referencia": "Canasta básica alimentaria del INDEC",
+   "motivo": "El artículo 11 inciso c) la usa como umbral de ingresos. El parámetro existe en el corpus; mientras no tenga un valor aprobado para el período consultado y para la composición del hogar, la regla que lo compara devuelve desconocido."
+  }
+ ]
+}

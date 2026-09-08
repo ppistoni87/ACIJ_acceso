@@ -422,9 +422,10 @@
     "docs/curaduria/ley-caba-6935.json",
     "docs/curaduria/ley-caba-2917.json",
     "docs/curaduria/ley-nacional-24714-auh.json",
+    "docs/curaduria/decreto-caba-690-2006.json",
     "src/backend_normativo/curacion/beneficios.py"
    ],
-   "falta": "La población entera se corre con un comando: `scripts/poblar_corpus.sh` es la única definición del procedimiento y `scripts/corrida_limpia.sh` lo ejercita sobre una base que se crea vacía. Dos corridas limpias seguidas dieron lo mismo: 84 fuentes en el catálogo, 69 capturas, 992 unidades documentales, 3 beneficios curados, en 6 min 40 s. Están el catálogo nacional entero (423.718 normas), el padrón RENABAP (6.467 barrios) y los tres directorios. Tres beneficios están curados desde el texto capturado —el apoyo habitacional de la Ley CABA 6935, el Régimen de Becas de la Ley CABA 2917 y la Asignación Universal por Hijo de la Ley nacional 24.714—, con 34 reglas, 8 poblaciones, 5 plazos y 3 cuantías, cada pieza atada a su artículo y verificada contra el texto. Falta curar el resto del corpus con texto: el trabajo es de lectura jurídica sobre cada norma, no de más ingesta.",
+   "falta": "La población entera se corre con un comando: `scripts/poblar_corpus.sh` es la única definición del procedimiento y `scripts/corrida_limpia.sh` lo ejercita sobre una base que se crea vacía. Dos corridas limpias seguidas dieron lo mismo: 84 fuentes en el catálogo, 69 capturas, 992 unidades documentales, en 6 min 40 s. Están el catálogo nacional entero (423.718 normas), el padrón RENABAP (6.467 barrios) y los tres directorios. Cuatro beneficios están curados desde el texto capturado: el apoyo habitacional de la Ley CABA 6935, el Régimen de Becas de la Ley CABA 2917, la Asignación Universal por Hijo de la Ley nacional 24.714 y el subsidio para familias en situación de calle del Decreto CABA 690/06 —que es el programa que la Ley 6935 continúa, y las dos dicen cosas distintas sobre cuál rige: la tensión queda declarada y sin resolver—. Son 48 reglas vigentes, 10 poblaciones, 7 plazos y 4 cuantías, cada pieza atada a su artículo y verificada contra el texto. Falta curar el resto del corpus con texto: el trabajo es de lectura jurídica sobre cada norma, no de más ingesta.",
    "comandos": [
     "bash scripts/poblar_corpus.sh",
     "bn ingesta importar-infoleg",
