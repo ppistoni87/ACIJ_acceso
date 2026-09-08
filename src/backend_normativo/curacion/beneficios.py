@@ -63,6 +63,12 @@ class ResultadoCuracion:
     dependencias: int = 0
     conflictos: int = 0
     vacios: int = 0
+    no_cargada: str | None = None
+    """Nombre del archivo que no se pudo cargar, si este resultado es un fallo."""
+    falta_la_norma: bool = False
+    """El fallo es que la norma citada no está en el corpus, no que la lectura
+    esté mal. Son dos cosas distintas: la primera es una fuente que no entregó y
+    la segunda es un defecto que hay que arreglar."""
     avisos: list[str] = field(default_factory=list)
 
 
@@ -977,6 +983,8 @@ def cargar_todas(conexion: Connection, raiz: pathlib.Path | None = None) -> list
             resultados.append(
                 ResultadoCuracion(
                     avisos=[f"{ruta.name} no se cargó: {error}"],
+                    no_cargada=ruta.name,
+                    falta_la_norma="No hay una versión normativa" in str(error),
                 )
             )
     return resultados

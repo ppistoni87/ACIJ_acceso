@@ -1008,6 +1008,22 @@ def curacion_beneficios(
         for aviso in resultado.avisos:
             typer.echo(f"  aviso: {aviso}")
 
+    # Una lectura que no cargó tiene que verse en la última línea, no perdida
+    # entre los avisos de las que sí: quien corre esto en una población entera
+    # filtra la salida y se queda con los totales.
+    sin_cargar = [r for r in resultados if r.no_cargada]
+    if sin_cargar:
+        typer.echo(
+            f"Lecturas que no cargaron: {len(sin_cargar)} "
+            f"({', '.join(r.no_cargada or '' for r in sin_cargar)})"
+        )
+    defectuosas = [r for r in sin_cargar if not r.falta_la_norma]
+    if defectuosas:
+        # Que a una lectura le falte su norma es una fuente que no entregó y se
+        # informa. Que la lectura esté mal es un defecto, y terminar en cero lo
+        # deja pasar en cualquier procedimiento que mire el código de salida.
+        raise typer.Exit(1)
+
 
 @curacion.command("anexos")
 def curacion_anexos(

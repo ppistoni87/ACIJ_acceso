@@ -193,6 +193,18 @@ escribir_reporte() {
       echo "> lectura que cargó a medias; no se puede leer como evidencia hasta resolverlo."
       echo
     fi
+    # Que la norma esté en el corpus no quiere decir que la lectura haya
+    # entrado: una cita que no encuentra su unidad detiene esa lectura y deja
+    # las demás. Cada lectura cargada ata su beneficio a su norma, así que las
+    # filas de ese vínculo son la cuenta de las que sí entraron.
+    cargadas=$(sql "SELECT count(*) FROM beneficio_normas")
+    if [ "${cargadas}" != "$((lecturas - faltantes))" ]; then
+      echo "> **Faltan lecturas:** ${lecturas} lecturas curadas, ${faltantes} sin su norma en el"
+      echo "> corpus, así que tendrían que haber entrado $((lecturas - faltantes)) y entraron"
+      echo "> ${cargadas}. Las que faltan no son fuentes que no entregaron: son lecturas que la"
+      echo "> carga rechazó, y el motivo está en la salida de \`bn curacion beneficios\`."
+      echo
+    fi
     echo "## Incidencias que abrió la corrida"
     echo
     echo "| Tipo | Cuántas |"

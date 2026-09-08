@@ -161,7 +161,9 @@ $BN plazos calendario "$(date +%Y)" | tail -2
 
 echo
 echo "== Beneficios curados =="
-$BN curacion beneficios | grep -E '^(Beneficio|Poblaciones|Cuantías|Campos)' || true
+# `no se cargó` va en la lista: filtrar solo los totales escondía que una
+# lectura no había entrado, y la corrida seguía como si todo hubiera cargado.
+$BN curacion beneficios | grep -E '^(Beneficio|Poblaciones|Cuantías|Campos|Lecturas)|no se cargó' || true
 
 # Los siete campos se evalúan al final, después de la curación: varios de ellos
 # —población destinataria, criterios, beneficio otorgado— salen de la lectura
