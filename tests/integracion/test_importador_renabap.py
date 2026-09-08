@@ -151,6 +151,46 @@ def test_dos_corridas_del_mismo_padron_no_duplican(conexion: Connection, captura
     assert conexion.execute(text("SELECT count(*) FROM barrios_renabap")).scalar_one() == 2
 
 
+def test_volver_a_capturar_la_misma_planilla_no_crea_otra_version(
+    conexion: Connection, captura
+) -> None:
+    """Reejecutar la población recaptura la planilla y la importa de nuevo.
+
+    La captura es otra fila —es otra descarga— pero los bytes son los mismos, y
+    los mismos bytes son la misma versión del documento. El importador
+    reconocía la repetición solo por la captura, así que en la segunda corrida
+    intentaba insertar una versión con el hash que ya estaba y chocaba contra la
+    restricción que impide duplicarla: la población, documentada como
+    idempotente, se caía al reejecutarla sobre una base ya poblada.
+    """
+    primero = _importar(conexion, captura)
+    sha = conexion.execute(
+        text("SELECT sha256_raw FROM capturas WHERE id = :c"), {"c": captura}
+    ).scalar_one()
+    # La misma planilla, descargada otra vez: captura nueva, mismos bytes.
+    otra = conexion.execute(
+        text(
+            "INSERT INTO capturas (corrida_id, source_url_id, url_final, http_status, mime, "
+            " bytes, sha256_raw, objeto_uri) "
+            "SELECT corrida_id, source_url_id, url_final, 200, mime, bytes, sha256_raw, "
+            "  objeto_uri FROM capturas WHERE id = :c RETURNING id"
+        ),
+        {"c": captura},
+    ).scalar_one()
+
+    segundo = _importar(conexion, otra)
+    assert segundo.barrios_nuevos == 0
+    versiones = conexion.execute(
+        text(
+            "SELECT count(*) FROM documento_versiones dv JOIN documentos d ON d.id = "
+            " dv.documento_id WHERE d.source_id = 'F39' AND dv.hash_texto = :h"
+        ),
+        {"h": sha},
+    ).scalar_one()
+    assert versiones == 1
+    assert primero.padron_version == segundo.padron_version
+
+
 def test_un_barrio_que_sale_del_padron_no_se_borra(conexion: Connection, captura) -> None:
     """La versión vieja sigue diciendo que ese día estaba. Borrarlo haría
     imposible responder qué decía el padrón anterior."""

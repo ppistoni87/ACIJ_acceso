@@ -28,8 +28,8 @@ Una fuente bloqueada no cuenta como poblada.
 | Estado del campo | Cantidad |
 |---|---:|
 | INFORMADO | 4 |
-| NO_INFORMADO_EN_FUENTES_REVISADAS | 40 |
-| PENDIENTE | 40 |
+| NO_INFORMADO_EN_FUENTES_REVISADAS | 36 |
+| PENDIENTE | 44 |
 
 Un campo evaluado sin información no cuenta como valor sustantivo. Cien por
 ciento de evaluación con cero valor sustantivo es un resultado posible y
@@ -40,10 +40,10 @@ aprobado para publicar.
 
 | Severidad | Abiertos |
 |---|---:|
-| HIGH | 97 |
+| HIGH | 104 |
 | INFO | 4490 |
 | LOW | 19 |
-| MEDIUM | 58 |
+| MEDIUM | 64 |
 
 ## (f) Dependencias pendientes
 
@@ -80,15 +80,15 @@ de responder cuánto se cobra.
 
 | Tabla | Filas |
 |---|---:|
-| capturas | 115 |
+| capturas | 211 |
 | documentos | 53 |
 | documento_versiones | 54 |
 | unidades_documentales | 992 |
-| evidencias | 7470 |
+| evidencias | 8220 |
 | normas | 423718 |
 | norma_versiones | 12 |
 | relaciones_normativas | 185 |
 | beneficios | 16 |
-| afirmaciones | 4630 |
+| afirmaciones | 4889 |
 | releases | 2 |
 

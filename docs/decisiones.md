@@ -728,3 +728,26 @@ Cada lectura se carga dentro de un punto de retorno, así que la que falla no
 deja nada. Y el reporte cuenta los beneficios que tienen al menos una regla: uno
 sin ninguna condición no es un beneficio curado, y contarlo era lo que hacía que
 el total tapara el problema.
+
+## D-45 · Idempotente es una propiedad que hay que ejercitar, no declarar
+
+El procedimiento de población dice de sí mismo que es idempotente: reejecutarlo
+revalida las capturas, no duplica versiones y solo reprocesa lo que cambió. Y lo
+era para casi todo, porque casi todo se corría dos veces seguidas mientras se
+construía. El padrón RENABAP no: se importaba una vez por base y nadie lo volvía
+a correr sobre una base que ya lo tenía.
+
+Reejecutar la población sobre la base de desarrollo lo mostró en una línea: la
+planilla se vuelve a descargar, así que la captura es otra fila, pero los bytes
+son los mismos. El importador reconocía la repetición por la captura y no por el
+contenido, intentaba insertar una versión de documento con un hash que ya
+estaba, y la restricción que impide duplicarla detenía la población entera.
+
+**Consecuencia:** los mismos bytes son la misma versión del documento, y así se
+busca. Y la idempotencia se prueba: una segunda captura de la misma planilla no
+crea una versión más.
+
+Vale la pena decir por qué no se había visto. La corrida limpia empieza de cero
+y por eso nunca ejercita la segunda pasada; la base de desarrollo se reejecuta y
+por eso nunca ejercita la primera. Las dos hacen falta, y ninguna de las dos
+sola alcanza.

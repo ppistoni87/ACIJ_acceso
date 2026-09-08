@@ -393,7 +393,15 @@ class CuradorDeAnexos:
     ) -> uuid.UUID:
         selector = f"anexo:{unidad_id}"
         ya = self.conexion.execute(
-            text("SELECT id FROM evidencias WHERE doc_version_id = :v AND selector = :s"),
+            # Puede haber más de una: la evidencia es inmutable y varios
+            # curadores citan la misma unidad con el mismo selector. Se toma la
+            # más antigua para que la elección no dependa del orden de carga;
+            # pedir exactamente una detiene el comando entero por un empate que
+            # no cambia nada de lo que se afirma.
+            text(
+                "SELECT id FROM evidencias WHERE doc_version_id = :v AND selector = :s "
+                " ORDER BY creado_en, id LIMIT 1"
+            ),
             {"v": doc_version_id, "s": selector},
         ).scalar_one_or_none()
         if ya is not None:

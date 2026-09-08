@@ -339,9 +339,28 @@ class ImportadorRenabap:
                 "e": f"renabap:{version}",
             },
         ).scalar_one()
+        sha = self.conexion.execute(
+            text("SELECT sha256_raw FROM capturas WHERE id = :c"), {"c": captura_id}
+        ).scalar_one()
+        # La misma planilla, capturada de nuevo, es la misma versión del
+        # documento aunque la captura sea otra fila: volver a pedirla no la
+        # cambia. Buscar por captura y no por contenido hacía que reejecutar la
+        # población intentara insertar una versión con el mismo hash y chocara
+        # contra la restricción que justamente impide duplicarla, así que el
+        # procedimiento que se documenta como idempotente no lo era.
         ya = self.conexion.execute(
-            text("SELECT id FROM documento_versiones  WHERE documento_id = :d AND captura_id = :c"),
-            {"d": documento_id, "c": captura_id},
+            text(
+                "SELECT id FROM documento_versiones "
+                " WHERE documento_id = :d AND (captura_id = :c "
+                "    OR (hash_texto = :h AND tipo_version = :tv)) "
+                " ORDER BY version LIMIT 1"
+            ),
+            {
+                "d": documento_id,
+                "c": captura_id,
+                "h": sha,
+                "tv": TipoVersionDocumento.NO_DETERMINADO.value,
+            },
         ).scalar_one_or_none()
         if ya is not None:
             return ya
@@ -351,9 +370,6 @@ class ImportadorRenabap:
                 " WHERE documento_id = :d"
             ),
             {"d": documento_id},
-        ).scalar_one()
-        sha = self.conexion.execute(
-            text("SELECT sha256_raw FROM capturas WHERE id = :c"), {"c": captura_id}
         ).scalar_one()
         return self.conexion.execute(
             text(

@@ -50,6 +50,11 @@ from backend_normativo.db.vocabularios import (
     ValidTipo,
 )
 from backend_normativo.ingesta.almacen import AlmacenObjetos
+from backend_normativo.ingesta.versiones import (
+    proxima_version,
+    sha_de_la_captura,
+    version_ya_existente,
+)
 
 JURISDICCION = "AR-C"
 
@@ -440,22 +445,11 @@ class ImportadorDirectorios:
                 "e": external_id,
             },
         ).scalar_one()
-        ya = self.conexion.execute(
-            text("SELECT id FROM documento_versiones WHERE documento_id = :d AND captura_id = :c"),
-            {"d": documento_id, "c": captura_id},
-        ).scalar_one_or_none()
+        sha = sha_de_la_captura(self.conexion, captura_id)
+        ya = version_ya_existente(self.conexion, documento_id, captura_id, sha)
         if ya is not None:
             return ya
-        siguiente = self.conexion.execute(
-            text(
-                "SELECT coalesce(max(version), 0) + 1 FROM documento_versiones "
-                " WHERE documento_id = :d"
-            ),
-            {"d": documento_id},
-        ).scalar_one()
-        sha = self.conexion.execute(
-            text("SELECT sha256_raw FROM capturas WHERE id = :c"), {"c": captura_id}
-        ).scalar_one()
+        siguiente = proxima_version(self.conexion, documento_id)
         return self.conexion.execute(
             text(
                 # `fecha_documento` queda vacía a propósito: la fecha de captura

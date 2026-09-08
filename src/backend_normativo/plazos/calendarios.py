@@ -36,6 +36,11 @@ from backend_normativo.db.vocabularios import (
     TipoVersionDocumento,
 )
 from backend_normativo.ingesta.almacen import AlmacenObjetos
+from backend_normativo.ingesta.versiones import (
+    proxima_version,
+    sha_de_la_captura,
+    version_ya_existente,
+)
 from backend_normativo.plazos.computo import Calendario, Excepcion
 
 SOURCE_ID = "C01"
@@ -325,21 +330,11 @@ def _version_documental(conexion: Connection, captura_id: uuid.UUID, anio: int) 
             "e": f"feriados:{anio}",
         },
     ).scalar_one()
-    ya = conexion.execute(
-        text("SELECT id FROM documento_versiones WHERE documento_id = :d AND captura_id = :c"),
-        {"d": documento_id, "c": captura_id},
-    ).scalar_one_or_none()
+    sha = sha_de_la_captura(conexion, captura_id)
+    ya = version_ya_existente(conexion, documento_id, captura_id, sha)
     if ya is not None:
         return ya
-    siguiente = conexion.execute(
-        text(
-            "SELECT coalesce(max(version), 0) + 1 FROM documento_versiones WHERE documento_id = :d"
-        ),
-        {"d": documento_id},
-    ).scalar_one()
-    sha = conexion.execute(
-        text("SELECT sha256_raw FROM capturas WHERE id = :c"), {"c": captura_id}
-    ).scalar_one()
+    siguiente = proxima_version(conexion, documento_id)
     return conexion.execute(
         text(
             "INSERT INTO documento_versiones (documento_id, captura_id, version, tipo_version, "

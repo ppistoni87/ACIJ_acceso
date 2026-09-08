@@ -201,10 +201,16 @@ class ConstructorRelaciones:
         """
         fragmento = cita.contexto
         hash_fragmento = hashlib.sha256(fragmento.encode("utf-8")).hexdigest()
+        # Puede haber más de una: la evidencia es inmutable y se direcciona por
+        # el contenido, así que dos curadores que citan el mismo fragmento de la
+        # misma unidad escriben filas equivalentes. Se toma la más antigua para
+        # que la elección no dependa del orden en que se hayan cargado; pedir
+        # exactamente una detenía la población entera por un empate que no
+        # cambia nada de lo que se afirma.
         existente = self.conexion.execute(
             text(
                 "SELECT id FROM evidencias WHERE doc_version_id = :dv AND unidad_id = :u "
-                "  AND hash_fragmento = :h"
+                "  AND hash_fragmento = :h ORDER BY creado_en, id LIMIT 1"
             ),
             {"dv": doc_version_id, "u": unidad["id"], "h": hash_fragmento},
         ).scalar_one_or_none()

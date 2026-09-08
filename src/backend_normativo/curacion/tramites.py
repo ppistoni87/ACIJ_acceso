@@ -241,7 +241,15 @@ class CargadorTramites:
 
     def _evidencia(self, doc_version_id: uuid.UUID, orden: int, texto: str) -> uuid.UUID:
         ya = self.conexion.execute(
-            text("SELECT id FROM evidencias WHERE doc_version_id = :d AND selector = :s"),
+            # Puede haber más de una: la evidencia es inmutable y varios
+            # curadores citan la misma unidad con el mismo selector. Se toma la
+            # más antigua para que la elección no dependa del orden de carga;
+            # pedir exactamente una detiene el comando entero por un empate que
+            # no cambia nada de lo que se afirma.
+            text(
+                "SELECT id FROM evidencias WHERE doc_version_id = :d AND selector = :s "
+                " ORDER BY creado_en, id LIMIT 1"
+            ),
             {"d": doc_version_id, "s": f"paso:{orden}"},
         ).scalar_one_or_none()
         if ya is not None:

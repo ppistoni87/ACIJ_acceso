@@ -52,6 +52,11 @@ from backend_normativo.db.vocabularios import (
 )
 from backend_normativo.ingesta.adaptadores.html import decodificar_html
 from backend_normativo.ingesta.almacen import AlmacenObjetos
+from backend_normativo.ingesta.versiones import (
+    proxima_version,
+    sha_de_la_captura,
+    version_ya_existente,
+)
 
 SOURCE_ID = "F44"
 ORGANISMO_NACIONAL = "Defensoría del Pueblo de la Nación"
@@ -672,22 +677,11 @@ class ImportadorDpn:
                 "e": f"dpn:{seccion.lower().replace(' ', '-')}",
             },
         ).scalar_one()
-        ya = self.conexion.execute(
-            text("SELECT id FROM documento_versiones WHERE documento_id = :d AND captura_id = :c"),
-            {"d": documento_id, "c": captura_id},
-        ).scalar_one_or_none()
+        sha = sha_de_la_captura(self.conexion, captura_id)
+        ya = version_ya_existente(self.conexion, documento_id, captura_id, sha)
         if ya is not None:
             return ya
-        siguiente = self.conexion.execute(
-            text(
-                "SELECT coalesce(max(version), 0) + 1 FROM documento_versiones "
-                " WHERE documento_id = :d"
-            ),
-            {"d": documento_id},
-        ).scalar_one()
-        sha = self.conexion.execute(
-            text("SELECT sha256_raw FROM capturas WHERE id = :c"), {"c": captura_id}
-        ).scalar_one()
+        siguiente = proxima_version(self.conexion, documento_id)
         return self.conexion.execute(
             text(
                 "INSERT INTO documento_versiones (documento_id, captura_id, version, "
@@ -720,7 +714,15 @@ class ImportadorDpn:
         # misma oficina y no a la que quedó en ese lugar.
         selector = f"panel[{oficina.jurisdiccion_listada or '?'}] h4:{oficina.nombre}"
         ya = self.conexion.execute(
-            text("SELECT id FROM evidencias WHERE doc_version_id = :d AND selector = :s"),
+            # Puede haber más de una: la evidencia es inmutable y varios
+            # curadores citan la misma unidad con el mismo selector. Se toma la
+            # más antigua para que la elección no dependa del orden de carga;
+            # pedir exactamente una detiene el comando entero por un empate que
+            # no cambia nada de lo que se afirma.
+            text(
+                "SELECT id FROM evidencias WHERE doc_version_id = :d AND selector = :s "
+                " ORDER BY creado_en, id LIMIT 1"
+            ),
             {"d": doc_version_id, "s": selector},
         ).scalar_one_or_none()
         if ya is not None:

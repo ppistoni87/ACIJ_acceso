@@ -13,7 +13,7 @@ ninguna, o ser un alias de otra.
 | URLs registradas | 76 |
 | Documentos capturados | 53 |
 | Normas identificadas | 423718 |
-| Beneficios registrados | 3 |
+| Beneficios registrados | 16 |
 | Dependencias normativas pendientes | 168 |
 
 Identificadores originales F01–F67 presentes: 67 de 67.
