@@ -28,58 +28,129 @@ pytestmark = pytest.mark.integracion
 RAIZ = pathlib.Path(__file__).resolve().parents[2]
 LECTURA = RAIZ / "docs" / "curaduria" / "ley-caba-6935.json"
 
+# Las unidades son las que la extracción produce hoy sobre el texto real de la
+# norma, con sus rutas anidadas y su literalidad —erratas de la fuente
+# incluidas—. Una prueba con artículos inventados y prolijos no probaría lo
+# que hay que probar: que la cita de la lectura curada esté adentro de la
+# unidad que dice citar, en el texto tal como se publicó.
 ARTICULOS = [
     (
         "ARTICULO",
         "1",
-        "Artículo 1°.- Objeto - Se crea el Programa de apoyo para personas en situación de "
-        "vulnerabilidad habitacional, mediante una prestación económica no retributiva, "
-        "intransferible e inembargable.",
+        'Artículo 1°.- Objeto - Se cres el "Programa de apoyo para personas en situación de '
+        'vulnerabilidad habitacional" en el ámbito de la Ciudad Autónoma de Buenos Aires a fin '
+        "de garantizar el acceso a una solución habitacional transitoria mediante una prestación "
+        "económica no retributiva, intransferible e inembargable, y la implementación de "
+        "dispositivos de abordaje y acompañamiento social para promover la autonomía de los "
+        "beneficiarios. El Programa es continuador del establecido por el Decreto 690/06, y se "
+        "regirá exclusivamente por las disposiciones de la presente Ley.",
         "DISPOSITIVO",
+        "articulo-1",
     ),
     (
         "ARTICULO",
         "2",
-        "Art. 2°.- Beneficiarios - Son beneficiarios las personas residentes en la Ciudad "
-        "Autónoma de Buenos Aires en situación de calle efectiva o riesgo habitacional "
-        "inminente, conforme el artículo 2 de la Ley 3706.",
+        "Art. 2°.- Beneficiarios - Son beneficiarios del presente programa las personas "
+        "residentes en la Ciudad Autónoma de Buenos Aires que se encuentren en situación de calle "
+        "efectiva o en riesgo habitacional inminente, todo ello conforme a las definiciones "
+        "previstas en el artículo 2, incisos a) y b) de la Ley 3706. Quedan expresamente "
+        "comprendidos en los alcances de la presente Ley aquellas personas que se encuentren en "
+        "forma transitoria sin vivienda o refugio por causa de desocupación administrativa, "
+        "incendio, derrumbe o catástrofes naturales",
         "DISPOSITIVO",
+        "articulo-2",
     ),
     (
         "ARTICULO",
         "3",
-        "Art. 3°.- Prestación económica - Se abonará con frecuencia mensual, con una escala "
-        "diferenciada según la composición del hogar.",
+        "Art. 3°.- Prestación económica - La prestación económica del presente programa se "
+        "abonará a los beneficiarios con frecuencia mensual. La Autoridad de Aplicación "
+        "establecerá una escala de montos diferenciada según la composición del hogar, la cual "
+        "para grupos familiares de cuatro (4) o más miembros integrantes, en los meses que "
+        "corresponda la actualización, no podrá ser inferior al monto del componente alquiler de "
+        'la Canasta de Consumo para Hogares "tipo 5", publicada por el Instituto de '
+        "Estadísticas y Censos de la Ciudad Autónoma de Buenos Aires (IDECBA), fijándose como "
+        "valor inicial el correspondiente al mes de octubre 2025. La actualización de la "
+        "prestación económica se realiza semestralmente en función de la evolución de los precios "
+        "del alquiler de viviendas y afines, relevada por el Instituto de Estadística y Censos de "
+        "la Ciudad Autónoma de Buenos Aires (IDECBA) con una periodicidad semestral, los meses de "
+        "abril y octubre de cada ejercicio. Adicionalmente a la actualización prevista en el "
+        "párrafo anterior, la Autoridad de Aplicación conjuntamente con el Ministerio de Hacienda "
+        "y Finanzas, o el organismo que lo reemplace en el futuro, podrán acordar un incremento "
+        "de la prestación económica referida",
         "DISPOSITIVO",
+        "articulo-3",
     ),
     (
-        "ARTICULO",
-        "5",
-        "Art. 5°.- Opción de pago único - El ejercicio de la opción resulta excluyente de "
-        "toda otra suma por el término que fije la reglamentación.",
+        "PARRAFO",
+        None,
+        "El ejercicio de la opción por parte del beneficiario de percibir la prestación económica "
+        "alternativa en una (1) cuota única por solución habitacional estable resulta excluyente "
+        "de la percepción de toda otra suma de dinero dispuesta en la presente Ley por el término "
+        "que fije la reglamentación.",
         "DISPOSITIVO",
+        "articulo-5/parrafo-9",
     ),
     (
-        "ARTICULO",
-        "6",
-        "Art. 6°.- Requisitos de acceso - a) Acreditar residencia con antigüedad mínima de "
-        "dos (2) años. Quedan exceptuadas las víctimas de trata o violencia de género.",
+        "INCISO",
+        "a",
+        "a) Acreditar identidad y residencia en la Ciudad Autónoma de Buenos Aires con una "
+        "antigüedad mínima de dos (2) años. Quedan exceptuadas de este requisito las personas "
+        "víctimas de trata de personas o violencia de género, debidamente acreditadas por los "
+        "organismos competentes.",
         "DISPOSITIVO",
+        "articulo-6/inciso-a-11",
+    ),
+    (
+        "INCISO",
+        "b",
+        "b) No alcanzar el ingreso total de las familias, según su conformación, para cubrir la "
+        "Canasta Básica Total (CBT) fijada por el Instituto Nacional de Estadísticas y Censos "
+        "(INDEC), u organismo que en el futuro lo reemplace;",
+        "DISPOSITIVO",
+        "articulo-6/inciso-b-12",
+    ),
+    (
+        "INCISO",
+        "c",
+        "c) No ser titular de bienes inmuebles ni percibir otros subsidios económicos de carácter "
+        "habitacional de origen nacional, provincial o municipal.",
+        "DISPOSITIVO",
+        "articulo-6/inciso-c-13",
+    ),
+    (
+        "PARRAFO",
+        None,
+        "La reglamentación podrá establecer mecanismos de interoperabilidad de datos para eximir "
+        "a los solicitantes de presentar documentación que ya obrare en poder del Estado, y "
+        "mecanismos flexibles para la acreditación de requisitos en casos de extrema "
+        "vulnerabilidad o falta de documentación, admitiendo el ingreso provisorio.",
+        "DISPOSITIVO",
+        "articulo-6/parrafo-15",
     ),
     (
         "ARTICULO",
         "7",
-        "Art. 7°.- Duración - La prestación se otorgará por un plazo inicial de hasta DOCE "
-        "(12) meses. La continuidad estará sujeta a las corresponsabilidades que defina la "
+        "Art. 7°.- Duración, permanencia y corresponsabilidades - La prestación económica se "
+        "otorgará por un plazo inicial de hasta DOCE (12) meses. La Autoridad de Aplicación podrá "
+        "disponer la prórroga del beneficio por períodos sucesivos. La continuidad de la "
+        "prestación estará sujeta al cumplimiento de las corresponsabilidades definidas por la "
         "reglamentación.",
         "DISPOSITIVO",
+        "articulo-7",
     ),
     (
         "ARTICULO",
         "8",
-        "Art. 8°.- Ingreso provisorio - En casos de urgencia social la Autoridad podrá "
-        "disponer el ingreso provisorio aun sin la totalidad de la documentación.",
+        "Art. 8°.- Ingreso provisorio y pago de emergencia - En casos de urgencia social o "
+        "situación de calle efectiva, la Autoridad de Aplicación podrá disponer el ingreso "
+        "provisorio al programa y liquidar la primera cuota de la prestación como pago de "
+        "emergencia, aun cuando el hogar no cuente con la totalidad de la documentación "
+        "requerida. La incorporación definitiva y la continuidad de los pagos subsiguientes "
+        "quedarán condicionadas a la regularización documental dentro del plazo que fije la "
+        "reglamentación y a la acreditación de la persistencia de la vulnerabilidad habitacional.",
         "DISPOSITIVO",
+        "articulo-8",
     ),
 ]
 
@@ -130,9 +201,14 @@ def test_cada_regla_cita_el_articulo_que_la_sostiene(conexion: Connection, curad
     ).all()
     assert len(filas) == curado.reglas
     assert all(f.ruta.startswith("articulo-") for f in filas)
-    # Los requisitos de acceso salen del artículo 6, no de cualquier lado.
+    # Los requisitos de acceso salen del artículo 6, no de cualquier lado, y de
+    # sus incisos: la evidencia apunta al inciso que dice la condición, no al
+    # artículo entero. Un requisito anclado al artículo completo se cumple aunque
+    # el inciso que lo sostiene deje de estar.
     requisitos = {f.ruta for f in filas if f.categoria in ("APLICABILIDAD", "EXCLUSION")}
-    assert requisitos == {"articulo-6"}
+    assert requisitos
+    assert all(r.startswith("articulo-6") for r in requisitos)
+    assert all("/" in r for r in requisitos)
 
 
 def test_una_ruta_que_no_existe_en_el_texto_detiene_la_carga(
@@ -145,6 +221,40 @@ def test_una_ruta_que_no_existe_en_el_texto_detiene_la_carga(
     ruta = tmp_path / "mala.json"
     ruta.write_text(json.dumps(lectura, ensure_ascii=False))
     with pytest.raises(LecturaInvalida, match="articulo-99"):
+        CuradorDeBeneficios(conexion).cargar(ruta)
+
+
+def test_una_cita_que_no_esta_en_la_unidad_detiene_la_carga(
+    conexion: Connection, norma, tmp_path
+) -> None:
+    """Una afirmación cuya evidencia no la dice es peor que una sin evidencia.
+
+    Con la ruta existente y el texto cambiado, la carga seguiría adelante y la
+    regla quedaría respaldada por un artículo que no dice eso. Es el error que
+    no se nota: todo tiene evidencia, y la evidencia no dice lo que se afirma.
+    """
+    lectura = json.loads(LECTURA.read_text())
+    regla = dict(lectura["reglas"][0])
+    regla["texto_literal"] = "a) Acreditar residencia con una antigüedad mínima de diez (10) años."
+    lectura["reglas"] = [regla]
+    ruta = tmp_path / "lectura.json"
+    ruta.write_text(json.dumps(lectura, ensure_ascii=False), encoding="utf-8")
+
+    with pytest.raises(LecturaInvalida, match="no está en la unidad"):
+        CuradorDeBeneficios(conexion).cargar(ruta)
+
+
+def test_el_error_de_cita_dice_en_que_unidad_si_esta(conexion: Connection, norma, tmp_path) -> None:
+    """Cuando la segmentación se mueve, la cita sigue en el texto pero en otra
+    unidad. El error lo dice para que se corrija la ruta en vez de la cita."""
+    lectura = json.loads(LECTURA.read_text())
+    regla = dict(lectura["reglas"][0])
+    regla["ruta_evidencia"] = "articulo-1"
+    lectura["reglas"] = [regla]
+    ruta = tmp_path / "lectura.json"
+    ruta.write_text(json.dumps(lectura, ensure_ascii=False), encoding="utf-8")
+
+    with pytest.raises(LecturaInvalida, match="El texto sí está en 'articulo-6/inciso-a"):
         CuradorDeBeneficios(conexion).cargar(ruta)
 
 

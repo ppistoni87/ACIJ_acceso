@@ -27,7 +27,7 @@ import io
 import re
 from dataclasses import dataclass, field
 
-from backend_normativo.curacion.segmentacion import Parrafo, Segmentador
+from backend_normativo.curacion.segmentacion import Parrafo, Segmentador, unir_renglones
 from backend_normativo.db.vocabularios import (
     ModoExtraccion,
     Severidad,
@@ -436,7 +436,10 @@ class AdaptadorPdf:
             )
             return resultado
 
-        segmentacion = Segmentador().segmentar(lectura.parrafos)
+        # El PDF llega en renglones: `extract_text_lines` da una línea por vez y una
+        # oración cruza varias. Segmentar sin unirlas deja unidades que son media
+        # frase, y una evidencia que cita media frase no sostiene lo que afirma.
+        segmentacion = Segmentador().segmentar(unir_renglones(lectura.parrafos))
         clasificados = sum(len(u.texto) for u in segmentacion.unidades)
         documento = DocumentoExtraido(
             tipo=self._tipo(captura),

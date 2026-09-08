@@ -29,7 +29,7 @@ def _documento_norma(
     external_id: str,
     tipo_version: str,
     identidad: dict,
-    unidades: list[tuple[str, str | None, str, str]] = (),
+    unidades: list[tuple[str, str | None, str, str] | tuple[str, str | None, str, str, str]] = (),
     sufijo_url: str = "",
 ) -> uuid.UUID:
     """Crea la cadena captura → documento → versión → unidades para una norma."""
@@ -89,7 +89,12 @@ def _documento_norma(
             "i": json.dumps(identidad, ensure_ascii=False),
         },
     ).scalar_one()
-    for orden, (tipo, numero, texto_unidad, rol) in enumerate(unidades, start=1):
+    for orden, unidad in enumerate(unidades, start=1):
+        # La quinta posición es la ruta explícita. Hace falta porque la
+        # segmentación real anida —`articulo-6/inciso-a-11`— y una prueba que
+        # solo sabe construir rutas planas no puede parecerse al corpus.
+        tipo, numero, texto_unidad, rol = unidad[:4]
+        ruta = unidad[4] if len(unidad) > 4 else f"{tipo.lower()}-{numero or orden}"
         conexion.execute(
             text(
                 "INSERT INTO unidades_documentales "
@@ -100,7 +105,7 @@ def _documento_norma(
                 "dv": version,
                 "t": tipo,
                 "n": numero,
-                "ruta": f"{tipo.lower()}-{numero or orden}",
+                "ruta": ruta,
                 "o": orden,
                 "texto": texto_unidad,
                 "rol": rol,

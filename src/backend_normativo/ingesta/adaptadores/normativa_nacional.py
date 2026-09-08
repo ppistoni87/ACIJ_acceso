@@ -22,7 +22,7 @@ import re
 
 from selectolax.parser import HTMLParser
 
-from backend_normativo.curacion.segmentacion import Segmentador
+from backend_normativo.curacion.segmentacion import Segmentador, unir_renglones
 from backend_normativo.db.vocabularios import (
     ModoExtraccion,
     RolUrl,
@@ -187,7 +187,7 @@ class AdaptadorNormativaNacional:
             identidad["anio"] = fechas[TipoFecha.SANCION].year
             identidad["anio_derivado_de"] = TipoFecha.SANCION.value
 
-        parrafos = parrafos_de_html(html, selector=SELECTOR_FICHA)
+        parrafos = unir_renglones(parrafos_de_html(html, selector=SELECTOR_FICHA))
         documento = DocumentoExtraido(
             tipo=TipoDocumento.NORMA,
             tipo_version=TipoVersionDocumento.NO_DETERMINADO,
@@ -309,7 +309,7 @@ class AdaptadorNormativaNacional:
                 )
             )
 
-        parrafos = parrafos_de_html(html, selector=SELECTOR_CUERPO)
+        parrafos = unir_renglones(parrafos_de_html(html, selector=SELECTOR_CUERPO))
         segmentacion = Segmentador().segmentar(parrafos)
         avisos.extend(
             Aviso(a, tipo=TipoIncidencia.DISCREPANCIA_NUMERACION, severidad=Severidad.MEDIUM)

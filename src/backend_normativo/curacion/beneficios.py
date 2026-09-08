@@ -150,6 +150,43 @@ class CuradorDeBeneficios:
             ).mappings()
         }
 
+    @staticmethod
+    def _verificar_cita(unidades: dict[str, dict], ruta: str, literal: str, quien: str) -> None:
+        """La cita tiene que estar en la unidad que dice citar.
+
+        Una afirmación cuya evidencia apunta a un texto que no la dice es peor
+        que una afirmación sin evidencia: parece verificada. Esto no revisa que
+        la lectura jurídica sea correcta —eso lo hace una persona—, revisa lo
+        único que una máquina puede revisar sola, que es que el texto citado
+        exista donde se dice que existe.
+
+        Se comparan los espacios normalizados: el boletín corta las líneas donde
+        le queda y eso no cambia lo que dice. Cualquier otra diferencia sí: si la
+        cita resume, elide con puntos suspensivos o corrige una errata de la
+        fuente, deja de ser una cita del texto capturado y falla acá.
+        """
+        unidad = unidades.get(ruta)
+        if unidad is None:
+            return  # `_evidencia` da un error mejor para una ruta que no existe.
+        buscado = " ".join(literal.split())
+        if buscado in " ".join(unidad["texto"].split()):
+            return
+        # Decir dónde sí está ahorra la búsqueda a mano y, sobre todo, distingue
+        # los dos casos: la cita se movió de unidad porque cambió la
+        # segmentación, o la cita no está en ninguna parte del texto.
+        donde = sorted(r for r, u in unidades.items() if buscado in " ".join(u["texto"].split()))
+        pista = (
+            f" El texto sí está en {donde[0]!r}."
+            if donde
+            else " El texto no está en ninguna unidad."
+        )
+        raise LecturaInvalida(
+            f"{quien}: el texto citado no está en la unidad {ruta!r}.{pista} La evidencia apunta "
+            "a un fragmento que no dice lo que se afirma. Si la cita resume o elide, hay que "
+            "citar el fragmento continuo que sí está; si la fuente publica una errata, se cita "
+            "con la errata: lo capturado es lo único contra lo que se puede verificar."
+        )
+
     def _evidencia(
         self, doc_version_id: uuid.UUID, unidades: dict[str, dict], ruta: str
     ) -> uuid.UUID:
@@ -345,6 +382,9 @@ class CuradorDeBeneficios:
         if ya is not None:
             return ya, sin_formalizar
 
+        self._verificar_cita(
+            unidades, datos["ruta_evidencia"], datos["texto_literal"], f"regla {datos['clave']!r}"
+        )
         evidencia_id = self._evidencia(doc_version_id, unidades, datos["ruta_evidencia"])
         regla_id = self.conexion.execute(
             text(
@@ -488,6 +528,9 @@ class CuradorDeBeneficios:
         if ya is not None:
             return
 
+        self._verificar_cita(
+            unidades, datos["ruta_evidencia"], datos["texto_literal"], f"plazo {datos['clave']!r}"
+        )
         plazo_id = uuid.uuid4()
         siguiente = self.conexion.execute(
             text(

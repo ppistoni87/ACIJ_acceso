@@ -13,7 +13,7 @@ import re
 
 from selectolax.parser import HTMLParser
 
-from backend_normativo.curacion.segmentacion import Segmentador
+from backend_normativo.curacion.segmentacion import Segmentador, unir_renglones
 from backend_normativo.db.vocabularios import (
     ModoExtraccion,
     Severidad,
@@ -127,7 +127,7 @@ class AdaptadorInfolegLegacy:
         tipo_version = VISTAS[coincidencia.group("vista").lower()]
 
         html = captura.texto()
-        parrafos = parrafos_de_html(html)
+        parrafos = unir_renglones(parrafos_de_html(html))
         if not parrafos:
             return ResultadoExtraccion(
                 avisos=[

@@ -132,7 +132,246 @@ class Parrafo:
     inicio: int
     fin: int
     pagina: int | None = None
+    # Dónde termina, que puede no ser dónde empieza: un párrafo de PDF cortado en
+    # renglones cruza el corte de página, y una cita que dice «página 4» cuando
+    # la frase sigue en la 5 manda a buscar donde no está.
+    pagina_hasta: int | None = None
     entrecomillado: bool = False
+
+    @property
+    def paginas(self) -> tuple[int | None, int | None]:
+        return self.pagina, self.pagina_hasta if self.pagina_hasta is not None else self.pagina
+
+
+# --- Páginas que publican una línea por párrafo -------------------------------
+# Varios boletines publican el PDF convertido a HTML con un `<p>` por línea
+# visual. El marcado dice «párrafo» y lo que hay es un renglón: una oración
+# queda repartida en cuatro bloques y ninguna cita de una frase completa se
+# puede anclar a una unidad.
+#
+# Unir esos renglones no es cosmética. La evidencia de una regla apunta a una
+# unidad documental; si la unidad es media oración, la cita no cabe adentro y la
+# afirmación queda colgada de un fragmento que no dice lo que se afirma.
+#
+# La señal que se usa es local y no admite dos lecturas: **un bloque que empieza
+# con minúscula está a mitad de una oración**. Un ítem de menú, una fila de
+# directorio o un título empiezan con mayúscula; un renglón cortado, no. Se
+# probó antes decidirlo por documento —qué proporción de bloques termina en
+# punto— y eso confundía una guía telefónica con una norma cortada en renglones:
+# en las dos, casi ningún bloque termina en punto. La proporción se descartó por
+# eso, no por gusto.
+
+# Con qué cierra una oración. El paréntesis y las comillas van después del punto
+# en las notas del boletín: «(...) B.O. 4/11/2020)».
+RE_CIERRE_DE_ORACION = re.compile("[.:;!?][\\s'\"\u00bb)\\]]*$")
+
+# Un renglón que continúa el anterior empieza con letra minúscula. Los dígitos
+# quedan afuera a propósito: un bloque que empieza con un número puede ser tanto
+# la continuación de un monto como un teléfono suelto, y unir de más pega dos
+# cosas que nadie escribió juntas.
+RE_CONTINUA_LA_ORACION = re.compile(r"^[a-záéíóúüñ]")
+
+# Un correo, una dirección web o un dominio empiezan con minúscula y no son la
+# continuación de nada: en las páginas de directorio vienen justo debajo del
+# teléfono, que tampoco cierra oración. Sin esta excepción, el mail de una
+# defensoría termina pegado a su número de interno.
+RE_ES_UN_ENLACE = re.compile(r"^(?:https?://|www\.|[\w.+-]+@[\w-]+\.)", re.IGNORECASE)
+
+# Subincisos como «j.2)» o «a.1)», que los boletines usan para abrir un ítem
+# dentro de un inciso. `RE_INCISO` no los reconoce —pide un solo carácter antes
+# del paréntesis— y sin esta marca un subinciso se lee como continuación del
+# párrafo anterior.
+RE_SUBINCISO = re.compile(r"^\s*[a-z]\.\s*\d{1,2}\s*[).]\s*", re.IGNORECASE)
+
+# Un renglón que arranca con un paréntesis corto y lo cierra enseguida —«(INDEC),
+# u organismo que…»— es la continuación de la oración de arriba. Se pide que
+# cierre cerca: las notas del boletín también empiezan con paréntesis
+# —«(Artículo sustituido por art. 1° del Decreto…)»— y esas no son continuación
+# de nada, son otra cosa que la norma dice sobre sí misma.
+LARGO_MAXIMO_DEL_PARENTESIS = 24
+RE_PARENTESIS_CORTO = re.compile(rf"^\(.{{1,{LARGO_MAXIMO_DEL_PARENTESIS}}}?\)")
+
+# Palabras con las que ninguna oración termina. Un renglón que corta en «de la»
+# o en «para cubrir la» sigue abajo, empiece la línea siguiente con mayúscula o
+# con minúscula: «...para cubrir la» + «Canasta Básica Total» es una sola
+# oración partida por el ancho de la página, y sin esta lista queda partida
+# también en la base. Es una lista cerrada de palabras de función: ninguna de
+# ellas puede ser la última de una oración en castellano.
+PALABRAS_QUE_NO_CIERRAN = frozenset(
+    [
+        "el",
+        "la",
+        "los",
+        "las",
+        "un",
+        "una",
+        "unos",
+        "unas",
+        "lo",
+        "al",
+        "del",
+        "a",
+        "ante",
+        "bajo",
+        "con",
+        "contra",
+        "de",
+        "desde",
+        "durante",
+        "en",
+        "entre",
+        "hacia",
+        "hasta",
+        "mediante",
+        "para",
+        "por",
+        "según",
+        "sin",
+        "sobre",
+        "tras",
+        "y",
+        "e",
+        "o",
+        "u",
+        "ni",
+        "que",
+        "pero",
+        "sino",
+        "aunque",
+        "porque",
+        "si",
+        "cuando",
+        "como",
+        "donde",
+        "mientras",
+        "su",
+        "sus",
+        "mi",
+        "mis",
+        "tu",
+        "tus",
+        "este",
+        "esta",
+        "estos",
+        "estas",
+        "ese",
+        "esa",
+        "esos",
+        "esas",
+        "aquel",
+        "aquella",
+        "cuyo",
+        "cuya",
+        "cuyos",
+        "cuyas",
+        "cual",
+        "cuales",
+        "quien",
+        "quienes",
+        "se",
+        "le",
+        "les",
+        "me",
+        "te",
+        "nos",
+        "más",
+        "muy",
+        "cada",
+        "todo",
+        "toda",
+        "todos",
+        "todas",
+        "otro",
+        "otra",
+        "otros",
+        "otras",
+    ]
+)
+
+RE_ULTIMA_PALABRA = re.compile(r"([\wáéíóúüñÁÉÍÓÚÜÑ]+)[^\w]*$")
+
+MARCAS_DE_ESTRUCTURA = (
+    RE_SUBINCISO,
+    RE_ARTICULO,
+    RE_TITULO,
+    RE_CAPITULO,
+    RE_SECCION,
+    RE_LIBRO,
+    RE_ANEXO,
+    RE_TRANSITORIA,
+    RE_INCISO,
+    RE_VISTO,
+    RE_CONSIDERANDO,
+    RE_NOTA,
+)
+
+
+def continua_el_renglon(anterior: str, actual: str) -> bool:
+    """Si `actual` es la continuación del renglón `anterior`.
+
+    Las tres condiciones son necesarias: que el anterior haya quedado abierto,
+    que este empiece a mitad de oración y que no abra una unidad nueva. Un
+    inciso que arranca en minúscula —«a) acreditar…»— abre unidad igual: la
+    marca de estructura gana sobre la minúscula.
+    """
+    anterior = anterior.strip()
+    actual = actual.strip()
+    if not anterior or not actual:
+        return False
+    if RE_CIERRE_DE_ORACION.search(anterior):
+        return False
+    if RE_ES_UN_ENLACE.match(anterior):
+        # Un correo tampoco continúa hacia adelante. Sin esto, el mail de una
+        # oficina se lleva pegado el encabezado que viene abajo.
+        return False
+    if any(marca.match(actual) for marca in MARCAS_DE_ESTRUCTURA):
+        return False
+    if RE_ES_UN_ENLACE.match(actual):
+        return False
+    if RE_CONTINUA_LA_ORACION.match(actual) or RE_PARENTESIS_CORTO.match(actual):
+        return True
+    return _corta_en_palabra_de_funcion(anterior)
+
+
+def _corta_en_palabra_de_funcion(texto: str) -> bool:
+    coincidencia = RE_ULTIMA_PALABRA.search(texto)
+    if coincidencia is None:
+        return False
+    return coincidencia.group(1).lower() in PALABRAS_QUE_NO_CIERRAN
+
+
+def unir_renglones(parrafos: list[Parrafo]) -> list[Parrafo]:
+    """Junta los renglones de un mismo párrafo y reindexa los desplazamientos."""
+    grupos: list[list[Parrafo]] = []
+    for parrafo in parrafos:
+        if not parrafo.texto.strip():
+            continue
+        if grupos and continua_el_renglon(grupos[-1][-1].texto, parrafo.texto):
+            grupos[-1].append(parrafo)
+        else:
+            grupos.append([parrafo])
+
+    unidos: list[Parrafo] = []
+    cursor = 0
+    for grupo in grupos:
+        # Un bloque solo conserva su texto tal cual: normalizarlo movería los
+        # desplazamientos de todo lo que ya estaba bien.
+        texto = grupo[0].texto if len(grupo) == 1 else " ".join(p.texto.strip() for p in grupo)
+        unidos.append(
+            Parrafo(
+                texto=texto,
+                inicio=cursor,
+                fin=cursor + len(texto),
+                pagina=grupo[0].pagina,
+                pagina_hasta=grupo[-1].paginas[1],
+                # Si alguno de los renglones venía entrecomillado, el párrafo
+                # entero se marca así: tratar como disposición propia un texto
+                # que la norma está citando es el error caro de los dos.
+                entrecomillado=any(p.entrecomillado for p in grupo),
+            )
+        )
+        cursor += len(texto) + 1
+    return unidos
 
 
 @dataclass
@@ -391,8 +630,8 @@ class Segmentador:
             rotulo=rotulo,
             inicio=parrafo.inicio,
             fin=parrafo.fin,
-            pagina_desde=parrafo.pagina,
-            pagina_hasta=parrafo.pagina,
+            pagina_desde=parrafo.paginas[0],
+            pagina_hasta=parrafo.paginas[1],
             padre_indice=padre,
             ambigua=ambigua,
             motivo_ambiguedad=motivo,

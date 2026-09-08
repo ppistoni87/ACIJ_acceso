@@ -16,7 +16,7 @@ from __future__ import annotations
 import datetime as dt
 import re
 
-from backend_normativo.curacion.segmentacion import Parrafo, Segmentador
+from backend_normativo.curacion.segmentacion import Parrafo, Segmentador, unir_renglones
 from backend_normativo.db.vocabularios import (
     EstadoLegal,
     ModoExtraccion,
@@ -140,7 +140,9 @@ class AdaptadorNormativaBA:
         norma_ba_id = coincidencia.group("id")
 
         html = captura.texto()
-        parrafos = parrafos_de_html(html)
+        # NormativaBA publica el PDF convertido con un `<p>` por renglón: sin
+        # unirlos, una cita de una oración no entra en ninguna unidad.
+        parrafos = unir_renglones(parrafos_de_html(html))
         if not parrafos:
             return ResultadoExtraccion(
                 avisos=[

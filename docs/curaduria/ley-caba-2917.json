@@ -385,7 +385,7 @@
    "clave": "PEDIDO-DE-RECONSIDERACION",
    "tipo": "RECURSO",
    "ruta_evidencia": "articulo-14",
-   "texto_literal": "A partir de la notificación fehaciente al alumno/a solicitante y a su padre, madre, tutor/a o encargado/a del otorgamiento o no del beneficio, éste tiene diez (10) días hábiles para pedir una reconsideración.",
+   "texto_literal": "A partir de la notificación fehaciente al alumno/a solicitante y a su padre, madre, tutor/a o encargado/a del otorgamiento o no del beneficio, éste tiene diez (10) días hábiles para pedir una reconsideración,",
    "cantidad": 10,
    "unidad": "dias",
    "tipo_dia": "HABIL_ADMINISTRATIVO",
@@ -398,13 +398,13 @@
    "clave": "RESPUESTA-A-LA-RECONSIDERACION",
    "tipo": "RESPUESTA_ORGANISMO",
    "ruta_evidencia": "articulo-14",
-   "texto_literal": "Una vez entregado por el solicitante su pedido de reconsideración a las autoridades escolares, la autoridad de aplicación tiene treinta (30) días para una nueva determinación, que debe ser notificada de manera fehaciente.",
+   "texto_literal": "Una vezentregado por el solicitante su pedido de reconsideración a las autoridades escolares, la autoridad de aplicación tiene treinta (30) días para una nueva determinación, que debe ser notificada de manera fehaciente.",
    "cantidad": 30,
    "unidad": "dias",
    "tipo_dia": "NO_INFORMADO",
    "evento_inicio": "entrega del pedido de reconsideración a las autoridades escolares",
    "requiere_revision": true,
-   "motivo_revision": "El mismo artículo dice «diez (10) días hábiles» para el pedido y «treinta (30) días» a secas para la respuesta. Que la ley califique uno y no el otro en la misma oración no permite suponer que los treinta sean hábiles ni que sean corridos: la diferencia es de más de dos semanas y le toca a quien espera."
+   "motivo_revision": "El mismo artículo dice «diez (10) días hábiles» para el pedido y «treinta (30) días» a secas para la respuesta. Que la ley califique uno y no el otro en la misma oración no permite suponer que los treinta sean hábiles ni que sean corridos: la diferencia es de más de dos semanas y le toca a quien espera. La cita reproduce «Una vezentregado» sin el espacio porque así lo publica la fuente: corregirlo acá haría que la cita dejara de coincidir con el texto capturado, que es lo único contra lo que se puede verificar."
   },
   {
    "clave": "PRIMERA-CUOTA",
