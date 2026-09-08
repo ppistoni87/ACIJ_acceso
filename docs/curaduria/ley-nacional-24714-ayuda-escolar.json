@@ -1,0 +1,207 @@
+{
+ "schema_version": "1.0",
+ "norma": {
+  "external_id": "infoleg:39880:actualizado",
+  "referencia": "Ley 24.714",
+  "rol": "CREA"
+ },
+ "nota": "Lectura curada de la asignación por ayuda escolar anual. Es la única prestación de la Ley 24.714 que cruza los dos subsistemas: la cobra quien está en el contributivo por el artículo 6 inciso d), y el artículo 14 sexies se la da también a los titulares de la Asignación Universal por Hijo, que están en el no contributivo. Curarla cerrando ese cruce es lo que evita responderle «no te corresponde» a alguien que cobra la AUH. Todo entra como candidato.",
+ "beneficio": {
+  "codigo": "AR.AYUDA-ESCOLAR-ANUAL",
+  "nombre": "Asignación por ayuda escolar anual",
+  "familia": "SEGURIDAD_SOCIAL",
+  "linea": "ASIGNACION_FAMILIAR",
+  "jurisdiccion": "AR",
+  "naturaleza": "PRESTACION_MONETARIA",
+  "descripcion": "Suma de dinero que se hace efectiva en el mes de marzo de cada año, por cada hijo que concurra regularmente a establecimientos de enseñanza básica y polimodal o, cualquiera sea su edad, a establecimientos donde se imparta educación diferencial.",
+  "unidad_beneficiaria": "PERSONA",
+  "modalidad": "TRANSFERENCIA",
+  "frecuencia": "ANUAL",
+  "requiere_solicitud": true,
+  "ruta_evidencia": "articulo-10"
+ },
+ "poblaciones": [
+  {
+   "codigo": "AR.TRABAJADOR-EN-RELACION-DE-DEPENDENCIA",
+   "nombre": "Personas del subsistema contributivo",
+   "definicion": "Trabajadores que prestan servicios remunerados en relación de dependencia en la actividad privada, beneficiarios de la Ley sobre Riesgos del Trabajo y del Seguro de Desempleo, e inscriptos y aportantes al Régimen Simplificado para Pequeños Contribuyentes.",
+   "rol_persona": "TITULAR",
+   "alcance": "Es la misma población que la de la asignación por hijo: el mismo código, para que no parezcan dos grupos distintos de personas.",
+   "ruta_evidencia": "articulo-1/inciso-a-3"
+  },
+  {
+   "codigo": "AR.TITULAR-DEL-SUBSISTEMA-NO-CONTRIBUTIVO",
+   "nombre": "Titulares del subsistema no contributivo",
+   "definicion": "Personas titulares de la Asignación Universal por Hijo y de la Asignación por Embarazo para Protección Social, a quienes el artículo 14 sexies extiende esta ayuda escolar.",
+   "rol_persona": "TITULAR",
+   "alcance": "Es la segunda puerta de entrada a esta misma prestación. Sin ella, una lectura que sólo mire el artículo 6 inciso d) le responde «no te corresponde» a quien cobra la AUH.",
+   "ruta_evidencia": "articulo-14-sexies"
+  },
+  {
+   "codigo": "AR.HIJO-QUE-CONCURRE-A-LA-ESCUELA",
+   "nombre": "Hijo escolarizado a cargo",
+   "definicion": "Hijo a cargo que concurre regularmente a establecimientos de enseñanza básica y polimodal, o a establecimientos de educación diferencial cualquiera sea su edad.",
+   "rol_persona": "CAUSANTE",
+   "alcance": "Da lugar a la asignación y no la cobra. La concurrencia se mide sobre él y el resto de las condiciones sobre quien cobra.",
+   "ruta_evidencia": "articulo-10"
+  }
+ ],
+ "reglas": [
+  {
+   "clave": "POR-EL-SUBSISTEMA-CONTRIBUTIVO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-1/inciso-a-3",
+   "texto_literal": "a) Un subsistema contributivo fundado en los principios de reparto de aplicación a los trabajadores que presten servicios remunerados en relación de dependencia en la actividad privada, cualquiera sea la modalidad de contratación laboral, beneficiarios de la Ley sobre Riesgos de Trabajo y beneficiarios del Seguro de Desempleo, el que se financiará con los recursos previstos en el artículo 5° de la presente ley.",
+   "descripcion": "Estar comprendido en el subsistema contributivo.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "in",
+    "field": "situacion_laboral_del_titular",
+    "values": [
+     "RELACION_DE_DEPENDENCIA_PRIVADA",
+     "BENEFICIARIO_RIESGOS_DEL_TRABAJO",
+     "BENEFICIARIO_SEGURO_DE_DESEMPLEO",
+     "MONOTRIBUTISTA",
+     "SECTOR_PUBLICO",
+     "PENSION_NO_CONTRIBUTIVA"
+    ]
+   },
+   "requiere_revision": true,
+   "motivo_revision": "Es una de las dos puertas de entrada, no un requisito: el artículo 14 sexies abre la otra para los titulares del subsistema no contributivo. Escritas como dos reglas de aplicabilidad separadas, un evaluador que las exija juntas dejaría afuera a todo el mundo. Cómo se representa una disyunción entre dos vías de acceso es la decisión de fondo que esta lectura deja abierta."
+  },
+  {
+   "clave": "POR-SER-TITULAR-DE-LA-AUH",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-14-sexies",
+   "texto_literal": "Los titulares de la Asignación Universal por Hijo para Protección Social establecida en el artículo 1°, inciso c) de la presente Ley tendrán derecho a la Asignación por Ayuda Escolar Anual prevista en el artículo 6°, inciso d) y definida por el artículo 10 de esta ley.",
+   "descripcion": "Los titulares de la Asignación Universal por Hijo tienen derecho a esta ayuda escolar.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "titular_percibe_auh"
+   },
+   "requiere_revision": true,
+   "motivo_revision": "La otra puerta de entrada. El artículo dice «tendrán derecho», no «podrán solicitar»: es una extensión del derecho y no una posibilidad sujeta a evaluación. Queda pendiente si quien entra por acá tiene que acreditar la concurrencia escolar del artículo 10 o si le alcanza con la escolaridad que ya acredita para la AUH, que es la misma información pedida dos veces."
+  },
+  {
+   "clave": "CONCURRENCIA-REGULAR-A-LA-ESCUELA",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-10",
+   "texto_literal": "Esta asignación se abonará por cada hijo que concurra regularmente a establecimientos de enseñanza básica y polimodal o bien, cualquiera sea su edad, si concurre a establecimientos oficiales o privados donde se imparta educación diferencial.",
+   "descripcion": "El hijo concurre regularmente a enseñanza básica y polimodal, o a educación diferencial cualquiera sea su edad.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "any",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "hijo_concurre_a_ensenanza_basica_o_polimodal"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "hijo_concurre_a_educacion_diferencial"
+     }
+    ]
+   },
+   "requiere_revision": true,
+   "motivo_revision": "«Enseñanza básica y polimodal» son los niveles de la Ley Federal de Educación de 1993, derogada por la Ley 26.206 en 2006, que renombró los niveles a primario y secundario. La norma no se actualizó y el campo la refleja tal cual: traducir los nombres acá sería decidir por analogía qué nivel corresponde a cuál, y de eso depende si un chico de sala de cinco entra o no. La vía de educación diferencial sí es explícita en que no mira la edad."
+  },
+  {
+   "clave": "EXCEPTUADA-DEL-TOPE-NO",
+   "categoria": "EXCLUSION",
+   "ruta_evidencia": "articulo-3",
+   "texto_literal": "Quedan excluidos de las prestaciones de esta ley, con excepción de las asignaciones familiares por maternidad y por hijos con discapacidad, los trabajadores que perciban una remuneración inferior a PESOS CIEN ($ 100) o igual o superior a PESOS CUATRO MIL CON UN CENTAVO ($ 4.000,01). (Tope máximo de remuneración sustituido por art. 1° del Decreto N° 1345/2007 B.O. 5/10/2007. Vigencia: a partir del 1º de julio de 2007).",
+   "descripcion": "Esta asignación no está entre las excepciones del artículo 3: la exclusión por remuneración fuera del piso y el techo la alcanza.",
+   "requiere_revision": true,
+   "motivo_revision": "Se guarda la exclusión precisamente porque la ayuda escolar **no** está exceptuada: el artículo 3 exceptúa maternidad e hijo con discapacidad y a ninguna otra. Omitirla acá haría que esta prestación pareciera fuera del alcance del tope, que es lo contrario. Qué pasa con quien entra por el artículo 14 sexies —titular de la AUH, sin remuneración registrada contra la cual medir un tope— es la pregunta que hay que resolver: el tope del artículo 3 está escrito para el subsistema contributivo."
+  },
+  {
+   "clave": "UN-SOLO-PROGENITOR-PERCIBE",
+   "categoria": "PRIORIDAD",
+   "ruta_evidencia": "articulo-20",
+   "texto_literal": "ARTICULO 20.- Cuando ambos progenitores estén comprendidos en el presente régimen, las prestaciones enumeradas en los artículos 6º y 15 serán percibidas por uno solo de ellos.",
+   "descripcion": "Cuando ambos progenitores están comprendidos en el régimen, la prestación la percibe uno solo de ellos.",
+   "requiere_revision": true,
+   "motivo_revision": "La ley dice que cobra uno solo y no dice cuál. Elegir un criterio sería inventar la parte que el legislador no escribió."
+  },
+  {
+   "clave": "GUARDA-TENENCIA-O-TUTELA-CUENTA-COMO-HIJO",
+   "categoria": "EXCEPCION",
+   "ruta_evidencia": "articulo-22",
+   "texto_literal": "A los fines de otorgar las asignaciones por hijo, hijo con discapacidad y ayuda escolar anual, serán considerados como hijos los menores o personas con discapacidad cuya guarda, tenencia o tutela haya sido acordada al trabajador por autoridad judicial o administrativa competente. En tales supuestos, los respectivos padres no tendrán, por ese hijo, derecho al cobro de las mencionadas asignaciones.",
+   "descripcion": "Cuentan como hijos los menores o personas con discapacidad cuya guarda, tenencia o tutela fue acordada al trabajador; en ese caso los padres no cobran por ese hijo.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "hijo_a_cargo_del_titular"
+   },
+   "requiere_revision": true,
+   "motivo_revision": "El artículo nombra expresamente a la ayuda escolar anual, así que acá aplica. Amplía qué cuenta como hijo y a la vez saca el derecho a los padres: son dos efectos y el árbol alcanza el primero.",
+   "excepcion_de": "CONCURRENCIA-REGULAR-A-LA-ESCUELA"
+  },
+  {
+   "clave": "INEMBARGABLE-Y-NO-REMUNERATIVA",
+   "categoria": "SALVAGUARDA",
+   "ruta_evidencia": "articulo-23",
+   "texto_literal": "Las Asignaciones Familiares dispuestas en la presente ley son inembargables, no constituyen remuneración ni están sujetas a gravámenes, atento su naturaleza jurídica, tampoco serán tenidas en cuenta para la determinación del sueldo anual complementario, ni para el pago de las indemnizaciones por despido, enfermedad, accidente o para cualquier otro efecto. No pueden ser enajenadas ni afectadas a terceros por derecho alguno.",
+   "descripcion": "La asignación es inembargable, no constituye remuneración y no puede ser enajenada ni afectada a terceros.",
+   "requiere_revision": true,
+   "motivo_revision": "Es una protección sobre lo cobrado y no una condición de acceso, así que no tiene AST. Se conserva porque es lo que hay que poder responder cuando alguien pregunta si le pueden descontar la ayuda escolar por una deuda."
+  }
+ ],
+ "cuantia": {
+  "tipo": "FORMULA",
+  "ruta_evidencia": "articulo-18/inciso-d-79",
+  "formula_version": "ley-24714-art18-d@1",
+  "unidad_beneficiaria": "CAUSANTE",
+  "descripcion": "Una suma por cada hijo escolarizado, que el artículo 18 inciso d) fija en un monto único sin tramos por remuneración, a diferencia de las asignaciones mensuales.",
+  "parametros": [
+   {
+    "codigo": "AR.AYUDA-ESCOLAR-ANUAL",
+    "rol": "REFERENCIA"
+   }
+  ],
+  "requiere_revision": true,
+  "motivo_revision": "El artículo fija ciento treinta pesos, un valor de 1999 —la Ley 25.231 lo sustituyó ese año— y hace más de dos décadas que no es lo que se cobra. Los vigentes salen de resoluciones de ANSES que no están en el corpus. Es además la única cuantía de esta ley sin tramos por remuneración: si eso sigue siendo así en las resoluciones vigentes, o si hoy tiene escala como las demás, no sale de este texto."
+ },
+ "plazos": [
+  {
+   "clave": "PAGO-EN-MARZO",
+   "tipo": "FECHA_PAGO",
+   "ruta_evidencia": "articulo-10",
+   "texto_literal": "La asignación por ayuda escolar anual consistirá en el pago de una suma de dinero que se hará efectiva en el mes de marzo de cada año. Esta asignación se abonará por cada hijo que concurra regularmente a establecimientos de enseñanza básica y polimodal o bien, cualquiera sea su edad, si concurre a establecimientos oficiales o privados donde se imparta educación diferencial. (párrafo modificado por art. 3° de la Ley N° 25.231 B.O. 31/12/1999)",
+   "cantidad": 1,
+   "unidad": "dias",
+   "tipo_dia": "NO_INFORMADO",
+   "evento_inicio": "inicio del mes de marzo de cada año",
+   "requiere_revision": true,
+   "motivo_revision": "No es un plazo que corra desde un evento: es una fecha recurrente sin año, «el mes de marzo de cada año». El modelo guarda intervalos y plazos relativos y ninguno de los dos describe eso, así que se carga con cantidad uno y el mes como evento, que es una aproximación y hay que decirlo. Ponerle un año la ataría a un ciclo que la ley no nombra, y en la práctica el pago se ha adelantado o corrido por decreto en varios años."
+  }
+ ],
+ "campos_no_informados": [
+  {
+   "campo": "criterios_revocacion",
+   "motivo": "La ley no declara causales de baja. Se deja de percibir si el hijo deja de concurrir o si cambia la situación del titular, que no es una revocación. Qué pasa si la concurrencia se acredita después de marzo, o si se interrumpe a mitad de año habiendo cobrado, no sale de este texto."
+  },
+  {
+   "campo": "canales",
+   "motivo": "La ley no dice dónde se acredita la concurrencia escolar ni dónde se gestiona la prestación, y las dos vías de acceso podrían tener canales distintos: el subsistema contributivo históricamente liquidó por el empleador y el no contributivo por ANSES."
+  }
+ ],
+ "dependencias": [
+  {
+   "referencia": "Ley 26.206, Ley de Educación Nacional",
+   "motivo": "El artículo 10 nombra los niveles «básica y polimodal», que son los de la Ley Federal de Educación de 1993, derogada por la 26.206. La norma está en el corpus (F25) y lo que falta es la equivalencia entre unos niveles y otros, que decide si un chico entra o no. No se resuelve por analogía."
+  },
+  {
+   "referencia": "Resoluciones de ANSES que fijan montos de la Ley 24.714",
+   "motivo": "El artículo 19 delega la cuantía en el Poder Ejecutivo. Sin la resolución vigente, el monto del inciso d) queda declarado y sin valor."
+  },
+  {
+   "referencia": "Decretos que fijan la fecha de pago de la ayuda escolar",
+   "motivo": "El artículo 10 dice «en el mes de marzo de cada año» y en la práctica el pago se ha adelantado o corrido por decreto. Sin esas normas, la fecha declarada es la de la ley y no necesariamente la del año que se consulta."
+  }
+ ]
+}

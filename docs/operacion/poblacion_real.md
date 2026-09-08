@@ -375,7 +375,7 @@ que «la atención presencial de las sedes permanecerá cerrada hasta el comienz
 del nuevo periodo de inscripción». Eso es el dato de hoy. Rescatar el listado de
 una captura anterior lo presentaría como vigente.
 
-## Ocho beneficios curados
+## Nueve beneficios curados
 
 La lectura jurídica vive en `docs/curaduria/`, un archivo por beneficio, y no en
 el código: se puede discutir contra la ley sin leer Python. Cada regla, cada
@@ -394,6 +394,7 @@ siempre—.
 | Asignación por Embarazo | Ley 24.714 | 9 | 1 | 2 | fórmula sin valor |
 | Asignación por hijo (contributivo) | Ley 24.714 | 10 | 2 | 0 | fórmula sin valor |
 | Asignación por hijo con discapacidad | Ley 24.714 | 8 | 2 | 0 | fórmula sin valor |
+| Ayuda escolar anual | Ley 24.714 | 7 | 3 | 1 | fórmula sin valor |
 
 **Ninguna cuantía tiene monto.** No es una omisión: es lo que las normas dicen.
 El artículo 18 de la Ley 24.714 sigue fijando cien pesos por hijo —valor nominal
@@ -402,7 +403,7 @@ cincuenta pesos de 2006. Los montos vigentes salen de resoluciones que no están
 en el corpus. Servir esos números como «lo que vas a cobrar» sería peor que
 decir que no se sabe.
 
-**Cuatro prestaciones de la misma ley, curadas por separado.** La Ley 24.714
+**Cinco prestaciones de la misma ley, curadas por separado.** La Ley 24.714
 regula catorce; curarla entera como un beneficio haría que las condiciones de la
 asignación por matrimonio se le aplicaran a un chico de cuatro años. La
 diferencia no es teórica:
@@ -417,8 +418,12 @@ diferencia no es teórica:
   nombra a la asignación por hijo, a la de hijo con discapacidad y a la ayuda
   escolar. No nombra a la Asignación Universal por Hijo, que se incorporó trece
   años después.
+- La ayuda escolar cruza los dos subsistemas: se cobra por el contributivo y el
+  artículo 14 sexies se la da también a los titulares de la AUH. Una lectura que
+  sólo mire el artículo 6 inciso d) le responde «no te corresponde» justamente a
+  quien la ley se la da.
 
-**Lo que las normas no resuelven queda declarado.** De las 91 reglas vigentes,
+**Lo que las normas no resuelven queda declarado.** De las 98 reglas vigentes,
 poco más de la mitad tiene condición ejecutable escrita; el resto conserva su
 texto literal y el motivo por el que no se formalizó. Tres casos que muestran
 por qué:
