@@ -375,7 +375,7 @@ que «la atención presencial de las sedes permanecerá cerrada hasta el comienz
 del nuevo periodo de inscripción». Eso es el dato de hoy. Rescatar el listado de
 una captura anterior lo presentaría como vigente.
 
-## Diez beneficios curados
+## Once beneficios curados
 
 La lectura jurídica vive en `docs/curaduria/`, un archivo por beneficio, y no en
 el código: se puede discutir contra la ley sin leer Python. Cada regla, cada
@@ -396,6 +396,7 @@ siempre—.
 | Asignación por hijo con discapacidad | Ley 24.714 | 8 | 2 | 0 | fórmula sin valor |
 | Ayuda escolar anual | Ley 24.714 | 7 | 3 | 1 | fórmula sin valor |
 | Asignación por maternidad | Ley 24.714 | 7 | 1 | 0 | el propio sueldo |
+| Asignación prenatal | Ley 24.714 | 8 | 1 | 1 | fórmula sin valor |
 
 **Ninguna cuantía tiene monto**, y una no lo tiene por otra razón: la de
 maternidad es el propio sueldo de la persona, no una escala que alguien
@@ -406,7 +407,7 @@ cincuenta pesos de 2006. Los montos vigentes salen de resoluciones que no están
 en el corpus. Servir esos números como «lo que vas a cobrar» sería peor que
 decir que no se sabe.
 
-**Seis prestaciones de la misma ley, curadas por separado.** La Ley 24.714
+**Siete prestaciones de la misma ley, curadas por separado.** La Ley 24.714
 regula catorce; curarla entera como un beneficio haría que las condiciones de la
 asignación por matrimonio se le aplicaran a un chico de cuatro años. La
 diferencia no es teórica:
@@ -429,8 +430,13 @@ diferencia no es teórica:
   propio sueldo y no una escala, se cobra en cada empleo cuando hay más de uno,
   y el artículo 2 se la conserva a las empleadas de casas particulares, que
   quedan fuera del resto del subsistema contributivo.
+- La prenatal y la Asignación por Embarazo cubren el mismo embarazo desde los
+  dos subsistemas y no piden nada parecido: una, tres meses de antigüedad en el
+  empleo y acreditación entre el tercer y el cuarto mes; la otra, tres años de
+  residencia legal y solicitud desde la semana doce. Y el artículo 3 exceptúa
+  del tope de ingresos a la maternidad y no a la prenatal.
 
-**Lo que las normas no resuelven queda declarado.** De las 105 reglas vigentes,
+**Lo que las normas no resuelven queda declarado.** De las 113 reglas vigentes,
 poco más de la mitad tiene condición ejecutable escrita; el resto conserva su
 texto literal y el motivo por el que no se formalizó. Tres casos que muestran
 por qué:

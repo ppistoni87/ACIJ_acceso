@@ -40,7 +40,7 @@ aprobado para publicar.
 
 | Severidad | Abiertos |
 |---|---:|
-| HIGH | 75 |
+| HIGH | 77 |
 | INFO | 4490 |
 | LOW | 19 |
 | MEDIUM | 42 |
@@ -84,11 +84,11 @@ de responder cuánto se cobra.
 | documentos | 53 |
 | documento_versiones | 54 |
 | unidades_documentales | 992 |
-| evidencias | 7460 |
+| evidencias | 7461 |
 | normas | 423718 |
 | norma_versiones | 12 |
 | relaciones_normativas | 185 |
-| beneficios | 10 |
-| afirmaciones | 3853 |
+| beneficios | 11 |
+| afirmaciones | 4112 |
 | releases | 2 |
 
