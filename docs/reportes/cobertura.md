@@ -7,9 +7,9 @@ Promediarlas produce un número que suena bien y no significa nada.
 
 | Concepto | Cantidad |
 |---|---:|
-| Fuentes en el catálogo | 83 |
-| Con al menos una captura | 61 |
-| Con documentos extraídos | 22 |
+| Fuentes en el catálogo | 84 |
+| Con al menos una captura | 62 |
+| Con documentos extraídos | 55 |
 | Sin URL conocida | 15 |
 | Con acceso bloqueado o limitado | 2 |
 | Pendientes de capturar | 22 |
@@ -42,8 +42,8 @@ aprobado para publicar.
 |---|---:|
 | HIGH | 31 |
 | INFO | 4489 |
-| LOW | 4 |
-| MEDIUM | 24 |
+| LOW | 20 |
+| MEDIUM | 48 |
 
 ## (f) Dependencias pendientes
 
@@ -55,9 +55,9 @@ Señal técnica observable, separada del juicio sobre el contenido.
 
 | Métrica | Valor |
 |---|---:|
-| score promedio | 0.714 |
+| score promedio | 0.2909 |
 | score minimo | 0.0 |
-| versiones bajo umbral | 6 |
+| versiones bajo umbral | 38 |
 
 ## (h) Capacidades publicables
 
@@ -80,11 +80,11 @@ de responder cuánto se cobra.
 
 | Tabla | Filas |
 |---|---:|
-| capturas | 79 |
-| documentos | 25 |
-| documento_versiones | 25 |
+| capturas | 80 |
+| documentos | 59 |
+| documento_versiones | 60 |
 | unidades_documentales | 1562 |
-| evidencias | 7274 |
+| evidencias | 7311 |
 | normas | 423718 |
 | norma_versiones | 12 |
 | relaciones_normativas | 185 |

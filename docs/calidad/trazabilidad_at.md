@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **61**
-- Cubiertos parcialmente: **14**
-- No ejecutados: **5**
-- Pruebas citadas: **163** (ejecutadas)
+- Cubiertos por pruebas que corren: **63**
+- Cubiertos parcialmente: **16**
+- No ejecutados: **1**
+- Pruebas citadas: **173** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -26,8 +26,8 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-013 | Contadores no son aristas | HU-F01 | CUBIERTO | PASSED | `test_los_contadores_no_se_convierten_en_relaciones` |
 | AT-014 | Cambio de esquema dataset | HU-005 | CUBIERTO | PASSED | `test_forma_inesperada_detiene_la_importacion` |
 | AT-015 | ZIP malicioso o sobredimensionado | HU-005 | CUBIERTO | PASSED | `test_zip_con_ruta_fuera_del_arbol_se_rechaza`<br>`test_expansion_por_encima_del_presupuesto_se_rechaza` |
-| AT-016 | Contenedor vacío | HU-F52 | NO_EJECUTADO | — | _F52 (cronograma con contenedores field-item) no está capturada: su adaptador HTML específico no se construyó en este alcance._ |
-| AT-017 | Bloque escolar oculto | HU-F27 | NO_EJECUTADO | — | _F27 (inscripción escolar con bloques d-none) no está capturada; la regla de visibilidad CSS no está implementada en el adaptador HTML._ |
+| AT-016 | Contenedor vacío | HU-F52 | CUBIERTO_PARCIAL | PASSED | `test_at016_un_contenedor_vacio_no_se_toma_como_el_contenido`<br>`test_at016_una_pagina_sin_contenedores_vacios_no_avisa_de_nada`<br>_Falta: Se prueba que un contenedor vacío no se tome como el contenido y que la ausencia quede reportada. La validación del período al que corresponde cada contenedor —qué mes es el del cronograma— necesita normalizar fechas dentro de la página._ |
+| AT-017 | Bloque escolar oculto | HU-F27 | CUBIERTO | PASSED | `test_at017_el_bloque_oculto_no_entra_como_contenido_vigente`<br>`test_at017_los_dos_contextos_quedan_separados_no_descartados`<br>`test_las_formas_de_ocultar_que_usan_los_portales_se_reconocen`<br>`test_una_clase_que_solo_contiene_la_palabra_no_cuenta_como_oculta`<br>`test_el_texto_oculto_se_devuelve_sin_repetir_anidados` |
 | AT-018 | PDF sin magic | HU-F40 | CUBIERTO | PASSED | `test_una_pagina_de_error_con_encabezado_de_pdf_no_es_un_documento` |
 | AT-019 | Prefijo PDF conocido | HU-F40 | CUBIERTO | PASSED | `test_el_prefijo_real_del_boletin_de_caba_se_repara`<br>`test_un_prefijo_de_advertencia_se_recorta_y_queda_registrado`<br>`test_un_prefijo_desmedido_no_se_repara` |
 | AT-020 | PDF página gráfica | HU-007 | CUBIERTO | PASSED | `test_una_pagina_grafica_no_vacia_el_documento`<br>`test_un_documento_sin_texto_dice_que_no_sustenta_nada`<br>`test_el_umbral_de_pagina_distingue_texto_de_folio` |
@@ -72,10 +72,10 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-059 | No informado operativo | HU-F60 | CUBIERTO | PASSED | `test_at059_un_literal_de_sin_dato_no_se_carga_como_telefono`<br>`test_un_nombre_que_dice_na_no_se_pega_al_programa` |
 | AT-060 | Conflicto de piso | HU-F20 | CUBIERTO_PARCIAL | PASSED | `test_at060_la_direccion_se_conserva_como_la_escribio_la_fuente`<br>`test_candidatos_en_conflicto_pueden_coexistir`<br>_Falta: Se prueba que la dirección no se recomponga y que dos candidatos en conflicto puedan coexistir; el contraste concreto entre el CSV de comunas y la ficha de la misma subsede necesita capturar además esa ficha._ |
 | AT-061 | Horarios por canal | HU-F03 | CUBIERTO | PASSED | `test_at061_el_horario_es_del_canal_presencial_y_no_se_copia` |
-| AT-062 | Atribución de directorio | HU-F44 | NO_EJECUTADO | — | _El directorio de la DPN (F44) no está capturado: la atribución de un operador municipal no tiene datos donde ejercerse._ |
+| AT-062 | Atribución de directorio | HU-F44 | CUBIERTO_PARCIAL | PASSED | `test_at059_un_literal_de_sin_dato_no_se_carga_como_telefono`<br>`test_candidatos_en_conflicto_pueden_coexistir`<br>_Falta: El directorio de la DPN (F44) está capturado y extraído como página institucional, pero sus oficinas no se cargaron como puntos de atención: separar el organismo titular del operador municipal necesita leer la estructura de ese portal, no solo su texto._ |
 | AT-063 | Coordenadas locales | HU-020 | CUBIERTO | PASSED | `test_at063_una_coordenada_en_grilla_local_no_se_usa_como_wgs84`<br>`test_at063_la_incidencia_dice_que_falta_confirmar_la_proyeccion`<br>`test_una_coordenada_plausible_como_wgs84_si_se_usa`<br>`test_una_geometria_ilegible_se_conserva_cruda` |
 | AT-064 | RENABAP no encontrado | HU-021 | CUBIERTO | PASSED | `test_at064_un_barrio_ausente_del_padron_no_pierde_derechos`<br>`test_un_barrio_que_sale_del_padron_no_se_borra`<br>`test_no_se_inventa_una_fecha_de_corte`<br>`test_cada_barrio_nace_con_la_evidencia_de_su_fila` |
-| AT-065 | Tabla estacional vacía | HU-F64 | NO_EJECUTADO | — | _F64 (sedes estacionales) no está capturada._ |
+| AT-065 | Tabla estacional vacía | HU-F64 | CUBIERTO | PASSED | `test_at065_una_sede_cerrada_es_el_dato_no_una_falta_de_datos`<br>`test_at065_el_fragmento_del_cierre_no_arranca_a_mitad_de_palabra`<br>`test_una_pagina_con_sedes_abiertas_no_declara_cierre` |
 | AT-066 | Fuente secundaria y cita | HU-022 | CUBIERTO_PARCIAL | PASSED | `test_la_recuperacion_devuelve_citas_localizables`<br>_Falta: No hay fuente secundaria de ONG en el corpus poblado: la atribución secundaria se sostiene por el modelo de evidencia, no por un caso real._ |
 | AT-067 | Contenido con instrucciones maliciosas | HU-033 | CUBIERTO | PASSED | `test_at067_las_instrucciones_dentro_de_un_documento_se_guardan_como_texto` |
 | AT-068 | Ingestor intenta publicar | HU-033 | CUBIERTO | PASSED | `test_at068_el_rol_ingestor_no_puede_crear_un_release`<br>`test_sin_credencial_configurada_la_administracion_esta_cerrada`<br>`test_una_credencial_invalida_no_autoriza` |

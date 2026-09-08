@@ -210,6 +210,28 @@ consumidores» no dice si el trámite es ciudadano o institucional. Y que la fic
 esté publicada no prueba que el trámite esté tomando solicitudes hoy, así que el
 estado operativo queda `NO_INFORMADO`.
 
+## Páginas institucionales
+
+31 páginas de portales oficiales extraídas: cronogramas, listados de sedes,
+directorios y páginas de inscripción. No tienen articulado, así que lo que
+importa de ellas es lo que el adaptador se niega a dar por bueno, y los tres
+casos que el manual anticipa estaban ahí.
+
+**Un contenedor vacío no es contenido.** Estas páginas repiten la misma
+estructura para varios períodos y la del que todavía no arrancó viene en
+blanco. F52 tiene 4 contenedores y 2 vacíos; F53, 13 y 7. Tomar el primero
+porque es el primero deja una carga exitosa sin datos.
+
+**Lo que la página esconde no es lo que publica.** F27 trae 2 bloques detrás de
+un `d-none` y F17 trae 5. No entran como contenido vigente y se informan
+aparte: que la página tenga un ciclo viejo escondido permite responder «esa
+inscripción es del ciclo anterior» en vez de no responder.
+
+**Una tabla que no está no es una tabla vacía.** F64 dice, con esas palabras,
+que «la atención presencial de las sedes permanecerá cerrada hasta el comienzo
+del nuevo periodo de inscripción». Eso es el dato de hoy. Rescatar el listado de
+una captura anterior lo presentaría como vigente.
+
 ## Lo que falta y por qué
 
 | Falta | Depende de | Afecta |

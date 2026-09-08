@@ -20,6 +20,21 @@ ETIQUETAS_IGNORADAS = frozenset(
     {"script", "style", "noscript", "nav", "header", "footer", "form", "svg", "button"}
 )
 
+# Marcas con las que una página declara que un bloque no está visible. No es
+# una lista de estilos posibles: son las que los portales del corpus usan.
+CLASES_OCULTAS = ("d-none", "hidden", "invisible", "sr-only", "visually-hidden")
+RE_ESTILO_OCULTO = re.compile(r"display\s*:\s*none|visibility\s*:\s*hidden", re.I)
+
+SELECTOR_OCULTOS = ", ".join(
+    [
+        *(f"[class~={clase}]" for clase in CLASES_OCULTAS),
+        "[hidden]",
+        '[aria-hidden="true"]',
+        "[style*=none]",
+        "[style*=hidden]",
+    ]
+)
+
 # Elementos que separan disposiciones.
 ETIQUETAS_BLOQUE = frozenset(
     {
@@ -136,15 +151,64 @@ def _entrecomillado(nodo: Node, texto: str) -> bool:
     return False
 
 
+def esta_oculto(nodo: Node) -> bool:
+    """Si la página declara que este bloque no se ve.
+
+    Una página puede tener el ciclo lectivo viejo y el nuevo en el mismo HTML,
+    con el viejo escondido detrás de un `d-none`. Los dos textos son legítimos;
+    lo que los distingue es que solo uno está publicado hoy. Extraer el oculto
+    como si fuera el vigente es la forma más silenciosa de servir información
+    del año pasado.
+    """
+    clases = (nodo.attributes.get("class") or "").split()
+    if any(clase in CLASES_OCULTAS for clase in clases):
+        return True
+    if "hidden" in nodo.attributes:
+        return True
+    if (nodo.attributes.get("aria-hidden") or "").lower() == "true":
+        return True
+    return bool(RE_ESTILO_OCULTO.search(nodo.attributes.get("style") or ""))
+
+
+def texto_oculto(html: str, *, selector: str | None = None) -> list[str]:
+    """Los bloques que la página esconde, para poder decir que existen.
+
+    No se descartan en silencio: que la página tenga un ciclo viejo escondido es
+    información, y separarla del visible es lo que permite responder «esa
+    inscripción es del ciclo anterior» en vez de no responder.
+    """
+    arbol = HTMLParser(html)
+    for etiqueta in ETIQUETAS_IGNORADAS:
+        for nodo in arbol.css(etiqueta):
+            nodo.decompose()
+    raiz = (arbol.css_first(selector) if selector else None) or arbol.body or arbol.root
+    if raiz is None:
+        return []
+
+    encontrados: list[str] = []
+    for nodo in raiz.css(SELECTOR_OCULTOS):
+        if not esta_oculto(nodo):
+            continue
+        texto = _texto_de_bloque(nodo)
+        if texto and not any(texto in visto or visto in texto for visto in encontrados):
+            encontrados.append(texto)
+    return encontrados
+
+
 def parrafos_de_html(html: str, *, selector: str | None = None) -> list[Parrafo]:
     """Convierte HTML en párrafos con su desplazamiento en el texto plano.
 
     Los desplazamientos son sobre el texto reconstruido, no sobre el HTML: son
     los que después permiten localizar una evidencia dentro de la versión.
+
+    Lo que la página esconde no entra: `texto_oculto` lo devuelve aparte.
     """
     arbol = HTMLParser(html)
     for etiqueta in ETIQUETAS_IGNORADAS:
         for nodo in arbol.css(etiqueta):
+            nodo.decompose()
+    for nodo in arbol.css(SELECTOR_OCULTOS):
+        if esta_oculto(nodo):
             nodo.decompose()
 
     raiz = (arbol.css_first(selector) if selector else None) or arbol.body or arbol.root

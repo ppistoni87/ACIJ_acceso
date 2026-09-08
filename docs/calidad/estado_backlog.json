@@ -70,7 +70,9 @@
         "src/backend_normativo/ingesta/adaptadores/normativa_nacional.py",
         "src/backend_normativo/ingesta/adaptadores/normativa_ba.py",
         "src/backend_normativo/ingesta/adaptadores/infoleg_legacy.py",
-        "tests/unit/test_adaptadores.py"
+        "tests/unit/test_adaptadores.py",
+        "src/backend_normativo/ingesta/adaptadores/pagina_institucional.py",
+        "tests/unit/test_adaptador_pagina.py"
       ],
       "comandos": [
         "bn ingesta extraer",

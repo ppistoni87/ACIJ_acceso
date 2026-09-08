@@ -94,10 +94,20 @@
    ]
   },
   "AT-016": {
-   "motivo": "F52 (cronograma con contenedores field-item) no está capturada: su adaptador HTML específico no se construyó en este alcance."
+   "pruebas": [
+    "tests/unit/test_adaptador_pagina.py::test_at016_un_contenedor_vacio_no_se_toma_como_el_contenido",
+    "tests/unit/test_adaptador_pagina.py::test_at016_una_pagina_sin_contenedores_vacios_no_avisa_de_nada"
+   ],
+   "falta": "Se prueba que un contenedor vacío no se tome como el contenido y que la ausencia quede reportada. La validación del período al que corresponde cada contenedor —qué mes es el del cronograma— necesita normalizar fechas dentro de la página."
   },
   "AT-017": {
-   "motivo": "F27 (inscripción escolar con bloques d-none) no está capturada; la regla de visibilidad CSS no está implementada en el adaptador HTML."
+   "pruebas": [
+    "tests/unit/test_adaptador_pagina.py::test_at017_el_bloque_oculto_no_entra_como_contenido_vigente",
+    "tests/unit/test_adaptador_pagina.py::test_at017_los_dos_contextos_quedan_separados_no_descartados",
+    "tests/unit/test_adaptador_pagina.py::test_las_formas_de_ocultar_que_usan_los_portales_se_reconocen",
+    "tests/unit/test_adaptador_pagina.py::test_una_clase_que_solo_contiene_la_palabra_no_cuenta_como_oculta",
+    "tests/unit/test_adaptador_pagina.py::test_el_texto_oculto_se_devuelve_sin_repetir_anidados"
+   ]
   },
   "AT-018": {
    "pruebas": [
@@ -384,7 +394,11 @@
    ]
   },
   "AT-062": {
-   "motivo": "El directorio de la DPN (F44) no está capturado: la atribución de un operador municipal no tiene datos donde ejercerse."
+   "pruebas": [
+    "tests/integracion/test_importador_directorios.py::test_at059_un_literal_de_sin_dato_no_se_carga_como_telefono",
+    "tests/integracion/test_esquema_hechos.py::test_candidatos_en_conflicto_pueden_coexistir"
+   ],
+   "falta": "El directorio de la DPN (F44) está capturado y extraído como página institucional, pero sus oficinas no se cargaron como puntos de atención: separar el organismo titular del operador municipal necesita leer la estructura de ese portal, no solo su texto."
   },
   "AT-063": {
    "pruebas": [
@@ -403,7 +417,11 @@
    ]
   },
   "AT-065": {
-   "motivo": "F64 (sedes estacionales) no está capturada."
+   "pruebas": [
+    "tests/unit/test_adaptador_pagina.py::test_at065_una_sede_cerrada_es_el_dato_no_una_falta_de_datos",
+    "tests/unit/test_adaptador_pagina.py::test_at065_el_fragmento_del_cierre_no_arranca_a_mitad_de_palabra",
+    "tests/unit/test_adaptador_pagina.py::test_una_pagina_con_sedes_abiertas_no_declara_cierre"
+   ]
   },
   "AT-066": {
    "pruebas": [

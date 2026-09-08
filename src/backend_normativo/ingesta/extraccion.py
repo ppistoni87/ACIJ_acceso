@@ -29,6 +29,9 @@ from backend_normativo.ingesta.adaptadores.base import (
 from backend_normativo.ingesta.adaptadores.infoleg_legacy import AdaptadorInfolegLegacy
 from backend_normativo.ingesta.adaptadores.normativa_ba import AdaptadorNormativaBA
 from backend_normativo.ingesta.adaptadores.normativa_nacional import AdaptadorNormativaNacional
+from backend_normativo.ingesta.adaptadores.pagina_institucional import (
+    AdaptadorPaginaInstitucional,
+)
 from backend_normativo.ingesta.adaptadores.pdf import AdaptadorPdf
 from backend_normativo.ingesta.adaptadores.tramite_argentina import (
     AdaptadorTramiteArgentina,
@@ -65,6 +68,9 @@ def adaptadores_por_defecto() -> list[Adaptador]:
         # acepta por contenido. Si fuera primero, se quedaría con cualquier
         # captura que traiga un PDF incrustado en una página.
         AdaptadorPdf(),
+        # Último de todos: acepta cualquier página de los portales del corpus,
+        # así que puesto antes se quedaría con las que otro sabe leer mejor.
+        AdaptadorPaginaInstitucional(),
     ]
 
 
