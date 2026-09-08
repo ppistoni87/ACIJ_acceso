@@ -477,11 +477,22 @@ class CuradorDeBeneficios:
         # La ley describe la escala en palabras y remite el detalle a la
         # Autoridad de Aplicación. La fórmula queda declarada con su versión y
         # sin valor: servir el piso como «el monto» diría que todos cobran igual.
+        #
+        # Los parámetros entran con el rol que la lectura les da, no solo los de
+        # piso. Una asignación cuyo importe es «la mayor suma del inciso a) o b)»
+        # no tiene piso: tiene una referencia a otra norma que se actualiza sola,
+        # y perder ese rol al guardarla la dejaría indistinguible de un monto que
+        # nadie actualiza.
+        parametros = datos.get("parametros", ())
         formula = {
             "schema_version": "1.0",
             "descripcion": datos["descripcion"],
-            "piso": [p["codigo"] for p in datos.get("parametros", ()) if p.get("rol") == "PISO"],
+            "piso": [p["codigo"] for p in parametros if p.get("rol", "PISO") == "PISO"],
         }
+        por_rol: dict[str, list[str]] = {}
+        for parametro in parametros:
+            por_rol.setdefault(parametro.get("rol", "PISO"), []).append(parametro["codigo"])
+        formula["parametros"] = por_rol
         cuantia_id = self.conexion.execute(
             text(
                 "INSERT INTO beneficio_cuantias (beneficio_version_id, evidencia_id, tipo, "
@@ -494,7 +505,10 @@ class CuradorDeBeneficios:
                 "t": datos["tipo"],
                 "f": json.dumps(formula, ensure_ascii=False),
                 "fv": datos["formula_version"],
-                "ub": "HOGAR",
+                # Por cuántos se cobra no es un detalle de presentación: una
+                # asignación que se paga por cada hijo y una que se paga por
+                # hogar dan importes distintos con los mismos datos.
+                "ub": datos.get("unidad_beneficiaria", "HOGAR"),
             },
         ).scalar_one()
         for parametro in datos.get("parametros", ()):
