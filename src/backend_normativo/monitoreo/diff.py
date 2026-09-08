@@ -24,9 +24,12 @@ class CambioDeUnidad:
     tipo: str
     antes: str | None
     despues: str | None
+    ruta_nueva: str | None = None
 
     @property
     def clase(self) -> str:
+        if self.ruta_nueva is not None:
+            return "DESPLAZADA"
         if self.antes is None:
             return "AGREGADA"
         if self.despues is None:
@@ -49,7 +52,17 @@ class Diferencia:
 
     @property
     def hay_cambios(self) -> bool:
-        return bool(self.cambios)
+        """Un desplazamiento no es un cambio de la norma.
+
+        Cuando se agrega un párrafo, todas las rutas posteriores corren un
+        lugar. Contar eso como texto modificado inundaría la cola de revisión
+        con decenas de cambios falsos por cada inserción real.
+        """
+        return any(c.clase != "DESPLAZADA" for c in self.cambios)
+
+    @property
+    def sustantivos(self) -> list[CambioDeUnidad]:
+        return [c for c in self.cambios if c.clase != "DESPLAZADA"]
 
     @property
     def resumen(self) -> dict[str, int]:
@@ -106,17 +119,59 @@ def comparar_versiones(conexion: Connection, version_nueva: uuid.UUID) -> Difere
         }
 
     viejas, nuevas = unidades(anterior), unidades(version_nueva)
-    for ruta in sorted(set(viejas) | set(nuevas)):
-        vieja = viejas.get(ruta)
-        nueva = nuevas.get(ruta)
-        if vieja and nueva and vieja[1] == nueva[1]:
+    diferencia.cambios.extend(_comparar(viejas, nuevas))
+    return diferencia
+
+
+def _comparar(
+    viejas: dict[str, tuple[str, str]], nuevas: dict[str, tuple[str, str]]
+) -> list[CambioDeUnidad]:
+    """Compara primero por contenido y recién después por ruta.
+
+    Las rutas llevan un ordinal para que dos unidades sin número no colisionen,
+    y ese ordinal corre cuando se inserta un párrafo. Comparar solo por ruta
+    haría que agregar tres párrafos al Decreto 1382/2001 produjera 81 cambios:
+    39 «eliminadas» y 42 «agregadas» que son el mismo texto un lugar más abajo.
+    Emparejando primero por texto idéntico, lo que queda son los cambios que de
+    verdad ocurrieron.
+    """
+    resto_viejo = {r: v for r, v in viejas.items() if nuevas.get(r, (None, None))[1] != v[1]}
+    resto_nuevo = {r: v for r, v in nuevas.items() if viejas.get(r, (None, None))[1] != v[1]}
+
+    # 1. Misma unidad en otra ruta: se movió, no cambió.
+    por_texto: dict[str, list[str]] = {}
+    for ruta, (_, texto) in resto_nuevo.items():
+        por_texto.setdefault(texto, []).append(ruta)
+
+    cambios: list[CambioDeUnidad] = []
+    for ruta in sorted(resto_viejo):
+        tipo, texto = resto_viejo[ruta]
+        candidatas = por_texto.get(texto)
+        if not candidatas:
             continue
-        diferencia.cambios.append(
+        destino = candidatas.pop(0)
+        cambios.append(
+            CambioDeUnidad(ruta=ruta, tipo=tipo, antes=texto, despues=texto, ruta_nueva=destino)
+        )
+        del resto_viejo[ruta]
+        del resto_nuevo[destino]
+
+    # 2. Misma ruta con otro texto: se reescribió.
+    for ruta in sorted(set(resto_viejo) & set(resto_nuevo)):
+        cambios.append(
             CambioDeUnidad(
                 ruta=ruta,
-                tipo=(nueva or vieja)[0],
-                antes=vieja[1] if vieja else None,
-                despues=nueva[1] if nueva else None,
+                tipo=resto_nuevo[ruta][0],
+                antes=resto_viejo[ruta][1],
+                despues=resto_nuevo[ruta][1],
             )
         )
-    return diferencia
+
+    # 3. Lo que queda entró o salió de verdad.
+    for ruta in sorted(set(resto_viejo) - set(resto_nuevo)):
+        tipo, texto = resto_viejo[ruta]
+        cambios.append(CambioDeUnidad(ruta=ruta, tipo=tipo, antes=texto, despues=None))
+    for ruta in sorted(set(resto_nuevo) - set(resto_viejo)):
+        tipo, texto = resto_nuevo[ruta]
+        cambios.append(CambioDeUnidad(ruta=ruta, tipo=tipo, antes=None, despues=texto))
+    return sorted(cambios, key=lambda c: c.ruta)

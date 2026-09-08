@@ -343,3 +343,35 @@ def test_un_evento_que_agoto_los_intentos_pasa_a_la_cola_de_fallos(
     assert resultado.entregados == 0
     assert resultado.fallidos == 0
     assert resultado.en_cola_de_fallos == 1
+
+
+def test_una_unidad_que_solo_cambio_de_lugar_no_es_un_cambio_de_la_norma(
+    conexion: Connection,
+) -> None:
+    """Insertar un párrafo corre la ruta de todos los siguientes. Si eso contara
+    como texto modificado, cada inserción emitiría decenas de eventos falsos."""
+    cargar_catalogo(conexion)
+    antes = [
+        ("ARTICULO", "1", "Art. 1°.- Objeto.", "DISPOSITIVO"),
+        ("PARRAFO", None, "Los requisitos se acreditan ante la autoridad.", "DISPOSITIVO"),
+    ]
+    despues = [
+        ("ARTICULO", "1", "Art. 1°.- Objeto.", "DISPOSITIVO"),
+        ("PARRAFO", None, "Se incorpora una excepción para casos fundados.", "DISPOSITIVO"),
+        ("PARRAFO", None, "Los requisitos se acreditan ante la autoridad.", "DISPOSITIVO"),
+    ]
+    primera = _version(conexion, sufijo="-desplazada", unidades=antes)
+    documento_id = conexion.execute(
+        text("SELECT documento_id FROM documento_versiones WHERE id = :v"), {"v": primera}
+    ).scalar_one()
+    segunda = _segunda_version(conexion, documento_id, unidades=despues)
+
+    diferencia = comparar_versiones(conexion, segunda)
+    assert diferencia is not None
+    clases = [c.clase for c in diferencia.cambios]
+    assert "DESPLAZADA" in clases
+    # Lo que de verdad entró es un párrafo, no dos más uno eliminado.
+    agregadas = [c for c in diferencia.cambios if c.clase == "AGREGADA"]
+    assert len(agregadas) == 1
+    assert "excepción" in agregadas[0].despues
+    assert [c.clase for c in diferencia.sustantivos] == ["AGREGADA"]

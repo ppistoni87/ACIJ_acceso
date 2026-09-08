@@ -382,6 +382,67 @@ def calidad_diccionario(
         typer.echo(texto)
 
 
+@calidad.command("ensayo-actualizacion")
+def calidad_ensayo_actualizacion(
+    salida: Path | None = typer.Option(None, help="Archivo donde escribir la evidencia."),
+    base: str = typer.Option(
+        "backend_normativo_ensayo", help="Base descartable donde correr el ensayo."
+    ),
+) -> None:
+    """Ejercita diff, impacto y evento sobre una actualización controlada.
+
+    Crea la base desde cero, la migra, corre el ensayo y la deja. Nunca toca la
+    base de producción: los datos del ensayo no se mezclan con el corpus.
+    """
+    import os
+
+    from sqlalchemy import create_engine
+    from sqlalchemy import text as sql
+
+    from backend_normativo.calidad.ensayo import correr
+    from backend_normativo.calidad.ensayo import formatear as formatear_ensayo
+    from backend_normativo.config import get_settings
+
+    url_actual = str(get_settings().database_url)
+    url_ensayo = url_actual.rsplit("/", 1)[0] + "/" + base
+
+    admin = create_engine(url_actual.rsplit("/", 1)[0] + "/postgres", isolation_level="AUTOCOMMIT")
+    with admin.connect() as conexion:
+        conexion.execute(sql(f'DROP DATABASE IF EXISTS "{base}" WITH (FORCE)'))
+        conexion.execute(sql(f'CREATE DATABASE "{base}"'))
+    admin.dispose()
+
+    previo = os.environ.get("BN_DATABASE_URL")
+    os.environ["BN_DATABASE_URL"] = url_ensayo
+    get_settings.cache_clear()
+    try:
+        from alembic import command
+        from alembic.config import Config
+
+        command.upgrade(Config("alembic.ini"), "head")
+        motor = create_engine(url_ensayo, future=True)
+        with motor.begin() as conexion:
+            resultado = correr(conexion)
+        motor.dispose()
+    finally:
+        if previo is None:
+            os.environ.pop("BN_DATABASE_URL", None)
+        else:
+            os.environ["BN_DATABASE_URL"] = previo
+        get_settings.cache_clear()
+
+    texto = formatear_ensayo(resultado)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto + "\n", encoding="utf-8")
+        typer.echo(
+            f"Evidencia escrita en {salida} · cambios {resultado.resumen} · "
+            f"eventos {resultado.eventos_tras_repetir}"
+        )
+    else:
+        typer.echo(texto)
+
+
 @curacion.command("vigencia")
 def curacion_vigencia(
     fuente: str | None = typer.Option(None, help="Limitar a una fuente."),
