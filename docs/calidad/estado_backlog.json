@@ -193,14 +193,26 @@
       ]
     },
     "HU-019": {
-      "estado": "NO_INICIADA",
-      "evidencia": [],
-      "falta": "Las tablas de trámites, pasos y canales existen y tienen sus restricciones, pero no hay importador que las pueble. Afecta AT-059, AT-061 y AT-076."
+      "estado": "EN_CURSO",
+      "evidencia": [
+        "src/backend_normativo/ingesta/importadores/directorios.py",
+        "tests/integracion/test_importador_directorios.py"
+      ],
+      "comandos": [
+        "bn ingesta importar-directorio"
+      ],
+      "falta": "Los canales de atención están poblados desde los directorios abiertos (766 canales de 233 puntos). Los trámites con sus pasos y documentos exigidos —tablas `tramites`, `tramite_pasos`— no tienen importador: sus fuentes (F45, F24, F56) son fichas HTML que necesitan un adaptador propio."
     },
     "HU-020": {
-      "estado": "NO_INICIADA",
-      "evidencia": [],
-      "falta": "Las tablas de puntos de atención existen; no hay importador de directorios ni tratamiento de coordenadas. Afecta AT-060, AT-062, AT-063 y AT-065."
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/ingesta/importadores/directorios.py",
+        "tests/integracion/test_importador_directorios.py"
+      ],
+      "comandos": [
+        "bn ingesta capturar F20 F60",
+        "bn ingesta importar-directorio"
+      ]
     },
     "HU-021": {
       "estado": "CERRADA",

@@ -350,22 +350,33 @@
    ]
   },
   "AT-059": {
-   "motivo": "Los canales de atención (HU-019) no están poblados: no hay importador de directorios que pueda encontrarse un literal N/A."
+   "pruebas": [
+    "tests/integracion/test_importador_directorios.py::test_at059_un_literal_de_sin_dato_no_se_carga_como_telefono",
+    "tests/integracion/test_importador_directorios.py::test_un_nombre_que_dice_na_no_se_pega_al_programa"
+   ]
   },
   "AT-060": {
    "pruebas": [
+    "tests/integracion/test_importador_directorios.py::test_at060_la_direccion_se_conserva_como_la_escribio_la_fuente",
     "tests/integracion/test_esquema_hechos.py::test_candidatos_en_conflicto_pueden_coexistir"
    ],
-   "falta": "Los puntos de atención (HU-020) no están poblados: el conflicto de piso entre CSV y ficha no tiene datos reales donde darse."
+   "falta": "Se prueba que la dirección no se recomponga y que dos candidatos en conflicto puedan coexistir; el contraste concreto entre el CSV de comunas y la ficha de la misma subsede necesita capturar además esa ficha."
   },
   "AT-061": {
-   "motivo": "Los canales por tipo con horarios propios (HU-019) no están poblados."
+   "pruebas": [
+    "tests/integracion/test_importador_directorios.py::test_at061_el_horario_es_del_canal_presencial_y_no_se_copia"
+   ]
   },
   "AT-062": {
    "motivo": "El directorio de la DPN (F44) no está capturado: la atribución de un operador municipal no tiene datos donde ejercerse."
   },
   "AT-063": {
-   "motivo": "El dataset de sedes con coordenadas (HU-020) no está cargado: no hay geometría cuyo CRS discutir."
+   "pruebas": [
+    "tests/integracion/test_importador_directorios.py::test_at063_una_coordenada_en_grilla_local_no_se_usa_como_wgs84",
+    "tests/integracion/test_importador_directorios.py::test_at063_la_incidencia_dice_que_falta_confirmar_la_proyeccion",
+    "tests/integracion/test_importador_directorios.py::test_una_coordenada_plausible_como_wgs84_si_se_usa",
+    "tests/integracion/test_importador_directorios.py::test_una_geometria_ilegible_se_conserva_cruda"
+   ]
   },
   "AT-064": {
    "pruebas": [
@@ -449,9 +460,10 @@
   },
   "AT-076": {
    "pruebas": [
-    "tests/integracion/test_esquema_hechos.py::test_cuantia_no_informada_no_necesita_inventar_un_monto"
+    "tests/integracion/test_esquema_hechos.py::test_cuantia_no_informada_no_necesita_inventar_un_monto",
+    "tests/integracion/test_importador_directorios.py::test_at059_un_literal_de_sin_dato_no_se_carga_como_telefono"
    ],
-   "falta": "Los trámites (HU-019) no están poblados: la ficha sin costo ni duración no tiene datos reales donde darse."
+   "falta": "Los trámites con costo y duración (HU-019) no están poblados: lo que se prueba es que un campo vacío no se completa con un cero ni con «gratuito»."
   },
   "AT-077": {
    "pruebas": [

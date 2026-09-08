@@ -190,6 +190,42 @@ def ingesta_importar_renabap(
         typer.echo(f"  aviso: {aviso}")
 
 
+@ingesta.command("importar-directorio")
+def ingesta_importar_directorio(
+    captura: str = typer.Argument(..., help="Id de la captura del dataset (F20 o F60)."),
+) -> None:
+    """Importa un directorio de atención con sus canales.
+
+    Un literal de «sin dato» se guarda como ausencia y una coordenada sin CRS
+    confirmado no se usa como latitud y longitud.
+    """
+    import uuid as _uuid
+
+    from backend_normativo.ingesta.importadores.directorios import (
+        FormaInesperada,
+        ImportadorDirectorios,
+    )
+
+    with engine_migrador().begin() as conexion:
+        try:
+            resultado = ImportadorDirectorios(conexion).importar_desde_captura(_uuid.UUID(captura))
+        except FormaInesperada as exc:
+            typer.echo(str(exc))
+            raise typer.Exit(1) from exc
+    typer.echo(
+        f"Fuente: {resultado.source_id}\n"
+        f"Filas leídas: {resultado.filas_leidas}\n"
+        f"Puntos nuevos: {resultado.puntos_creados} · "
+        f"ya conocidos: {resultado.puntos_conocidos}\n"
+        f"Canales: {resultado.canales_creados}\n"
+        f"Literales de «sin dato» descartados: {resultado.literales_sin_dato}\n"
+        f"Coordenadas usables: {resultado.coordenadas_usables} · "
+        f"sin CRS confirmado: {resultado.coordenadas_sin_crs}"
+    )
+    for aviso in resultado.avisos:
+        typer.echo(f"  aviso: {aviso}")
+
+
 @ingesta.command("extraer")
 def ingesta_extraer(
     fuente: str | None = typer.Option(None, help="Limitar a una fuente."),

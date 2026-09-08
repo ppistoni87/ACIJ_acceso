@@ -131,14 +131,37 @@ padrón se buscó y por dónde se gestiona la inclusión. Que un barrio no figur
 es un dato de ese corte y la respuesta lo dice con esas palabras: no habilita
 ninguna conclusión sobre derechos.
 
+## Directorios de atención
+
+233 puntos de atención y 766 canales importados desde dos datasets abiertos:
+sedes comunales de CABA (F20) y efectores de desarrollo humano (F60).
+
+Los dos casos que el manual anticipa aparecieron tal cual:
+
+**Las coordenadas no son WGS84.** El dataset de sedes comunales trae
+`POINT (28615.88 70947.08)`: una grilla local, sin CRS declarado. Interpretado
+como longitud y latitud está fuera del planeta; con los ejes invertidos, en el
+Golfo de Guinea. Las 21 sedes quedaron con `lat`/`lng` vacías, su geometría
+cruda conservada con su origen, y una incidencia abierta pidiendo confirmar la
+proyección. No se responde por cercanía hasta entonces.
+
+**`N/A` no es un dato.** El dataset de efectores usa ese literal en nombre,
+tipo y teléfono. 153 campos se guardaron como ausencia. El resto de la fila se
+conserva: perder un correo electrónico bueno porque el teléfono venía vacío
+sería descartar información por información.
+
+La dirección se conserva como la escribió la fuente, con el piso adentro si
+viene adentro. Componer una legible mezclando dos fuentes que no coinciden
+produce una dirección que no existe en ninguna de las dos.
+
 ## Lo que falta y por qué
 
 | Falta | Depende de | Afecta |
 | --- | --- | --- |
 | Vincular el anexo D07 con su resolución D04 | Curación de identidad sobre PDF | AT-029 |
 | Fechar los documentos PDF por su contenido | Lectura de fecha en el propio documento | AT-075 |
-| Trámites, pasos y canales | Importador de trámites (HU-019) | F03, F45, F60, F61 y los casos operativos |
-| Directorios y puntos de atención | Importador de directorios (HU-020) | F05, F07, F10, F14, F20, F44 |
+| Trámites con sus pasos y documentos exigidos | Adaptador de fichas de trámite (HU-019) | F45, F24, F56 |
+| Directorios en HTML | Adaptador por portal (HU-020) | F05, F07, F10, F44 |
 | Calendarios jurisdiccionales | Calculadora de días hábiles (HU-016) | AT-051 |
 
 Ninguna de estas es una fuente inaccesible: son capacidades que este alcance no

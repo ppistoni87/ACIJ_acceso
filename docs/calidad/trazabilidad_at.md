@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **55**
+- Cubiertos por pruebas que corren: **58**
 - Cubiertos parcialmente: **15**
-- No ejecutados: **10**
-- Pruebas citadas: **137** (ejecutadas)
+- No ejecutados: **7**
+- Pruebas citadas: **145** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -69,11 +69,11 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-056 | Períodos mixtos en PDF | HU-F62 | CUBIERTO_PARCIAL | PASSED | `test_dos_periodos_en_la_misma_pagina_dejan_la_asociacion_en_revision`<br>`test_el_ciclo_lectivo_se_reconoce_como_periodo`<br>_Falta: Igual que AT-021: la asociación de período se verifica con un doble de página. En F62, con tres períodos y tres tablas en la misma página, ninguna se resolvió por cercanía._ |
 | AT-057 | Monto versus tope | HU-018 | CUBIERTO | PASSED | `test_at057_un_tope_es_el_limite_de_una_condicion_no_una_cuantia`<br>`test_at057_estar_bajo_el_tope_no_dice_cuanto_se_cobra`<br>`test_cuantia_no_informada_no_necesita_inventar_un_monto` |
 | AT-058 | Cambio de parámetro | HU-028 | CUBIERTO | PASSED | `test_dos_valores_aprobados_no_pueden_regir_a_la_vez`<br>`test_aprobar_una_version_reevalua_el_solapamiento`<br>`test_propagar_dos_veces_no_duplica_el_evento` |
-| AT-059 | No informado operativo | HU-F60 | NO_EJECUTADO | — | _Los canales de atención (HU-019) no están poblados: no hay importador de directorios que pueda encontrarse un literal N/A._ |
-| AT-060 | Conflicto de piso | HU-F20 | CUBIERTO_PARCIAL | PASSED | `test_candidatos_en_conflicto_pueden_coexistir`<br>_Falta: Los puntos de atención (HU-020) no están poblados: el conflicto de piso entre CSV y ficha no tiene datos reales donde darse._ |
-| AT-061 | Horarios por canal | HU-F03 | NO_EJECUTADO | — | _Los canales por tipo con horarios propios (HU-019) no están poblados._ |
+| AT-059 | No informado operativo | HU-F60 | CUBIERTO | PASSED | `test_at059_un_literal_de_sin_dato_no_se_carga_como_telefono`<br>`test_un_nombre_que_dice_na_no_se_pega_al_programa` |
+| AT-060 | Conflicto de piso | HU-F20 | CUBIERTO_PARCIAL | PASSED | `test_at060_la_direccion_se_conserva_como_la_escribio_la_fuente`<br>`test_candidatos_en_conflicto_pueden_coexistir`<br>_Falta: Se prueba que la dirección no se recomponga y que dos candidatos en conflicto puedan coexistir; el contraste concreto entre el CSV de comunas y la ficha de la misma subsede necesita capturar además esa ficha._ |
+| AT-061 | Horarios por canal | HU-F03 | CUBIERTO | PASSED | `test_at061_el_horario_es_del_canal_presencial_y_no_se_copia` |
 | AT-062 | Atribución de directorio | HU-F44 | NO_EJECUTADO | — | _El directorio de la DPN (F44) no está capturado: la atribución de un operador municipal no tiene datos donde ejercerse._ |
-| AT-063 | Coordenadas locales | HU-020 | NO_EJECUTADO | — | _El dataset de sedes con coordenadas (HU-020) no está cargado: no hay geometría cuyo CRS discutir._ |
+| AT-063 | Coordenadas locales | HU-020 | CUBIERTO | PASSED | `test_at063_una_coordenada_en_grilla_local_no_se_usa_como_wgs84`<br>`test_at063_la_incidencia_dice_que_falta_confirmar_la_proyeccion`<br>`test_una_coordenada_plausible_como_wgs84_si_se_usa`<br>`test_una_geometria_ilegible_se_conserva_cruda` |
 | AT-064 | RENABAP no encontrado | HU-021 | CUBIERTO | PASSED | `test_at064_un_barrio_ausente_del_padron_no_pierde_derechos`<br>`test_un_barrio_que_sale_del_padron_no_se_borra`<br>`test_no_se_inventa_una_fecha_de_corte`<br>`test_cada_barrio_nace_con_la_evidencia_de_su_fila` |
 | AT-065 | Tabla estacional vacía | HU-F64 | NO_EJECUTADO | — | _F64 (sedes estacionales) no está capturada._ |
 | AT-066 | Fuente secundaria y cita | HU-022 | CUBIERTO_PARCIAL | PASSED | `test_la_recuperacion_devuelve_citas_localizables`<br>_Falta: No hay fuente secundaria de ONG en el corpus poblado: la atribución secundaria se sostiene por el modelo de evidencia, no por un caso real._ |
@@ -86,7 +86,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-073 | No proveedor Web Push | HU-028 | CUBIERTO | PASSED | `test_sin_consumidor_configurado_no_se_declara_ninguna_entrega`<br>`test_un_evento_que_agoto_los_intentos_pasa_a_la_cola_de_fallos` |
 | AT-074 | Restauración | HU-037 | CUBIERTO_PARCIAL | PASSED | `test_una_restauracion_completa_se_declara_integra`<br>`test_una_captura_sin_sus_bytes_no_pasa`<br>`test_un_objeto_alterado_se_detecta`<br>`test_un_release_sin_evidencia_no_pasa`<br>`test_un_evento_ya_entregado_no_se_puede_duplicar`<br>`test_perder_un_evento_entregado_no_pasa_desapercibido`<br>`test_perder_los_checkpoints_no_pasa_desapercibido`<br>_Falta: La restauración completa con pg_restore está ejercida por `bn operacion restaurar` y su evidencia está en docs/reportes/restauracion.md; las pruebas automatizadas verifican la comprobación de integridad, no el volcado en sí._ |
 | AT-075 | Fecha de carpeta PDF | HU-F67 | CUBIERTO_PARCIAL | PASSED | `test_la_carpeta_del_archivo_no_fecha_el_documento`<br>`test_la_ruta_de_infoleg_distingue_original_de_actualizado`<br>_Falta: El adaptador deja la fecha pendiente y lo dice; leerla del propio documento o del acto que lo aprueba todavía no está implementado._ |
-| AT-076 | Costo ausente | HU-F45 | CUBIERTO_PARCIAL | PASSED | `test_cuantia_no_informada_no_necesita_inventar_un_monto`<br>_Falta: Los trámites (HU-019) no están poblados: la ficha sin costo ni duración no tiene datos reales donde darse._ |
+| AT-076 | Costo ausente | HU-F45 | CUBIERTO_PARCIAL | PASSED | `test_cuantia_no_informada_no_necesita_inventar_un_monto`<br>`test_at059_un_literal_de_sin_dato_no_se_carga_como_telefono`<br>_Falta: Los trámites con costo y duración (HU-019) no están poblados: lo que se prueba es que un campo vacío no se completa con un cero ni con «gratuito»._ |
 | AT-077 | Formulario público sin envío | HU-F04 | CUBIERTO | PASSED | `test_no_se_guardan_cookies_ni_credenciales`<br>`test_el_planificador_ignora_lo_que_no_se_puede_pedir` |
 | AT-078 | Sustituto de otra granularidad | HU-F09 | CUBIERTO_PARCIAL | PASSED | `test_una_fuente_retirada_explica_por_que`<br>`test_el_reporte_no_confunde_fuentes_con_leyes`<br>_Falta: El caso concreto de F09 (directorio municipal caído con lista provincial disponible) no tiene fixture: se prueba la regla de que una fuente retirada explica su motivo, no la sustitución por otra granularidad._ |
 | AT-079 | Evaluación no administrativa | HU-030 | CUBIERTO | PASSED | `test_la_evaluacion_aclara_que_no_es_una_decision`<br>`test_el_cuerpo_de_una_evaluacion_no_se_persiste`<br>`test_todo_cumplido_da_un_resultado_preliminar_positivo` |
