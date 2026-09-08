@@ -404,3 +404,33 @@ en otra que empieza vacía, y sobre la restaurada se comprueban las 83 fuentes,
 el hash de la captura, la verificación de integridad y que los triggers de
 inmutabilidad sigan ahí. Un volcado que pierde los triggers deja una base que
 acepta lo que la original rechazaba, y eso no se nota hasta que alguien escribe.
+
+## D-30 · Una latencia sin el tamaño del corpus al lado no dice nada
+
+La misma consulta que responde en 8 ms sobre veinte normas puede tardar
+segundos sobre cuatrocientas mil. Por eso la medición corre sobre la base real
+—423.718 normas, 364 MB— y el reporte lleva el recuento de cada tabla arriba de
+los números.
+
+Medir encontró tres cosas que ninguna prueba funcional podía encontrar, porque
+todas daban el resultado correcto:
+
+- El listado de normas pedía los identificadores y la cobertura de campos **de a
+  una fila**: veinte normas eran cuarenta idas y vueltas más. Pedirlos por página
+  bajó el listado de 207 ms a 21 ms.
+- Ordenar por año y número recorría la tabla entera. Con índice, la primera
+  consulta en frío pasó de 6,9 segundos a 33 ms.
+- `v_hechos_servibles` evaluaba las 7.888 versiones del registro una por una, y
+  7.887 eran candidatas que nunca podían servirse. Pre-filtrar por las dos
+  condiciones que la propia función ya devolvía como motivo bajó el endpoint de
+  cobertura de 800 ms a 27 ms.
+
+**Consecuencia:** el pre-filtro sólo es defendible si el resultado no cambia, así
+que hay una prueba que calcula las dos formas —con y sin pre-filtro, en ocho
+capacidades, con release y sin release, dentro y fuera del período— y compara.
+Si alguien agrega ahí una condición que la función no evalúe, la vista empezaría
+a esconder versiones servibles sin decirlo, y la prueba lo ve.
+
+Y el reporte dice qué no mide: las consultas van una después de otra, sobre la
+misma conexión y sin red. No afirma un número de concurrencia, porque para eso
+hace falta el despliegue real.

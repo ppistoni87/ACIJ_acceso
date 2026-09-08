@@ -106,6 +106,13 @@ class RegistroVersion(Base):
         Index("ix_registro_versiones_valid", "valid_desde", "valid_hasta"),
         Index("ix_registro_versiones_frescura", "reverificar_antes_de"),
         Index("ix_registro_versiones_estado", "estado_revision"),
+        # Sólo las publicadas pueden servirse: el índice parcial deja que
+        # `v_hechos_servibles` las busque en vez de recorrer el registro entero.
+        Index(
+            "ix_registro_versiones_publicadas",
+            "release_id",
+            postgresql_where=text("estado_revision = 'PUBLISHED'"),
+        ),
         # Un solo intervalo de conocimiento abierto por versión lógica.
         Index(
             "uq_registro_versiones_known_abierto",
@@ -164,6 +171,13 @@ class Norma(Base):
         ),
         Index("ix_normas_emisor_tipo_numero_anio", "emisor_id", "tipo", "numero", "anio"),
         Index("ix_normas_publicacion", "publicacion"),
+        # El orden del listado. Sin él, mostrar las primeras veinte normas
+        # recorre la tabla entera para ordenarla.
+        Index(
+            "ix_normas_orden_listado",
+            text("anio DESC NULLS LAST"),
+            "numero",
+        ),
     )
 
 

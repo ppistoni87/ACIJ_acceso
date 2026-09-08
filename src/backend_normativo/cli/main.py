@@ -823,6 +823,43 @@ def calidad_ensayo_actualizacion(
         typer.echo(texto)
 
 
+@calidad.command("rendimiento")
+def calidad_rendimiento(
+    salida: Path | None = typer.Option(None, help="Archivo donde escribir el reporte."),
+    repeticiones: int = typer.Option(12, help="Repeticiones por consulta."),
+) -> None:
+    """Mide cuánto tarda cada consulta sobre el corpus que hay.
+
+    El reporte lleva el tamaño del corpus al lado de los números: una latencia
+    sin decir sobre cuántas filas se midió no significa nada.
+    """
+    from fastapi.testclient import TestClient
+
+    from backend_normativo.api.app import crear_app
+    from backend_normativo.api.dependencias import conexion_lectura
+    from backend_normativo.calidad.rendimiento import correr
+    from backend_normativo.calidad.rendimiento import formatear as formatear_rendimiento
+
+    motor = engine_migrador()
+    with motor.connect() as conexion:
+        app = crear_app()
+        app.dependency_overrides[conexion_lectura] = lambda: conexion
+        with TestClient(app) as cliente:
+            reporte = correr(conexion, cliente, repeticiones=repeticiones)
+
+    texto = formatear_rendimiento(reporte)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto + "\n", encoding="utf-8")
+        peor = reporte.peor
+        typer.echo(
+            f"Reporte escrito en {salida} · consultas {len(reporte.mediciones)} · "
+            + (f"peor p95 {peor.p95_ms} ms ({peor.nombre})" if peor else "sin mediciones")
+        )
+    else:
+        typer.echo(texto)
+
+
 @calidad.command("consultas")
 def calidad_consultas(
     salida: Path | None = typer.Option(None, help="Archivo donde escribir el reporte."),

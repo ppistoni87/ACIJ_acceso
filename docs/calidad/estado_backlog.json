@@ -429,20 +429,25 @@
     "bn calidad trazabilidad --ejecutar",
     "bn calidad consultas"
    ],
-   "falta": "El conjunto conversacional cumple la gate DQ18 (98 consultas, 59 críticas, todas pasan) y los 80 casos AT se ejecutan: 64 cubiertos y 16 parciales, cada uno diciendo qué parte todavía no se ejerce. Falta la revisión experta humana de las respuestas, que es lo que la gate llama «conjunto experto revisado» y ningún automatismo puede firmar."
+   "falta": "El conjunto conversacional cumple la gate DQ18 (98 consultas, 59 críticas, todas pasan) y los 80 casos AT se ejecutan y están cubiertos, sin parciales. Falta la revisión experta humana de las respuestas, que es lo que la gate llama «conjunto experto revisado» y ningún automatismo puede firmar."
   },
   "HU-037": {
    "estado": "EN_CURSO",
    "evidencia": [
     "src/backend_normativo/operacion/respaldo.py",
     "tests/aceptacion/test_respaldo.py",
-    "docs/reportes/restauracion.md"
+    "docs/reportes/restauracion.md",
+    "src/backend_normativo/calidad/rendimiento.py",
+    "tests/aceptacion/test_restauracion_completa.py",
+    "tests/integracion/test_servibles_prefiltro.py",
+    "docs/reportes/rendimiento.md"
    ],
    "comandos": [
     "bn operacion respaldar",
-    "bn operacion restaurar"
+    "bn operacion restaurar",
+    "bn calidad rendimiento"
    ],
-   "falta": "El respaldo y la restauración verificada están y se corrieron sobre la base real: 22 objetos, 1 release, 6.968 evidencias y 98 fragmentos restaurados e íntegros en 13 segundos. Falta la medición de rendimiento bajo carga, que necesita un entorno representativo y no la máquina de desarrollo."
+   "falta": "El respaldo y la restauración están probados de punta a punta: pg_dump de una base con datos confirmados y pg_restore en otra que empieza vacía, verificando sobre la restaurada las 83 fuentes, el hash de la captura, la integridad y que los triggers de inmutabilidad sigan ahí. La latencia está medida sobre el corpus real de 423.718 normas y ninguna consulta pasa de 30 ms en el percentil 95. Falta la prueba de concurrencia: cuántas consultas por segundo resiste el despliegue real, que necesita el entorno de producción y generadores de carga, no la máquina de desarrollo."
   },
   "HU-038": {
    "estado": "CERRADA",
@@ -470,7 +475,7 @@
     "bn calidad backlog",
     "bn calidad trazabilidad"
    ],
-   "falta": "La documentación y los reportes están y se regeneran solos; `bn calidad ensayo-actualizacion` y `bn operacion restaurar` levantan bases desde cero, con lo que la reproducibilidad de las migraciones queda probada en cada corrida. Falta el ciclo completo de población en una máquina distinta de la de desarrollo."
+   "falta": "La documentación y los reportes están y se regeneran solos; `bn calidad ensayo-actualizacion`, `bn operacion restaurar` y las pruebas de restauración levantan bases desde cero en cada corrida, con lo que la reproducibilidad de las migraciones queda probada. Falta el ciclo completo de población en una máquina distinta de la de desarrollo: lo que no se puede demostrar acá es que las 83 fuentes se recorran igual desde otra red."
   },
   "HU-040": {
    "estado": "CERRADA",

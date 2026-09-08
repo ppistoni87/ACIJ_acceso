@@ -33,6 +33,61 @@ def _identificadores(conexion: Connection, norma_id: uuid.UUID) -> dict[str, str
     }
 
 
+ORDEN_DE_ESTADOS = {
+    "INFORMADO": 4,
+    "NO_APLICA_JUSTIFICADO": 3,
+    "EN_CONFLICTO": 2,
+    "NO_INFORMADO_EN_FUENTES_REVISADAS": 1,
+    "PENDIENTE": 0,
+}
+
+
+def _identificadores_de(
+    conexion: Connection, normas: list[uuid.UUID]
+) -> dict[uuid.UUID, dict[str, str]]:
+    """Los identificadores de toda la página en una consulta.
+
+    Pedirlos de a uno cuesta una consulta por fila. Sobre un listado de veinte
+    normas eso son cuarenta idas y vueltas para armar una respuesta, y se nota:
+    es la mayor parte de lo que tardaba el listado.
+    """
+    por_norma: dict[uuid.UUID, dict[str, str]] = {n: {} for n in normas}
+    if not normas:
+        return por_norma
+    for norma_id, namespace, valor in conexion.execute(
+        text(
+            "SELECT norma_id, namespace, valor FROM norma_identificadores "
+            " WHERE norma_id = ANY(:ns)"
+        ),
+        {"ns": normas},
+    ):
+        por_norma[norma_id][namespace] = valor
+    return por_norma
+
+
+def _cobertura_de(
+    conexion: Connection, normas: list[uuid.UUID]
+) -> dict[uuid.UUID, CoberturaDeCampos]:
+    """La cobertura de campos de toda la página en una consulta."""
+    estados: dict[uuid.UUID, dict[str, str]] = {
+        n: dict.fromkeys(CAMPOS_SOLICITADOS, "PENDIENTE") for n in normas
+    }
+    if normas:
+        for norma_id, campo, estado in conexion.execute(
+            text(
+                "SELECT nv.norma_id, e.campo_solicitado, e.estado "
+                "  FROM evaluaciones_completitud e "
+                "  JOIN norma_versiones nv ON nv.registro_version_id = e.norma_version_id "
+                " WHERE nv.norma_id = ANY(:ns)"
+            ),
+            {"ns": normas},
+        ):
+            actual = estados[norma_id].get(campo, "PENDIENTE")
+            if ORDEN_DE_ESTADOS.get(estado, 0) > ORDEN_DE_ESTADOS.get(actual, 0):
+                estados[norma_id][campo] = estado
+    return {n: CoberturaDeCampos(**campos) for n, campos in estados.items()}
+
+
 def _cobertura(conexion: Connection, norma_id: uuid.UUID) -> CoberturaDeCampos:
     """Estado de los siete campos, tomando el mejor estado por campo.
 
@@ -102,18 +157,28 @@ def buscar_normas(
         text(f"SELECT count(*) FROM normas n WHERE {donde}"), parametros
     ).scalar_one()
 
-    filas = conexion.execute(
-        text(
-            "SELECT n.id, n.jurisdiccion_id, n.tipo, n.numero, n.anio, n.titulo, "
-            "       o.nombre AS emisor, n.identidad_incierta, "
-            "       (SELECT count(*) FROM norma_versiones nv "
-            "          JOIN registro_versiones rv ON rv.id = nv.registro_version_id "
-            "         WHERE nv.norma_id = n.id AND rv.estado_revision = 'PUBLISHED') AS pub "
-            f"  FROM normas n LEFT JOIN organismos o ON o.id = n.emisor_id WHERE {donde} "
-            " ORDER BY n.anio DESC NULLS LAST, n.numero LIMIT :limite OFFSET :desp"
-        ),
-        {**parametros, "limite": limite, "desp": desplazamiento},
-    ).mappings()
+    filas = (
+        conexion.execute(
+            text(
+                "SELECT n.id, n.jurisdiccion_id, n.tipo, n.numero, n.anio, n.titulo, "
+                "       o.nombre AS emisor, n.identidad_incierta, "
+                "       (SELECT count(*) FROM norma_versiones nv "
+                "          JOIN registro_versiones rv ON rv.id = nv.registro_version_id "
+                "         WHERE nv.norma_id = n.id AND rv.estado_revision = 'PUBLISHED') AS pub "
+                f"  FROM normas n LEFT JOIN organismos o ON o.id = n.emisor_id WHERE {donde} "
+                " ORDER BY n.anio DESC NULLS LAST, n.numero LIMIT :limite OFFSET :desp"
+            ),
+            {**parametros, "limite": limite, "desp": desplazamiento},
+        )
+        .mappings()
+        .all()
+    )
+
+    # Los identificadores y la cobertura se piden para toda la página junta: de
+    # a uno son dos consultas por fila.
+    ids = [fila["id"] for fila in filas]
+    identificadores = _identificadores_de(conexion, ids)
+    cobertura = _cobertura_de(conexion, ids)
 
     return (
         [
@@ -125,10 +190,10 @@ def buscar_normas(
                 anio=fila["anio"],
                 titulo=fila["titulo"],
                 emisor=fila["emisor"],
-                identificadores=_identificadores(conexion, fila["id"]),
+                identificadores=identificadores[fila["id"]],
                 identidad_incierta=fila["identidad_incierta"],
                 versiones_publicadas=fila["pub"],
-                cobertura_de_campos=_cobertura(conexion, fila["id"]),
+                cobertura_de_campos=cobertura[fila["id"]],
             )
             for fila in filas
         ],
