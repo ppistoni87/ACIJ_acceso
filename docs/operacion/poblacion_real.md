@@ -375,7 +375,7 @@ que «la atención presencial de las sedes permanecerá cerrada hasta el comienz
 del nuevo periodo de inscripción». Eso es el dato de hoy. Rescatar el listado de
 una captura anterior lo presentaría como vigente.
 
-## Dieciséis beneficios curados, en dieciocho lecturas
+## Dieciséis beneficios curados, en diecinueve lecturas
 
 La lectura jurídica vive en `docs/curaduria/`, un archivo por lectura, y no en
 el código: se puede discutir contra la ley sin leer Python. Cada regla, cada
@@ -389,6 +389,7 @@ siempre—.
 | Apoyo habitacional | Ley CABA 6935/2025 | 9 | 3 | 1 | fórmula sin valor |
 | Régimen de Becas Estudiantiles | Ley CABA 2917/2008 | 9 | 3 | 4 | fórmula sin valor |
 | Régimen de Becas Estudiantiles | Decreto CABA 75/2015 (reglamenta) | 3 | 1 | 0 | la fija la ley |
+| Régimen de Becas Estudiantiles | Resolución CABA 1621/MEDGC/2025 (reglamenta) | 4 | 0 | 0 | la fija la ley |
 | Subsidio para familias en situación de calle | Decreto CABA 690/2006 | 14 | 2 | 2 | fórmula sin valor |
 | Beca de comedor, refrigerio y vianda | Ordenanza CABA 43.478 | 16 | 2 | 4 | en especie |
 | Beca de comedor, refrigerio y vianda | Ley CABA 547/2001 (modifica) | 9 | 1 | 0 | la fija la ordenanza |
@@ -448,6 +449,17 @@ Ministerio. Esa excepción tiene fecha: alcanza a quien estaba en esa situación
 2015, no a quien empiece hoy, y por eso se guarda sin condición ejecutable. Una
 lectura de la ley sola le responde «no cumplís el artículo 1» a alguien a quien
 el decreto expresamente se la conserva.
+
+La Resolución 1621/MEDGC/2025 es la tercera norma sobre esa misma beca y la
+única del corpus que dice por dónde se hace un trámite: crea la plataforma
+«Becas Ciudad» para gestionar el otorgamiento y el control. También cierra una
+pregunta que la lectura de la ley dejaba abierta —quién fija los «otros
+indicadores de vulnerabilidad socioeconómica» del artículo 6— y no la otra:
+cuáles son. Lo que aprueba en serio, los procedimientos de inscripción y
+evaluación, está en un anexo que la resolución no transcribe y que remite a la
+separata del Boletín Oficial; el PDF de ese anexo es justamente la captura que
+la fuente D07 no entrega. Queda declarado como vacío, con el motivo, en vez de
+como un trámite que no existe.
 
 **Las doce prestaciones de la misma ley, curadas por separado.** La Ley 24.714
 define doce prestaciones y las doce están curadas, una por archivo. Curarla

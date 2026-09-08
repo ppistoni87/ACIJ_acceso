@@ -1,0 +1,78 @@
+{
+ "schema_version": "1.0",
+ "norma": {
+  "external_id": "normativaba:829906:original",
+  "referencia": "Resolución CABA 1621/MEDGC/2025",
+  "rol": "REGLAMENTA"
+ },
+ "nota": "Lectura curada de la Resolución 1621/MEDGC/2025, la tercera norma del corpus sobre el Régimen de Becas Estudiantiles de la Ley 2917: aprueba los procedimientos de otorgamiento y control, crea la plataforma «Becas Ciudad» para gestionarlos y deja sin efecto las resoluciones anteriores. Lo que se puede curar es poco y hay que decir por qué: los procedimientos están en un anexo que la norma no transcribe —remite a la separata del Boletín Oficial N° 7269— y el PDF de ese anexo es la captura que la fuente D07 no entrega. Así que la resolución dice que hay un procedimiento y una plataforma, y cuál es el procedimiento no está en el corpus. También hay que decir cómo viene el texto: el capturado anida todos los artículos bajo una unidad de anexo, que es un artefacto de segmentación y no una estructura de la norma, y el VISTO llega cortado a mitad de oración. Las citas se toman de las unidades tal como están, porque es contra lo capturado que se verifican. Todo entra como candidato: nada de esto se sirve hasta que una persona con competencia jurídica lo apruebe.",
+ "beneficio": {
+  "codigo": "CABA.BECAS-ESTUDIANTILES",
+  "nombre": "Régimen de Becas Estudiantiles",
+  "familia": "EDUCACION",
+  "linea": "BECA",
+  "jurisdiccion": "AR-C",
+  "naturaleza": "PRESTACION_MONETARIA",
+  "descripcion": "Beca anual para alumnos y alumnas regulares de nivel medio de escuelas de gestión estatal de la Ciudad que acrediten alguna de las condiciones de vulnerabilidad socioeconómica del artículo 5 de la Ley 2917.",
+  "unidad_beneficiaria": "PERSONA",
+  "modalidad": "TRANSFERENCIA",
+  "frecuencia": "ANUAL",
+  "requiere_solicitud": true,
+  "ruta_evidencia": "anexo-3/articulo-4"
+ },
+ "poblaciones": [],
+ "reglas": [
+  {
+   "clave": "SE-GESTIONA-POR-LA-PLATAFORMA-BECAS-CIUDAD",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "anexo-3/articulo-4",
+   "texto_literal": "Crear y aprobar el uso de la plataforma \"Becas Ciudad\" para gestionar los procedimientos de otorgamiento y control del Régimen de Becas Estudiantiles de la Ley 2917",
+   "descripcion": "El otorgamiento y el control de la beca se gestionan por la plataforma «Becas Ciudad».",
+   "requiere_revision": true,
+   "motivo_revision": "No es una condición sobre la persona: es por dónde se hace el trámite, que es de las primeras cosas que alguien pregunta y que hasta esta norma no estaba en el corpus. El modelo guarda los canales atados a un organismo o a un punto de atención, y los carga desde los directorios, no desde una lectura curada: por eso queda acá como regla declarada y no como canal. Y falta lo que hace que un canal sirva —la dirección web, si hay que autenticarse, en qué fechas abre—: eso está en el anexo que la resolución no transcribe."
+  },
+  {
+   "clave": "LOS-PROCEDIMIENTOS-ESTAN-EN-UN-ANEXO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "anexo-3/articulo-3",
+   "texto_literal": "Aprobar los \"Procedimientos para el otorgamiento, control y evaluación del Régimen de Becas Estudiantiles de la Ley 2917\"",
+   "descripcion": "Los procedimientos de otorgamiento, control y evaluación están aprobados por un anexo que la resolución no transcribe.",
+   "requiere_revision": true,
+   "motivo_revision": "Es la remisión que explica por qué el trámite concreto sigue sin estar: la resolución aprueba un anexo y remite a la separata del Boletín Oficial. Queda declarada para que la ausencia se lea como remisión a un texto identificado y no como que el procedimiento no existe. El propio texto capturado adelanta que el anexo «regula las etapas de inscripción, evaluación y notificación, bajo una gestión digital integral, contemplando las instancias de subsanación», y eso es lo único que se sabe de su contenido."
+  },
+  {
+   "clave": "LOS-INDICADORES-DE-VULNERABILIDAD-LOS-FIJA-LA-SUBSECRETARIA",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "anexo-3/articulo-5/parrafo-10",
+   "texto_literal": "así como a establecer y actualizar los indicadores de vulnerabilidad socioeconómica, en el marco de lo dispuesto por el artículo 6 de la Ley 2917.",
+   "descripcion": "Los indicadores de vulnerabilidad socioeconómica del artículo 6 de la Ley 2917 los establece y actualiza la Subsecretaría Gestión del Aprendizaje.",
+   "requiere_revision": true,
+   "motivo_revision": "Cierra una pregunta que la lectura de la Ley 2917 dejó abierta: la ley admite «otros indicadores de vulnerabilidad socioeconómica» además de las diez condiciones del artículo 5, y no decía quién los fija. Ahora se sabe quién, y sigue sin saberse cuáles: los indicadores no están en el corpus. Formalizarla no tiene sentido —no es una condición sobre nadie— y omitirla dejaría creer que fuera del artículo 5 no hay nada."
+  },
+  {
+   "clave": "DEJA-SIN-EFECTO-LOS-PROCEDIMIENTOS-ANTERIORES",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "anexo-3/articulo-1",
+   "texto_literal": "Dejar sin efecto las Resoluciones 1293-MEGC/09 y 62-SSIECE/13.",
+   "descripcion": "Quedan sin efecto las resoluciones que regían el procedimiento antes de 2025.",
+   "requiere_revision": true,
+   "motivo_revision": "No es una condición: es lo que impide que alguien resuelva el trámite con la norma anterior. Ninguna de las dos resoluciones que deja sin efecto está en el corpus, así que no se puede decir qué cambió; lo único verificable es que ya no rigen. Se conserva porque una respuesta que las siga citando estaría citando algo derogado."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "procedimiento de inscripción",
+   "motivo": "La resolución aprueba los procedimientos por un anexo que no transcribe y remite a la separata del Boletín Oficial N° 7269. El PDF de ese anexo es justamente la captura que la fuente D07 no entrega —el servidor corta la conexión—, así que en el corpus queda la remisión y no el texto. Sin él no se pueden describir las etapas, las fechas ni la documentación que hay que presentar."
+  }
+ ],
+ "dependencias": [
+  {
+   "referencia": "Anexo IF-2025-53544032-GCABA-SSGDA (Procedimientos del Régimen de Becas Estudiantiles)",
+   "motivo": "Es el texto que regula las etapas de inscripción, evaluación y notificación de la beca, y la resolución lo aprueba sin transcribirlo. Mientras falte, el trámite queda declarado y no descrito."
+  },
+  {
+   "referencia": "Indicadores de vulnerabilidad socioeconómica de la Subsecretaría Gestión del Aprendizaje",
+   "motivo": "El artículo 5 encomienda establecerlos y actualizarlos en el marco del artículo 6 de la Ley 2917, que es la vía por la que alguien puede acceder sin encuadrar en ninguna de las diez condiciones del artículo 5. Sin ellos esa vía queda declarada y no evaluable."
+  }
+ ]
+}

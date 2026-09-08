@@ -1001,6 +1001,8 @@ def curacion_beneficios(
             f"(sin formalizar: {resultado.reglas_sin_formalizar})\n"
             f"Cuantías: {resultado.cuantias} · plazos: {resultado.plazos}\n"
             f"Campos no informados: {resultado.campos_no_informados} · "
+            f"vacíos declarados: {resultado.vacios} · "
+            f"conflictos abiertos: {resultado.conflictos} · "
             f"dependencias abiertas: {resultado.dependencias}"
         )
         for aviso in resultado.avisos:
