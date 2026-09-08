@@ -45,8 +45,12 @@ class CorridaIngesta(Base):
     estado: Mapped[str] = mapped_column(String(16), nullable=False)
     extractor_version: Mapped[str] = mapped_column(Text, nullable=False)
     solicitadas: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    # Respuestas resueltas con contenido, sea transferido o revalidado: un 304
+    # cuenta acá porque reutiliza un cuerpo que ya tenemos.
     descargadas: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
     procesadas: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    # Solicitudes que no dejaron captura: rechazo de acceso, fallo de TLS, error
+    # del servidor. No requieren una descarga previa.
     rechazadas: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
     checkpoint: Mapped[dict | None] = mapped_column(JSONB)
     detalle_error: Mapped[str | None] = mapped_column(Text)
@@ -58,12 +62,15 @@ class CorridaIngesta(Base):
             name="contadores_no_negativos",
         ),
         CheckConstraint("descargadas <= solicitadas", name="descargadas_hasta_solicitadas"),
+        # Solo se procesa lo que se obtuvo.
+        CheckConstraint("procesadas <= descargadas", name="procesadas_hasta_descargadas"),
+        # Cada solicitud termina procesada o rechazada, nunca contada dos veces.
         CheckConstraint(
-            "procesadas + rechazadas <= descargadas", name="procesadas_hasta_descargadas"
+            "procesadas + rechazadas <= solicitadas", name="resueltas_hasta_solicitadas"
         ),
-        # Una corrida solo es COMPLETA si cerró y no dejó descargas sin resolver.
+        # Una corrida solo es COMPLETA si cerró y resolvió todo lo que pidió.
         CheckConstraint(
-            "estado <> 'COMPLETA' OR (fin IS NOT NULL AND procesadas + rechazadas = descargadas)",
+            "estado <> 'COMPLETA' OR (fin IS NOT NULL AND procesadas + rechazadas = solicitadas)",
             name="completa_reconciliada",
         ),
         CheckConstraint("fin IS NULL OR fin >= inicio", name="fin_posterior_a_inicio"),

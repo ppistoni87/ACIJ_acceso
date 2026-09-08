@@ -15,6 +15,17 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
+def _ca_bundle_del_entorno() -> Path | None:
+    """Paquete de certificados del entorno, si hay uno declarado."""
+    import os
+
+    for variable in ("SSL_CERT_FILE", "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE"):
+        valor = os.environ.get(variable)
+        if valor and Path(valor).is_file():
+            return Path(valor)
+    return None
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="BN_",
@@ -55,8 +66,10 @@ class Settings(BaseSettings):
     reintentos_max: int = 3
     respetar_robots: bool = True
     # La validación TLS completa no es configurable: desactivarla está prohibido
-    # por la especificación. Se expone solo el bundle de CA a usar.
-    ca_bundle: Path | None = None
+    # por la especificación. Se expone solo el paquete de certificados a usar,
+    # que por defecto es el del entorno (`SSL_CERT_FILE`). Un bundle propio que
+    # mantiene la verificación es distinto de apagar la verificación.
+    ca_bundle: Path | None = Field(default_factory=lambda: _ca_bundle_del_entorno())
 
     # --- Frescura --------------------------------------------------------
     ttl_defecto_dias: int = 30

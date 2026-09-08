@@ -372,7 +372,8 @@ def test_los_bytes_capturados_son_inmutables(conexion: Connection) -> None:
 
 def test_una_corrida_incompleta_no_figura_exitosa(conexion: Connection) -> None:
     """Contadores sin reconciliar y estado COMPLETA es la forma más silenciosa
-    de perder cobertura."""
+    de perder cobertura: siete de diez solicitudes resueltas no es una corrida
+    completa."""
     _preparar_documento(conexion, sufijo="F")
     config_id = conexion.execute(
         text("SELECT id FROM fuente_config_versiones WHERE source_id = 'FTESTF'")

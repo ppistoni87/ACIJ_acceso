@@ -14,7 +14,9 @@ from backend_normativo.db.session import engine_migrador
 
 app = typer.Typer(help="Backend normativo de acceso a derechos.", no_args_is_help=True)
 catalogo = typer.Typer(help="Catálogo de fuentes.", no_args_is_help=True)
+ingesta = typer.Typer(help="Captura de fuentes.", no_args_is_help=True)
 app.add_typer(catalogo, name="catalogo")
+app.add_typer(ingesta, name="ingesta")
 
 
 @catalogo.command("validar")
@@ -71,6 +73,32 @@ def catalogo_conciliar(
         typer.echo(f"Reporte escrito en {salida}")
     else:
         typer.echo(texto)
+
+
+@ingesta.command("capturar")
+def ingesta_capturar(
+    fuentes: list[str] = typer.Argument(..., help="Identificadores de fuente (F01, D03, ...)."),
+) -> None:
+    """Corre una captura por fuente y deja los bytes originales en el almacén."""
+    from backend_normativo.ingesta.capturador import Capturador, PermisoDePoliticaDenegado
+    from backend_normativo.ingesta.cliente import ClienteCaptura
+
+    with ClienteCaptura() as cliente:
+        for source_id in fuentes:
+            with engine_migrador().begin() as conexion:
+                capturador = Capturador(conexion, cliente=cliente)
+                try:
+                    resultado = capturador.capturar_fuente(source_id)
+                except (PermisoDePoliticaDenegado, LookupError) as exc:
+                    typer.echo(f"{source_id}: {exc}")
+                    continue
+            typer.echo(
+                f"{source_id}: {resultado.estado.value} · "
+                f"solicitadas {resultado.solicitadas} · descargadas {resultado.descargadas} · "
+                f"sin cambios {resultado.no_modificadas} · rechazadas {resultado.rechazadas}"
+            )
+            for incidencia in resultado.incidencias:
+                typer.echo(f"    incidencia: {incidencia}")
 
 
 if __name__ == "__main__":

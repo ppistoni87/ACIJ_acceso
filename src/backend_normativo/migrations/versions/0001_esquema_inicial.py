@@ -951,7 +951,7 @@ def upgrade() -> None:
         sa.Column("checkpoint", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column("detalle_error", sa.Text(), nullable=True),
         sa.CheckConstraint(
-            "estado <> 'COMPLETA' OR (fin IS NOT NULL AND procesadas + rechazadas = descargadas)",
+            "estado <> 'COMPLETA' OR (fin IS NOT NULL AND procesadas + rechazadas = solicitadas)",
             name=op.f("ck_corridas_ingesta_completa_reconciliada"),
         ),
         sa.CheckConstraint(
@@ -966,7 +966,11 @@ def upgrade() -> None:
             "fin IS NULL OR fin >= inicio", name=op.f("ck_corridas_ingesta_fin_posterior_a_inicio")
         ),
         sa.CheckConstraint(
-            "procesadas + rechazadas <= descargadas",
+            "procesadas + rechazadas <= solicitadas",
+            name=op.f("ck_corridas_ingesta_resueltas_hasta_solicitadas"),
+        ),
+        sa.CheckConstraint(
+            "procesadas <= descargadas",
             name=op.f("ck_corridas_ingesta_procesadas_hasta_descargadas"),
         ),
         sa.CheckConstraint(
