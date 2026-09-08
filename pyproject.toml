@@ -73,6 +73,7 @@ markers = [
     "integracion: requiere PostgreSQL",
     "red: requiere acceso a fuentes externas",
     "aceptacion: caso AT del paquete funcional",
+    "lento: crea y borra bases propias; no corre dentro de la transacción de prueba",
 ]
 
 [tool.mypy]

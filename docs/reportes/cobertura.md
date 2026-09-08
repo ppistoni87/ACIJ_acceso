@@ -7,8 +7,8 @@ Promediarlas produce un número que suena bien y no significa nada.
 
 | Concepto | Cantidad |
 |---|---:|
-| Fuentes en el catálogo | 84 |
-| Con al menos una captura | 63 |
+| Fuentes en el catálogo | 85 |
+| Con al menos una captura | 64 |
 | Con documentos extraídos | 55 |
 | Sin URL conocida | 15 |
 | Con acceso bloqueado o limitado | 2 |
@@ -80,7 +80,7 @@ de responder cuánto se cobra.
 
 | Tabla | Filas |
 |---|---:|
-| capturas | 84 |
+| capturas | 87 |
 | documentos | 62 |
 | documento_versiones | 63 |
 | unidades_documentales | 1562 |

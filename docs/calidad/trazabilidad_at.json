@@ -429,10 +429,14 @@
   },
   "AT-060": {
    "pruebas": [
-    "tests/integracion/test_importador_directorios.py::test_at060_la_direccion_se_conserva_como_la_escribio_la_fuente",
-    "tests/integracion/test_esquema_hechos.py::test_candidatos_en_conflicto_pueden_coexistir"
-   ],
-   "falta": "Se prueba que la dirección no se recomponga y que dos candidatos en conflicto puedan coexistir; el contraste concreto entre el CSV de comunas y la ficha de la misma subsede necesita capturar además esa ficha."
+    "tests/integracion/test_conflicto_direccion.py::test_at060_el_piso_en_disputa_se_reporta_como_conflicto",
+    "tests/integracion/test_conflicto_direccion.py::test_at060_no_se_compone_una_direccion_mezclada",
+    "tests/integracion/test_conflicto_direccion.py::test_at060_no_se_elige_la_primera_fuente",
+    "tests/integracion/test_conflicto_direccion.py::test_at060_lo_que_las_dos_afirman_igual_si_se_conserva",
+    "tests/integracion/test_conflicto_direccion.py::test_at060_el_apellido_invertido_no_es_un_conflicto_de_calle",
+    "tests/integracion/test_conflicto_direccion.py::test_at060_los_dos_candidatos_coexisten_sin_que_uno_pise_al_otro",
+    "tests/integracion/test_conflicto_direccion.py::test_at060_la_incidencia_nombra_las_dos_versiones_y_su_origen"
+   ]
   },
   "AT-061": {
    "pruebas": [
@@ -473,9 +477,12 @@
   },
   "AT-066": {
    "pruebas": [
-    "tests/integracion/test_api.py::test_la_recuperacion_devuelve_citas_localizables"
-   ],
-   "falta": "No hay fuente secundaria de ONG en el corpus poblado: la atribución secundaria se sostiene por el modelo de evidencia, no por un caso real."
+    "tests/integracion/test_atribucion_secundaria.py::test_at066_una_afirmacion_de_ong_no_se_adjudica_al_organismo_oficial",
+    "tests/integracion/test_atribucion_secundaria.py::test_at066_la_afirmacion_se_conserva_con_quien_la_hace",
+    "tests/integracion/test_atribucion_secundaria.py::test_at066_la_explicacion_dice_que_la_oficial_no_lo_afirma",
+    "tests/integracion/test_atribucion_secundaria.py::test_una_afirmacion_oficial_si_se_atribuye_a_su_organismo",
+    "tests/integracion/test_atribucion_secundaria.py::test_cuando_las_dos_afirman_no_es_solo_secundaria"
+   ]
   },
   "AT-067": {
    "pruebas": [
@@ -523,15 +530,14 @@
   },
   "AT-074": {
    "pruebas": [
+    "tests/aceptacion/test_restauracion_completa.py::test_at074_el_volcado_se_escribe_con_su_manifiesto",
+    "tests/aceptacion/test_restauracion_completa.py::test_at074_la_base_restaurada_conserva_las_83_fuentes",
+    "tests/aceptacion/test_restauracion_completa.py::test_at074_la_captura_restaurada_conserva_su_hash",
+    "tests/aceptacion/test_restauracion_completa.py::test_at074_la_verificacion_pasa_sobre_la_base_restaurada",
+    "tests/aceptacion/test_restauracion_completa.py::test_at074_el_esquema_restaurado_conserva_sus_restricciones",
     "tests/aceptacion/test_respaldo.py::test_una_restauracion_completa_se_declara_integra",
-    "tests/aceptacion/test_respaldo.py::test_una_captura_sin_sus_bytes_no_pasa",
-    "tests/aceptacion/test_respaldo.py::test_un_objeto_alterado_se_detecta",
-    "tests/aceptacion/test_respaldo.py::test_un_release_sin_evidencia_no_pasa",
-    "tests/aceptacion/test_respaldo.py::test_un_evento_ya_entregado_no_se_puede_duplicar",
-    "tests/aceptacion/test_respaldo.py::test_perder_un_evento_entregado_no_pasa_desapercibido",
-    "tests/aceptacion/test_respaldo.py::test_perder_los_checkpoints_no_pasa_desapercibido"
-   ],
-   "falta": "La restauración completa con pg_restore está ejercida por `bn operacion restaurar` y su evidencia está en docs/reportes/restauracion.md; las pruebas automatizadas verifican la comprobación de integridad, no el volcado en sí."
+    "tests/aceptacion/test_respaldo.py::test_una_captura_sin_sus_bytes_no_pasa"
+   ]
   },
   "AT-075": {
    "pruebas": [
@@ -563,12 +569,13 @@
   },
   "AT-078": {
    "pruebas": [
-    "tests/integracion/test_catalogo.py::test_una_fuente_retirada_explica_por_que",
-    "tests/integracion/test_catalogo.py::test_el_reporte_no_confunde_fuentes_con_leyes",
-    "tests/integracion/test_carga_manual.py::test_el_listado_de_bloqueadas_dice_por_que_lo_estan",
-    "tests/integracion/test_carga_manual.py::test_la_fuente_queda_manual_y_no_activa"
-   ],
-   "falta": "El caso concreto de F09 —directorio municipal caído con lista provincial disponible— no tiene fixture: se prueba que una fuente detenida conserve su motivo y que una carga manual no la declare recorrible, no la sustitución por otra granularidad."
+    "tests/integracion/test_alcance_territorial.py::test_at078_un_nombre_que_no_declara_su_alcance_queda_sin_declarar",
+    "tests/integracion/test_alcance_territorial.py::test_at078_identidad_y_alcance_quedan_separados",
+    "tests/integracion/test_alcance_territorial.py::test_at078_pedir_lo_municipal_no_devuelve_lo_provincial",
+    "tests/integracion/test_alcance_territorial.py::test_at078_la_api_no_responde_el_provincial_como_servicio_municipal",
+    "tests/integracion/test_alcance_territorial.py::test_at078_el_provincial_si_se_devuelve_cuando_se_lo_pide",
+    "tests/integracion/test_carga_manual.py::test_el_listado_de_bloqueadas_dice_por_que_lo_estan"
+   ]
   },
   "AT-079": {
    "pruebas": [

@@ -412,6 +412,34 @@ class EstadoOperativo(StrEnum):
     NO_INFORMADO = "NO_INFORMADO"
 
 
+class CaracterDeFuente(StrEnum):
+    """Con qué autoridad habla una fuente sobre lo que publica.
+
+    Una ONG puede afirmar algo cierto y relevante que el organismo no publica.
+    Eso se conserva con su atribución: presentarlo como dicho por el organismo
+    le da una autoridad que no tiene, y descartarlo pierde información que a
+    alguien le sirve.
+    """
+
+    OFICIAL = "OFICIAL"
+    SECUNDARIA = "SECUNDARIA"
+
+
+class AlcanceTerritorial(StrEnum):
+    """Hasta dónde llega lo que atiende un punto.
+
+    La jurisdicción dice dónde está; el alcance dice a quién sirve. Una
+    defensoría municipal y la provincial comparten provincia y no son
+    intercambiables: responder la provincial a quien pregunta por el servicio de
+    su municipio lo manda a un organismo sin competencia sobre su reclamo.
+    """
+
+    NACIONAL = "NACIONAL"
+    PROVINCIAL = "PROVINCIAL"
+    MUNICIPAL = "MUNICIPAL"
+    NO_DECLARADO = "NO_DECLARADO"
+
+
 class TipoPuntoAtencion(StrEnum):
     SEDE = "SEDE"
     DELEGACION = "DELEGACION"

@@ -90,6 +90,11 @@ class Fuente(Base):
     )
     nombre: Mapped[str] = mapped_column(Text, nullable=False)
     clase: Mapped[str] = mapped_column(String(32), nullable=False)
+    # Con qué autoridad habla. Una ONG que afirma algo que el organismo no
+    # publica dice algo que puede ser cierto y que no es oficial.
+    caracter: Mapped[str] = mapped_column(
+        String(16), nullable=False, server_default=voc.CaracterDeFuente.OFICIAL.value
+    )
     estado: Mapped[str] = mapped_column(String(32), nullable=False)
     access_status: Mapped[str] = mapped_column(String(32), nullable=False)
     prioridad: Mapped[str] = mapped_column(String(4), nullable=False)
@@ -120,6 +125,8 @@ class Fuente(Base):
 
     __table_args__ = (
         check_vocabulario("clase", voc.ClaseFuente),
+        check_vocabulario("caracter", voc.CaracterDeFuente),
+        Index("ix_fuentes_caracter", "caracter"),
         check_vocabulario("estado", voc.EstadoFuente),
         check_vocabulario("access_status", voc.AccessStatus),
         check_vocabulario("prioridad", voc.Prioridad),

@@ -35,6 +35,7 @@ from selectolax.parser import HTMLParser, Node
 from sqlalchemy import Connection, text
 
 from backend_normativo.db.vocabularios import (
+    AlcanceTerritorial,
     EntidadVersionada,
     EstadoRevision,
     ModoExtraccion,
@@ -93,6 +94,23 @@ ALIAS_JURISDICCIONES = {
 }
 
 
+# Lo que un nombre declara sobre su alcance. Sólo se clasifica lo explícito:
+# «Defensor del Pueblo de Córdoba» puede ser la provincia o la ciudad, y las dos
+# existen. Adivinar manda a alguien al organismo equivocado.
+RE_PROVINCIAL = re.compile(
+    r"\bde\s+la\s+Provincia\s+(?:de|del)\s+(?P<ambito>.+)$|"
+    r"\bde\s+la\s+Ciudad\s+Aut[óo]noma\s+de\s+(?P<caba>Buenos\s+Aires)$",
+    re.IGNORECASE,
+)
+RE_MUNICIPAL = re.compile(
+    r"\bde\s+la\s+Municipalidad\s+(?:de|del)\s+(?P<m1>.+)$|"
+    r"\bde\s+la\s+Ciudad\s+(?:de|del)\s+(?P<m2>.+)$|"
+    r"\bde\s+los\s+Vecinos\s+de\s+la\s+Ciudad\s+(?:de|del)\s+(?P<m3>.+)$|"
+    r"\bdel\s+Vecino\s+(?:de|del)\s+(?P<m4>.+)$",
+    re.IGNORECASE,
+)
+
+
 class FormaInesperada(Exception):
     """La página no tiene la estructura de paneles del directorio."""
 
@@ -128,6 +146,7 @@ class ResultadoDpn:
     correos_no_tomados: int = 0
     sin_direccion: int = 0
     jurisdicciones_sin_mapear: int = 0
+    alcance_sin_declarar: int = 0
     avisos: list[str] = field(default_factory=list)
 
 
@@ -230,6 +249,27 @@ def _limpio(nodo: Node) -> str:
     return " ".join(nodo.text(separator=" ", strip=True).replace("\xa0", " ").split())
 
 
+def alcance_de(nombre: str) -> tuple[str, str | None]:
+    """Qué alcance declara el nombre de un organismo, y sobre qué ámbito.
+
+    Devuelve `NO_DECLARADO` cuando el nombre no lo dice. Es el caso más común y
+    el más importante de no resolver: «Defensor del Pueblo de Salta» puede ser
+    el provincial o el de la capital, y responder el equivocado manda a alguien
+    a un organismo sin competencia sobre su reclamo.
+    """
+    limpio = " ".join(nombre.split())
+    provincial = RE_PROVINCIAL.search(limpio)
+    if provincial:
+        ambito = provincial.group("ambito") or provincial.group("caba")
+        return AlcanceTerritorial.PROVINCIAL.value, (ambito.strip() if ambito else None)
+    municipal = RE_MUNICIPAL.search(limpio)
+    if municipal:
+        ambito = next((g for g in municipal.groups() if g), None)
+        if ambito:
+            return AlcanceTerritorial.MUNICIPAL.value, ambito.strip()
+    return AlcanceTerritorial.NO_DECLARADO.value, None
+
+
 def es_whatsapp(crudo: str) -> bool:
     return any(marca in crudo.lower() for marca in MARCAS_WHATSAPP)
 
@@ -318,6 +358,10 @@ class ImportadorDpn:
                 operador_id = nacional_id
 
             evidencia_id = self._evidencia(doc_version_id, oficina, lectura.seccion)
+            if not lectura.propias_de_la_dpn:
+                resultado.alcance_sin_declarar += int(
+                    alcance_de(oficina.nombre)[0] == AlcanceTerritorial.NO_DECLARADO.value
+                )
             punto_id, nuevo = self._punto(titular_id, operador_id, oficina, lectura, jurisdiccion)
             resultado.puntos_creados += int(nuevo)
             resultado.puntos_conocidos += int(not nuevo)
@@ -383,6 +427,13 @@ class ImportadorDpn:
                     ),
                 },
             )
+        if resultado.alcance_sin_declarar:
+            resultado.avisos.append(
+                f"{resultado.alcance_sin_declarar} organismo(s) no declaran en su nombre si son "
+                "provinciales o municipales, y quedan con el alcance sin declarar. «Defensor "
+                "del Pueblo de Salta» puede ser el provincial o el de la capital: responder el "
+                "equivocado manda a alguien a un organismo sin competencia sobre su reclamo."
+            )
         if resultado.correos_no_tomados:
             resultado.avisos.append(
                 f"{resultado.correos_no_tomados} dirección(es) de correo vienen ofuscadas por "
@@ -430,6 +481,13 @@ class ImportadorDpn:
             if lectura.propias_de_la_dpn and _clave(oficina.nombre) != "sede central"
             else TipoPuntoAtencion.SEDE
         )
+        # Una oficina de la DPN sirve a todo el país; la de un organismo
+        # autónomo sirve a lo que su nombre declare, y muchas veces no lo dice.
+        if lectura.propias_de_la_dpn:
+            alcance, ambito = AlcanceTerritorial.NACIONAL.value, None
+        else:
+            alcance, ambito = alcance_de(oficina.nombre)
+
         ya = self.conexion.execute(
             text(
                 "SELECT id FROM puntos_atencion WHERE organismo_id = :o AND nombre = :n "
@@ -442,7 +500,8 @@ class ImportadorDpn:
         creado = self.conexion.execute(
             text(
                 "INSERT INTO puntos_atencion (organismo_id, organismo_operador_id, "
-                " jurisdiccion_id, nombre, tipo) VALUES (:o, :op, :j, :n, :t) RETURNING id"
+                " jurisdiccion_id, nombre, tipo, alcance, ambito) "
+                "VALUES (:o, :op, :j, :n, :t, :a, :amb) RETURNING id"
             ),
             {
                 "o": titular_id,
@@ -452,6 +511,8 @@ class ImportadorDpn:
                 "j": jurisdiccion or JURISDICCION_NACIONAL,
                 "n": oficina.nombre,
                 "t": tipo.value,
+                "a": alcance,
+                "amb": ambito,
             },
         ).scalar_one()
         return creado, True

@@ -25,6 +25,7 @@ from backend_normativo.api.contratos import (
     Respuesta,
 )
 from backend_normativo.api.dependencias import Contexto
+from backend_normativo.db.vocabularios import AlcanceTerritorial
 
 router = APIRouter(prefix="/v1", tags=["operativo"])
 
@@ -74,6 +75,9 @@ class PuntoAtencion(BaseModel):
     tipo: str
     organismo: str
     organismo_operador: str | None
+    # La jurisdicción dice dónde está; el alcance, a quién sirve.
+    alcance: str
+    ambito: str | None
     direccion: str | None
     localidad: str | None
     lat: decimal.Decimal | None
@@ -352,16 +356,35 @@ def puntos_atencion(
     jurisdiccion: str | None = Query(None),
     localidad: str | None = Query(None),
     tipo: str | None = Query(None),
+    alcance: str | None = Query(
+        None, description="NACIONAL, PROVINCIAL, MUNICIPAL o NO_DECLARADO."
+    ),
 ) -> Respuesta[list[PuntoAtencion]]:
     """Puntos de atención con sus canales.
 
     Sin coordenadas válidas no se afirma cercanía. El horario es por canal: el
     de la mesa presencial no se copia al teléfono.
+
+    Pedir alcance municipal no devuelve el organismo provincial de la misma
+    provincia: comparten jurisdicción y no son intercambiables. Cuando no hay
+    ninguno municipal, la respuesta lo dice en vez de ofrecer el provincial
+    como equivalente.
     """
+    if alcance is not None and alcance not in {a.value for a in AlcanceTerritorial}:
+        raise HTTPException(
+            status_code=400,
+            detail=ErrorRespuesta(
+                codigo=CodigoError.INVALID_REQUEST,
+                detalle=(
+                    f"Alcance {alcance!r} desconocido. Los declarados son: "
+                    + ", ".join(a.value for a in AlcanceTerritorial)
+                ),
+            ).model_dump(mode="json"),
+        )
     filas = (
         contexto.conexion.execute(
             text(
-                "SELECT p.id, p.nombre, p.tipo, o.nombre AS organismo, "
+                "SELECT p.id, p.nombre, p.tipo, p.alcance, p.ambito, o.nombre AS organismo, "
                 "       oo.nombre AS operador, pv.direccion_legible, pv.direccion_cruda, "
                 "       pv.localidad, pv.lat, pv.lng, rv.verificado_en "
                 "  FROM puntos_atencion p "
@@ -373,9 +396,15 @@ def puntos_atencion(
                 "   AND (CAST(:j AS text) IS NULL OR p.jurisdiccion_id = :j) "
                 "   AND (CAST(:l AS text) IS NULL OR pv.localidad ILIKE :l) "
                 "   AND (CAST(:t AS text) IS NULL OR p.tipo = :t) "
+                "   AND (CAST(:a AS text) IS NULL OR p.alcance = :a) "
                 " ORDER BY p.nombre LIMIT 100"
             ),
-            {"j": jurisdiccion, "l": f"%{localidad}%" if localidad else None, "t": tipo},
+            {
+                "j": jurisdiccion,
+                "l": f"%{localidad}%" if localidad else None,
+                "t": tipo,
+                "a": alcance,
+            },
         )
         .mappings()
         .all()
@@ -407,6 +436,8 @@ def puntos_atencion(
                 tipo=fila["tipo"],
                 organismo=fila["organismo"],
                 organismo_operador=fila["operador"],
+                alcance=fila["alcance"],
+                ambito=fila["ambito"],
                 direccion=fila["direccion_legible"] or fila["direccion_cruda"],
                 localidad=fila["localidad"],
                 lat=fila["lat"],
@@ -422,17 +453,48 @@ def puntos_atencion(
         known_at=contexto.known_at,
         data_status=DataStatus.PUBLICADO if puntos else DataStatus.SIN_RESULTADOS,
         data=puntos,
-        warnings=(
-            []
-            if puntos
-            else [
-                Advertencia(
-                    codigo=CodigoError.INSUFFICIENT_EVIDENCE,
-                    detalle="No hay puntos de atención publicados con esos filtros.",
-                )
-            ]
-        ),
+        warnings=_advertencias_de_puntos(contexto, puntos, jurisdiccion, alcance),
     )
+
+
+def _advertencias_de_puntos(
+    contexto: Contexto,
+    puntos: list[PuntoAtencion],
+    jurisdiccion: str | None,
+    alcance: str | None,
+) -> list[Advertencia]:
+    if puntos:
+        return []
+
+    detalle = "No hay puntos de atención publicados con esos filtros."
+    if alcance == AlcanceTerritorial.MUNICIPAL.value:
+        # Que exista un organismo provincial no significa que atienda lo
+        # municipal: son competencias distintas y quien reclama ante el
+        # equivocado pierde tiempo que a veces es un plazo.
+        otros = (
+            contexto.conexion.execute(
+                text(
+                    "SELECT p.alcance, count(*) AS cuantos FROM puntos_atencion p "
+                    "  JOIN punto_versiones pv ON pv.punto_id = p.id "
+                    "  JOIN registro_versiones rv ON rv.id = pv.registro_version_id "
+                    " WHERE rv.estado_revision = 'PUBLISHED' "
+                    "   AND (CAST(:j AS text) IS NULL OR p.jurisdiccion_id = :j) "
+                    "   AND p.alcance <> :a GROUP BY p.alcance"
+                ),
+                {"j": jurisdiccion, "a": AlcanceTerritorial.MUNICIPAL.value},
+            )
+            .mappings()
+            .all()
+        )
+        if otros:
+            resumen = ", ".join(f"{f['cuantos']} {f['alcance'].lower()}" for f in otros)
+            detalle = (
+                "No hay ningún punto de atención municipal publicado con esos filtros. "
+                f"Sí hay otros de distinto alcance ({resumen}), y no se ofrecen como "
+                "equivalentes: un organismo provincial no atiende lo que le corresponde al "
+                "municipio."
+            )
+    return [Advertencia(codigo=CodigoError.INSUFFICIENT_EVIDENCE, detalle=detalle)]
 
 
 class BarrioRenabapResumen(BaseModel):

@@ -137,11 +137,24 @@ class PuntoAtencion(Base):
     )
     nombre: Mapped[str] = mapped_column(Text, nullable=False)
     tipo: Mapped[str] = mapped_column(String(32), nullable=False)
+    # La jurisdicción dice dónde está el punto; el alcance, a quién sirve. Sin
+    # separarlos, una defensoría municipal y la provincial de la misma provincia
+    # se responden como si fueran la misma cosa.
+    alcance: Mapped[str] = mapped_column(
+        String(16), nullable=False, server_default=voc.AlcanceTerritorial.NO_DECLARADO.value
+    )
+    ambito: Mapped[str | None] = mapped_column(Text)
     creado_en: Mapped[dt.datetime] = ts_creacion()
 
     __table_args__ = (
         check_vocabulario("tipo", voc.TipoPuntoAtencion),
+        check_vocabulario("alcance", voc.AlcanceTerritorial),
+        CheckConstraint(
+            "alcance <> 'MUNICIPAL' OR ambito IS NOT NULL",
+            name="ck_puntos_atencion_municipal_declara_su_ambito",
+        ),
         Index("ix_puntos_atencion_nombre", "nombre"),
+        Index("ix_puntos_atencion_alcance", "alcance"),
     )
 
 

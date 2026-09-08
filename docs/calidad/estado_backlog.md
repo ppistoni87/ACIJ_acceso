@@ -84,7 +84,7 @@ Los números salen de la base, no de una declaración.
 | HU-F17 | F17 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
 | HU-F18 | F18 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
 | HU-F19 | F19 | EN_CURSO | 1 | 1 | 1 | 34 | 0 | 1 | 7 | 0 | — |
-| HU-F20 | F20 | EN_CURSO | 1 | 1 | 1 | 0 | 21 | 0 | 0 | 0 | — |
+| HU-F20 | F20 | EN_CURSO | 2 | 3 | 1 | 0 | 21 | 0 | 0 | 0 | — |
 | HU-F21 | F21 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
 | HU-F22 | F22 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
 | HU-F23 | F23 | EN_CURSO | 1 | 1 | 1 | 104 | 0 | 1 | 7 | 0 | — |

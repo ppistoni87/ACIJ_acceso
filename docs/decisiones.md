@@ -335,3 +335,72 @@ suposición no sólo es silenciosa, además es probable.
 trae días sin año, queda con su período indeterminado y lo declara. El contenido
 se conserva —el monto y el orden por terminación de DNI son datos— y lo que no
 se afirma es a qué mes corresponden.
+
+## D-26 · La jurisdicción dice dónde está; el alcance, a quién sirve
+
+La defensoría de Avellaneda y la de la Provincia de Buenos Aires comparten
+`AR-B`. Con sólo la jurisdicción, una consulta las devuelve como si fueran la
+misma cosa, y quien pregunta por el servicio de su municipio recibe un organismo
+que no tiene competencia sobre su reclamo.
+
+**Consecuencia:** un punto de atención declara su alcance —nacional, provincial,
+municipal— aparte de su jurisdicción, y un punto municipal tiene que decir de
+qué municipio. Pedir alcance municipal no devuelve el provincial de la misma
+provincia; cuando no hay ninguno municipal, la respuesta lo dice y nombra los de
+otro alcance que sí hay, sin ofrecerlos como equivalentes.
+
+El alcance sale de lo que el nombre declara y de nada más. «Defensor del Pueblo
+de Salta» puede ser el provincial o el de la capital: de los 57 organismos del
+directorio de la DPN, 13 se declaran municipales, 6 provinciales y 38 quedan sin
+declarar. Adivinar los 38 habría dado un resultado completo y a veces falso.
+
+## D-27 · Un campo en disputa se retiene; lo coincidente se publica
+
+El dataset abierto de sedes comunales dice que la Subsede Comunal 2 está en
+«Lopez, Vicente 2050, 3 piso». La ficha de la Comuna 2, del mismo gobierno, dice
+«Vicente López 2050, 4° piso». Las dos son oficiales y las dos están publicadas
+hoy.
+
+Elegir la primera fuente, elegir la más reciente o componer una legible con la
+calle de una y el piso de la otra producen las tres una dirección que se lee
+bien y manda a alguien a una puerta equivocada en un edificio correcto.
+
+**Consecuencia:** los dos candidatos coexisten, el piso queda en disputa con una
+incidencia que nombra qué dice cada fuente, y se publica lo que las dos afirman
+igual: «Lopez, Vicente 2050». El valor coincidente se elige de forma
+determinista y no por orden de llegada, porque quedarse con el primero también
+es elegir una fuente.
+
+Y «Lopez, Vicente» y «Vicente López» no son un conflicto de calle: el dataset
+invierte apellido y nombre. Leerlo como dos calles distintas habría inventado un
+conflicto y tapado el que sí existe.
+
+## D-28 · Lo que afirma una ONG se conserva con su atribución
+
+ACIJ publica un análisis del Proyecto de Presupuesto 2026 de la Ciudad y afirma
+que las partidas de los organismos de vivienda caen 22,9% en términos reales y
+son las más bajas en catorce años. El GCBA publica el proyecto; no publica esa
+lectura.
+
+Descartarla pierde información sostenida en un documento público. Presentarla
+sin decir quién la hace le da una autoridad que no tiene: quien la lea va a
+creer que el Gobierno de la Ciudad dijo que su propio presupuesto de vivienda es
+el más bajo en catorce años.
+
+**Consecuencia:** una fuente declara con qué autoridad habla. Las 83 del
+manifiesto son oficiales; ACIJ se incorporó como secundaria. Una afirmación
+sostenida sólo por una fuente secundaria se sirve diciendo quién la afirma, y el
+organismo de la fuente oficial no viaja con ella.
+
+## D-29 · Un respaldo se prueba restaurándolo
+
+Las pruebas de respaldo verificaban que la comprobación de integridad encontrara
+lo que falta, no que el volcado existiera. Un backup que nadie restauró no es un
+backup.
+
+**Consecuencia:** el ciclo completo se ejerce sobre bases propias, creadas y
+borradas en la prueba: `pg_dump` de una base con datos confirmados, `pg_restore`
+en otra que empieza vacía, y sobre la restaurada se comprueban las 83 fuentes,
+el hash de la captura, la verificación de integridad y que los triggers de
+inmutabilidad sigan ahí. Un volcado que pierde los triggers deja una base que
+acepta lo que la original rechazaba, y eso no se nota hasta que alguien escribe.
