@@ -36,9 +36,13 @@
   },
   "AT-006": {
    "pruebas": [
+    "tests/integracion/test_anclas.py::test_at006_el_ancla_inexistente_se_reporta_como_rota",
+    "tests/integracion/test_anclas.py::test_at006_el_alias_se_conserva_aunque_el_ancla_no_resuelva",
+    "tests/integracion/test_anclas.py::test_at006_ningun_mapeo_por_semejanza_numerica",
+    "tests/integracion/test_anclas.py::test_at006_la_incidencia_dice_que_no_se_resolvio_por_parecido",
+    "tests/integracion/test_anclas.py::test_sin_captura_del_destino_no_se_declara_rota_ni_valida",
     "tests/integracion/test_catalogo.py::test_los_alias_apuntan_a_una_sola_fuente_canonica"
-   ],
-   "falta": "El ancla rota (#44 inexistente en F31) no se reporta todavía: el catálogo conserva el alias pero nadie verifica que el fragmento exista en el documento destino."
+   ]
   },
   "AT-007": {
    "pruebas": [
@@ -507,10 +511,16 @@
   },
   "AT-075": {
    "pruebas": [
+    "tests/unit/test_fecha_documento.py::test_at075_un_anexo_en_carpeta_vieja_no_toma_el_anio_de_la_carpeta",
+    "tests/unit/test_fecha_documento.py::test_at075_el_acto_madre_queda_identificado",
+    "tests/unit/test_fecha_documento.py::test_at075_ni_la_primera_ni_la_ultima_fecha_del_texto_fechan_el_documento",
+    "tests/unit/test_fecha_documento.py::test_el_documento_le_gana_a_la_ruta",
+    "tests/unit/test_fecha_documento.py::test_una_nota_con_parentesis_adentro_se_lee_entera",
     "tests/unit/test_adaptador_pdf.py::test_la_carpeta_del_archivo_no_fecha_el_documento",
+    "tests/unit/test_adaptador_pdf.py::test_un_documento_que_declara_su_fecha_la_toma",
+    "tests/unit/test_adaptador_pdf.py::test_las_fechas_de_las_notas_de_consolidacion_no_fechan_el_documento",
     "tests/unit/test_adaptadores.py::test_la_ruta_de_infoleg_distingue_original_de_actualizado"
-   ],
-   "falta": "El adaptador deja la fecha pendiente y lo dice; leerla del propio documento o del acto que lo aprueba todavía no está implementado."
+   ]
   },
   "AT-076": {
    "pruebas": [

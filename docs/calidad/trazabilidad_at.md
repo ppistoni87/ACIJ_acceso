@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **68**
-- Cubiertos parcialmente: **12**
+- Cubiertos por pruebas que corren: **70**
+- Cubiertos parcialmente: **10**
 - No ejecutados: **0**
-- Pruebas citadas: **199** (ejecutadas)
+- Pruebas citadas: **211** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -16,7 +16,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-003 | FK a versión ajena | HU-002 | CUBIERTO | PASSED | `test_evidencia_no_puede_citar_una_unidad_de_otra_version` |
 | AT-004 | Fuente sin URL | HU-001 | CUBIERTO | PASSED | `test_las_fuentes_sin_url_conservan_su_brecha`<br>`test_cada_brecha_tiene_incidencia_abierta_con_responsable`<br>`test_una_fuente_sin_url_no_se_automatiza` |
 | AT-005 | Alias F65 | HU-F65 | CUBIERTO | PASSED | `test_los_alias_apuntan_a_una_sola_fuente_canonica`<br>`test_un_alias_no_esta_necesariamente_caido` |
-| AT-006 | Alias con fragmento | HU-F28 | CUBIERTO_PARCIAL | PASSED | `test_los_alias_apuntan_a_una_sola_fuente_canonica`<br>_Falta: El ancla rota (#44 inexistente en F31) no se reporta todavía: el catálogo conserva el alias pero nadie verifica que el fragmento exista en el documento destino._ |
+| AT-006 | Alias con fragmento | HU-F28 | CUBIERTO | PASSED | `test_at006_el_ancla_inexistente_se_reporta_como_rota`<br>`test_at006_el_alias_se_conserva_aunque_el_ancla_no_resuelva`<br>`test_at006_ningun_mapeo_por_semejanza_numerica`<br>`test_at006_la_incidencia_dice_que_no_se_resolvio_por_parecido`<br>`test_sin_captura_del_destino_no_se_declara_rota_ni_valida`<br>`test_los_alias_apuntan_a_una_sola_fuente_canonica` |
 | AT-007 | 404 con HTML | HU-004 | CUBIERTO_PARCIAL | PASSED | `test_una_corrida_con_rechazos_no_figura_completa`<br>`test_un_403_pausa_la_fuente_y_no_la_deja_como_sin_datos`<br>_Falta: El caso concreto de un 404 con cuerpo HTML extenso no tiene fixture propia; se ejerce la regla general de que un rechazo no es una corrida completa._ |
 | AT-008 | Login con 200 | HU-004 | CUBIERTO | PASSED | `test_at008_una_pantalla_de_acceso_no_se_publica_como_tramite`<br>`test_no_se_guardan_cookies_ni_credenciales` |
 | AT-009 | 304 y frescura | HU-023 | CUBIERTO | PASSED | `test_un_304_exige_captura_previa`<br>`test_la_revalidacion_reutiliza_el_objeto_previo`<br>`test_vencer_la_frescura_no_deroga_pero_sí_impide_servir` |
@@ -85,7 +85,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-072 | Evento repetido | HU-028 | CUBIERTO | PASSED | `test_una_entrega_exitosa_lleva_la_clave_de_idempotencia`<br>`test_propagar_dos_veces_no_duplica_el_evento`<br>`test_una_entrega_fallida_no_marca_el_evento_como_entregado` |
 | AT-073 | No proveedor Web Push | HU-028 | CUBIERTO | PASSED | `test_sin_consumidor_configurado_no_se_declara_ninguna_entrega`<br>`test_un_evento_que_agoto_los_intentos_pasa_a_la_cola_de_fallos` |
 | AT-074 | Restauración | HU-037 | CUBIERTO_PARCIAL | PASSED | `test_una_restauracion_completa_se_declara_integra`<br>`test_una_captura_sin_sus_bytes_no_pasa`<br>`test_un_objeto_alterado_se_detecta`<br>`test_un_release_sin_evidencia_no_pasa`<br>`test_un_evento_ya_entregado_no_se_puede_duplicar`<br>`test_perder_un_evento_entregado_no_pasa_desapercibido`<br>`test_perder_los_checkpoints_no_pasa_desapercibido`<br>_Falta: La restauración completa con pg_restore está ejercida por `bn operacion restaurar` y su evidencia está en docs/reportes/restauracion.md; las pruebas automatizadas verifican la comprobación de integridad, no el volcado en sí._ |
-| AT-075 | Fecha de carpeta PDF | HU-F67 | CUBIERTO_PARCIAL | PASSED | `test_la_carpeta_del_archivo_no_fecha_el_documento`<br>`test_la_ruta_de_infoleg_distingue_original_de_actualizado`<br>_Falta: El adaptador deja la fecha pendiente y lo dice; leerla del propio documento o del acto que lo aprueba todavía no está implementado._ |
+| AT-075 | Fecha de carpeta PDF | HU-F67 | CUBIERTO | PASSED | `test_at075_un_anexo_en_carpeta_vieja_no_toma_el_anio_de_la_carpeta`<br>`test_at075_el_acto_madre_queda_identificado`<br>`test_at075_ni_la_primera_ni_la_ultima_fecha_del_texto_fechan_el_documento`<br>`test_el_documento_le_gana_a_la_ruta`<br>`test_una_nota_con_parentesis_adentro_se_lee_entera`<br>`test_la_carpeta_del_archivo_no_fecha_el_documento`<br>`test_un_documento_que_declara_su_fecha_la_toma`<br>`test_las_fechas_de_las_notas_de_consolidacion_no_fechan_el_documento`<br>`test_la_ruta_de_infoleg_distingue_original_de_actualizado` |
 | AT-076 | Costo ausente | HU-F45 | CUBIERTO | PASSED | `test_at076_una_duracion_vacia_no_es_inmediato`<br>`test_at076_un_costo_declarado_si_se_toma`<br>`test_at076_una_ficha_sin_los_dos_campos_los_reporta_a_los_dos`<br>`test_una_duracion_ausente_queda_vacia_y_con_incidencia`<br>`test_cuantia_no_informada_no_necesita_inventar_un_monto` |
 | AT-077 | Formulario público sin envío | HU-F04 | CUBIERTO | PASSED | `test_no_se_guardan_cookies_ni_credenciales`<br>`test_el_planificador_ignora_lo_que_no_se_puede_pedir` |
 | AT-078 | Sustituto de otra granularidad | HU-F09 | CUBIERTO_PARCIAL | PASSED | `test_una_fuente_retirada_explica_por_que`<br>`test_el_reporte_no_confunde_fuentes_con_leyes`<br>`test_el_listado_de_bloqueadas_dice_por_que_lo_estan`<br>`test_la_fuente_queda_manual_y_no_activa`<br>_Falta: El caso concreto de F09 —directorio municipal caído con lista provincial disponible— no tiene fixture: se prueba que una fuente detenida conserve su motivo y que una carga manual no la declare recorrible, no la sustitución por otra granularidad._ |

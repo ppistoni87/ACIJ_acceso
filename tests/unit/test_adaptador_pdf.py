@@ -7,11 +7,13 @@ respondiendo lo mismo.
 
 from __future__ import annotations
 
+import datetime as dt
 import io
 import zlib
 
 import pytest
 
+from backend_normativo.db.vocabularios import TipoFecha
 from backend_normativo.ingesta.adaptadores.base import CapturaMaterial
 from backend_normativo.ingesta.adaptadores.pdf import (
     MINIMO_CHARS_PAGINA,
@@ -296,7 +298,40 @@ def test_la_carpeta_del_archivo_no_fecha_el_documento() -> None:
     resultado = AdaptadorPdf().extraer(captura)
     documento = resultado.documentos[0]
     assert documento.fecha_documento is None
-    assert any("no se deduce de la ruta" in str(a) for a in documento.avisos)
+    assert documento.tipo_fecha is TipoFecha.DESCONOCIDA
+    aviso = next(a for a in documento.avisos if "ruta sugiere" in str(a))
+    assert "2019" in str(aviso)
+    assert "dónde lo guardaron, no cuándo lo firmaron" in str(aviso)
+
+
+def test_un_documento_que_declara_su_fecha_la_toma() -> None:
+    """La ruta dice 2019 y el documento dice 2025: manda el documento."""
+    captura = _captura(
+        _pdf(["Buenos Aires, 14 de marzo de 2025", "Anexo I. Reglamento general de becas."]),
+        url="https://x/archivos/2019/anexo-i.pdf",
+    )
+    documento = AdaptadorPdf().extraer(captura).documentos[0]
+    assert documento.fecha_documento == dt.date(2025, 3, 14)
+    assert documento.tipo_fecha is TipoFecha.SANCION
+
+
+def test_las_fechas_de_las_notas_de_consolidacion_no_fechan_el_documento() -> None:
+    """El Decreto 690/06 consolidado trae 34 fechas y ninguna es la suya."""
+    captura = _captura(
+        _pdf(
+            [
+                "Artículo 1° - Créase el programa.",
+                "(Artículo 1° sustituido por el artículo 2° del Decreto 155/2023, "
+                "publicado en el Boletín Oficial 6625 del 19/05/2023)",
+            ]
+        ),
+        url="https://x/util/imagen.php?idn=86704",
+    )
+    documento = AdaptadorPdf().extraer(captura).documentos[0]
+    assert documento.fecha_documento is None
+    assert any("notas de consolidación" in str(a) for a in documento.avisos)
+    # El acto que modificó sí queda identificado: es un dato aparte y útil.
+    assert any("Decreto 155/2023" in str(a) for a in documento.avisos)
 
 
 # --- Contrato del adaptador ---------------------------------------------------

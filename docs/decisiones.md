@@ -212,3 +212,36 @@ el texto original y el actualizado: 59 renumeraciones y una sustitución, la del
 artículo 3, donde InfoLEG consolidó la corrección del Decreto 1407/2001 —«donde
 dice incisos 1) y 5) debe decir incisos 1) a 5)»—. Ese es el caso más silencioso:
 la cita sigue apuntando a un artículo que existe, sólo que ya no dice lo mismo.
+
+## D-19 · Un ancla rota se reporta; no se resuelve por parecido
+
+F28 no es una fuente distinta de F31: es la misma página de preguntas
+frecuentes citada con `#44` para señalar una pregunta puntual. En la captura
+real de F31 hay 129 anclas y ninguna es numérica, así que `#44` no lleva a
+ninguna parte. La página carga igual, de modo que el error no se ve.
+
+El alias se conserva —la identidad de la referencia es un dato aunque no
+resuelva— y la rotura se registra con responsable. Lo que no se hace es
+adivinar: la página tiene un ancla `accordion-2693944`, que contiene «44», y
+tiene exactamente 43 preguntas, así que «la 44» está a un lugar de existir. Las
+dos coincidencias son falsas y las dos son tentadoras.
+
+**Consecuencia:** los parecidos se reportan como parecidos que no se usaron,
+para que quien revise vea por qué no alcanzan. La referencia correcta la
+consigue alguien que mire el destino, no una heurística de dígitos.
+
+## D-20 · La fecha de un documento sale de su texto o no sale
+
+La carpeta que aloja un PDF dice dónde lo guardaron, no cuándo lo firmaron. En
+el corpus hay tres PDF cuya ruta declara un año —`/files/2021/08/`, `/2025-11/`,
+`/2026-08/`— y ninguno lo confirma en su texto.
+
+Adentro del documento tampoco alcanza con encontrar una fecha. El Decreto 690/06
+consolidado trae 34, de 2008 a 2025, y ninguna lo fecha: todas están en notas de
+consolidación que fechan al decreto que lo modificó. Tomar la primera daría 2011;
+la última, 2025. Es un decreto de 2006.
+
+**Consecuencia:** una fecha fecha el documento sólo cuando el texto dice que lo
+fecha —un encabezado de lugar y fecha, o una fórmula de sanción—. Las demás se
+leen, se clasifican y se reportan sin usarse. Las de las notas, además,
+identifican los actos que modificaron: eso no se descarta junto con la fecha.

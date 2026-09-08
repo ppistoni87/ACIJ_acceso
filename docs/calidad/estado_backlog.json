@@ -7,12 +7,15 @@
    "evidencia": [
     "src/backend_normativo/catalogo/carga.py",
     "src/backend_normativo/catalogo/reconciliacion.py",
-    "tests/integracion/test_catalogo.py"
+    "tests/integracion/test_catalogo.py",
+    "src/backend_normativo/catalogo/anclas.py",
+    "tests/integracion/test_anclas.py"
    ],
    "comandos": [
     "bn catalogo validar",
     "bn catalogo cargar",
-    "bn catalogo conciliar"
+    "bn catalogo conciliar",
+    "bn catalogo anclas"
    ]
   },
   "HU-002": {
@@ -84,7 +87,9 @@
    "evidencia": [
     "src/backend_normativo/ingesta/adaptadores/pdf.py",
     "tests/unit/test_adaptador_pdf.py",
-    "tests/fixtures/prefijo_boletin_caba.json"
+    "tests/fixtures/prefijo_boletin_caba.json",
+    "src/backend_normativo/ingesta/adaptadores/fecha_documento.py",
+    "tests/unit/test_fecha_documento.py"
    ],
    "comandos": [
     "bn ingesta capturar D07 D08 D09 F38 F40 F54 F62 F63",

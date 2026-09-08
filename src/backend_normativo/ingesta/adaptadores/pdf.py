@@ -32,6 +32,7 @@ from backend_normativo.db.vocabularios import (
     ModoExtraccion,
     Severidad,
     TipoDocumento,
+    TipoFecha,
     TipoIncidencia,
     TipoVersionDocumento,
 )
@@ -42,6 +43,7 @@ from backend_normativo.ingesta.adaptadores.base import (
     ResultadoExtraccion,
     calcular_score,
 )
+from backend_normativo.ingesta.adaptadores.fecha_documento import leer as leer_fecha
 
 MAGIC = b"%PDF-"
 
@@ -344,16 +346,32 @@ class AdaptadorPdf:
                 ),
             ],
         )
-        # La fecha de la carpeta que aloja el PDF no fecha el documento: un anexo
-        # firmado en 2025 puede estar colgado de una ruta de 2019.
-        documento.avisos.append(
-            Aviso(
-                "La fecha del documento no se deduce de la ruta ni del nombre del archivo. "
-                "Queda pendiente hasta que se lea del propio documento o del acto que lo aprueba.",
-                tipo=TipoIncidencia.VIGENCIA_INDETERMINADA,
-                severidad=Severidad.MEDIUM,
+        # La fecha sale del texto del documento o no sale: la carpeta que lo aloja
+        # dice dónde lo guardaron, no cuándo lo firmaron.
+        fecha = leer_fecha(lectura.texto, url=captura.url_final)
+        if fecha.determinada:
+            documento.fecha_documento = fecha.fecha
+            documento.tipo_fecha = TipoFecha(fecha.tipo_fecha)
+        else:
+            documento.avisos.append(
+                Aviso(
+                    fecha.motivo,
+                    tipo=TipoIncidencia.VIGENCIA_INDETERMINADA,
+                    severidad=Severidad.MEDIUM,
+                )
             )
-        )
+        if fecha.actos_citados:
+            # Las notas de consolidación no fechan este documento, pero sí
+            # identifican los actos que lo modificaron. Eso se conserva.
+            documento.avisos.append(
+                Aviso(
+                    "El texto cita actos que lo modificaron: "
+                    + ", ".join(fecha.actos_citados)
+                    + ". Sus fechas son de ellos, no de este documento.",
+                    tipo=TipoIncidencia.COBERTURA_EXTRACCION,
+                    severidad=Severidad.INFO,
+                )
+            )
         resultado.documentos.append(documento)
         return resultado
 

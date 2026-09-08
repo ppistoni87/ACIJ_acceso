@@ -71,6 +71,32 @@ def catalogo_cargar(
         typer.echo(f"  advertencia: {advertencia}")
 
 
+@catalogo.command("anclas")
+def catalogo_anclas(
+    salida: Path | None = typer.Option(None, help="Archivo donde escribir el reporte."),
+) -> None:
+    """Comprueba que el fragmento de cada alias exista en su destino.
+
+    Una página carga igual cuando el ancla no existe: el error no se ve hasta
+    que alguien sigue la referencia y no llega a la pregunta que se citó.
+    """
+    from backend_normativo.catalogo.anclas import formatear as formatear_anclas
+    from backend_normativo.catalogo.anclas import verificar
+
+    with engine_migrador().begin() as conexion:
+        reporte = verificar(conexion)
+    texto = formatear_anclas(reporte)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto + "\n", encoding="utf-8")
+        typer.echo(
+            f"Reporte escrito en {salida} · resueltas {len(reporte.resueltas)} · "
+            f"rotas {len(reporte.rotas)} · sin captura {len(reporte.sin_captura)}"
+        )
+    else:
+        typer.echo(texto)
+
+
 @catalogo.command("conciliar")
 def catalogo_conciliar(
     salida: Path | None = typer.Option(None, help="Archivo donde escribir el reporte."),
