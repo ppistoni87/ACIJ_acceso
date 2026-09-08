@@ -124,10 +124,6 @@
   {
    "campo": "criterios_revocacion",
    "motivo": "La ley no declara causales de baja. Qué pasa al fallecer el cónyuge, o ante un divorcio, no sale de este texto."
-  },
-  {
-   "campo": "canales",
-   "motivo": "La ley no dice dónde se gestiona ni qué hay que presentar para acreditar el vínculo."
   }
  ],
  "dependencias": [
@@ -138,6 +134,12 @@
   {
    "referencia": "Ley 24.241, Sistema Integrado de Jubilaciones y Pensiones",
    "motivo": "El artículo 16 la presupone para definir quién es beneficiario del sistema, que es la condición de acceso. La norma no está en el corpus."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "canales",
+   "motivo": "La ley no dice dónde se gestiona ni qué hay que presentar para acreditar el vínculo."
   }
  ]
 }

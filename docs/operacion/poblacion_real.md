@@ -375,7 +375,7 @@ que «la atención presencial de las sedes permanecerá cerrada hasta el comienz
 del nuevo periodo de inscripción». Eso es el dato de hoy. Rescatar el listado de
 una captura anterior lo presentaría como vigente.
 
-## Dieciséis beneficios curados, en diecisiete lecturas
+## Dieciséis beneficios curados, en dieciocho lecturas
 
 La lectura jurídica vive en `docs/curaduria/`, un archivo por lectura, y no en
 el código: se puede discutir contra la ley sin leer Python. Cada regla, cada
@@ -388,6 +388,7 @@ siempre—.
 | --- | --- | ---: | ---: | ---: | --- |
 | Apoyo habitacional | Ley CABA 6935/2025 | 9 | 3 | 1 | fórmula sin valor |
 | Régimen de Becas Estudiantiles | Ley CABA 2917/2008 | 9 | 3 | 4 | fórmula sin valor |
+| Régimen de Becas Estudiantiles | Decreto CABA 75/2015 (reglamenta) | 3 | 1 | 0 | la fija la ley |
 | Subsidio para familias en situación de calle | Decreto CABA 690/2006 | 14 | 2 | 2 | fórmula sin valor |
 | Beca de comedor, refrigerio y vianda | Ordenanza CABA 43.478 | 16 | 2 | 4 | en especie |
 | Beca de comedor, refrigerio y vianda | Ley CABA 547/2001 (modifica) | 9 | 1 | 0 | la fija la ordenanza |
@@ -413,7 +414,7 @@ cincuenta pesos de 2006. Los montos vigentes salen de resoluciones que no están
 en el corpus. Servir esos números como «lo que vas a cobrar» sería peor que
 decir que no se sabe.
 
-**Una beca leída desde dos normas.** La beca de comedor aparece dos veces en la
+**Dos beneficios leídos desde dos normas cada uno.** La beca de comedor aparece dos veces en la
 tabla y es una sola beca: la Ordenanza 43.478 la crea en 1989 y la Ley CABA 547
 le sustituye en 2001 los artículos que dicen quién accede. Partirla en dos
 códigos habría dicho que hay dos becas; quedarse con la ordenanza sola habría
@@ -436,6 +437,17 @@ define la unidad que la ordenanza dejaba sin definir, pero es un piso de
 convenio colectivo que ninguna fuente del corpus publica, así que el parámetro
 entra sin valor y las reglas que lo usan devuelven desconocido —no «no
 calificás», sino «no se sabe»—.
+
+El Régimen de Becas Estudiantiles está leído desde la Ley 2917, que lo crea, y
+desde el Decreto 75/2015, que lo reglamenta. El decreto no agrega un beneficio:
+precisa que está destinado a quien cursa «obligatoriamente» el nivel medio de
+gestión estatal —una palabra que la ley no tiene y que puede dejar afuera al
+secundario de adultos, así que queda anotada como lo que hay que decidir— y
+conserva la beca a quienes ya la cobraban cursando por proyectos y programas del
+Ministerio. Esa excepción tiene fecha: alcanza a quien estaba en esa situación en
+2015, no a quien empiece hoy, y por eso se guarda sin condición ejecutable. Una
+lectura de la ley sola le responde «no cumplís el artículo 1» a alguien a quien
+el decreto expresamente se la conserva.
 
 **Las doce prestaciones de la misma ley, curadas por separado.** La Ley 24.714
 define doce prestaciones y las doce están curadas, una por archivo. Curarla

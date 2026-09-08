@@ -161,14 +161,17 @@ escribir_reporte() {
     for archivo in docs/curaduria/*.json; do
       [ -e "${archivo}" ] || continue
       externo=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['norma']['external_id'])" "${archivo}")
-      codigo=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['beneficio']['codigo'])" "${archivo}")
+      # No se llama `codigo`: `al_salir` guarda ahí el estado de salida de la
+      # corrida y esto corre adentro de esa función, así que pisarlo hacía que
+      # una corrida buena terminara con el código de un beneficio por número.
+      codigo_beneficio=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['beneficio']['codigo'])" "${archivo}")
       existe=$(sql "SELECT count(*) FROM documentos WHERE external_id = '${externo}'")
       if [ "${existe}" = "0" ]; then
         faltantes=$((faltantes + 1))
         [ "${faltantes}" = 1 ] && { echo "| Lectura | Norma que le falta |"; echo "| --- | --- |"; }
         echo "| \`$(basename "${archivo}")\` | \`${externo}\` |"
       else
-        esperados="${esperados}${codigo}\n"
+        esperados="${esperados}${codigo_beneficio}\n"
       fi
     done
     lecturas=$(ls docs/curaduria/*.json 2>/dev/null | wc -l)

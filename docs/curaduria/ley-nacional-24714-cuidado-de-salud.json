@@ -180,10 +180,6 @@
   {
    "campo": "criterios_revocacion",
    "motivo": "La ley no declara causales de baja ni qué pasa si la vacunación se acredita después del pago. Al ser anual y por un hecho ya ocurrido —haber tenido derecho a la Asignación Universal por Hijo dentro del año—, la pregunta no es si se da de baja sino si se puede reclamar hacia atrás, y eso tampoco lo dice."
-  },
-  {
-   "campo": "canales",
-   "motivo": "El artículo remite a ANSES para los requisitos de acreditación y no dice dónde se gestiona la prestación ni si hay que solicitarla o se liquida sola con los datos que el organismo ya tiene."
   }
  ],
  "dependencias": [
@@ -198,6 +194,12 @@
   {
    "referencia": "Plan de vacunación obligatorio y esquema de control sanitario",
    "motivo": "La ley los nombra y no los define: qué vacunas y qué controles corresponden a cada edad sale del calendario nacional de vacunación, que no está en el corpus."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "canales",
+   "motivo": "El artículo remite a ANSES para los requisitos de acreditación y no dice dónde se gestiona la prestación ni si hay que solicitarla o se liquida sola con los datos que el organismo ya tiene."
   }
  ]
 }

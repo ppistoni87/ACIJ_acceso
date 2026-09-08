@@ -184,10 +184,6 @@
   {
    "campo": "criterios_revocacion",
    "motivo": "La ley no declara causales de baja. Se deja de percibir si el hijo deja de concurrir o si cambia la situación del titular, que no es una revocación. Qué pasa si la concurrencia se acredita después de marzo, o si se interrumpe a mitad de año habiendo cobrado, no sale de este texto."
-  },
-  {
-   "campo": "canales",
-   "motivo": "La ley no dice dónde se acredita la concurrencia escolar ni dónde se gestiona la prestación, y las dos vías de acceso podrían tener canales distintos: el subsistema contributivo históricamente liquidó por el empleador y el no contributivo por ANSES."
   }
  ],
  "dependencias": [
@@ -202,6 +198,12 @@
   {
    "referencia": "Decretos que fijan la fecha de pago de la ayuda escolar",
    "motivo": "El artículo 10 dice «en el mes de marzo de cada año» y en la práctica el pago se ha adelantado o corrido por decreto. Sin esas normas, la fecha declarada es la de la ley y no necesariamente la del año que se consulta."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "canales",
+   "motivo": "La ley no dice dónde se acredita la concurrencia escolar ni dónde se gestiona la prestación, y las dos vías de acceso podrían tener canales distintos: el subsistema contributivo históricamente liquidó por el empleador y el no contributivo por ANSES."
   }
  ]
 }

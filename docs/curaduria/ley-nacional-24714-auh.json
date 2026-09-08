@@ -436,10 +436,6 @@
   {
    "campo": "criterios_revocacion",
    "motivo": "Lo único que la ley declara perder por falta de acreditación es el veinte por ciento reservado, no la prestación. No dice qué pasa con la asignación cuando los controles no se acreditan nunca, ni si lo perdido se puede recuperar acreditando después, ni qué ocurre ante una declaración falsa —eso el artículo 14 quinquies inciso d) lo dice para la Asignación por Embarazo y no para esta—. Cese, suspensión y revocación tienen efectos distintos sobre lo ya percibido y el texto no elige entre ellos."
-  },
-  {
-   "campo": "canales",
-   "motivo": "La ley nombra a ANSES como quien paga y quien fija la documentación, pero no dice dónde ni cómo se solicita la prestación. El canal concreto —oficina, aplicación, atención telefónica— no está en esta norma, y ponerlo desde el conocimiento general sería afirmar sin evidencia algo que le cambia el viaje a una persona."
   }
  ],
  "dependencias": [
@@ -458,6 +454,12 @@
   {
    "referencia": "Salario mínimo, vital y móvil",
    "motivo": "El último párrafo del artículo 3 lo usa como umbral de la exclusión por economía informal. El parámetro existe en el corpus; mientras no tenga valor aprobado para el período consultado, la regla que lo compara devuelve desconocido en vez de excluir a alguien."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "canales",
+   "motivo": "La ley nombra a ANSES como quien paga y quien fija la documentación, pero no dice dónde ni cómo se solicita la prestación. El canal concreto —oficina, aplicación, atención telefónica— no está en esta norma, y ponerlo desde el conocimiento general sería afirmar sin evidencia algo que le cambia el viaje a una persona."
   }
  ]
 }

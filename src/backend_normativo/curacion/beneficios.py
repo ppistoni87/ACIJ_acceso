@@ -32,6 +32,7 @@ from dataclasses import dataclass, field
 from sqlalchemy import Connection, text
 
 from backend_normativo.db.vocabularios import (
+    CAMPOS_SOLICITADOS,
     EntidadVersionada,
     EstadoRevision,
     Severidad,
@@ -61,6 +62,7 @@ class ResultadoCuracion:
     campos_no_informados: int = 0
     dependencias: int = 0
     conflictos: int = 0
+    vacios: int = 0
     avisos: list[str] = field(default_factory=list)
 
 
@@ -113,6 +115,10 @@ class CuradorDeBeneficios:
         for campo in lectura.get("campos_no_informados", ()):
             self._campo_no_informado(norma_version_id, campo)
             resultado.campos_no_informados += 1
+
+        for vacio in lectura.get("vacios_declarados", ()):
+            self._vacio_declarado(lectura["norma"]["referencia"], vacio)
+            resultado.vacios += 1
 
         for dependencia in lectura.get("dependencias", ()):
             self._dependencia(lectura["norma"]["referencia"], dependencia)
@@ -764,8 +770,23 @@ class CuradorDeBeneficios:
         No informado no es inexistente: que la norma no lo declare no significa
         que no haya causales, y responder «no te lo pueden quitar» sería la
         lectura opuesta a la correcta.
+
+        Solo se declaran los siete campos que el paquete pide, porque son los
+        únicos que la completitud evalúa. Un nombre fuera de esa lista no tenía
+        fila que actualizar y la carga lo pasaba de largo sin decir nada: la
+        curaduría escribía el motivo de un vacío y el motivo no llegaba a
+        ninguna parte. Un vacío que no es uno de los siete va en
+        `vacios_declarados`, que abre incidencia.
         """
-        self.conexion.execute(
+        if campo["campo"] not in CAMPOS_SOLICITADOS:
+            raise LecturaInvalida(
+                f"La lectura declara el campo {campo['campo']!r} como no informado y no es uno "
+                f"de los siete que la completitud evalúa: {', '.join(CAMPOS_SOLICITADOS)}. Un "
+                "vacío que no es uno de esos siete —dónde se presenta el trámite, cuánto se "
+                "cobra— va en `vacios_declarados`, que abre una incidencia con el motivo. Como "
+                "campo no informado no actualizaba nada y el motivo se perdía."
+            )
+        actualizadas = self.conexion.execute(
             text(
                 "UPDATE evaluaciones_completitud SET estado = :estado, motivo = :motivo, "
                 "  evaluado_en = now() "
@@ -776,6 +797,48 @@ class CuradorDeBeneficios:
                 "campo": campo["campo"],
                 "estado": "NO_INFORMADO_EN_FUENTES_REVISADAS",
                 "motivo": campo["motivo"],
+            },
+        ).rowcount
+        if not actualizadas:
+            raise LecturaInvalida(
+                f"No hay evaluación de completitud del campo {campo['campo']!r} para esta "
+                "versión de la norma, así que declararlo no informado no cambia nada. Las "
+                "evaluaciones las crea `bn curacion campos`: hay que correrlo antes."
+            )
+
+    def _vacio_declarado(self, referencia_origen: str, vacio: dict) -> None:
+        """Lo que la norma no da y no es uno de los siete campos.
+
+        Dónde se presenta el trámite, cuánto se cobra: datos que alguien va a
+        preguntar y que esta norma no tiene. Callarlos deja la respuesta sin
+        explicación —«no figura» se lee como «no existe»— y meterlos entre los
+        siete campos los perdía en silencio. Van como incidencia, con el motivo
+        que escribió la curaduría y con nombre de quién puede cerrarla.
+        """
+        if vacio["dato"] in CAMPOS_SOLICITADOS:
+            raise LecturaInvalida(
+                f"La lectura declara {vacio['dato']!r} como vacío y sí es uno de los siete "
+                "campos que la completitud evalúa. Los dos lugares no son intercambiables: un "
+                "vacío queda de incidencia y no toca la evaluación de completitud, que es lo "
+                "que se sirve cuando alguien pregunta si le pueden quitar el beneficio. Va en "
+                "`campos_no_informados`."
+            )
+        descripcion = f"{referencia_origen} · {vacio['dato']}: {vacio['motivo']}"
+        ya = self.conexion.execute(
+            text("SELECT 1 FROM incidencias_revision WHERE descripcion = :d"),
+            {"d": descripcion},
+        ).first()
+        if ya is not None:
+            return
+        self.conexion.execute(
+            text(
+                "INSERT INTO incidencias_revision (tipo, severidad, estado, descripcion, "
+                " responsable_rol) VALUES (:t, :s, 'ABIERTA', :d, 'curacion juridica')"
+            ),
+            {
+                "t": TipoIncidencia.DATO_FALTANTE_CRITICO.value,
+                "s": Severidad.MEDIUM.value,
+                "d": descripcion,
             },
         )
 

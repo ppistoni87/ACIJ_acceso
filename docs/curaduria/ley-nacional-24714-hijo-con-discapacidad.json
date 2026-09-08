@@ -176,10 +176,6 @@
   {
    "campo": "criterios_revocacion",
    "motivo": "La ley no declara causales de baja. Se deja de percibir si el hijo deja de estar a cargo o si termina la relación laboral, que no es una revocación; y la condición de discapacidad puede tener vencimiento en el certificado, algo que esta norma no menciona y que decide si el pago se interrumpe."
-  },
-  {
-   "campo": "canales",
-   "motivo": "El artículo 8 dice que la condición se acredita «ante el empleador» y nada más sobre dónde se gestiona la prestación. Cuál es hoy el canal —y si sigue siendo el empleador— no sale de esta norma."
   }
  ],
  "dependencias": [
@@ -194,6 +190,12 @@
   {
    "referencia": "Certificado Único de Discapacidad",
    "motivo": "El artículo 8 pide acreditar la condición y no dice con qué instrumento ni por cuánto tiempo vale. De su vigencia depende si el pago se interrumpe, y eso no sale de esta ley."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "canales",
+   "motivo": "El artículo 8 dice que la condición se acredita «ante el empleador» y nada más sobre dónde se gestiona la prestación. Cuál es hoy el canal —y si sigue siendo el empleador— no sale de esta norma."
   }
  ]
 }

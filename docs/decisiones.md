@@ -633,3 +633,25 @@ que apunta a un texto que no lo dice es un error de lectura y detiene la
 carga—, guarda las dos reglas con su evidencia y abre una incidencia
 `CONFLICTO_DE_FUENTES` que localiza las dos redacciones. Quién decide cuál rige
 tiene nombre: `curacion juridica`.
+
+## D-41 · Un vacío declarado con un nombre inventado no declara nada
+
+Trece lecturas curadas decían que la norma no informa los canales de atención, y
+dos que no informa la cuantía. Ninguna de las quince hacía nada: la carga
+actualiza la evaluación de completitud del campo por su nombre, «canales» y
+«cuantias» no están entre los siete campos que la completitud evalúa, y una
+sentencia que no encuentra fila termina sin error. Quince motivos escritos con
+cuidado, y ninguno llegaba a ninguna parte.
+
+Lo que se perdía no era un dato de más: es la diferencia entre «no figura dónde
+presentarlo» y «no hay dónde presentarlo». Un canal ausente sin explicación se
+lee como que el trámite no existe.
+
+**Consecuencia:** los siete campos son los siete. Declarar cualquier otro como
+campo no informado detiene la carga y dice dónde va, y declarar uno de los siete
+como vacío también, porque los dos lugares no son intercambiables: la
+completitud es lo que la API sirve cuando alguien pregunta si le pueden quitar
+el beneficio. Lo que la norma no da y no es uno de los siete va en
+`vacios_declarados` y abre una incidencia con el motivo y con el rol que puede
+cerrarla. Y la carga verifica que la fila exista: declarar no informado un campo
+sin evaluación tampoco pasa desapercibido.

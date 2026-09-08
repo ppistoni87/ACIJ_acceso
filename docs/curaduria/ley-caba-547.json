@@ -64,8 +64,16 @@
     "schema_version": "1.0",
     "op": "any",
     "args": [
-     {"schema_version": "1.0", "op": "is_true", "field": "asiste_a_jardin_maternal"},
-     {"schema_version": "1.0", "op": "is_true", "field": "asiste_a_escuela_con_internado"}
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "asiste_a_jardin_maternal"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "asiste_a_escuela_con_internado"
+     }
     ]
    },
    "requiere_revision": true,
@@ -182,12 +190,6 @@
    "descripcion": "El artículo 16 de la Ordenanza 43.478 está en el corpus con dos redacciones que dan resultados distintos para la misma familia. La que publica NormativaBA como texto consolidado enumera causales y mide el ingreso en «sueldos mínimos» sin definirlos: beca total hasta dos, media beca hasta cuatro. La que instituye esta ley en 2001 no enumera causales: mide el ingreso total del grupo familiar contra el sueldo mínimo del convenio de empleados de comercio, beca total hasta 2,5 y media beca hasta 3,5, con un 15% más de tope por cada niño y una deducción por enfermedad crónica. Cuál rige es una decisión jurídica: el texto consolidado es posterior como publicación y anterior como redacción, y esta lectura no la toma."
   }
  ],
- "campos_no_informados": [
-  {
-   "campo": "cuantias",
-   "motivo": "La ley sustituye las condiciones de acceso y no fija el valor de la ración ni el importe de la beca: sigue saliendo de la licitación de cada distrito, que no está en el corpus. Lo único que cuantifica son topes de ingreso, que son la condición y no la cuantía."
-  }
- ],
  "dependencias": [
   {
    "referencia": "Sueldo mínimo del convenio colectivo de empleados de comercio",
@@ -196,6 +198,12 @@
   {
    "referencia": "Ordenanza CABA 45.518",
    "motivo": "Esta ley cita los artículos que sustituye «texto conforme» a los artículos 12 y 14 de la Ordenanza 45.518, que no está en el corpus. Sin ella no se puede reconstruir por qué camino llegó el artículo 16 a la redacción que esta ley reemplaza, que es parte de lo que hace falta para resolver el conflicto de redacciones."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "cuantias",
+   "motivo": "La ley sustituye las condiciones de acceso y no fija el valor de la ración ni el importe de la beca: sigue saliendo de la licitación de cada distrito, que no está en el corpus. Lo único que cuantifica son topes de ingreso, que son la condición y no la cuantía."
   }
  ]
 }

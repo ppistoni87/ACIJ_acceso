@@ -358,16 +358,6 @@
    "motivo_revision": "«Dentro de los diez (10) días de ser notificado» no dice si son corridos o hábiles, y la misma ordenanza sí lo aclara en el artículo 19. Es el plazo que corre contra quien acaba de recibir una negativa: elegir mal lo deja sin recurso. Queda no informado hasta que alguien lo decida."
   }
  ],
- "campos_no_informados": [
-  {
-   "campo": "cuantias",
-   "motivo": "La ordenanza no fija el valor de la ración: sale de la licitación de cada distrito, que no está en el corpus. Lo único que fija el artículo 14 es que la ración del alumno no becado no puede costar más que la del becado, que es una relación entre precios y no una cuantía del beneficio."
-  },
-  {
-   "campo": "canales",
-   "motivo": "La solicitud se presenta ante la Comisión de Becas de cada escuela, que la ordenanza describe en su composición y no en su ubicación ni en su horario. Cuál es la escuela, dónde queda y cuándo atiende no está en esta norma."
-  }
- ],
  "dependencias": [
   {
    "referencia": "Sueldo mínimo municipal",
@@ -380,6 +370,16 @@
   {
    "referencia": "Pliegos y anexos de la licitación del servicio",
    "motivo": "El artículo 4 delega en el Departamento Ejecutivo los anexos con menúes, especificaciones de alimentos y valores. De ahí sale el valor de la ración, que es lo que la beca cubre."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "cuantias",
+   "motivo": "La ordenanza no fija el valor de la ración: sale de la licitación de cada distrito, que no está en el corpus. Lo único que fija el artículo 14 es que la ración del alumno no becado no puede costar más que la del becado, que es una relación entre precios y no una cuantía del beneficio."
+  },
+  {
+   "dato": "canales",
+   "motivo": "La solicitud se presenta ante la Comisión de Becas de cada escuela, que la ordenanza describe en su composición y no en su ubicación ni en su horario. Cuál es la escuela, dónde queda y cuándo atiende no está en esta norma."
   }
  ]
 }

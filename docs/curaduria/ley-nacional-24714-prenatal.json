@@ -205,10 +205,6 @@
   {
    "campo": "criterios_revocacion",
    "motivo": "La ley no declara causales de baja. Termina con el nacimiento, que no es una revocación, y no dice qué pasa si el embarazo se interrumpe: si lo cobrado hasta ahí se conserva o se reclama. La Asignación por Embarazo del otro subsistema sí prevé la interrupción como uno de sus dos finales posibles."
-  },
-  {
-   "campo": "canales",
-   "motivo": "La ley no dice dónde se presenta el certificado médico ni dónde se gestiona la prestación. El subsistema contributivo históricamente liquidó por el empleador, pero eso no sale de esta norma."
   }
  ],
  "dependencias": [
@@ -219,6 +215,12 @@
   {
    "referencia": "Ley 24.241, artículos 6 y 9",
    "motivo": "El artículo 4 remite a ellos para definir qué cuenta como remuneración, que es el dato con el que se mide el piso y el techo."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "canales",
+   "motivo": "La ley no dice dónde se presenta el certificado médico ni dónde se gestiona la prestación. El subsistema contributivo históricamente liquidó por el empleador, pero eso no sale de esta norma."
   }
  ]
 }

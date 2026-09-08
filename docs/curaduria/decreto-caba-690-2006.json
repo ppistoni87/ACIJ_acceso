@@ -255,10 +255,6 @@
  ],
  "campos_no_informados": [
   {
-   "campo": "canales",
-   "motivo": "El decreto nombra a la Dirección General de Fortalecimiento Familiar y Socio-Comunitaria como autoridad de aplicación y no dice dónde ni cómo se solicita el subsidio. Para una persona en situación de calle, dónde ir es la mitad de la respuesta, y ponerlo desde el conocimiento general sería mandarla a una dirección que esta norma no da."
-  },
-  {
    "campo": "criterios_revocacion",
    "motivo": "El artículo 14 enumera dos causales de caducidad y una de ellas remite al «artículo precedente», que no tiene requisitos. Ninguna dice qué pasa con las cuotas ya percibidas, si la baja es definitiva o si el hogar puede volver a solicitar. Caducidad, suspensión y revocación tienen efectos distintos sobre lo cobrado y el texto no elige entre ellos."
   }
@@ -283,6 +279,12 @@
   {
    "referencia": "Canasta básica alimentaria del INDEC",
    "motivo": "El artículo 11 inciso c) la usa como umbral de ingresos. El parámetro existe en el corpus; mientras no tenga un valor aprobado para el período consultado y para la composición del hogar, la regla que lo compara devuelve desconocido."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "canales",
+   "motivo": "El decreto nombra a la Dirección General de Fortalecimiento Familiar y Socio-Comunitaria como autoridad de aplicación y no dice dónde ni cómo se solicita el subsidio. Para una persona en situación de calle, dónde ir es la mitad de la respuesta, y ponerlo desde el conocimiento general sería mandarla a una dirección que esta norma no da."
   }
  ]
 }

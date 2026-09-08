@@ -141,10 +141,6 @@
   {
    "campo": "criterios_revocacion",
    "motivo": "La ley no declara causales de baja. Termina con la licencia, que no es una revocación. Qué pasa si la relación laboral se extingue durante la licencia, o si la antigüedad acreditada resulta menor a tres meses después de haber cobrado, no sale de este texto."
-  },
-  {
-   "campo": "canales",
-   "motivo": "La ley no dice dónde se gestiona. Para las empleadas de casas particulares el mismo artículo 2 faculta a la AFIP a fijar las alícuotas que la financian, lo que sugiere una vía distinta de la del resto del subsistema contributivo, pero sugerir no es decir."
   }
  ],
  "dependencias": [
@@ -159,6 +155,12 @@
   {
    "referencia": "Normas del Poder Ejecutivo y de la AFIP dictadas por el artículo 2",
    "motivo": "El artículo faculta a extender las demás asignaciones al personal de casas particulares y a fijar las alícuotas de esta. Si esas normas existen, de ellas depende si la excepción sigue siendo excepción."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "canales",
+   "motivo": "La ley no dice dónde se gestiona. Para las empleadas de casas particulares el mismo artículo 2 faculta a la AFIP a fijar las alícuotas que la financian, lo que sugiere una vía distinta de la del resto del subsistema contributivo, pero sugerir no es decir."
   }
  ]
 }

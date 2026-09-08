@@ -192,3 +192,24 @@ def test_un_beneficio_repetido_es_otra_norma_y_no_otra_lectura_de_la_misma() -> 
         )
         crean = [e for e, rol in lecturas if rol == "CREA"]
         assert len(crean) <= 1, f"{codigo} dice estar creado por más de una norma: {crean}"
+
+
+def test_un_campo_no_informado_es_uno_de_los_siete(lectura: dict) -> None:
+    """Declarar un vacío con un nombre que la completitud no evalúa no hace nada.
+
+    La carga actualiza la evaluación del campo por su nombre: uno que no está
+    entre los siete no tenía fila que actualizar, y el motivo que escribió la
+    curaduría se perdía sin que nadie se enterara. Un vacío que no es uno de
+    los siete —dónde se presenta, cuánto se cobra— va en `vacios_declarados`.
+    """
+    from backend_normativo.db.vocabularios import CAMPOS_SOLICITADOS
+
+    for campo in lectura.get("campos_no_informados", ()):
+        assert campo["campo"] in CAMPOS_SOLICITADOS, (
+            f"{campo['campo']!r} no es uno de los siete campos"
+        )
+    for vacio in lectura.get("vacios_declarados", ()):
+        assert vacio["dato"] not in CAMPOS_SOLICITADOS, (
+            f"{vacio['dato']!r} sí es uno de los siete y va como campo no informado"
+        )
+        assert len(vacio["motivo"]) >= 40, f"el vacío {vacio['dato']!r} no dice por qué"

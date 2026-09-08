@@ -243,10 +243,6 @@
   {
    "campo": "criterios_revocacion",
    "motivo": "La ley no declara causales de baja de esta asignación: se deja de percibir cuando dejan de cumplirse las condiciones —el hijo cumple dieciocho, la remuneración supera el tope, termina la relación laboral—, que es distinto de una revocación. Qué pasa con lo percibido de más cuando una condición deja de cumplirse a mitad de mes no sale de este texto."
-  },
-  {
-   "campo": "canales",
-   "motivo": "La ley no dice dónde se gestiona. El artículo 18 nombra el sistema de pagos de ANSES para las prestaciones del subsistema no contributivo y no para esta, que en el subsistema contributivo históricamente se liquidó por el empleador. Cuál es hoy el canal no sale de esta norma."
   }
  ],
  "dependencias": [
@@ -265,6 +261,12 @@
   {
    "referencia": "Catálogo de provincias, departamentos y distritos de zona desfavorable",
    "motivo": "El segundo párrafo del artículo 3 eleva el tope para una lista larga de localidades. Sin un catálogo que las identifique, la excepción queda declarada y no evaluable: una lista escrita a ojo dejaría afuera a quien vive en un distrito mal copiado."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "canales",
+   "motivo": "La ley no dice dónde se gestiona. El artículo 18 nombra el sistema de pagos de ANSES para las prestaciones del subsistema no contributivo y no para esta, que en el subsistema contributivo históricamente se liquidó por el empleador. Cuál es hoy el canal no sale de esta norma."
   }
  ]
 }

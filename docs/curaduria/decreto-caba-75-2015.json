@@ -1,0 +1,111 @@
+{
+ "schema_version": "1.0",
+ "norma": {
+  "external_id": "normativaba:273414:original",
+  "referencia": "Decreto CABA 75/2015",
+  "rol": "REGLAMENTA"
+ },
+ "nota": "Lectura curada del Decreto 75/2015, que precisa a quién está destinado el Régimen de Becas Estudiantiles de la Ley 2917 y deroga el decreto reglamentario anterior. Se lee sobre el mismo beneficio que la ley, no sobre uno nuevo. Lo que agrega y la ley no dice está en dos lugares: el decreto exige que el nivel medio que se cursa sea obligatorio, y su artículo 2 conserva la beca a quienes ya la venían cobrando desde proyectos y programas del Ministerio, que es una excepción que mantiene gente adentro y que una lectura de la ley sola no tiene cómo saber. El resto del decreto es reparto de competencias: el Ministerio dicta las normas operativas, y qué dicen esas normas no está en el corpus. Todo entra como candidato: nada de esto se sirve hasta que una persona con competencia jurídica lo apruebe.",
+ "beneficio": {
+  "codigo": "CABA.BECAS-ESTUDIANTILES",
+  "nombre": "Régimen de Becas Estudiantiles",
+  "familia": "EDUCACION",
+  "linea": "BECA",
+  "jurisdiccion": "AR-C",
+  "naturaleza": "PRESTACION_MONETARIA",
+  "descripcion": "Beca anual para alumnos y alumnas regulares de nivel medio de escuelas de gestión estatal de la Ciudad que acrediten alguna de las condiciones de vulnerabilidad socioeconómica del artículo 5 de la Ley 2917.",
+  "unidad_beneficiaria": "PERSONA",
+  "modalidad": "TRANSFERENCIA",
+  "frecuencia": "ANUAL",
+  "requiere_solicitud": true,
+  "ruta_evidencia": "articulo-1/parrafo-4"
+ },
+ "poblaciones": [
+  {
+   "codigo": "CABA.ALUMNO-MEDIO-ESTATAL",
+   "nombre": "Alumnos y alumnas de nivel medio de gestión estatal",
+   "definicion": "Alumnos y alumnas regulares matriculados que cursan obligatoriamente el nivel medio en escuelas de gestión estatal dependientes del Ministerio de Educación de la Ciudad, en todas las modalidades y orientaciones.",
+   "rol_persona": "TITULAR",
+   "alcance": "El decreto agrega dos palabras a la definición de la ley: «matriculados» y «obligatoriamente». La primera parece redundante con «regulares»; la segunda no lo es, y qué queda afuera —el nivel medio cursado fuera de la obligatoriedad, la persona adulta que termina el secundario— es lo que hay que decidir antes de servir esto.",
+   "ruta_evidencia": "articulo-1/parrafo-4"
+  }
+ ],
+ "reglas": [
+  {
+   "clave": "DESTINADO-A-QUIEN-CURSA-OBLIGATORIAMENTE-EN-GESTION-ESTATAL",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-1/parrafo-4",
+   "texto_literal": "2.917 se encuentra destinado a aquellos alumnos/as regulares matriculados que cursen obligatoriamente en escuelas de nivel medio de gestión estatal de todas las modalidades y orientaciones dependientes del Ministerio de Educación de la Ciudad",
+   "descripcion": "El régimen está destinado a alumnos regulares matriculados que cursan obligatoriamente el nivel medio en escuelas de gestión estatal del Ministerio de Educación de la Ciudad.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "all",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "es_alumno_regular"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "in",
+      "field": "nivel_educativo",
+      "values": [
+       "MEDIO",
+       "SECUNDARIO"
+      ]
+     },
+     {
+      "schema_version": "1.0",
+      "op": "compare",
+      "field": "gestion_escuela",
+      "cmp": "==",
+      "value": "ESTATAL",
+      "unit": "texto"
+     }
+    ]
+   },
+   "requiere_revision": true,
+   "motivo_revision": "La condición escrita es la misma que la del artículo 1 de la ley, y a propósito: lo único que el decreto agrega es «matriculados» y «obligatoriamente», y ninguna de las dos tiene campo en el modelo. «Obligatoriamente» puede no cambiar nada —el nivel medio es obligatorio en la Ciudad— o puede dejar afuera a quien cursa el secundario de adultos, que es exactamente la persona a la que una beca de este tipo le hace falta. Formalizarlo sin decidirlo sería elegir una de las dos lecturas; omitirlo sería decir que el decreto no dice nada nuevo. La cita se corta donde la corta el boletín: el texto capturado parte la oración en tres unidades y una cita no puede cruzar de unidad."
+  },
+  {
+   "clave": "CONSERVAN-LA-BECA-QUIENES-VENIAN-DE-PROYECTOS-Y-PROGRAMAS",
+   "categoria": "EXCEPCION",
+   "ruta_evidencia": "articulo-2/parrafo-7",
+   "texto_literal": "Estudiantiles, creado por el artículo 1° de la Ley N° 2.917, y que a la fecha del dictado del presente se encuentren cursando estudios de nivel medio a través de los proyectos y programas mencionados, quienes podrán solicitar la renovación de dicho beneficio en tanto no se configuren los supuestos del artículo 16 de la citada Ley.",
+   "descripcion": "Quienes ya cobraban la beca cursando por proyectos y programas del Ministerio pueden pedir la renovación aunque no cumplan el artículo 1, salvo que se configuren las causales de extinción del artículo 16 de la Ley 2917.",
+   "requiere_revision": true,
+   "motivo_revision": "Es una excepción con fecha: alcanza a quien estaba cobrando la beca y cursando por esos programas «a la fecha del dictado del presente», que es 2015. No es una condición que alguien pueda cumplir hoy empezando algo, y el modelo no tiene cómo expresar «lo que era cierto en una fecha pasada». Formalizarla como condición vigente extendería la excepción a cualquiera que hoy curse por un programa del Ministerio, que es más gente de la que el decreto incluye. Se conserva porque omitirla le responde «no cumplís el artículo 1» a alguien a quien el decreto expresamente le conserva la beca.",
+   "excepcion_de": "DESTINADO-A-QUIEN-CURSA-OBLIGATORIAMENTE-EN-GESTION-ESTATAL"
+  },
+  {
+   "clave": "LAS-NORMAS-OPERATIVAS-LAS-DICTA-EL-MINISTERIO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-3",
+   "texto_literal": "El Ministerio de Educación dicta las normas operativas, complementarias y aclaratorias necesarias para la implementación de los mecanismos de recepción de solicitudes de becas y su otorgamiento y control, la evaluación socio-ambiental mediante muestras testigo, el seguimiento de los beneficiarios por parte de las autoridades escolares y la prevención del abandono escolar por parte de los beneficiarios",
+   "descripcion": "Cómo se reciben las solicitudes, cómo se otorga y controla la beca y cómo se evalúa la situación socio-ambiental lo fija el Ministerio de Educación por normas operativas.",
+   "requiere_revision": true,
+   "motivo_revision": "No es una condición sobre nadie: es la remisión que explica por qué el trámite concreto —dónde se presenta, con qué formulario, en qué fecha— no está en el corpus. Queda declarada para que la ausencia de esos datos se lea como remisión a otra norma y no como que el trámite no existe. Vale la pena registrar lo que menciona al pasar: la evaluación socio-ambiental se hace «mediante muestras testigo», es decir que no se verifica caso por caso."
+  }
+ ],
+ "dependencias": [
+  {
+   "referencia": "Normas operativas del Ministerio de Educación de la Ciudad para el Régimen de Becas Estudiantiles",
+   "motivo": "El artículo 3 les remite los mecanismos de recepción, otorgamiento y control de las solicitudes, y la evaluación socio-ambiental. Sin ellas el trámite no se puede describir y las condiciones que definan quedan declaradas y no evaluables."
+  },
+  {
+   "referencia": "Decreto CABA 976/2008",
+   "motivo": "Es el decreto reglamentario que este deroga y no está en el corpus. Sin él no se puede decir qué cambió la reglamentación en 2015 ni verificar si alguna condición que hoy no figura venía de allí."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "canales",
+   "motivo": "El decreto remite expresamente al Ministerio de Educación el dictado de las normas que fijan los mecanismos de recepción de solicitudes. Dónde se presenta y con qué no está en esta norma ni en ninguna del corpus."
+  },
+  {
+   "dato": "cuantias",
+   "motivo": "El decreto no fija montos: la escala está en la Ley 2917 y su valor concreto en resoluciones que no están en el corpus."
+  }
+ ]
+}

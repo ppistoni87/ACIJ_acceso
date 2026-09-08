@@ -219,10 +219,6 @@
  ],
  "campos_no_informados": [
   {
-   "campo": "canales",
-   "motivo": "La ley nombra a ANSES como quien paga y al Ministerio de Salud por el programa donde se acredita el embarazo, y no dice dónde ni cómo se solicita la prestación. Poner el canal desde el conocimiento general sería afirmar sin evidencia algo que le cambia el viaje a una persona embarazada."
-  },
-  {
    "campo": "criterios_revocacion",
    "motivo": "Lo único que la ley declara perder es el veinte por ciento reservado por no acreditar los controles, y el beneficio entero por falsedad en la declaración jurada. No dice qué pasa con lo ya percibido en ninguno de los dos casos, ni si el derecho se puede recuperar acreditando después. Cese, suspensión y revocación tienen efectos distintos sobre lo cobrado y el texto no elige."
   }
@@ -243,6 +239,12 @@
   {
    "referencia": "Salario mínimo, vital y móvil",
    "motivo": "El último párrafo del artículo 3 lo usa como umbral de la exclusión por economía informal. Mientras el parámetro no tenga valor aprobado para el período consultado, la regla que lo compara devuelve desconocido."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "canales",
+   "motivo": "La ley nombra a ANSES como quien paga y al Ministerio de Salud por el programa donde se acredita el embarazo, y no dice dónde ni cómo se solicita la prestación. Poner el canal desde el conocimiento general sería afirmar sin evidencia algo que le cambia el viaje a una persona embarazada."
   }
  ]
 }
