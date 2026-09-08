@@ -423,11 +423,12 @@
     "docs/curaduria/ley-caba-2917.json",
     "docs/curaduria/ley-nacional-24714-auh.json",
     "docs/curaduria/ley-nacional-24714-embarazo.json",
+    "docs/curaduria/ley-nacional-24714-asignacion-por-hijo.json",
     "docs/curaduria/decreto-caba-690-2006.json",
     "docs/curaduria/ordenanza-caba-43478.json",
     "src/backend_normativo/curacion/beneficios.py"
    ],
-   "falta": "La población entera se corre con un comando: `scripts/poblar_corpus.sh` es la única definición del procedimiento y `scripts/corrida_limpia.sh` lo ejercita sobre una base que se crea vacía. Están el catálogo nacional entero (423.718 normas), el padrón RENABAP (6.467 barrios) y los tres directorios. Seis beneficios están curados desde el texto capturado: el apoyo habitacional de la Ley CABA 6935, el Régimen de Becas de la Ley CABA 2917, el subsidio para familias en situación de calle del Decreto CABA 690/06, la beca de comedor de la Ordenanza CABA 43.478, y del subsistema no contributivo de la Ley nacional 24.714 la Asignación Universal por Hijo y la Asignación por Embarazo, curadas por separado porque son dos prestaciones con requisitos distintos sobre la misma ley. Son 73 reglas vigentes, 13 poblaciones, 13 plazos y 6 cuantías —cinco monetarias y una en especie—, cada pieza atada a su artículo y verificada contra el texto capturado. Falta curar el resto del corpus con texto: el trabajo es de lectura jurídica sobre cada norma, no de más ingesta.",
+   "falta": "La población entera se corre con un comando: `scripts/poblar_corpus.sh` es la única definición del procedimiento y `scripts/corrida_limpia.sh` lo ejercita sobre una base que se crea vacía. Están el catálogo nacional entero (423.718 normas), el padrón RENABAP (6.467 barrios) y los tres directorios. Siete beneficios están curados desde el texto capturado: cuatro porteños —el apoyo habitacional de la Ley 6935, el Régimen de Becas de la Ley 2917, el subsidio para familias en situación de calle del Decreto 690/06 y la beca de comedor de la Ordenanza 43.478— y tres de la Ley nacional 24.714, curados por separado porque son prestaciones distintas con requisitos distintos sobre la misma ley: la Asignación Universal por Hijo y la Asignación por Embarazo del subsistema no contributivo, y la asignación por hijo del contributivo. Son 83 reglas vigentes, 15 poblaciones, 13 plazos y 7 cuantías —seis monetarias y una en especie—, cada pieza atada a su artículo y verificada contra el texto capturado. Falta curar el resto del corpus con texto: el trabajo es de lectura jurídica sobre cada norma, no de más ingesta.",
    "comandos": [
     "bash scripts/poblar_corpus.sh",
     "bn ingesta importar-infoleg",
