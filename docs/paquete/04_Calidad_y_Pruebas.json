@@ -1,0 +1,1376 @@
+{
+  "schema_version": "1.0",
+  "case_count": 80,
+  "note": "Casos funcionales de aceptación por implementar y ejecutar por Claude Code; no se declara backend probado. Los fixtures y expected jurídicos requieren captura fechada y revisión de dominio.",
+  "publication_gates": {
+    "critical_failures_allowed": 0,
+    "published_claims_with_evidence_pct": 100,
+    "required_fields_evaluated_pct": 100,
+    "published_critical_fields_supported_pct": 100,
+    "orphan_foreign_keys_allowed": 0,
+    "canonical_duplicate_entities_allowed": 0,
+    "minimum_reviewed_conversation_cases": 60
+  },
+  "test_cases": [
+    {
+      "id": "AT-001",
+      "title": "Identidad sin colisión",
+      "story_ids": [
+        "HU-002"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Dos leyes con número/año iguales y jurisdicciones diferentes.",
+      "when": "Insertar ambas identidades.",
+      "expected_assertions": [
+        "Existen dos normas distintas y ninguna fusión automática."
+      ],
+      "conversation_query": "¿Esta norma es nacional o de CABA?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-002",
+      "title": "Idempotencia de norma",
+      "story_ids": [
+        "HU-002"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Mismo identificador InfoLEG importado dos veces.",
+      "when": "Reejecutar importación.",
+      "expected_assertions": [
+        "Una norma canónica; dos observaciones si corresponden; sin duplicación de hechos."
+      ],
+      "conversation_query": "Mostrar la norma por su identificador.",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-003",
+      "title": "FK a versión ajena",
+      "story_ids": [
+        "HU-002"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Unidad documental pertenece a otro documento que la evidencia.",
+      "when": "Intentar publicar evidencia.",
+      "expected_assertions": [
+        "La restricción impide la referencia cruzada."
+      ],
+      "conversation_query": "Mostrar la fuente exacta de este artículo.",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-004",
+      "title": "Fuente sin URL",
+      "story_ids": [
+        "HU-001"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "F08 existe en el anexo pero no tiene URL inequívoca.",
+      "when": "Importar manifiesto.",
+      "expected_assertions": [
+        "ID conservado con URL pendiente; cero URL inventadas; brecha visible."
+      ],
+      "conversation_query": "¿Qué fuentes faltan identificar?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-005",
+      "title": "Alias F65",
+      "story_ids": [
+        "HU-F65"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "F65 y F17 corresponden a la misma página y documento.",
+      "when": "Ejecutar ambas historias.",
+      "expected_assertions": [
+        "Una fuente canónica de contenido y alias; no duplicar chunks."
+      ],
+      "conversation_query": "¿Qué dice la FAQ general?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-006",
+      "title": "Alias con fragmento",
+      "story_ids": [
+        "HU-F28"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "F28 apunta a F31 con fragmento #44 inexistente.",
+      "when": "Resolver fuente.",
+      "expected_assertions": [
+        "Alias conservado, ancla rota reportada y ningún mapeo por semejanza numérica."
+      ],
+      "conversation_query": "Abrir la pregunta de inscripción.",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-007",
+      "title": "404 con HTML",
+      "story_ids": [
+        "HU-004"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "HTTP 404 trae una página HTML extensa.",
+      "when": "Capturar y clasificar.",
+      "expected_assertions": [
+        "Corrida fallida para contenido; captura de error; ninguna norma insertada."
+      ],
+      "conversation_query": "¿Hay datos actualizados?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-008",
+      "title": "Login con 200",
+      "story_ids": [
+        "HU-004"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "HTTP 200 trae formulario de acceso sin contenido público sustantivo.",
+      "when": "Clasificar recurso.",
+      "expected_assertions": [
+        "Solo canal/estado de acceso, sin autenticar ni publicar como trámite completo."
+      ],
+      "conversation_query": "¿Cómo inicio el trámite?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-009",
+      "title": "304 y frescura",
+      "story_ids": [
+        "HU-023"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Fuente devuelve 304 pero el dato tiene período de pago pasado.",
+      "when": "Consultar pago actual.",
+      "expected_assertions": [
+        "No se renueva vigencia por 304; abstención sobre el pago actual."
+      ],
+      "conversation_query": "¿Cuándo cobro este mes?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-010",
+      "title": "ETag cambia sin semántica",
+      "story_ids": [
+        "HU-027"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Token de formulario cambia y texto sustantivo es idéntico.",
+      "when": "Comparar capturas.",
+      "expected_assertions": [
+        "Observación nueva; no evento de cambio de requisitos ni versión jurídica nueva."
+      ],
+      "conversation_query": "¿Cambió el requisito?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-011",
+      "title": "CSV de muestra",
+      "story_ids": [
+        "HU-F01"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Catálogo expone muestra histórica y ZIP de producción.",
+      "when": "Descubrir recurso.",
+      "expected_assertions": [
+        "Muestra no se usa como corpus completo; selección del recurso queda trazada."
+      ],
+      "conversation_query": "¿Está cubierto el catálogo nacional?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-012",
+      "title": "CSV sin texto",
+      "story_ids": [
+        "HU-005"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Una norma del catálogo no tiene URL original ni actualizada.",
+      "when": "Importar metadatos.",
+      "expected_assertions": [
+        "Identidad/metadatos conservados como incompletos; no generar URL de cuerpo supuesta."
+      ],
+      "conversation_query": "¿Está disponible el texto de esta norma?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-013",
+      "title": "Contadores no son aristas",
+      "story_ids": [
+        "HU-F01"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "modificada_por contiene el número 3.",
+      "when": "Construir relaciones.",
+      "expected_assertions": [
+        "No se enlaza a norma id 3; se consulta recurso de relaciones o se registra pendiente."
+      ],
+      "conversation_query": "¿Qué normas la modificaron?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-014",
+      "title": "Cambio de esquema dataset",
+      "story_ids": [
+        "HU-005"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Una columna esperada cambia de nombre.",
+      "when": "Ejecutar adaptador.",
+      "expected_assertions": [
+        "Alerta de esquema, lote en staging y sin desplazamiento posicional de datos."
+      ],
+      "conversation_query": "Mostrar calidad de la fuente.",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-015",
+      "title": "ZIP malicioso o sobredimensionado",
+      "story_ids": [
+        "HU-005"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "ZIP con ruta ../ o expansión por encima de presupuesto.",
+      "when": "Procesar lote.",
+      "expected_assertions": [
+        "Se rechaza extracción insegura y se conserva diagnóstico sin alterar filesystem externo."
+      ],
+      "conversation_query": "Estado de la carga masiva.",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-016",
+      "title": "Contenedor vacío",
+      "story_ids": [
+        "HU-F52"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Primer field-item vacío; segundo trae contenido sustantivo.",
+      "when": "Extraer página.",
+      "expected_assertions": [
+        "Se toma el contenedor correcto y se valida período; no carga vacía exitosa."
+      ],
+      "conversation_query": "¿Qué publicó el cronograma?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-017",
+      "title": "Bloque escolar oculto",
+      "story_ids": [
+        "HU-F27"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Página contiene un ciclo viejo d-none y un ciclo visible nuevo.",
+      "when": "Extraer plazos.",
+      "expected_assertions": [
+        "Solo el bloque visible puede ser candidato actual; ambos contextos quedan separados."
+      ],
+      "conversation_query": "¿Para qué ciclo es la inscripción?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-018",
+      "title": "PDF sin magic",
+      "story_ids": [
+        "HU-F40"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "HTTP 200 application/pdf contiene únicamente warning HTML.",
+      "when": "Abrir recurso.",
+      "expected_assertions": [
+        "Documento inválido y capacidad afectada no publicable; no OCR de la página de error."
+      ],
+      "conversation_query": "Consultar el decreto.",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-019",
+      "title": "Prefijo PDF conocido",
+      "story_ids": [
+        "HU-F40"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Respuesta PDF tiene prefijo de warning en endpoint legacy conocido.",
+      "when": "Generar derivado de extracción.",
+      "expected_assertions": [
+        "Raw íntegro, reparación trazada y validación de páginas/texto antes de usarlo."
+      ],
+      "conversation_query": "Citar el artículo del PDF.",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-020",
+      "title": "PDF página gráfica",
+      "story_ids": [
+        "HU-007"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "PDF con texto y una página de cierre gráfica.",
+      "when": "Medir extracción.",
+      "expected_assertions": [
+        "Página clasificada sin declarar todo el documento vacío; OCR solo si aporta información necesaria."
+      ],
+      "conversation_query": "Mostrar cobertura del PDF.",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-021",
+      "title": "Tabla PDF y caption posterior",
+      "story_ids": [
+        "HU-F62"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Tabla numérica precede al caption en el orden extraído.",
+      "when": "Mapear períodos.",
+      "expected_assertions": [
+        "Validación visual/estructura asocia números a su período correcto; ambigüedad queda en revisión."
+      ],
+      "conversation_query": "¿Cuál es el tope para este período?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-022",
+      "title": "Orden de pasos Canva",
+      "story_ids": [
+        "HU-F54"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Rótulos Paso 1/Paso 2 aparecen después del texto por orden de lectura.",
+      "when": "Construir secuencia.",
+      "expected_assertions": [
+        "Se usa correspondencia comprobada con rótulos/revisión; no ordenar ciegamente por offset."
+      ],
+      "conversation_query": "¿Cuál es el primer paso para la escuela?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-023",
+      "title": "Artículo con sufijo",
+      "story_ids": [
+        "HU-008"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Fixture contiene artículos 14, 14 bis, 14 ter y 15.",
+      "when": "Segmentar.",
+      "expected_assertions": [
+        "Cuatro unidades raíz distintas; no colisión en 14 ni pérdida de texto."
+      ],
+      "conversation_query": "Citar el artículo 14 ter.",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-024",
+      "title": "Artículo citado dentro de sustitución",
+      "story_ids": [
+        "HU-008"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Artículo 1 modificatorio transcribe un Artículo 10.",
+      "when": "Segmentar.",
+      "expected_assertions": [
+        "Artículo 10 es texto anidado de sustitución, no raíz de la modificatoria."
+      ],
+      "conversation_query": "¿Qué artículo cambia la ley?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-025",
+      "title": "Encabezado no soportado",
+      "story_ids": [
+        "HU-008"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Fixture incorpora un sufijo fuera del soporte declarado.",
+      "when": "Segmentar y validar.",
+      "expected_assertions": [
+        "Anomalía de cobertura, texto preservado y publicación afectada detenida."
+      ],
+      "conversation_query": "Mostrar el artículo nuevo.",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-026",
+      "title": "Preámbulo preservado",
+      "story_ids": [
+        "HU-F23"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Texto de objeto precede al primer artículo.",
+      "when": "Segmentar.",
+      "expected_assertions": [
+        "Preámbulo/objeto conserva unidad citable; cobertura relevante 100%."
+      ],
+      "conversation_query": "¿Cuál es el objeto de la ordenanza?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-027",
+      "title": "Anexo después de antecedentes",
+      "story_ids": [
+        "HU-008"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Fixture trae bloque relevante después del encabezado de antecedentes.",
+      "when": "Clasificar unidades.",
+      "expected_assertions": [
+        "No se descarta automáticamente; se detecta y clasifica o revisa."
+      ],
+      "conversation_query": "¿Qué dice el anexo?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-028",
+      "title": "Identidad resolución 1621",
+      "story_ids": [
+        "HU-D04"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Ficha titula 1621 y su síntesis menciona 1261; PDF titula 1621.",
+      "when": "Resolver identidad.",
+      "expected_assertions": [
+        "Una identidad respaldada; discrepancia registrada; no crear norma 1261 por regex de síntesis."
+      ],
+      "conversation_query": "¿Qué resolución regula el procedimiento?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-029",
+      "title": "Anexo separado de resolución",
+      "story_ids": [
+        "HU-F19"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Resolución remite a anexo que contiene pasos y plazos.",
+      "when": "Completar ficha.",
+      "expected_assertions": [
+        "Cuerpo solo no completa procedimiento; anexo capturado y vinculado antes de publicar esos campos."
+      ],
+      "conversation_query": "¿Cómo pido reconsideración de la beca?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-030",
+      "title": "Abrogación y restablecimiento",
+      "story_ids": [
+        "HU-F33"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Nota oficial incluye abrogación y restablecimiento con excepciones.",
+      "when": "Clasificar vigencia.",
+      "expected_assertions": [
+        "Eventos separados con alcance; no declarar ley íntegramente no vigente por primer término."
+      ],
+      "conversation_query": "¿Se aplica esta ley?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-031",
+      "title": "Monto histórico en ley",
+      "story_ids": [
+        "HU-F33"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Articulado incluye importes históricos y no hay valor actual validado.",
+      "when": "Consultar monto actual.",
+      "expected_assertions": [
+        "No usar esos importes; devolver campo no disponible y fuente pertinente."
+      ],
+      "conversation_query": "¿Cuánto cobro hoy de AUH?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-032",
+      "title": "Renumeración 10 a 9",
+      "story_ids": [
+        "HU-F23"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Versión histórica y actualizada tienen correspondencia comprobada 10→9.",
+      "when": "Aplicar/leer modificación.",
+      "expected_assertions": [
+        "Se consulta unidad de versión correcta; no se sobrescribe el artículo 10 actual."
+      ],
+      "conversation_query": "¿Qué dispone sobre desayuno o merienda?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-033",
+      "title": "Modificatoria no vigente",
+      "story_ids": [
+        "HU-D05"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Ficha de Ley 547 figura No vigente y actualizado conserva efectos.",
+      "when": "Construir estado de ordenanza.",
+      "expected_assertions": [
+        "No borrar efecto por estado aislado; comparar versiones y fundamento."
+      ],
+      "conversation_query": "¿Se eliminó el beneficio por ese estado?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-034",
+      "title": "Condición transitoria pendiente",
+      "story_ids": [
+        "HU-D06"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Aplicación del decreto depende de publicación de reglamentación; cumplimiento no verificado.",
+      "when": "Consultar régimen aplicable.",
+      "expected_assertions": [
+        "Condición explícita, evaluación de evidencia/fecha y revisión si no se puede determinar; no inventar cumplimiento."
+      ],
+      "conversation_query": "¿Qué régimen habitacional corresponde?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-035",
+      "title": "Novedad candidata de reglamentación",
+      "story_ids": [
+        "HU-M02"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Boletín publica acto que parece reglamentar la Ley 6935.",
+      "when": "Procesar novedad.",
+      "expected_assertions": [
+        "Evento y revisión de identidad/alcance/fecha; no derogar decreto automáticamente."
+      ],
+      "conversation_query": "¿Cambió el subsidio habitacional?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-036",
+      "title": "Ciclo legítimo de citas",
+      "story_ids": [
+        "HU-010"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Norma A cita B y B cita A.",
+      "when": "Expandir referencias.",
+      "expected_assertions": [
+        "Finaliza por visited sin perder ambas aristas; no denunciar corrupción solo por ciclo de citas."
+      ],
+      "conversation_query": "Mostrar normas relacionadas.",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-037",
+      "title": "Frontera de dependencias",
+      "story_ids": [
+        "HU-010"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Se alcanza presupuesto con referencias pendientes.",
+      "when": "Cerrar corrida.",
+      "expected_assertions": [
+        "Checkpoint y frontera visibles; alcance no se declara resuelto al 100%."
+      ],
+      "conversation_query": "¿Qué dependencias faltan?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-038",
+      "title": "No aplicabilidad fundada",
+      "story_ids": [
+        "HU-012"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Norma institucional no otorga prestación monetaria directa.",
+      "when": "Completar ficha.",
+      "expected_assertions": [
+        "Campo beneficio se evalúa con fundamento; no se inventa importe ni programa."
+      ],
+      "conversation_query": "¿Qué beneficio directo otorga?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-039",
+      "title": "No informado no es no existe",
+      "story_ids": [
+        "HU-017"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Fuentes revisadas no mencionan causales de revocación.",
+      "when": "Responder.",
+      "expected_assertions": [
+        "Se indica falta de información y dependencias por revisar; no afirmar irrevocabilidad."
+      ],
+      "conversation_query": "¿Me pueden quitar el beneficio?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-040",
+      "title": "Completitud aparente",
+      "story_ids": [
+        "HU-012"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Todos los campos tienen estado NO_INFORMADO y cero valores.",
+      "when": "Calcular métricas.",
+      "expected_assertions": [
+        "Cobertura de evaluación puede ser 100%; completitud sustantiva no es 100%."
+      ],
+      "conversation_query": "¿La base está completa?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-041",
+      "title": "Roles de población",
+      "story_ids": [
+        "HU-013"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Regla distingue edad del causante y del representante.",
+      "when": "Evaluar datos sintéticos.",
+      "expected_assertions": [
+        "Cada edad usa su variable; no se excluye por edad del adulto cuando aplica la del niño."
+      ],
+      "conversation_query": "¿Puedo solicitarlo por mi hijo?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-042",
+      "title": "AND con desconocido",
+      "story_ids": [
+        "HU-014"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Regla all(TRUE,UNKNOWN).",
+      "when": "Evaluar.",
+      "expected_assertions": [
+        "UNKNOWN, REQUIERE_DATOS; no FALSE ni rechazo automático."
+      ],
+      "conversation_query": "¿Puedo acceder si no sé mi ingreso computable?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-043",
+      "title": "OR con alternativa válida",
+      "story_ids": [
+        "HU-014"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Regla any(TRUE,UNKNOWN).",
+      "when": "Evaluar.",
+      "expected_assertions": [
+        "TRUE para el grupo de condiciones; conservar restantes condiciones generales antes de resultado global."
+      ],
+      "conversation_query": "¿Sirve esta alternativa de acreditación?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-044",
+      "title": "Negación de desconocido",
+      "story_ids": [
+        "HU-014"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Regla not(UNKNOWN).",
+      "when": "Evaluar.",
+      "expected_assertions": [
+        "UNKNOWN; ausencia de información no prueba la negación."
+      ],
+      "conversation_query": "¿No tener ese dato me excluye?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-045",
+      "title": "Límite inclusivo",
+      "story_ids": [
+        "HU-014"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Fixture sintética regla ingreso<=100.00 ARS.",
+      "when": "Probar 99.99,100.00,100.01.",
+      "expected_assertions": [
+        "Resultados TRUE,TRUE,FALSE para esa regla; excepciones se evalúan antes de conclusión global."
+      ],
+      "conversation_query": "¿Qué pasa si estoy justo en el tope?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-046",
+      "title": "Excepción de no exclusión",
+      "story_ids": [
+        "HU-015"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Criterio general FALSE y excepción aplicable TRUE respaldada.",
+      "when": "Evaluar.",
+      "expected_assertions": [
+        "No descartar por criterio general; aplicar alcance de excepción y explicar evidencia."
+      ],
+      "conversation_query": "¿Hay alguna excepción para mi situación?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-047",
+      "title": "Falta documentación subsanable",
+      "story_ids": [
+        "HU-015"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Regla permite aportar documentación posteriormente; falta dato inicial.",
+      "when": "Evaluar.",
+      "expected_assertions": [
+        "Informar alternativa/subsanación y plazo, sin afirmar denegación definitiva."
+      ],
+      "conversation_query": "¿Quedo afuera por no tener el comprobante ahora?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-048",
+      "title": "Edad oficial en conflicto",
+      "story_ids": [
+        "HU-F66"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Dos fuentes oficiales discrepan sobre edad para misma línea/período según fixture.",
+      "when": "Evaluar persona en el límite conflictivo.",
+      "expected_assertions": [
+        "REQUIERE_REVISION con fuentes; no escoger menor edad ni negar silenciosamente."
+      ],
+      "conversation_query": "Tengo 25 años, ¿puedo inscribirme?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-049",
+      "title": "Suspensión no es revocación",
+      "story_ids": [
+        "HU-017"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "La fuente solo prevé suspensión temporal y posibilidad de rehabilitación.",
+      "when": "Explicar consecuencias.",
+      "expected_assertions": [
+        "No afirmar pérdida definitiva; detallar remedio respaldado."
+      ],
+      "conversation_query": "¿La suspensión significa que lo perdí para siempre?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-050",
+      "title": "Cierre conocido sin cambio web",
+      "story_ids": [
+        "HU-016"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Plazo con fin confirmado; reloj avanza después del cierre.",
+      "when": "Consultar convocatoria.",
+      "expected_assertions": [
+        "CERRADA aunque captura y hash no cambien."
+      ],
+      "conversation_query": "¿Todavía estoy a tiempo?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-051",
+      "title": "Días hábiles con feriado",
+      "story_ids": [
+        "HU-016"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Calendario de jurisdicción incluye un feriado dentro de un plazo.",
+      "when": "Calcular vencimiento.",
+      "expected_assertions": [
+        "Excluir el feriado según regla de cómputo respaldada; registrar calendario usado."
+      ],
+      "conversation_query": "¿Hasta cuándo puedo recurrir?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-052",
+      "title": "Calendario sin cobertura",
+      "story_ids": [
+        "HU-016"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Plazo hábil supera cobertura del calendario confirmado.",
+      "when": "Calcular.",
+      "expected_assertions": [
+        "No inventar vencimiento exacto; resultado no determinado con requerimiento de calendario."
+      ],
+      "conversation_query": "¿Cuál es el día exacto de vencimiento?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-053",
+      "title": "Rango sin año",
+      "story_ids": [
+        "HU-016"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Texto dice del 20 de diciembre al 10 de enero sin año o ciclo identificable.",
+      "when": "Normalizar fechas.",
+      "expected_assertions": [
+        "Pendiente de contexto; no asignar año actual ni sumar un año en silencio."
+      ],
+      "conversation_query": "¿Cuándo abre y cierra?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-054",
+      "title": "Último tramo salarial",
+      "story_ids": [
+        "HU-F12"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Norma dice a partir de una fecha sin término explícito; no hay fila mensual nueva.",
+      "when": "Evaluar vigencia del parámetro.",
+      "expected_assertions": [
+        "No inventar fin de vigencia por último mes; verificar modificaciones y frescura antes de servir."
+      ],
+      "conversation_query": "¿El salario mínimo dejó de regir este mes?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-055",
+      "title": "SMVM versus comercio",
+      "story_ids": [
+        "HU-018"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Regla refiere sueldo de comercio; solo hay valor SMVM.",
+      "when": "Calcular umbral.",
+      "expected_assertions": [
+        "Error de parámetro/información insuficiente; no sustituir bases."
+      ],
+      "conversation_query": "¿Cuál es el tope de ingreso de la beca?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-056",
+      "title": "Períodos mixtos en PDF",
+      "story_ids": [
+        "HU-F62"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Mismo PDF tiene tablas de ingresos y monotributo de períodos diferentes.",
+      "when": "Normalizar.",
+      "expected_assertions": [
+        "Período por tabla/fila; ninguna vigencia se hereda del filename o fecha de subida."
+      ],
+      "conversation_query": "¿Este tope corresponde al mes consultado?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-057",
+      "title": "Monto versus tope",
+      "story_ids": [
+        "HU-018"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Tabla contiene un umbral de ingresos y porcentaje de beca.",
+      "when": "Responder cuantía.",
+      "expected_assertions": [
+        "No presenta el tope como dinero que recibirá la persona."
+      ],
+      "conversation_query": "¿Cuánto me pagan?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-058",
+      "title": "Cambio de parámetro",
+      "story_ids": [
+        "HU-028"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Parámetro aprobado cambia con nueva fecha de aplicación.",
+      "when": "Publicar versión.",
+      "expected_assertions": [
+        "Recalcular dependencias de período correcto y emitir evento; conservar cálculos históricos."
+      ],
+      "conversation_query": "¿Por qué cambió el monto?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-059",
+      "title": "No informado operativo",
+      "story_ids": [
+        "HU-F60"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "CSV incluye literal N/A en teléfono.",
+      "when": "Importar canal.",
+      "expected_assertions": [
+        "Sin teléfono inventado ni literal N/A servible; conservar otro canal válido."
+      ],
+      "conversation_query": "¿A qué teléfono llamo?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-060",
+      "title": "Conflicto de piso",
+      "story_ids": [
+        "HU-F20"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "CSV y ficha de misma subsede difieren en piso.",
+      "when": "Publicar dirección.",
+      "expected_assertions": [
+        "Retener campo disputado; no construir dirección mezclada ni elegir primera fuente."
+      ],
+      "conversation_query": "¿En qué piso atienden?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-061",
+      "title": "Horarios por canal",
+      "story_ids": [
+        "HU-F03"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Teléfono, WhatsApp y sede tienen horarios distintos.",
+      "when": "Consultar horario presencial.",
+      "expected_assertions": [
+        "Devuelve el horario de sede, sin mezclarlo con atención remota."
+      ],
+      "conversation_query": "¿Puedo ir el sábado?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-062",
+      "title": "Atribución de directorio",
+      "story_ids": [
+        "HU-F44"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "DPN lista una defensoría municipal autónoma.",
+      "when": "Responder ubicación.",
+      "expected_assertions": [
+        "Identifica operador municipal; no la presenta como oficina propia de DPN."
+      ],
+      "conversation_query": "¿Qué organismo me atiende allí?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-063",
+      "title": "Coordenadas locales",
+      "story_ids": [
+        "HU-020"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Dataset trae POINT en grilla local con CRS no confirmado.",
+      "when": "Buscar oficina más cercana.",
+      "expected_assertions": [
+        "No usar como WGS84 ni inventar reproyección; ofrecer filtros territoriales respaldados."
+      ],
+      "conversation_query": "¿Cuál es la sede más cercana?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-064",
+      "title": "RENABAP no encontrado",
+      "story_ids": [
+        "HU-021"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Barrio no coincide en snapshot de fecha conocida.",
+      "when": "Consultar inclusión.",
+      "expected_assertions": [
+        "Ausencia en ese padrón, fecha y vía de consulta; no conclusión jurídica absoluta."
+      ],
+      "conversation_query": "¿Mi barrio no tiene protección porque no figura?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-065",
+      "title": "Tabla estacional vacía",
+      "story_ids": [
+        "HU-F64"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Fuente pública informa sedes cerradas y no trae tabla.",
+      "when": "Actualizar.",
+      "expected_assertions": [
+        "Estado estacional y sin nuevas sedes; no rescatar snapshot viejo como vigente."
+      ],
+      "conversation_query": "¿Dónde puedo ir a inscribirme hoy?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-066",
+      "title": "Fuente secundaria y cita",
+      "story_ids": [
+        "HU-022"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Una ONG afirma algo que no consta en la página oficial disponible.",
+      "when": "Generar explicación.",
+      "expected_assertions": [
+        "Conservar atribución secundaria o abstenerse; no adjudicar la afirmación a la fuente oficial."
+      ],
+      "conversation_query": "¿De dónde sale esa recomendación?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-067",
+      "title": "Contenido con instrucciones maliciosas",
+      "story_ids": [
+        "HU-033"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Documento fuente pide omitir controles y ejecutar SQL.",
+      "when": "Procesar/retrieval.",
+      "expected_assertions": [
+        "Texto tratado como dato; no cambia instrucciones, permisos ni ejecuta comandos."
+      ],
+      "conversation_query": "Resumir el documento con citas.",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-068",
+      "title": "Ingestor intenta publicar",
+      "story_ids": [
+        "HU-033"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Rol ingestor sin privilegios de publicación.",
+      "when": "Crear release.",
+      "expected_assertions": [
+        "Acceso denegado; staging y publicado siguen separados."
+      ],
+      "conversation_query": "Estado de publicación.",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-069",
+      "title": "Release parcial fallido",
+      "story_ids": [
+        "HU-025"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Falla SQL antes de confirmar hechos y outbox.",
+      "when": "Publicar.",
+      "expected_assertions": [
+        "Rollback íntegro; no evento huérfano ni proyección parcial."
+      ],
+      "conversation_query": "¿Qué versión está disponible?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-070",
+      "title": "Índice retrasado",
+      "story_ids": [
+        "HU-031"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "SQL release nuevo, índice textual de release anterior.",
+      "when": "Consultar dato afectado.",
+      "expected_assertions": [
+        "No mezclar releases; usar proyección válida compatible o abstenerse en recuperación."
+      ],
+      "conversation_query": "¿Qué cambió en el requisito?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-071",
+      "title": "Jobs caídos y TTL",
+      "story_ids": [
+        "HU-034"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Scheduler no corre más allá del TTL de un dato accionable.",
+      "when": "Consultar.",
+      "expected_assertions": [
+        "Filtro de servibilidad impide actualidad aunque nadie haya eliminado el chunk."
+      ],
+      "conversation_query": "¿Ese teléfono sigue confirmado?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-072",
+      "title": "Evento repetido",
+      "story_ids": [
+        "HU-028"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Webhook consumidor recibe mismo evento dos veces.",
+      "when": "Procesar.",
+      "expected_assertions": [
+        "Una actualización efectiva por clave de idempotencia; reintento auditado."
+      ],
+      "conversation_query": "Mostrar última actualización.",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-073",
+      "title": "No proveedor Web Push",
+      "story_ids": [
+        "HU-028"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "No hay proveedor de notificaciones configurado.",
+      "when": "Publicar cambio.",
+      "expected_assertions": [
+        "Evento en outbox/API; no afirmar envío a usuarios."
+      ],
+      "conversation_query": "¿Se notificó el cambio?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-074",
+      "title": "Restauración",
+      "story_ids": [
+        "HU-037"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Backup de SQL y capturas con manifiesto consistente.",
+      "when": "Restaurar entorno aislado y reanudar jobs.",
+      "expected_assertions": [
+        "Integridad, release, evidencia y checkpoints recuperados sin doble efecto."
+      ],
+      "conversation_query": "¿Podemos recuperar el servicio?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-075",
+      "title": "Fecha de carpeta PDF",
+      "story_ids": [
+        "HU-F67"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Anexo firmado posteriormente alojado en carpeta de año viejo.",
+      "when": "Identificar versión.",
+      "expected_assertions": [
+        "Fecha de firma/documento no se toma de la ruta; acto madre sigue identificado o pendiente."
+      ],
+      "conversation_query": "¿De qué año es este reglamento?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-076",
+      "title": "Costo ausente",
+      "story_ids": [
+        "HU-F45"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Ficha sin duración o costo informado en un campo.",
+      "when": "Normalizar.",
+      "expected_assertions": [
+        "No asignar 0 ni gratuito salvo evidencia explícita."
+      ],
+      "conversation_query": "¿Cuánto tarda y cuánto cuesta?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-077",
+      "title": "Formulario público sin envío",
+      "story_ids": [
+        "HU-F04"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Formulario contiene reCAPTCHA y campos personales.",
+      "when": "Inspeccionar estructura pública.",
+      "expected_assertions": [
+        "Solo estructura/instrucciones pertinentes; ninguna submission ni dato individual recolectado."
+      ],
+      "conversation_query": "¿Cómo contacto al organismo?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-078",
+      "title": "Sustituto de otra granularidad",
+      "story_ids": [
+        "HU-F09"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Directorio municipal caído y existe lista provincial.",
+      "when": "Registrar alternativa.",
+      "expected_assertions": [
+        "Identidad y alcance separados; no responder oficina provincial como servicio municipal equivalente."
+      ],
+      "conversation_query": "¿Cuál es el servicio local de mi municipio?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-079",
+      "title": "Evaluación no administrativa",
+      "story_ids": [
+        "HU-030"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Perfil sintético satisface condiciones conocidas.",
+      "when": "Evaluar.",
+      "expected_assertions": [
+        "POTENCIALMENTE_APLICABLE con límites/citas; no afirmar beneficio otorgado ni ejecutar trámite."
+      ],
+      "conversation_query": "¿Ya tengo aprobado el beneficio?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "AT-080",
+      "title": "Historial bitemporal",
+      "story_ids": [
+        "HU-009"
+      ],
+      "severity": "CRITICAL",
+      "fixture_policy": "Construir fixture controlada desde captura fechada o datos sintéticos explícitos; no usar datos personales reales. La descripción no afirma derecho vigente hoy.",
+      "given": "Cambio retroactivo se conoce después de su fecha de aplicación.",
+      "when": "Consultar as_of y known_at antes/después del conocimiento.",
+      "expected_assertions": [
+        "Se reconstruyen las versiones conocidas y aplicables sin borrar respuesta histórica."
+      ],
+      "conversation_query": "¿Qué se sabía sobre esa regla en la fecha indicada?",
+      "validation_mode": "Automatizar la aserción de datos/estado; revisión experta de sustento cuando haya significado jurídico.",
+      "execution_status": "NOT_RUN_BACKEND_NOT_IMPLEMENTED"
+    }
+  ]
+}
