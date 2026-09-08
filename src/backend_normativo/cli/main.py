@@ -26,7 +26,9 @@ app.add_typer(calidad, name="calidad")
 app.add_typer(revision, name="revision")
 api = typer.Typer(help="API de consulta.", no_args_is_help=True)
 app.add_typer(publicacion, name="publicacion")
+monitoreo = typer.Typer(help="Monitoreo y eventos.", no_args_is_help=True)
 app.add_typer(api, name="api")
+app.add_typer(monitoreo, name="monitoreo")
 
 
 @catalogo.command("validar")
@@ -457,6 +459,58 @@ def api_openapi(
         encoding="utf-8",
     )
     typer.echo(f"Contrato escrito en {salida}")
+
+
+@monitoreo.command("correr")
+def monitoreo_correr(
+    limite: int | None = typer.Option(None, help="Máximo de fuentes a revisar."),
+) -> None:
+    """Revalida las fuentes vencidas, compara textos y propaga el impacto."""
+    from backend_normativo.ingesta.capturador import Capturador
+    from backend_normativo.ingesta.cliente import ClienteCaptura
+    from backend_normativo.ingesta.extraccion import Extractor
+    from backend_normativo.monitoreo.novedades import correr
+
+    with ClienteCaptura() as cliente, engine_migrador().begin() as conexion:
+        resultado = correr(
+            conexion,
+            capturador=Capturador(conexion, cliente=cliente),
+            extractor=Extractor(conexion),
+            limite=limite,
+        )
+    typer.echo(
+        f"Fuentes revisadas: {resultado.fuentes_revisadas}\n"
+        f"Con cambios: {resultado.con_cambios} · sin cambios: {resultado.sin_cambios} · "
+        f"bloqueadas: {resultado.bloqueadas}\n"
+        f"Versiones nuevas: {resultado.versiones_nuevas}\n"
+        f"Normas impactadas: {resultado.normas_impactadas}\n"
+        f"Eventos emitidos: {resultado.eventos_emitidos}"
+    )
+    for fuente in resultado.detalle:
+        typer.echo(f"  {fuente['source_id']}:")
+        for cambio in fuente["cambios"]:
+            typer.echo(f"    {cambio['resumen']}")
+    for aviso in resultado.avisos:
+        typer.echo(f"  aviso: {aviso}")
+
+
+@monitoreo.command("entregar")
+def monitoreo_entregar(
+    limite: int = typer.Option(50, help="Máximo de eventos a entregar."),
+) -> None:
+    """Entrega los eventos pendientes al consumidor configurado."""
+    from backend_normativo.monitoreo.outbox import entregar_pendientes
+
+    with engine_migrador().begin() as conexion:
+        resultado = entregar_pendientes(conexion, limite=limite)
+    typer.echo(
+        f"Consumidor: {resultado.consumidor or 'sin configurar'}\n"
+        f"Pendientes: {resultado.pendientes}\n"
+        f"Entregados: {resultado.entregados} · fallidos: {resultado.fallidos}\n"
+        f"En cola de fallos: {resultado.en_cola_de_fallos}"
+    )
+    for aviso in resultado.avisos:
+        typer.echo(f"  aviso: {aviso}")
 
 
 if __name__ == "__main__":
