@@ -28,9 +28,11 @@ from backend_normativo.db.vocabularios import (
     ClaseFuente,
     EstadoFuente,
     ModoExtraccion,
+    Severidad,
     TipoDocumento,
     TipoEvidencia,
     TipoFecha,
+    TipoIncidencia,
     TipoVersionDocumento,
 )
 from backend_normativo.ingesta.almacen import AlmacenObjetos
@@ -378,3 +380,91 @@ def _evidencia(
 
 def almacen_por_defecto() -> AlmacenObjetos:
     return AlmacenObjetos()
+
+
+def derivar_jurisdiccional(
+    conexion: Connection, *, jurisdiccion: str, anio: int
+) -> uuid.UUID | None:
+    """Un calendario local con los feriados nacionales, y nada más que eso.
+
+    Los feriados nacionales rigen en todo el país, así que un calendario local
+    que los repita es cierto en lo que dice. Lo que no tiene son las ferias
+    administrativas que cada jurisdicción fija por su cuenta, y ésas alargan el
+    plazo: contarlas de menos adelanta el vencimiento y hace perder el plazo.
+
+    Por eso el nombre del calendario declara la limitación —viaja en el
+    fundamento de cada cómputo— y la carga abre una incidencia con responsable.
+    Un calendario incompleto que dice qué le falta es mejor que ninguno; uno que
+    no lo dice es peor que ninguno.
+    """
+    nacional = (
+        conexion.execute(
+            text(
+                "SELECT id, version, fecha_desde, fecha_hasta FROM calendarios "
+                " WHERE jurisdiccion_id = :n AND version = :v LIMIT 1"
+            ),
+            {"n": JURISDICCION, "v": str(anio)},
+        )
+        .mappings()
+        .first()
+    )
+    if nacional is None:
+        return None
+
+    nombre = (
+        f"Feriados nacionales {anio} aplicables en {jurisdiccion} — "
+        "sin ferias administrativas locales"
+    )
+    ya = conexion.execute(
+        text("SELECT id FROM calendarios WHERE jurisdiccion_id = :j AND version = :v"),
+        {"j": jurisdiccion, "v": str(anio)},
+    ).scalar_one_or_none()
+    if ya is not None:
+        return ya
+
+    derivado = conexion.execute(
+        text(
+            "INSERT INTO calendarios (jurisdiccion_id, nombre, version, fecha_desde, "
+            " fecha_hasta, fuente_id) VALUES (:j, :n, :v, :d, :h, :f) RETURNING id"
+        ),
+        {
+            "j": jurisdiccion,
+            "n": nombre,
+            "v": str(anio),
+            "d": nacional["fecha_desde"],
+            "h": nacional["fecha_hasta"],
+            "f": SOURCE_ID,
+        },
+    ).scalar_one()
+    conexion.execute(
+        text(
+            "INSERT INTO calendario_excepciones (calendario_id, evidencia_id, fecha, es_habil, "
+            " motivo) SELECT :nuevo, e.evidencia_id, e.fecha, e.es_habil, e.motivo "
+            "  FROM calendario_excepciones e WHERE e.calendario_id = :origen"
+        ),
+        {"nuevo": derivado, "origen": nacional["id"]},
+    )
+    descripcion = (
+        f"El calendario de {jurisdiccion} para {anio} se derivó de los feriados nacionales: "
+        "son ciertos, porque rigen en todo el país, y están incompletos, porque no incluyen "
+        "las ferias administrativas que fija la propia jurisdicción. Un plazo hábil computado "
+        "con él puede vencer más tarde de lo calculado. Hay que conseguir el calendario "
+        "administrativo local y reemplazarlo."
+    )
+    if not conexion.execute(
+        text("SELECT 1 FROM incidencias_revision WHERE descripcion = :d"), {"d": descripcion}
+    ).first():
+        conexion.execute(
+            text(
+                "INSERT INTO incidencias_revision (tipo, severidad, estado, source_id, "
+                " descripcion, responsable_rol) "
+                "VALUES (:t, :s, 'ABIERTA', :src, :d, 'ingesta')"
+            ),
+            {
+                "t": TipoIncidencia.DATO_FALTANTE_CRITICO.value,
+                "s": Severidad.HIGH.value,
+                "src": SOURCE_ID,
+                "d": descripcion,
+            },
+        )
+    return derivado

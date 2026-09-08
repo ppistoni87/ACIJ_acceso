@@ -332,7 +332,20 @@ def test_cargar_dos_veces_no_duplica_nada(conexion: Connection, norma) -> None:
     assert conexion.execute(text("SELECT count(*) FROM beneficio_cuantias")).scalar_one() == 1
 
 
-def test_cargar_todas_encuentra_la_lectura_del_repositorio(conexion: Connection, norma) -> None:
+def test_cargar_todas_encuentra_las_lecturas_del_repositorio(conexion: Connection, norma) -> None:
     resultados = cargar_todas(conexion, raiz=RAIZ)
     assert len(resultados) >= 1
-    assert all(r.beneficio_id is not None for r in resultados)
+    cargadas = [r for r in resultados if r.beneficio_id is not None]
+    assert cargadas, "ninguna lectura del repositorio se pudo cargar"
+
+
+def test_una_lectura_sin_su_norma_no_impide_cargar_las_demas(conexion: Connection, norma) -> None:
+    """La fixture trae la norma de una sola lectura. Las otras citan normas que
+    no están y tienen que reportarse sin arrastrar al lote entero."""
+    resultados = cargar_todas(conexion, raiz=RAIZ)
+
+    bloqueadas = [r for r in resultados if r.beneficio_id is None]
+    assert bloqueadas, "se esperaba al menos una lectura sin su norma en el corpus"
+    for bloqueada in bloqueadas:
+        assert any("no se cargó" in a for a in bloqueada.avisos)
+    assert any(r.beneficio_id is not None for r in resultados)

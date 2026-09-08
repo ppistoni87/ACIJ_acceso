@@ -160,8 +160,15 @@ class CuradorDeBeneficios:
                 f"capturado. Rutas disponibles de primer nivel: "
                 f"{sorted(r for r in unidades if '/' not in r)[:12]}"
             )
+        # Una unidad puede tener más de una evidencia: la curación de
+        # equivalencias y la de anexos también citan unidades, con su propio
+        # selector. Se toma la más antigua para que la elección no dependa del
+        # orden en que se hayan cargado.
         ya = self.conexion.execute(
-            text("SELECT id FROM evidencias WHERE doc_version_id = :d AND unidad_id = :u"),
+            text(
+                "SELECT id FROM evidencias WHERE doc_version_id = :d AND unidad_id = :u "
+                " ORDER BY creado_en, id LIMIT 1"
+            ),
             {"d": doc_version_id, "u": unidad["id"]},
         ).scalar_one_or_none()
         if ya is not None:
@@ -505,9 +512,10 @@ class CuradorDeBeneficios:
         self.conexion.execute(
             text(
                 "INSERT INTO plazos (registro_version_id, plazo_id, beneficio_version_id, "
-                " evidencia_id, tipo, cantidad, unidad, tipo_dia, evento_inicio, zona_horaria) "
-                "VALUES (:rv, :p, :bv, :e, :tipo, :cant, :uni, :td, :ev, 'America/Argentina/"
-                "Buenos_Aires')"
+                " evidencia_id, tipo, cantidad, unidad, tipo_dia, evento_inicio, "
+                " calendario_id, zona_horaria) "
+                "VALUES (:rv, :p, :bv, :e, :tipo, :cant, :uni, :td, :ev, :cal, "
+                " 'America/Argentina/Buenos_Aires')"
             ),
             {
                 "rv": registro,
@@ -521,9 +529,44 @@ class CuradorDeBeneficios:
                 # la respuesta, no un defecto que haya que rellenar.
                 "td": datos["tipo_dia"],
                 "ev": datos["evento_inicio"],
+                "cal": self._calendario(datos),
             },
         )
         del norma_version_id
+
+    def _calendario(self, datos: dict) -> uuid.UUID | None:
+        """El calendario con el que se computa un plazo hábil.
+
+        El esquema lo exige para los plazos en días hábiles, y con razón: saltear
+        sólo sábados y domingos cuenta mal cualquier mes con feriado. La lectura
+        curada declara de qué jurisdicción tiene que ser; si no hay uno cargado
+        para ella, el plazo no se carga a medias con el de otra jurisdicción.
+        """
+        if datos["tipo_dia"] not in ("HABIL_ADMINISTRATIVO", "HABIL_JUDICIAL"):
+            return None
+        jurisdiccion = datos.get("calendario_jurisdiccion")
+        if not jurisdiccion:
+            raise LecturaInvalida(
+                f"El plazo {datos.get('clave')!r} corre en días {datos['tipo_dia']} y la "
+                "lectura no declara de qué jurisdicción tiene que ser el calendario. Un "
+                "plazo hábil sin calendario no se puede computar y con el calendario "
+                "equivocado se computa mal."
+            )
+        calendario = self.conexion.execute(
+            text(
+                "SELECT id FROM calendarios WHERE jurisdiccion_id = :j "
+                " ORDER BY fecha_desde DESC LIMIT 1"
+            ),
+            {"j": jurisdiccion},
+        ).scalar_one_or_none()
+        if calendario is None:
+            raise LecturaInvalida(
+                f"El plazo {datos.get('clave')!r} necesita un calendario de {jurisdiccion} y no "
+                "hay ninguno cargado. Vincularlo al calendario nacional contaría los feriados "
+                "de otra jurisdicción y adelantaría el vencimiento, que es el error que hace "
+                "perder un plazo."
+            )
+        return calendario
 
     def _campo_no_informado(self, norma_version_id: uuid.UUID, campo: dict) -> None:
         """Un campo que la ley remite a la reglamentación queda dicho como tal.
@@ -575,16 +618,31 @@ class CuradorDeBeneficios:
             "que lo haya escrito una curaduría no lo vuelve derecho aplicable."
         )
         if resultado.reglas_sin_formalizar:
-            en_revision = [
+            # Son dos situaciones distintas y el aviso las mezclaba: una regla
+            # con AST y `requiere_revision` conserva su condición escrita y
+            # espera aprobación; una sin AST no tiene condición que ejecutar.
+            # Decir de las dos «se conserva su texto literal y nada más» era
+            # falso para la primera y hacía parecer perdido un trabajo hecho.
+            sin_condicion = [r["clave"] for r in lectura.get("reglas", ()) if r.get("ast") is None]
+            con_condicion_a_revisar = [
                 r["clave"]
                 for r in lectura.get("reglas", ())
-                if r.get("requiere_revision") or r.get("ast") is None
+                if r.get("ast") is not None and r.get("requiere_revision")
             ]
-            resultado.avisos.append(
-                f"{resultado.reglas_sin_formalizar} regla(s) no se pudieron formalizar "
-                f"({', '.join(en_revision)}): la ley las remite a la reglamentación o no "
-                "alcanza para escribir su condición. Se conserva su texto literal y nada más."
-            )
+            if sin_condicion:
+                resultado.avisos.append(
+                    f"{len(sin_condicion)} regla(s) sin condición ejecutable "
+                    f"({', '.join(sin_condicion)}): la ley las remite a la reglamentación o no "
+                    "alcanza para escribir su condición. Se conserva su texto literal y nada "
+                    "más."
+                )
+            if con_condicion_a_revisar:
+                resultado.avisos.append(
+                    f"{len(con_condicion_a_revisar)} regla(s) tienen su condición escrita y "
+                    f"esperan revisión ({', '.join(con_condicion_a_revisar)}): el árbol está "
+                    "guardado y validado, y no se ejecuta hasta que alguien con competencia "
+                    "jurídica lo apruebe. Cada una dice en su motivo qué hay que decidir."
+                )
         if resultado.dependencias:
             resultado.avisos.append(
                 f"{resultado.dependencias} norma(s) de las que este beneficio depende no están "
@@ -594,8 +652,25 @@ class CuradorDeBeneficios:
 
 
 def cargar_todas(conexion: Connection, raiz: pathlib.Path | None = None) -> list[ResultadoCuracion]:
+    """Carga cada lectura curada del repositorio, y sigue si una no se puede.
+
+    Que a una lectura le falte la norma que cita no es razón para no cargar las
+    demás: el bloqueo se reporta con su motivo y el resto entra. Abortar el lote
+    entero dejaría el corpus sin los beneficios que sí estaban listos, y sin
+    decir por qué.
+    """
     base = (raiz or pathlib.Path.cwd()) / RUTA_CURADURIA
     if not base.is_dir():
         return []
     curador = CuradorDeBeneficios(conexion)
-    return [curador.cargar(ruta) for ruta in sorted(base.glob("*.json"))]
+    resultados: list[ResultadoCuracion] = []
+    for ruta in sorted(base.glob("*.json")):
+        try:
+            resultados.append(curador.cargar(ruta))
+        except LecturaInvalida as error:
+            resultados.append(
+                ResultadoCuracion(
+                    avisos=[f"{ruta.name} no se cargó: {error}"],
+                )
+            )
+    return resultados

@@ -105,6 +105,7 @@ def calcular_vencimiento(
     unidad: str,
     tipo_dia: TipoDia | str,
     calendario: Calendario | None = None,
+    jurisdiccion: str | None = None,
     inclusivo_desde: bool = False,
 ) -> ResultadoComputo:
     """Vencimiento de un plazo relativo, o el motivo por el que no se puede dar.
@@ -151,6 +152,21 @@ def calcular_vencimiento(
                 "con un feriado."
             ),
             requiere="calendario_jurisdiccional",
+        )
+
+    # Un calendario de otra jurisdicción tiene los feriados de otra jurisdicción.
+    # Los nacionales rigen en todo el país, pero una feria administrativa porteña
+    # no está en el calendario nacional: contar con él da un vencimiento anterior
+    # al real, que es el error que hace perder un plazo.
+    if jurisdiccion and calendario.jurisdiccion != jurisdiccion:
+        return ResultadoComputo(
+            motivo=(
+                f"El plazo es de la jurisdicción {jurisdiccion} y el calendario disponible es "
+                f"de {calendario.jurisdiccion} («{calendario.nombre}»). Un calendario nacional "
+                "no trae las ferias administrativas locales, y contarlas de menos adelanta el "
+                "vencimiento."
+            ),
+            requiere=f"calendario_de_{jurisdiccion}",
         )
 
     return _contar_habiles(

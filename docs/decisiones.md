@@ -434,3 +434,38 @@ a esconder versiones servibles sin decirlo, y la prueba lo ve.
 Y el reporte dice qué no mide: las consultas van una después de otra, sobre la
 misma conexión y sin red. No afirma un número de concurrencia, porque para eso
 hace falta el despliegue real.
+
+## D-31 · Un calendario de otra jurisdicción no computa un plazo local
+
+El artículo 14 de la Ley 2917 da diez días **hábiles** para pedir la
+reconsideración de una beca. El esquema exige un calendario para computar un
+plazo hábil, y el único cargado era el nacional.
+
+Los feriados nacionales rigen en todo el país, así que un calendario local que
+los repita es cierto en lo que dice. Lo que no tiene son las ferias
+administrativas que cada jurisdicción fija por su cuenta, y ésas **alargan** el
+plazo: contarlas de menos adelanta el vencimiento, que es exactamente el error
+que hace perder un plazo.
+
+**Consecuencia:** el cómputo rechaza calcular con un calendario de otra
+jurisdicción, que hasta ahora nada impedía. El calendario de CABA se derivó del
+nacional con el nombre diciendo qué le falta —«sin ferias administrativas
+locales», que viaja en el fundamento de cada cómputo— y una incidencia abierta
+con responsable. Un calendario incompleto que dice qué le falta es mejor que
+ninguno; uno que no lo dice es peor que ninguno.
+
+## D-32 · Una regla con condición escrita no es una regla sin condición
+
+El aviso de la curación decía, de todas las reglas pendientes de revisión, que
+«se conserva su texto literal y nada más». Era falso para la mitad de ellas: el
+árbol estaba guardado y validado, esperando aprobación. El mensaje hacía parecer
+perdido un trabajo que estaba hecho.
+
+**Consecuencia:** el aviso separa las dos situaciones. Una regla sin AST no tiene
+condición que ejecutar porque la ley la remite a la reglamentación; una regla con
+AST y `requiere_revision` tiene su condición escrita y validada, y espera una
+firma. Confundirlas hacia un lado esconde trabajo; hacia el otro haría creer que
+hay una condición ejecutable donde no la hay.
+
+Y que a una lectura le falte la norma que cita ya no aborta el lote: se reporta
+con su motivo y las demás entran. Es la misma regla que rige para las fuentes.

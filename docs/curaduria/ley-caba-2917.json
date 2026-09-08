@@ -1,0 +1,446 @@
+{
+ "schema_version": "1.0",
+ "norma": {
+  "external_id": "normativaba:125647:actualizado",
+  "referencia": "Ley CABA 2917/2008",
+  "rol": "CREA"
+ },
+ "nota": "Lectura curada de la Ley CABA 2917, que crea el Régimen de Becas Estudiantiles. Cada afirmación apunta a la ruta de la unidad documental que la sostiene, para que se pueda discutir contra el texto y no contra el código. Todo entra como candidato: la evaluación de este beneficio no se sirve hasta que una persona con competencia jurídica apruebe cada pieza. Las decisiones difíciles están declaradas en `requiere_revision` con su motivo, no resueltas en silencio.",
+ "beneficio": {
+  "codigo": "CABA.BECAS-ESTUDIANTILES",
+  "nombre": "Régimen de Becas Estudiantiles",
+  "familia": "EDUCACION",
+  "linea": "BECA",
+  "jurisdiccion": "AR-C",
+  "naturaleza": "PRESTACION_MONETARIA",
+  "descripcion": "Beca anual para alumnos y alumnas regulares de nivel medio o secundario de escuelas de gestión estatal del Ministerio de Educación de la Ciudad, en situación de vulnerabilidad socioeconómica. Se otorga por ciclo lectivo, es personal e intransferible y es renovable anualmente si se acredita que se mantienen las condiciones que la originaron.",
+  "unidad_beneficiaria": "PERSONA",
+  "modalidad": "TRANSFERENCIA",
+  "frecuencia": "ANUAL",
+  "requiere_solicitud": true,
+  "ruta_evidencia": "articulo-1"
+ },
+ "poblaciones": [
+  {
+   "codigo": "CABA.ALUMNO-MEDIO-ESTATAL",
+   "nombre": "Alumnos y alumnas regulares de nivel medio de gestión estatal",
+   "definicion": "Alumnos y alumnas regulares de nivel medio o secundario de escuelas de gestión estatal, de todas las modalidades y orientaciones, dependientes del Ministerio de Educación de la Ciudad Autónoma de Buenos Aires.",
+   "rol_persona": "TITULAR",
+   "alcance": "La beca es un beneficio personal e intransferible del alumno o alumna, no del hogar, aunque varias condiciones de otorgamiento se midan sobre el hogar.",
+   "ruta_evidencia": "articulo-1"
+  },
+  {
+   "codigo": "CABA.HOGAR-DEL-ALUMNO",
+   "nombre": "Hogar del alumno o alumna",
+   "definicion": "Conjunto de personas cuyo ingreso mensual, necesidades básicas y composición se ponderan para acreditar la vulnerabilidad socioeconómica del alumno o alumna.",
+   "rol_persona": "GRUPO_FAMILIAR",
+   "alcance": "El hogar no es beneficiario: es la unidad sobre la que se miden varias de las condiciones del artículo 5. Quien percibe es el alumno.",
+   "ruta_evidencia": "articulo-5"
+  },
+  {
+   "codigo": "CABA.RESPONSABLE-DEL-ALUMNO",
+   "nombre": "Padre, madre, tutor o encargado",
+   "definicion": "Persona que recibe junto con la ficha de inscripción la información para tramitar la beca, a quien se notifica la decisión y que puede pedir la reconsideración.",
+   "rol_persona": "REPRESENTANTE",
+   "alcance": "La ley les asigna un rol en la información, la notificación y el pedido de reconsideración, no la titularidad del beneficio.",
+   "ruta_evidencia": "articulo-14"
+  }
+ ],
+ "reglas": [
+  {
+   "clave": "ALUMNO-REGULAR-GESTION-ESTATAL",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-1",
+   "texto_literal": "Créase el Régimen de Becas Estudiantiles para alumnos/as regulares de nivel medio/secundario de escuelas de gestión estatal de todas las modalidades y orientaciones dependientes del Ministerio de Educación de la Ciudad Autónoma de Buenos Aires.",
+   "descripcion": "Ser alumno o alumna regular de nivel medio en una escuela de gestión estatal del Ministerio de Educación de la Ciudad.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "all",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "es_alumno_regular"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "in",
+      "field": "nivel_educativo",
+      "values": [
+       "MEDIO",
+       "SECUNDARIO"
+      ]
+     },
+     {
+      "schema_version": "1.0",
+      "op": "compare",
+      "field": "gestion_escuela",
+      "cmp": "==",
+      "value": "ESTATAL",
+      "unit": "texto"
+     }
+    ]
+   }
+  },
+  {
+   "clave": "AL-MENOS-UNA-CONDICION-DEL-ART-5",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-5",
+   "texto_literal": "Son beneficiarios/as directos con acreditación de por lo menos una de las condiciones establecidas a continuación, los alumnos/as: a) Que integren un hogar cuyo ingreso mensual resulte igual o menor a 1, 5 del salario mínimo, vital y móvil. b) Que concurran a escuelas de reingreso. c) Que se encuentren en situación de calle. d) Que se encuentren alejados/as de sus familias en hogares convivenciales, o en otros tipos de programas de asistencia; e) que integren un hogar con Necesidades Básicas Insatisfechas (NBI). f) Que residan en Núcleos Habitacionales Precarios o Transitorios. g) que sean padres o madres adolescentes, o adolescentes embarazadas. h) Que tengan necesidades especiales o enfermedad graves. i) Que integren un hogar con mas de tres miembros en edad escolar, siempre que los ingresos del mismo resulten hasta un 50% por encima de lo establecido en el punto a). j) que tengan al su padre y/o madre privado de la libertad en el sistema penal, siempre que los ingresos de su hogar resulten hasta un 50 % por encima de lo establecido en el punto a).",
+   "descripcion": "Acreditar al menos una de las diez condiciones del artículo 5. Son alternativas, no acumulativas: la ley dice «por lo menos una».",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "any",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "compare",
+      "field": "ingreso_mensual_hogar",
+      "cmp": "<=",
+      "parameter": "AR.SMVM",
+      "unit": "ARS",
+      "factor": 1.5
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "concurre_a_escuela_de_reingreso"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "en_situacion_de_calle"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "alojado_en_hogar_convivencial_o_programa"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "hogar_con_necesidades_basicas_insatisfechas"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "reside_en_nucleo_habitacional_precario_o_transitorio"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "es_madre_padre_adolescente_o_embarazada"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "tiene_necesidades_especiales_o_enfermedad_grave"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "all",
+      "args": [
+       {
+        "schema_version": "1.0",
+        "op": "compare",
+        "field": "miembros_del_hogar_en_edad_escolar",
+        "cmp": ">",
+        "value": 3,
+        "unit": "cantidad"
+       },
+       {
+        "schema_version": "1.0",
+        "op": "compare",
+        "field": "ingreso_mensual_hogar",
+        "cmp": "<=",
+        "parameter": "AR.SMVM",
+        "unit": "ARS",
+        "factor": 2.25
+       }
+      ]
+     },
+     {
+      "schema_version": "1.0",
+      "op": "all",
+      "args": [
+       {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "progenitor_privado_de_libertad"
+       },
+       {
+        "schema_version": "1.0",
+        "op": "compare",
+        "field": "ingreso_mensual_hogar",
+        "cmp": "<=",
+        "parameter": "AR.SMVM",
+        "unit": "ARS",
+        "factor": 2.25
+       }
+      ]
+     }
+    ]
+   },
+   "parametros": [
+    {
+     "codigo": "AR.SMVM",
+     "rol": "UMBRAL"
+    }
+   ],
+   "requiere_revision": true,
+   "motivo_revision": "Los incisos i) y j) dicen «hasta un 50% por encima de lo establecido en el punto a)». Se leyó como 1,5 × 1,5 = 2,25 SMVM, que es la lectura literal de «un 50% por encima de 1,5». La otra lectura posible —1,5 + 0,5 = 2 SMVM— cambia quién entra y quién no, y el texto no la descarta. Hay que elegirla con criterio jurídico, no por aritmética."
+  },
+  {
+   "clave": "OTROS-INDICADORES-DE-VULNERABILIDAD",
+   "categoria": "EXCEPCION",
+   "ruta_evidencia": "articulo-6",
+   "texto_literal": "Sin perjuicio de lo establecido en el Art. 5°, pueden ser beneficiarios/as del Régimen de Becas Estudiantiles, quienes presenten otros indicadores de vulnerabilidad socioeconómica que, según la autoridad de aplicación, resulten suficientes para acreditar tal condición de vulnerabilidad.",
+   "descripcion": "La autoridad de aplicación puede admitir otros indicadores de vulnerabilidad socioeconómica además de los del artículo 5.",
+   "requiere_revision": true,
+   "motivo_revision": "No tiene AST y no puede tenerlo: la condición es «lo que la autoridad de aplicación considere suficiente». Escribir una regla ejecutable acá inventaría un criterio que la ley delegó a propósito. Se conserva como excepción declarada para que no se lea el artículo 5 como una lista cerrada, que es el error que dejaría afuera a quien la ley quiso incluir."
+  },
+  {
+   "clave": "SUPERPOSICION-CON-OTRA-BECA",
+   "categoria": "COMPATIBILIDAD",
+   "ruta_evidencia": "articulo-7",
+   "texto_literal": "El alumno/a que sea titular de otra beca estudiantil sólo puede resultar beneficiario del Régimen creado por la presente Ley, cuando el monto de esa beca sea inferior al dispuesto por el artículo 4°. En tal caso, el beneficio a otorgar se reducirá a la suma de dinero necesaria para alcanzar dicho monto.",
+   "descripcion": "Tener otra beca estudiantil no excluye, siempre que su monto sea inferior al del artículo 4. En ese caso esta beca cubre la diferencia hasta alcanzarlo.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "any",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "not",
+      "args": [
+       {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "titular_de_otra_beca_estudiantil"
+       }
+      ]
+     },
+     {
+      "schema_version": "1.0",
+      "op": "compare",
+      "field": "monto_de_la_otra_beca",
+      "cmp": "<",
+      "parameter": "AR.SMVM",
+      "unit": "ARS"
+     }
+    ]
+   },
+   "parametros": [
+    {
+     "codigo": "AR.SMVM",
+     "rol": "UMBRAL"
+    }
+   ]
+  },
+  {
+   "clave": "MODALIDADES-TECNICAS-NO-QUEDAN-INHABILITADAS",
+   "categoria": "SALVAGUARDA",
+   "ruta_evidencia": "articulo-8",
+   "texto_literal": "Los alumnos de las modalidades técnicas y artísticas no quedan inhabilitados para recibir otros beneficios o subsidios del Gobierno de la Ciudad destinados a atender las necesidades especiales de dichas modalidades.",
+   "descripcion": "Cobrar esta beca no inhabilita a los alumnos de modalidades técnicas y artísticas para recibir otros beneficios del Gobierno de la Ciudad destinados a esas modalidades.",
+   "requiere_revision": true,
+   "motivo_revision": "Es una salvaguarda sobre otros beneficios, no una condición de éste: no se evalúa acá, se conserva para que la respuesta sobre compatibilidades no diga que hay una incompatibilidad que la ley descarta expresamente."
+  },
+  {
+   "clave": "REPITENCIA-Y-SANCIONES-NO-EXTINGUEN",
+   "categoria": "SALVAGUARDA",
+   "ruta_evidencia": "articulo-16",
+   "texto_literal": "En ningún caso son causales de extinción del beneficio las sanciones comprendidas en la Ley 223 ni la condición de repitente del alumno/a.",
+   "descripcion": "Ni las sanciones disciplinarias de la Ley 223 ni repetir de año extinguen la beca. La ley lo dice con «en ningún caso».",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "any",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "es_repitente"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "tiene_sancion_ley_223"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "not",
+      "args": [
+       {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "es_repitente"
+       }
+      ]
+     }
+    ]
+   },
+   "depende_de": {
+    "clave": "CESE-POR-ABANDONO-O-EGRESO",
+    "tipo": "EXCEPCION_DE"
+   },
+   "requiere_revision": true,
+   "motivo_revision": "El AST está escrito para que la regla nunca dé falso: es una salvaguarda, no una condición que alguien pueda incumplir. Lo que importa de esta pieza no es su valor sino que exista y quede ligada a las causales de cese, para que un lector no infiera que repetir de año da de baja la beca. Repetir y abandonar son cosas distintas y la ley las separa."
+  },
+  {
+   "clave": "CESE-POR-ABANDONO-O-EGRESO",
+   "categoria": "CESE",
+   "ruta_evidencia": "articulo-16",
+   "texto_literal": "El derecho del beneficiario/a a la percepción de la beca se extingue por: a) Desaparición de las causales que justificaron el otorgamiento del beneficio. b) Egreso del becario/a del nivel medio. c) Abandono de sus estudios. d) Fallecimiento del beneficiario/a.",
+   "descripcion": "El derecho se extingue por desaparición de las causales que lo justificaron, egreso del nivel medio, abandono de los estudios o fallecimiento.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "any",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "not",
+      "args": [
+       {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "persisten_las_causales_del_otorgamiento"
+       }
+      ]
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "egreso_del_nivel_medio"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "abandono_de_los_estudios"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "fallecimiento_del_beneficiario"
+     }
+    ]
+   },
+   "requiere_revision": true,
+   "motivo_revision": "La ley llama «extinción» a las cuatro causales juntas, pero fallecimiento y egreso son hechos que cierran el derecho, mientras que «desaparición de las causales» es una revisión de las condiciones que puede ser reversible. Cese y revocación tienen efectos distintos sobre lo ya percibido y el texto no distingue: se cargan como cese sin afirmar que lo percibido sea repetible."
+  },
+  {
+   "clave": "PERDIDA-POR-NO-INFORMAR-CAMBIOS",
+   "categoria": "REVOCACION",
+   "ruta_evidencia": "articulo-9",
+   "texto_literal": "Los beneficiarios/as que aspiran a que se renueve el beneficio deben acreditar mediante la documentación correspondiente que se mantienen las condiciones que dieron origen al beneficio durante el ciclo lectivo anterior y tienen la obligación de informar toda modificación que pudiera haberse producido. El incumplimiento de dicha obligación puede dar lugar a la perdida del beneficio.",
+   "descripcion": "No informar una modificación de las condiciones que originaron la beca puede dar lugar a su pérdida.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "omitio_informar_modificacion_de_condiciones"
+   },
+   "requiere_revision": true,
+   "motivo_revision": "La ley dice «puede dar lugar», no «da lugar». Es una facultad y no un efecto automático: servir esta regla como si la pérdida fuera segura le diría a alguien que ya perdió la beca cuando la autoridad todavía no decidió nada."
+  },
+  {
+   "clave": "RENOVACION-ANUAL-CON-ACREDITACION",
+   "categoria": "REHABILITACION",
+   "ruta_evidencia": "articulo-3",
+   "texto_literal": "Es renovable anualmente cuando el beneficiario/a acredite fehacientemente que se mantienen las condiciones que determinaron su otorgamiento.",
+   "descripcion": "La beca se renueva por año si se acredita fehacientemente que se mantienen las condiciones que la originaron.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "acredito_persistencia_de_las_condiciones"
+   }
+  }
+ ],
+ "cuantia": {
+  "tipo": "FORMULA",
+  "ruta_evidencia": "articulo-4",
+  "formula_version": "ley-2917-art4@1",
+  "descripcion": "Monto anual equivalente, como mínimo, al 100% del salario mínimo, vital y móvil. Se paga en dos cuotas del 50% cada una.",
+  "parametros": [
+   {
+    "codigo": "AR.SMVM",
+    "rol": "PISO"
+   }
+  ],
+  "requiere_revision": true,
+  "motivo_revision": "La ley fija un piso —«como mínimo»— y no un monto. Servir el SMVM como «lo que vas a cobrar» convertiría un mínimo legal en una promesa de importe, que es el error que más rápido se transforma en un reclamo. El monto efectivo de cada ciclo lo fija la autoridad de aplicación y no está en esta norma."
+ },
+ "plazos": [
+  {
+   "clave": "INSCRIPCION-ORDINARIA",
+   "tipo": "CONVOCATORIA",
+   "ruta_evidencia": "articulo-9",
+   "texto_literal": "Los alumnos/as pueden solicitar la beca dentro del período establecido entre los quince (15) días previos y los quince (15) días posteriores a la iniciación del ciclo lectivo.",
+   "cantidad": 15,
+   "unidad": "dias",
+   "tipo_dia": "NO_INFORMADO",
+   "evento_inicio": "iniciación del ciclo lectivo",
+   "requiere_revision": true,
+   "motivo_revision": "El período es simétrico alrededor del inicio del ciclo lectivo —quince días antes y quince después— y el modelo guarda una cantidad y un evento, no un intervalo con dos brazos. Se carga el brazo posterior, que es el que corre contra quien llega tarde, y queda dicho que hay otro brazo anterior. Además la ley no dice si los días son hábiles o corridos, y el artículo 14 sí lo dice para su propio plazo: el contraste sugiere que la omisión acá no es un descuido de redacción sino algo a resolver."
+  },
+  {
+   "clave": "PEDIDO-DE-RECONSIDERACION",
+   "tipo": "RECURSO",
+   "ruta_evidencia": "articulo-14",
+   "texto_literal": "A partir de la notificación fehaciente al alumno/a solicitante y a su padre, madre, tutor/a o encargado/a del otorgamiento o no del beneficio, éste tiene diez (10) días hábiles para pedir una reconsideración.",
+   "cantidad": 10,
+   "unidad": "dias",
+   "tipo_dia": "HABIL_ADMINISTRATIVO",
+   "evento_inicio": "notificación fehaciente de la decisión sobre el otorgamiento",
+   "calendario_jurisdiccion": "AR-C",
+   "requiere_revision": true,
+   "motivo_revision": "El calendario de AR-C disponible se derivó de los feriados nacionales: son ciertos pero no incluyen las ferias administrativas porteñas, que alargan el plazo. El cómputo declara qué calendario usó, así que el resultado se puede auditar; hasta conseguir el calendario administrativo local, el vencimiento calculado es el más temprano posible y no necesariamente el real."
+  },
+  {
+   "clave": "RESPUESTA-A-LA-RECONSIDERACION",
+   "tipo": "RESPUESTA_ORGANISMO",
+   "ruta_evidencia": "articulo-14",
+   "texto_literal": "Una vez entregado por el solicitante su pedido de reconsideración a las autoridades escolares, la autoridad de aplicación tiene treinta (30) días para una nueva determinación, que debe ser notificada de manera fehaciente.",
+   "cantidad": 30,
+   "unidad": "dias",
+   "tipo_dia": "NO_INFORMADO",
+   "evento_inicio": "entrega del pedido de reconsideración a las autoridades escolares",
+   "requiere_revision": true,
+   "motivo_revision": "El mismo artículo dice «diez (10) días hábiles» para el pedido y «treinta (30) días» a secas para la respuesta. Que la ley califique uno y no el otro en la misma oración no permite suponer que los treinta sean hábiles ni que sean corridos: la diferencia es de más de dos semanas y le toca a quien espera."
+  },
+  {
+   "clave": "PRIMERA-CUOTA",
+   "tipo": "FECHA_PAGO",
+   "ruta_evidencia": "articulo-15",
+   "texto_literal": "El pago del beneficio se efectúa en dos cuotas. La primera se percibe antes de los tres meses de la finalización del período de inscripción conforme el Artículo 9° de la presente y consiste en el 50 % de la asignación.",
+   "cantidad": 3,
+   "unidad": "meses",
+   "tipo_dia": "NO_INFORMADO",
+   "evento_inicio": "finalización del período de inscripción del artículo 9",
+   "requiere_revision": true,
+   "motivo_revision": "Es un plazo máximo para pagar el 50%, no una fecha de pago: decir «cobrás a los tres meses» convierte un tope en una promesa."
+  }
+ ],
+ "campos_no_informados": [
+  {
+   "campo": "plazos",
+   "motivo": "La segunda cuota se percibe «hasta el 30 de agosto» (artículo 15), que es una fecha recurrente sin año y sin evento que la ancle a un ciclo lectivo concreto. El modelo guarda intervalos y plazos relativos; una fecha anual repetida no es ninguno de los dos y ponerle un año la ataría a un ciclo que la ley no nombra."
+  },
+  {
+   "campo": "criterios_revocacion",
+   "motivo": "El artículo 16 enumera cuatro causales de extinción y el artículo 9 agrega la pérdida por no informar modificaciones, pero ninguno dice qué pasa con lo ya percibido ni si el derecho puede recuperarse. Cese, revocación y suspensión tienen efectos distintos sobre las cuotas cobradas y el texto no elige entre ellos."
+  }
+ ],
+ "dependencias": [
+  {
+   "referencia": "Ley CABA 114, artículo 29 inciso k)",
+   "motivo": "El artículo 12 remite a esa norma para tomar los datos filiatorios como declaración jurada cuando el aspirante no posee documentación. Sin ella en el corpus, la vía alternativa de acreditación de identidad queda declarada y no evaluable."
+  },
+  {
+   "referencia": "Ley CABA 223",
+   "motivo": "El artículo 16 la nombra para decir que sus sanciones no extinguen la beca. La salvaguarda vale igual sin tener la norma, porque lo que afirma es una exclusión de causal; tenerla permitiría saber qué sanciones son."
+  },
+  {
+   "referencia": "Salario mínimo, vital y móvil",
+   "motivo": "Los artículos 4, 5 y 7 lo usan como piso del monto y como umbral de ingresos. El parámetro existe en el corpus; mientras no tenga un valor aprobado para el período consultado, las reglas que lo comparan devuelven desconocido en vez de un resultado."
+  }
+ ]
+}
