@@ -339,21 +339,30 @@
       "evidencia": [
         "scripts/poblar_corpus.sh",
         "src/backend_normativo/ingesta/importadores/infoleg.py",
-        "docs/operacion/poblacion_real.md"
+        "docs/operacion/poblacion_real.md",
+        "docs/reportes/actualizacion_controlada.md"
       ],
-      "falta": "El catálogo nacional está importado entero y ocho normas del alcance tienen texto, campos y release. Faltan las fuentes que dependen del adaptador PDF (HU-007) y de los importadores de trámites y directorios (HU-019 a HU-021)."
+      "falta": "El catálogo nacional está importado entero y ocho normas del alcance tienen texto, campos y release. Faltan las fuentes que dependen del adaptador PDF (HU-007) y de los importadores de trámites y directorios (HU-019 a HU-021).",
+      "comandos": [
+        "bn ingesta importar-infoleg",
+        "bn calidad ensayo-actualizacion"
+      ]
     },
     "HU-036": {
       "estado": "EN_CURSO",
       "evidencia": [
         "docs/calidad/trazabilidad_at.json",
+        "docs/calidad/consultas_conversacionales.json",
         "tests/aceptacion/test_casos_aceptacion.py",
-        "docs/calidad/trazabilidad_at.md"
+        "tests/aceptacion/test_conversacional.py",
+        "docs/calidad/trazabilidad_at.md",
+        "docs/calidad/consultas_conversacionales.md"
       ],
       "comandos": [
-        "bn calidad trazabilidad --ejecutar"
+        "bn calidad trazabilidad --ejecutar",
+        "bn calidad consultas"
       ],
-      "falta": "50 de los 80 casos AT están cubiertos y 11 parcialmente; los 19 restantes esperan capacidades que este alcance no construyó. Las 60 consultas conversacionales revisadas que pide la gate no se hicieron."
+      "falta": "El conjunto conversacional cumple la gate DQ18 (98 consultas, 59 críticas, todas pasan) y 51 de los 80 casos AT están cubiertos con 12 parciales. Los 17 restantes esperan capacidades que este alcance no construyó: adaptador PDF, importadores de trámites y directorios, padrón RENABAP y prueba de restauración."
     },
     "HU-037": {
       "estado": "NO_INICIADA",
@@ -375,13 +384,14 @@
         "docs/operacion/runbook.md",
         "docs/operacion/diccionario_de_datos.md",
         "docs/adr",
-        "src/backend_normativo/calidad/backlog.py"
+        "src/backend_normativo/calidad/backlog.py",
+        "docs/calidad/estado_backlog.json"
       ],
       "comandos": [
         "bn calidad backlog",
         "bn calidad trazabilidad"
       ],
-      "falta": "La documentación y los reportes están; falta la corrida de verificación en un entorno limpio distinto del de desarrollo."
+      "falta": "La documentación y los reportes están, y `bn calidad ensayo-actualizacion` levanta un entorno limpio desde cero —crea la base, la migra y opera sobre ella— con lo que la reproducibilidad de las migraciones queda probada. Falta la corrida completa del ciclo de población en una máquina distinta de la de desarrollo."
     },
     "HU-040": {
       "estado": "CERRADA",

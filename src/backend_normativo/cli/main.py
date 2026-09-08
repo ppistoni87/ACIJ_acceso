@@ -443,6 +443,41 @@ def calidad_ensayo_actualizacion(
         typer.echo(texto)
 
 
+@calidad.command("consultas")
+def calidad_consultas(
+    salida: Path | None = typer.Option(None, help="Archivo donde escribir el reporte."),
+) -> None:
+    """Corre el conjunto experto de consultas conversacionales (DQ18)."""
+    from fastapi.testclient import TestClient
+
+    from backend_normativo.api.app import crear_app
+    from backend_normativo.api.dependencias import conexion_administracion, conexion_lectura
+    from backend_normativo.calidad.conversacional import ConjuntoInsuficiente, correr
+    from backend_normativo.calidad.conversacional import formatear as formatear_consultas
+
+    with engine_migrador().connect() as conexion:
+        app = crear_app()
+        app.dependency_overrides[conexion_lectura] = lambda: conexion
+        app.dependency_overrides[conexion_administracion] = lambda: conexion
+        with TestClient(app) as cliente:
+            try:
+                reporte = correr(conexion, cliente)
+            except ConjuntoInsuficiente as exc:
+                typer.echo(str(exc))
+                raise typer.Exit(1) from exc
+    texto = formatear_consultas(reporte)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto + "\n", encoding="utf-8")
+        typer.echo(
+            f"Reporte escrito en {salida} · {reporte.pasan}/{reporte.total} pasan · "
+            f"críticas {reporte.criticas_que_pasan}/{reporte.criticas} · "
+            f"gate {'cumple' if reporte.cumple_la_gate else 'NO cumple'}"
+        )
+    else:
+        typer.echo(texto)
+
+
 @curacion.command("vigencia")
 def curacion_vigencia(
     fuente: str | None = typer.Option(None, help="Limitar a una fuente."),
