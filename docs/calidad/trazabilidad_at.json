@@ -340,7 +340,14 @@
    ]
   },
   "AT-053": {
-   "motivo": "No hay normalizador de rangos de fecha sin año: los plazos se cargan con las fechas que la fuente declara y un rango «del 20 de diciembre al 10 de enero» sin ciclo identificable no tiene todavía dónde quedar como pendiente de contexto."
+   "pruebas": [
+    "tests/unit/test_fechas.py::test_at053_un_rango_sin_año_queda_pendiente_de_contexto",
+    "tests/unit/test_fechas.py::test_at053_el_año_en_curso_no_se_usa_nunca",
+    "tests/unit/test_fechas.py::test_at053_un_ciclo_declarado_no_fecha_las_inscripciones",
+    "tests/unit/test_fechas.py::test_at053_el_ciclo_queda_registrado_para_quien_lo_resuelva",
+    "tests/unit/test_fechas.py::test_un_rango_que_cruza_el_año_lo_deriva_y_lo_dice",
+    "tests/unit/test_fechas.py::test_un_año_aportado_a_sabiendas_fecha_el_rango_y_queda_marcado"
+   ]
   },
   "AT-054": {
    "pruebas": [

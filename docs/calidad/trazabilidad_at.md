@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **63**
+- Cubiertos por pruebas que corren: **64**
 - Cubiertos parcialmente: **16**
-- No ejecutados: **1**
-- Pruebas citadas: **173** (ejecutadas)
+- No ejecutados: **0**
+- Pruebas citadas: **179** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -63,7 +63,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-050 | Cierre conocido sin cambio web | HU-016 | CUBIERTO | PASSED | `test_una_fecha_fuera_del_periodo_no_se_sirve_como_actual`<br>`test_una_fecha_anterior_a_la_vigencia_no_se_sirve_como_actual` |
 | AT-051 | Días hábiles con feriado | HU-016 | CUBIERTO | PASSED | `test_at051_un_feriado_dentro_del_plazo_se_excluye_y_queda_registrado`<br>`test_at051_el_mismo_plazo_sin_el_feriado_vence_antes`<br>`test_at051_el_fundamento_dice_con_que_calendario_se_calculo`<br>`test_un_dia_habil_excepcional_cuenta_aunque_caiga_sabado`<br>`test_el_calendario_cargado_computa_el_vencimiento`<br>`test_cada_feriado_queda_atado_al_fragmento_que_lo_declara` |
 | AT-052 | Calendario sin cobertura | HU-016 | CUBIERTO | PASSED | `test_dias_habiles_sin_calendario_no_producen_una_fecha`<br>`test_at052_pasarse_de_la_cobertura_no_produce_una_fecha`<br>`test_un_inicio_fuera_de_la_cobertura_tampoco`<br>`test_sin_calendario_un_plazo_habil_no_se_computa`<br>`test_sin_calendario_para_esa_fecha_no_se_devuelve_otro` |
-| AT-053 | Rango sin año | HU-016 | NO_EJECUTADO | — | _No hay normalizador de rangos de fecha sin año: los plazos se cargan con las fechas que la fuente declara y un rango «del 20 de diciembre al 10 de enero» sin ciclo identificable no tiene todavía dónde quedar como pendiente de contexto._ |
+| AT-053 | Rango sin año | HU-016 | CUBIERTO | PASSED | `test_at053_un_rango_sin_año_queda_pendiente_de_contexto`<br>`test_at053_el_año_en_curso_no_se_usa_nunca`<br>`test_at053_un_ciclo_declarado_no_fecha_las_inscripciones`<br>`test_at053_el_ciclo_queda_registrado_para_quien_lo_resuelva`<br>`test_un_rango_que_cruza_el_año_lo_deriva_y_lo_dice`<br>`test_un_año_aportado_a_sabiendas_fecha_el_rango_y_queda_marcado` |
 | AT-054 | Último tramo salarial | HU-F12 | CUBIERTO | PASSED | `test_un_valor_de_vigencia_desconocida_no_se_publica`<br>`test_abierto_fin_no_admite_fecha_de_cierre` |
 | AT-055 | SMVM versus comercio | HU-018 | CUBIERTO | PASSED | `test_sin_valor_vigente_del_parametro_la_condicion_es_desconocida`<br>`test_el_parametro_se_resuelve_a_la_fecha_consultada` |
 | AT-056 | Períodos mixtos en PDF | HU-F62 | CUBIERTO_PARCIAL | PASSED | `test_dos_periodos_en_la_misma_pagina_dejan_la_asociacion_en_revision`<br>`test_el_ciclo_lectivo_se_reconoce_como_periodo`<br>_Falta: Igual que AT-021: la asociación de período se verifica con un doble de página. En F62, con tres períodos y tres tablas en la misma página, ninguna se resolvió por cercanía._ |
