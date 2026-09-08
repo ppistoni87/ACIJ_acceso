@@ -655,3 +655,31 @@ el beneficio. Lo que la norma no da y no es uno de los siete va en
 `vacios_declarados` y abre una incidencia con el motivo y con el rol que puede
 cerrarla. Y la carga verifica que la fila exista: declarar no informado un campo
 sin evaluación tampoco pasa desapercibido.
+
+## D-42 · Una prestación con la vigencia en duda se dice, no se decide
+
+En noviembre de 2001 el Decreto 1382/01 derogó la Ley 24.714 y mantuvo cinco de
+sus prestaciones —asignación por hijo, por hijo discapacitado, por maternidad,
+ayuda escolar primaria y por cónyuge del beneficiario del SIJP— hasta que
+empezaran a pagarse las equivalentes del sistema que creaba. Tres días después el
+Decreto 1604/01 restituyó la vigencia de la ley desde la fecha de su derogación,
+«con excepción de las normas correspondientes a las prestaciones a las que
+refiere el tercer párrafo del artículo 26» del primero: exactamente esas cinco.
+
+Leído al pie, lo restituido excluye a las cinco. Leído por su finalidad, las
+cinco nunca se derogaron y por eso no necesitaban restitución. Los dos textos
+están en el corpus y no alcanzan para elegir: no consta que las prestaciones
+equivalentes se hayan empezado a pagar nunca. Y el decreto dice «ayuda escolar
+primaria» donde la ley dice «ayuda escolar anual», así que ni siquiera es seguro
+que la cuarta esté en la lista.
+
+Servir cualquiera de las dos lecturas sería afirmar sobre la vigencia de un
+derecho a partir de una elección del sistema. Callarlo sería peor: las cinco
+prestaciones quedarían indistinguibles de las otras siete, que no tienen esta
+duda.
+
+**Consecuencia:** cada una de las cinco lecturas declara el conflicto por
+separado, citando el artículo que crea su prestación y el párrafo del decreto que
+la nombra, y cada una abre su propia incidencia. Se ve cuáles son las cinco y
+cuáles son las siete que no están alcanzadas, sin que el sistema diga que
+ninguna de las doce está vigente ni que todas lo están.

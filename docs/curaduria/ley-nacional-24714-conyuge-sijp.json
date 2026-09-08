@@ -141,5 +141,15 @@
    "dato": "canales",
    "motivo": "La ley no dice dónde se gestiona ni qué hay que presentar para acreditar el vínculo."
   }
+ ],
+ "conflictos": [
+  {
+   "clave": "VIGENCIA-EXCEPTUADA-DE-LA-RESTITUCION-DE-2001",
+   "ruta_evidencia": "articulo-16",
+   "texto_literal": "La asignación por cónyuge del beneficiario del Sistema Integrado de Jubilaciones y Pensiones consistirá en el pago de una suma de dinero que se abonara al beneficiario por su cónyuge.",
+   "otra_norma": "Decreto nacional 1382/2001 (infoleg:69649:actualizado) y Decreto nacional 1604/2001 (infoleg:70499:original)",
+   "otra_ruta": "titulo-III/articulo-26/parrafo-103",
+   "descripcion": "La vigencia de la asignación por cónyuge del beneficiario del SIJP quedó en duda en 2001 y el corpus no alcanza para despejarla. El Decreto 1382/01 derogó la Ley 24.714 y, en el tercer párrafo de su artículo 26, mantuvo cinco prestaciones —asignación por hijo, por hijo discapacitado, por maternidad, ayuda escolar primaria y por cónyuge del beneficiario del SIJP— «hasta la fecha de inicio de pago de las prestaciones equivalentes» del sistema que creaba. Tres días después el Decreto 1604/01 restituyó la vigencia de la Ley 24.714 desde la fecha de su derogación, pero «con excepción de las normas correspondientes a las prestaciones a las que refiere el tercer párrafo del artículo 26 del Decreto Nº 1382/01», que son exactamente esas cinco. Leído al pie, lo restituido excluye a esta prestación; leído por su finalidad, esta prestación nunca se derogó y por eso no necesitaba restitución. Las dos lecturas son posibles y dan resultados opuestos sobre si el artículo que la crea está vigente. El corpus tiene los tres textos y no alcanza para decidir: no consta que las prestaciones equivalentes del SIPROF se hayan empezado a pagar nunca. Las otras siete prestaciones de la ley no están alcanzadas por esta duda."
+  }
  ]
 }

@@ -15,8 +15,8 @@ Generado por `scripts/corrida_limpia.sh`. La base se crea y se destruye en la
 misma corrida: si algo de acá se pudiera explicar por estado previo, no habría
 estado previo del que agarrarse.
 
-- Arranque: `2026-09-08T20:06:44+00:00`
-- Cierre: `2026-09-08T20:13:08+00:00`
+- Arranque: `2026-09-08T21:20:21+00:00`
+- Cierre: `2026-09-08T21:26:43+00:00`
 - Resultado: **completa**
 - Base: `backend_normativo_limpia`
 - Fuentes que el planificador deja pendientes al cerrar: `3`
@@ -28,8 +28,8 @@ corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
 
 | Paso | Duración | Última línea |
 | --- | ---: | --- |
-| migraciones | 1.8 s | INFO  [alembic.runtime.migration] Running upgrade 0006_indice_de_listado -> 0007_servibl… |
-| población completa | 380.3 s | Incidencias abiertas: 12 |
+| migraciones | 1.4 s | INFO  [alembic.runtime.migration] Running upgrade 0006_indice_de_listado -> 0007_servibl… |
+| población completa | 379.3 s | Incidencias abiertas: 12 |
 | planificación al cierre (en seco) | 0.6 s | alguien corre el comando. |
 
 ## Con qué quedó la base
@@ -39,8 +39,8 @@ corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
 | Fuentes en el catálogo | 84 |
 | Capturas | 68 |
 | Unidades documentales | 989 |
-| Beneficios curados | 7 |
-| Incidencias abiertas | 4617 |
+| Beneficios curados | 16 |
+| Incidencias abiertas | 4607 |
 
 Las incidencias abiertas no son un fallo de la corrida: son lo que el sistema
 encontró y no resolvió solo. Una corrida limpia que no abriera ninguna estaría
@@ -144,7 +144,7 @@ Una lectura curada se apoya en el texto capturado de su norma: sin ese texto no
 hay nada que citar y el beneficio no entra. Que falte no es un error de la
 lectura, es que la fuente no entregó en esta corrida.
 
-Ninguna: las 7 lecturas curadas encontraron su norma en el corpus.
+Ninguna: las 19 lecturas curadas encontraron su norma en el corpus.
 
 ## Incidencias que abrió la corrida
 
@@ -152,8 +152,8 @@ Ninguna: las 7 lecturas curadas encontraron su norma en el corpus.
 | --- | ---: |
 | IDENTIDAD_AMBIGUA | 4492 |
 | COBERTURA_EXTRACCION | 42 |
-| DATO_FALTANTE_CRITICO | 33 |
 | VIGENCIA_INDETERMINADA | 23 |
+| DATO_FALTANTE_CRITICO | 22 |
 | ACCESO_BLOQUEADO | 18 |
+| CONFLICTO_DE_FUENTES | 5 |
 | DISCREPANCIA_NUMERACION | 5 |
-| CONFLICTO_DE_FUENTES | 4 |

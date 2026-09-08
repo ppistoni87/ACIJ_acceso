@@ -82,7 +82,15 @@ Los tres casos difíciles que el paquete nombra están resueltos como pide:
 
 - **F33 (Ley 24.714)**: abrogada *y* restablecida con excepciones. El grafo
   conserva ambos eventos y `estado_legal_validado` queda `NO_DETERMINADA`: no
-  hay lectura automática posible.
+  hay lectura automática posible. Ahora se sabe además a quiénes alcanza la
+  excepción: el Decreto 1382/01 derogó la ley y mantuvo cinco prestaciones
+  —asignación por hijo, por hijo discapacitado, por maternidad, ayuda escolar
+  primaria y por cónyuge del beneficiario del SIJP— hasta que empezaran a
+  pagarse las equivalentes del sistema que creaba, y tres días después el
+  Decreto 1604/01 restituyó la ley «con excepción» de esas mismas cinco. Leído
+  al pie, lo restituido las excluye; leído por su finalidad, nunca se
+  derogaron. Las cinco lecturas curadas lo declaran como conflicto, una por
+  una; las otras siete prestaciones no están alcanzadas.
 - **F23 (Ley CABA 547)**: sustituye artículos de la Ordenanza 43.478. El texto
   transcrito queda anidado en la sustitución y no como artículo raíz de la
   modificatoria.
