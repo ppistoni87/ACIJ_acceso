@@ -188,13 +188,35 @@ no el 27: el cómputo excluye el fin de semana, el día no laborable con fines
 turísticos del 23 y el feriado del 24. Un plazo que arranca el 20 de diciembre
 queda no determinado, porque el calendario llega hasta el 31.
 
+## Trámites
+
+Dos fichas del portal nacional cargadas con 9 pasos citables: el reclamo ante
+Defensa del Consumidor (F45) y la obtención del Certificado Único de
+Discapacidad (M06).
+
+Las dos declaran su costo y **ninguna declara cuánto tarda**. El campo de
+duración existe en la ficha y está vacío. Queda vacío también en la base, con
+una incidencia abierta: completarlo con «inmediato» produce una respuesta sobre
+la que alguien planifica.
+
+Los pasos no se aplanan. «Completá el formulario con: tus datos personales, los
+datos del reclamo, los datos del proveedor» es un paso con tres aclaraciones, no
+cuatro pasos; aplanarlo haría que el paso 3 que se le responde a alguien sea en
+realidad un detalle del paso 2. Las aclaraciones quedan como documentación del
+paso que las contiene.
+
+`publico` no se deduce del texto de «¿a quién está dirigido?»: que diga «a los
+consumidores» no dice si el trámite es ciudadano o institucional. Y que la ficha
+esté publicada no prueba que el trámite esté tomando solicitudes hoy, así que el
+estado operativo queda `NO_INFORMADO`.
+
 ## Lo que falta y por qué
 
 | Falta | Depende de | Afecta |
 | --- | --- | --- |
 | Vincular el anexo D07 con su resolución D04 | Curación de identidad sobre PDF | AT-029 |
 | Fechar los documentos PDF por su contenido | Lectura de fecha en el propio documento | AT-075 |
-| Trámites con sus pasos y documentos exigidos | Adaptador de fichas de trámite (HU-019) | F45, F24, F56 |
+| Fichas de trámite fuera del portal nacional | Un adaptador por portal (F24, F56 en buenosaires.gob.ar) | Trámites de CABA |
 | Directorios en HTML | Adaptador por portal (HU-020) | F05, F07, F10, F44 |
 | Ferias administrativas y judiciales, y feriados provinciales | Otros calendarios además del nacional | Plazos judiciales y provinciales |
 

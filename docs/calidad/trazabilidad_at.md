@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **59**
-- Cubiertos parcialmente: **15**
-- No ejecutados: **6**
-- Pruebas citadas: **155** (ejecutadas)
+- Cubiertos por pruebas que corren: **61**
+- Cubiertos parcialmente: **14**
+- No ejecutados: **5**
+- Pruebas citadas: **163** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -18,7 +18,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-005 | Alias F65 | HU-F65 | CUBIERTO | PASSED | `test_los_alias_apuntan_a_una_sola_fuente_canonica`<br>`test_un_alias_no_esta_necesariamente_caido` |
 | AT-006 | Alias con fragmento | HU-F28 | CUBIERTO_PARCIAL | PASSED | `test_los_alias_apuntan_a_una_sola_fuente_canonica`<br>_Falta: El ancla rota (#44 inexistente en F31) no se reporta todavía: el catálogo conserva el alias pero nadie verifica que el fragmento exista en el documento destino._ |
 | AT-007 | 404 con HTML | HU-004 | CUBIERTO_PARCIAL | PASSED | `test_una_corrida_con_rechazos_no_figura_completa`<br>`test_un_403_pausa_la_fuente_y_no_la_deja_como_sin_datos`<br>_Falta: El caso concreto de un 404 con cuerpo HTML extenso no tiene fixture propia; se ejerce la regla general de que un rechazo no es una corrida completa._ |
-| AT-008 | Login con 200 | HU-004 | CUBIERTO_PARCIAL | PASSED | `test_no_se_guardan_cookies_ni_credenciales`<br>_Falta: Clasificar un 200 con formulario de login como canal/estado de acceso exige el adaptador de trámites, que no está construido._ |
+| AT-008 | Login con 200 | HU-004 | CUBIERTO | PASSED | `test_at008_una_pantalla_de_acceso_no_se_publica_como_tramite`<br>`test_no_se_guardan_cookies_ni_credenciales` |
 | AT-009 | 304 y frescura | HU-023 | CUBIERTO | PASSED | `test_un_304_exige_captura_previa`<br>`test_la_revalidacion_reutiliza_el_objeto_previo`<br>`test_vencer_la_frescura_no_deroga_pero_sí_impide_servir` |
 | AT-010 | ETag cambia sin semántica | HU-027 | CUBIERTO | PASSED | `test_una_nota_editorial_no_cuenta_como_cambio_de_la_norma`<br>`test_la_revalidacion_reutiliza_el_objeto_previo` |
 | AT-011 | CSV de muestra | HU-F01 | CUBIERTO | PASSED | `test_at011_el_catalogo_apunta_al_recurso_de_produccion_de_infoleg`<br>`test_cada_fuente_tiene_configuracion_con_adaptador_y_presupuesto` |
@@ -32,7 +32,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-019 | Prefijo PDF conocido | HU-F40 | CUBIERTO | PASSED | `test_el_prefijo_real_del_boletin_de_caba_se_repara`<br>`test_un_prefijo_de_advertencia_se_recorta_y_queda_registrado`<br>`test_un_prefijo_desmedido_no_se_repara` |
 | AT-020 | PDF página gráfica | HU-007 | CUBIERTO | PASSED | `test_una_pagina_grafica_no_vacia_el_documento`<br>`test_un_documento_sin_texto_dice_que_no_sustenta_nada`<br>`test_el_umbral_de_pagina_distingue_texto_de_folio` |
 | AT-021 | Tabla PDF y caption posterior | HU-F62 | CUBIERTO_PARCIAL | PASSED | `test_una_tabla_sin_periodo_declarado_no_lo_hereda_del_archivo`<br>`test_un_epigrafe_posterior_no_alcanza_para_fechar_dos_tablas`<br>`test_una_tabla_con_un_solo_periodo_declarado_lo_toma`<br>_Falta: La detección de tablas la hace pdfplumber; lo que estas pruebas fijan es la decisión propia —con qué período se asocia cada tabla—, con la página como doble. Sobre el PDF real de F62 el adaptador dejó 10 tablas en revisión._ |
-| AT-022 | Orden de pasos Canva | HU-F54 | NO_EJECUTADO | — | _F54 (instructivo con rótulos Paso 1/Paso 2 fuera del orden de lectura) no está capturada._ |
+| AT-022 | Orden de pasos Canva | HU-F54 | CUBIERTO_PARCIAL | PASSED | `test_at022_un_paso_con_aclaraciones_no_se_convierte_en_cuatro_pasos`<br>`test_at022_las_aclaraciones_no_se_pierden`<br>`test_el_tramite_se_carga_con_sus_pasos_en_orden`<br>_Falta: Se prueba que los pasos no se aplanen ni se ordenen por posición en el documento. El caso concreto de F54 —rótulos «Paso 1/Paso 2» en un PDF cuyo orden de lectura los pone después del texto— necesita además asociar rótulo y contenido dentro del PDF._ |
 | AT-023 | Artículo con sufijo | HU-008 | CUBIERTO | PASSED | `test_conserva_el_sufijo_como_parte_de_la_identidad`<br>`test_el_sufijo_del_articulo_sobrevive_a_la_extraccion` |
 | AT-024 | Artículo citado dentro de sustitución | HU-008 | CUBIERTO | PASSED | `test_un_articulo_sustituido_no_es_una_raiz`<br>`test_normativaba_no_toma_el_articulo_sustituido_como_propio`<br>`test_articulo_citado_no_colisiona_con_el_articulo_raiz` |
 | AT-025 | Encabezado no soportado | HU-008 | CUBIERTO | PASSED | `test_el_texto_no_clasificado_queda_visible`<br>`test_un_numero_que_retrocede_sin_verbo_queda_marcado_como_ambiguo` |
@@ -86,7 +86,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-073 | No proveedor Web Push | HU-028 | CUBIERTO | PASSED | `test_sin_consumidor_configurado_no_se_declara_ninguna_entrega`<br>`test_un_evento_que_agoto_los_intentos_pasa_a_la_cola_de_fallos` |
 | AT-074 | Restauración | HU-037 | CUBIERTO_PARCIAL | PASSED | `test_una_restauracion_completa_se_declara_integra`<br>`test_una_captura_sin_sus_bytes_no_pasa`<br>`test_un_objeto_alterado_se_detecta`<br>`test_un_release_sin_evidencia_no_pasa`<br>`test_un_evento_ya_entregado_no_se_puede_duplicar`<br>`test_perder_un_evento_entregado_no_pasa_desapercibido`<br>`test_perder_los_checkpoints_no_pasa_desapercibido`<br>_Falta: La restauración completa con pg_restore está ejercida por `bn operacion restaurar` y su evidencia está en docs/reportes/restauracion.md; las pruebas automatizadas verifican la comprobación de integridad, no el volcado en sí._ |
 | AT-075 | Fecha de carpeta PDF | HU-F67 | CUBIERTO_PARCIAL | PASSED | `test_la_carpeta_del_archivo_no_fecha_el_documento`<br>`test_la_ruta_de_infoleg_distingue_original_de_actualizado`<br>_Falta: El adaptador deja la fecha pendiente y lo dice; leerla del propio documento o del acto que lo aprueba todavía no está implementado._ |
-| AT-076 | Costo ausente | HU-F45 | CUBIERTO_PARCIAL | PASSED | `test_cuantia_no_informada_no_necesita_inventar_un_monto`<br>`test_at059_un_literal_de_sin_dato_no_se_carga_como_telefono`<br>_Falta: Los trámites con costo y duración (HU-019) no están poblados: lo que se prueba es que un campo vacío no se completa con un cero ni con «gratuito»._ |
+| AT-076 | Costo ausente | HU-F45 | CUBIERTO | PASSED | `test_at076_una_duracion_vacia_no_es_inmediato`<br>`test_at076_un_costo_declarado_si_se_toma`<br>`test_at076_una_ficha_sin_los_dos_campos_los_reporta_a_los_dos`<br>`test_una_duracion_ausente_queda_vacia_y_con_incidencia`<br>`test_cuantia_no_informada_no_necesita_inventar_un_monto` |
 | AT-077 | Formulario público sin envío | HU-F04 | CUBIERTO | PASSED | `test_no_se_guardan_cookies_ni_credenciales`<br>`test_el_planificador_ignora_lo_que_no_se_puede_pedir` |
 | AT-078 | Sustituto de otra granularidad | HU-F09 | CUBIERTO_PARCIAL | PASSED | `test_una_fuente_retirada_explica_por_que`<br>`test_el_reporte_no_confunde_fuentes_con_leyes`<br>_Falta: El caso concreto de F09 (directorio municipal caído con lista provincial disponible) no tiene fixture: se prueba la regla de que una fuente retirada explica su motivo, no la sustitución por otra granularidad._ |
 | AT-079 | Evaluación no administrativa | HU-030 | CUBIERTO | PASSED | `test_la_evaluacion_aclara_que_no_es_una_decision`<br>`test_el_cuerpo_de_una_evaluacion_no_se_persiste`<br>`test_todo_cumplido_da_un_resultado_preliminar_positivo` |

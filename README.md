@@ -35,10 +35,10 @@ El ciclo completo, con qué hacer cuando algo falla, está en
 
 | | |
 | --- | --- |
-| Historias del paquete | 123: **30 transversales cerradas**, 10 en curso, 60 fuentes en curso, 18 bloqueadas con motivo, 4 alias, 1 cerrada |
-| Casos de aceptación | 80: **59 cubiertos**, 15 parciales, 6 no ejecutados con su motivo |
+| Historias del paquete | 123: **31 transversales cerradas**, 9 en curso, 60 fuentes en curso, 18 bloqueadas con motivo, 4 alias, 1 cerrada |
+| Casos de aceptación | 80: **61 cubiertos**, 14 parciales, 5 no ejecutados con su motivo |
 | Evaluación conversacional | **98 consultas, 98 pasan**; las 59 críticas pasan todas |
-| Pruebas | 310, sobre PostgreSQL real |
+| Pruebas | 327, sobre PostgreSQL real |
 | Corpus | 423.718 normas · 6.467 barrios · 233 puntos de atención · 827 canales · 7.274 evidencias |
 
 Ninguno de esos números se declara a mano: `bn calidad backlog`,

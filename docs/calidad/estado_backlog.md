@@ -10,9 +10,9 @@ si una historia declara evidencia en una ruta que ya no existe.
 | --- | --- | --- |
 | NO_INICIADA | 0 | 0 |
 | BLOQUEADA | 0 | 18 |
-| EN_CURSO | 10 | 60 |
+| EN_CURSO | 9 | 60 |
 | ALIAS_REGISTRADO | 0 | 4 |
-| CERRADA | 30 | 1 |
+| CERRADA | 31 | 1 |
 
 ## Historias transversales
 
@@ -36,7 +36,7 @@ si una historia declara evidencia en una ruta que ya no existe.
 | HU-016 | Representar y calcular plazos distintos | datos_sql | P0 | CERRADA | `src/backend_normativo/plazos/computo.py`<br>`src/backend_normativo/plazos/calendarios.py`<br>`tests/unit/test_computo_plazos.py`<br>`tests/integracion/test_calendarios.py`<br>`tests/integracion/test_esquema_hechos.py`<br>`bn plazos calendario 2026`<br>`bn plazos calcular` |
 | HU-017 | Separar suspensión, cese y revocación | analisis_funcional | P0 | EN_CURSO | `src/backend_normativo/curacion/campos.py`<br>`src/backend_normativo/reglas/beneficio.py`<br>`tests/unit/test_reglas.py`<br>_Falta: La distinción entre suspensión, cese y revocación está en el vocabulario y en la evaluación, pero ninguna versión del corpus tiene criterios_revocacion sustantivos con los que ejercerla (AT-049)._ |
 | HU-018 | Modelar cuantías y fórmulas reproducibles | datos_sql | P0 | CERRADA | `src/backend_normativo/db/models/hechos.py`<br>`src/backend_normativo/reglas/evaluacion.py`<br>`tests/integracion/test_esquema_hechos.py`<br>`tests/unit/test_reglas.py` |
-| HU-019 | Cargar trámites y documentos exigidos | ingesta | P0 | EN_CURSO | `src/backend_normativo/ingesta/importadores/directorios.py`<br>`tests/integracion/test_importador_directorios.py`<br>`bn ingesta importar-directorio`<br>_Falta: Los canales de atención están poblados desde los directorios abiertos (766 canales de 233 puntos). Los trámites con sus pasos y documentos exigidos —tablas `tramites`, `tramite_pasos`— no tienen importador: sus fuentes (F45, F24, F56) son fichas HTML que necesitan un adaptador propio._ |
+| HU-019 | Cargar trámites y documentos exigidos | ingesta | P0 | CERRADA | `src/backend_normativo/ingesta/adaptadores/tramite_argentina.py`<br>`src/backend_normativo/curacion/tramites.py`<br>`tests/unit/test_adaptador_tramite.py`<br>`tests/integracion/test_tramites.py`<br>`bn ingesta extraer`<br>`bn curacion tramites` |
 | HU-020 | Cargar directorios sin mezclar entidades | ingesta | P0 | CERRADA | `src/backend_normativo/ingesta/importadores/directorios.py`<br>`tests/integracion/test_importador_directorios.py`<br>`bn ingesta capturar F20 F60`<br>`bn ingesta importar-directorio` |
 | HU-021 | Cargar RENABAP como padrón versionado | ingesta | P0 | CERRADA | `src/backend_normativo/ingesta/importadores/renabap.py`<br>`src/backend_normativo/api/routers/operativo.py`<br>`tests/integracion/test_importador_renabap.py`<br>`tests/aceptacion/test_casos_aceptacion.py`<br>`bn ingesta capturar F39`<br>`bn ingesta importar-renabap` |
 | HU-022 | Validar evidencia y procedencia por campo | calidad_qa | P0 | CERRADA | `src/backend_normativo/db/models/calidad.py`<br>`src/backend_normativo/curacion/campos.py`<br>`tests/integracion/test_campos_y_cobertura.py`<br>`tests/integracion/test_esquema_temporalidad.py` |
@@ -109,7 +109,7 @@ Los números salen de la base, no de una declaración.
 | HU-F42 | F42 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
 | HU-F43 | F43 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
 | HU-F44 | F44 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
-| HU-F45 | F45 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F45 | F45 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
 | HU-F46 | F46 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
 | HU-F47 | F47 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
 | HU-F48 | F48 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
@@ -147,7 +147,7 @@ Los números salen de la base, no de una declaración.
 | HU-M03 | M03 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
 | HU-M04 | M04 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
 | HU-M05 | M05 | BLOQUEADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | https://www.anses.gob.ar/: HTTP 403. La fuente queda pausada; no se rotan identidades ni se evaden controles de acceso. Responsable: monitoreo. |
-| HU-M06 | M06 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-M06 | M06 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
 
 ## Cómo leer los estados
 

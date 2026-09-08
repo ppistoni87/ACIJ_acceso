@@ -736,6 +736,31 @@ def calidad_consultas(
         typer.echo(texto)
 
 
+@curacion.command("tramites")
+def curacion_tramites(
+    fuente: str | None = typer.Option(None, help="Limitar a una fuente."),
+) -> None:
+    """Arma trámites y pasos a partir de las fichas ya extraídas.
+
+    Lo que la ficha no dice no se completa: una duración vacía no es
+    «inmediato» y un costo vacío no es «gratuito».
+    """
+    from backend_normativo.curacion.tramites import CargadorTramites
+
+    with engine_migrador().begin() as conexion:
+        resultado = CargadorTramites(conexion).cargar(fuente)
+    typer.echo(
+        f"Fichas leídas: {resultado.fichas_leidas}\n"
+        f"Trámites nuevos: {resultado.tramites_creados} · "
+        f"ya conocidos: {resultado.tramites_conocidos}\n"
+        f"Pasos: {resultado.pasos_creados}\n"
+        f"Sin costo informado: {resultado.sin_costo} · "
+        f"sin duración: {resultado.sin_duracion} · sin pasos: {resultado.sin_pasos}"
+    )
+    for aviso in resultado.avisos:
+        typer.echo(f"  aviso: {aviso}")
+
+
 @curacion.command("vigencia")
 def curacion_vigencia(
     fuente: str | None = typer.Option(None, help="Limitar a una fuente."),

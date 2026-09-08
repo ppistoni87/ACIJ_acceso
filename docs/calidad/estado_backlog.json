@@ -199,15 +199,17 @@
       ]
     },
     "HU-019": {
-      "estado": "EN_CURSO",
+      "estado": "CERRADA",
       "evidencia": [
-        "src/backend_normativo/ingesta/importadores/directorios.py",
-        "tests/integracion/test_importador_directorios.py"
+        "src/backend_normativo/ingesta/adaptadores/tramite_argentina.py",
+        "src/backend_normativo/curacion/tramites.py",
+        "tests/unit/test_adaptador_tramite.py",
+        "tests/integracion/test_tramites.py"
       ],
       "comandos": [
-        "bn ingesta importar-directorio"
-      ],
-      "falta": "Los canales de atención están poblados desde los directorios abiertos (766 canales de 233 puntos). Los trámites con sus pasos y documentos exigidos —tablas `tramites`, `tramite_pasos`— no tienen importador: sus fuentes (F45, F24, F56) son fichas HTML que necesitan un adaptador propio."
+        "bn ingesta extraer",
+        "bn curacion tramites"
+      ]
     },
     "HU-020": {
       "estado": "CERRADA",

@@ -49,9 +49,9 @@
   },
   "AT-008": {
    "pruebas": [
+    "tests/unit/test_adaptador_tramite.py::test_at008_una_pantalla_de_acceso_no_se_publica_como_tramite",
     "tests/integracion/test_captura.py::test_no_se_guardan_cookies_ni_credenciales"
-   ],
-   "falta": "Clasificar un 200 con formulario de login como canal/estado de acceso exige el adaptador de trámites, que no está construido."
+   ]
   },
   "AT-009": {
    "pruebas": [
@@ -127,7 +127,12 @@
    "falta": "La detección de tablas la hace pdfplumber; lo que estas pruebas fijan es la decisión propia —con qué período se asocia cada tabla—, con la página como doble. Sobre el PDF real de F62 el adaptador dejó 10 tablas en revisión."
   },
   "AT-022": {
-   "motivo": "F54 (instructivo con rótulos Paso 1/Paso 2 fuera del orden de lectura) no está capturada."
+   "pruebas": [
+    "tests/unit/test_adaptador_tramite.py::test_at022_un_paso_con_aclaraciones_no_se_convierte_en_cuatro_pasos",
+    "tests/unit/test_adaptador_tramite.py::test_at022_las_aclaraciones_no_se_pierden",
+    "tests/integracion/test_tramites.py::test_el_tramite_se_carga_con_sus_pasos_en_orden"
+   ],
+   "falta": "Se prueba que los pasos no se aplanen ni se ordenen por posición en el documento. El caso concreto de F54 —rótulos «Paso 1/Paso 2» en un PDF cuyo orden de lectura los pone después del texto— necesita además asociar rótulo y contenido dentro del PDF."
   },
   "AT-023": {
    "pruebas": [
@@ -471,10 +476,12 @@
   },
   "AT-076": {
    "pruebas": [
-    "tests/integracion/test_esquema_hechos.py::test_cuantia_no_informada_no_necesita_inventar_un_monto",
-    "tests/integracion/test_importador_directorios.py::test_at059_un_literal_de_sin_dato_no_se_carga_como_telefono"
-   ],
-   "falta": "Los trámites con costo y duración (HU-019) no están poblados: lo que se prueba es que un campo vacío no se completa con un cero ni con «gratuito»."
+    "tests/unit/test_adaptador_tramite.py::test_at076_una_duracion_vacia_no_es_inmediato",
+    "tests/unit/test_adaptador_tramite.py::test_at076_un_costo_declarado_si_se_toma",
+    "tests/unit/test_adaptador_tramite.py::test_at076_una_ficha_sin_los_dos_campos_los_reporta_a_los_dos",
+    "tests/integracion/test_tramites.py::test_una_duracion_ausente_queda_vacia_y_con_incidencia",
+    "tests/integracion/test_esquema_hechos.py::test_cuantia_no_informada_no_necesita_inventar_un_monto"
+   ]
   },
   "AT-077": {
    "pruebas": [

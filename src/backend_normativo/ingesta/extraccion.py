@@ -30,6 +30,9 @@ from backend_normativo.ingesta.adaptadores.infoleg_legacy import AdaptadorInfole
 from backend_normativo.ingesta.adaptadores.normativa_ba import AdaptadorNormativaBA
 from backend_normativo.ingesta.adaptadores.normativa_nacional import AdaptadorNormativaNacional
 from backend_normativo.ingesta.adaptadores.pdf import AdaptadorPdf
+from backend_normativo.ingesta.adaptadores.tramite_argentina import (
+    AdaptadorTramiteArgentina,
+)
 from backend_normativo.ingesta.almacen import AlmacenObjetos
 
 VERSION_EXTRACTOR = "extraccion@3"
@@ -57,6 +60,7 @@ def adaptadores_por_defecto() -> list[Adaptador]:
         AdaptadorNormativaNacional(),
         AdaptadorInfolegLegacy(),
         AdaptadorNormativaBA(),
+        AdaptadorTramiteArgentina(),
         # Último: los anteriores reconocen su portal por la URL, y el de PDF
         # acepta por contenido. Si fuera primero, se quedaría con cualquier
         # captura que traiga un PDF incrustado en una página.
