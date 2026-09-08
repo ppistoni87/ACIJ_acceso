@@ -167,12 +167,18 @@
       ]
     },
     "HU-016": {
-      "estado": "EN_CURSO",
+      "estado": "CERRADA",
       "evidencia": [
-        "src/backend_normativo/db/models/hechos.py",
+        "src/backend_normativo/plazos/computo.py",
+        "src/backend_normativo/plazos/calendarios.py",
+        "tests/unit/test_computo_plazos.py",
+        "tests/integracion/test_calendarios.py",
         "tests/integracion/test_esquema_hechos.py"
       ],
-      "falta": "El esquema modela plazos, calendarios y excepciones, y exige el calendario antes de producir una fecha hábil. La calculadora de días hábiles y los calendarios jurisdiccionales no están: AT-051 queda sin ejecutar."
+      "comandos": [
+        "bn plazos calendario 2026",
+        "bn plazos calcular"
+      ]
     },
     "HU-017": {
       "estado": "EN_CURSO",

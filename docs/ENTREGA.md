@@ -91,7 +91,7 @@ El reporte dice qué parte del ensayo es real y cuál es controlada.
 pytest -q
 ```
 
-289 pruebas sobre PostgreSQL real, porque lo que se verifica son restricciones,
+310 pruebas sobre PostgreSQL real, porque lo que se verifica son restricciones,
 disparadores y funciones de la base, y un doble no las ejecuta.
 
 | Dimensión | Dónde |
@@ -109,7 +109,7 @@ disparadores y funciones de la base, y un doble no las ejecuta.
 bn calidad trazabilidad --ejecutar --salida docs/calidad/trazabilidad_at.md
 ```
 
-58 cubiertos, 15 parciales y 7 no ejecutados, cada uno con la capacidad concreta
+59 cubiertos, 15 parciales y 6 no ejecutados, cada uno con la capacidad concreta
 que falta construir. El comando verifica con pytest que cada nodeid citado
 exista: un mapa que cita una prueba renombrada falla en vez de declarar
 cobertura inexistente.
@@ -141,15 +141,16 @@ aparte que nadie actualiza.
 
 ## Lo que no se construyó
 
-Está enumerado, con su motivo, en `docs/calidad/estado_backlog.md` (11 historias
+Está enumerado, con su motivo, en `docs/calidad/estado_backlog.md` (10 historias
 en curso) y en `docs/calidad/trazabilidad_at.md` (7 casos no ejecutados). En
 resumen:
 
 - **Trámites con pasos y documentos exigidos** (HU-019): sus fuentes son fichas
   HTML que necesitan un adaptador por portal.
 - **Directorios en HTML** (F05, F07, F10, F44): capturados, sin extraer.
-- **Cómputo de días hábiles** (HU-016): el esquema exige el calendario y lo
-  modela; falta la calculadora y los calendarios jurisdiccionales.
+- **Ferias administrativas y judiciales, y feriados provinciales**: el cómputo
+  de días hábiles funciona contra el calendario nacional; los otros calendarios
+  que un plazo judicial o provincial necesita no están cargados.
 - **Medición de rendimiento bajo carga** (HU-037): el respaldo y la restauración
   verificada están y se corrieron sobre la base real.
 

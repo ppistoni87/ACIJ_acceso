@@ -64,6 +64,24 @@ El importador trabaja sobre bytes ya capturados, nunca sobre la red: lee la
 captura del almacén por su SHA-256. Correrlo dos veces no crea nada la segunda
 vez.
 
+## 4bis. Cargar el calendario de feriados
+
+```bash
+bn plazos calendario 2026
+bn plazos calcular 2026-03-20 5 --tipo-dia HABIL_ADMINISTRATIVO
+```
+
+Sin calendario, un plazo en días hábiles no se computa: saltear solo sábados y
+domingos cuenta mal cualquier mes con un feriado. Cada feriado entra con la
+evidencia del fragmento que lo declara, y el cálculo devuelve con qué calendario
+lo hizo y qué días excluyó.
+
+Un plazo que se pase de la cobertura del calendario queda no determinado hasta
+que se cargue el año siguiente: extrapolar feriados es inventarlos.
+
+La fuente del calendario (`C01`) es operativa, no normativa: no integra el
+inventario de 83 fuentes del corpus.
+
 ## 5. Revisar y publicar
 
 ```bash

@@ -35,10 +35,10 @@ El ciclo completo, con qué hacer cuando algo falla, está en
 
 | | |
 | --- | --- |
-| Historias del paquete | 123: **29 transversales cerradas**, 11 en curso, 60 fuentes en curso, 18 bloqueadas con motivo, 4 alias, 1 cerrada |
-| Casos de aceptación | 80: **58 cubiertos**, 15 parciales, 7 no ejecutados con su motivo |
+| Historias del paquete | 123: **30 transversales cerradas**, 10 en curso, 60 fuentes en curso, 18 bloqueadas con motivo, 4 alias, 1 cerrada |
+| Casos de aceptación | 80: **59 cubiertos**, 15 parciales, 6 no ejecutados con su motivo |
 | Evaluación conversacional | **98 consultas, 98 pasan**; las 59 críticas pasan todas |
-| Pruebas | 289, sobre PostgreSQL real |
+| Pruebas | 310, sobre PostgreSQL real |
 | Corpus | 423.718 normas · 6.467 barrios · 233 puntos de atención · 827 canales · 7.274 evidencias |
 
 Ninguno de esos números se declara a mano: `bn calidad backlog`,
@@ -54,6 +54,7 @@ que se movió.
 | `src/backend_normativo/ingesta/` | Captura inmutable, adaptadores (HTML, PDF, datasets) e importadores |
 | `src/backend_normativo/curacion/` | Segmentación, identidad, relaciones, siete campos y vigencia |
 | `src/backend_normativo/reglas/` | AST cerrado y evaluación ternaria |
+| `src/backend_normativo/plazos/` | Calendarios jurisdiccionales y cómputo de días hábiles |
 | `src/backend_normativo/publicacion/` | Gates, release atómico y cuarentena |
 | `src/backend_normativo/api/` | Contrato v1 con abstención explicada |
 | `src/backend_normativo/monitoreo/` | Diferencias por unidad, impacto y outbox |

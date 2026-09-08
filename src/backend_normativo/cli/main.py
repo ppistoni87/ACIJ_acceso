@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 import typer
+from sqlalchemy import text as sql_text
 
 from backend_normativo.catalogo.carga import cargar_catalogo
 from backend_normativo.catalogo.manifiesto import cargar_manifiesto
@@ -31,6 +32,8 @@ app.add_typer(api, name="api")
 app.add_typer(monitoreo, name="monitoreo")
 operacion = typer.Typer(help="Respaldo, restauración y operación.", no_args_is_help=True)
 app.add_typer(operacion, name="operacion")
+plazos = typer.Typer(help="Calendarios y cómputo de plazos.", no_args_is_help=True)
+app.add_typer(plazos, name="plazos")
 
 
 @catalogo.command("validar")
@@ -437,6 +440,93 @@ def operacion_restaurar(
         typer.echo(texto)
     if not verificacion.integra:
         raise typer.Exit(1)
+
+
+@plazos.command("calendario")
+def plazos_calendario(
+    anio: int = typer.Argument(..., help="Año del calendario de feriados a cargar."),
+) -> None:
+    """Captura e importa el calendario de feriados nacionales de un año.
+
+    Cada feriado queda atado al fragmento del archivo oficial que lo declara: un
+    feriado sin evidencia es un día no laborable inventado, y con eso se
+    calculan vencimientos que después alguien pierde.
+    """
+    from backend_normativo.ingesta.capturador import Capturador
+    from backend_normativo.ingesta.cliente import ClienteCaptura
+    from backend_normativo.plazos import calendarios
+
+    with engine_migrador().begin() as conexion:
+        calendarios.registrar_url(conexion, anio)
+
+    with ClienteCaptura() as cliente, engine_migrador().begin() as conexion:
+        resultado = Capturador(conexion, cliente=cliente).capturar_fuente(calendarios.SOURCE_ID)
+    typer.echo(
+        f"Captura: {resultado.estado.value} · descargadas {resultado.descargadas} · "
+        f"rechazadas {resultado.rechazadas}"
+    )
+    for incidencia in resultado.incidencias:
+        typer.echo(f"    incidencia: {incidencia}")
+    if not resultado.capturas:
+        raise typer.Exit(1)
+
+    with engine_migrador().begin() as conexion:
+        sha = conexion.execute(
+            sql_text("SELECT sha256_raw FROM capturas WHERE id = :c"),
+            {"c": resultado.capturas[-1]},
+        ).scalar_one()
+        contenido = calendarios.almacen_por_defecto().leer(sha)
+        try:
+            cargado = calendarios.importar(
+                conexion, contenido, captura_id=resultado.capturas[-1], anio=anio
+            )
+        except calendarios.CalendarioInvalido as exc:
+            typer.echo(str(exc))
+            raise typer.Exit(1) from exc
+
+    typer.echo(
+        f"Calendario: {cargado.nombre}@{cargado.version}\n"
+        f"Cobertura: {cargado.desde} a {cargado.hasta}\n"
+        f"Feriados nuevos: {cargado.feriados_nuevos} · ya cargados: {cargado.feriados_conocidos}"
+    )
+    for aviso in cargado.avisos:
+        typer.echo(f"  aviso: {aviso}")
+
+
+@plazos.command("calcular")
+def plazos_calcular(
+    inicio: str = typer.Argument(..., help="Fecha del evento de inicio (AAAA-MM-DD)."),
+    cantidad: int = typer.Argument(..., help="Cantidad de días o semanas."),
+    unidad: str = typer.Option("dias", help="dias o semanas."),
+    tipo_dia: str = typer.Option("HABIL_ADMINISTRATIVO", help="CORRIDO o HABIL_*."),
+    jurisdiccion: str = typer.Option("AR", help="Jurisdicción del calendario."),
+    inclusivo: bool = typer.Option(False, help="El día del evento cuenta como el primero."),
+) -> None:
+    """Calcula un vencimiento y muestra con qué calendario lo hizo."""
+    import datetime as _dt
+
+    from backend_normativo.plazos import calendarios
+    from backend_normativo.plazos.computo import calcular_vencimiento
+
+    fecha = _dt.date.fromisoformat(inicio)
+    with engine_migrador().connect() as conexion:
+        calendario = calendarios.cargar(conexion, jurisdiccion=jurisdiccion, para=fecha)
+
+    resultado = calcular_vencimiento(
+        inicio=fecha,
+        cantidad=cantidad,
+        unidad=unidad,
+        tipo_dia=tipo_dia,
+        calendario=calendario,
+        inclusivo_desde=inclusivo,
+    )
+    if resultado.determinado:
+        typer.echo(f"Vencimiento: {resultado.vencimiento}")
+    else:
+        typer.echo("Vencimiento: no determinado")
+        if resultado.requiere:
+            typer.echo(f"Falta: {resultado.requiere}")
+    typer.echo(resultado.fundamento)
 
 
 @calidad.command("cobertura")

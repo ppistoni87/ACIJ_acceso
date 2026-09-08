@@ -175,6 +175,19 @@ Las páginas capturadas cuya extracción ninguna familia acepta quedan guardadas
 sin extraer, con el aviso que lo dice. Son portales que necesitan un adaptador
 propio: la captura está, el texto no, y el reporte no simula lo contrario.
 
+## Calendario de plazos
+
+28 feriados nacionales de 2026 cargados desde el archivo oficial que publica
+`datos.gob.ar`, cada uno con la evidencia del fragmento que lo declara. El
+archivo mezcla feriados inamovibles, trasladables, días no laborables y días no
+laborables con fines turísticos: todos entran como no hábiles y conservan su
+clase en el motivo, porque no todos se computan igual en todos los regímenes.
+
+Con eso, un plazo de 5 días hábiles desde el 20 de marzo de 2026 vence el 31 y
+no el 27: el cómputo excluye el fin de semana, el día no laborable con fines
+turísticos del 23 y el feriado del 24. Un plazo que arranca el 20 de diciembre
+queda no determinado, porque el calendario llega hasta el 31.
+
 ## Lo que falta y por qué
 
 | Falta | Depende de | Afecta |
@@ -183,7 +196,7 @@ propio: la captura está, el texto no, y el reporte no simula lo contrario.
 | Fechar los documentos PDF por su contenido | Lectura de fecha en el propio documento | AT-075 |
 | Trámites con sus pasos y documentos exigidos | Adaptador de fichas de trámite (HU-019) | F45, F24, F56 |
 | Directorios en HTML | Adaptador por portal (HU-020) | F05, F07, F10, F44 |
-| Calendarios jurisdiccionales | Calculadora de días hábiles (HU-016) | AT-051 |
+| Ferias administrativas y judiciales, y feriados provinciales | Otros calendarios además del nacional | Plazos judiciales y provinciales |
 
 Ninguna de estas es una fuente inaccesible: son capacidades que este alcance no
 construyó. Las fuentes que sí están bloqueadas —por antibot, por `robots.txt` o

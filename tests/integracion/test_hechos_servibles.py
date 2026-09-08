@@ -31,7 +31,16 @@ def _alta_de_fuente(conexion: Connection, source_id: str) -> str:
     return source_id
 
 
-AHORA = dt.datetime(2026, 9, 8, 12, 0, tzinfo=dt.UTC)
+def _ahora(conexion: Connection) -> dt.datetime:
+    """El «ahora» de la consulta, tomado del reloj de la base.
+
+    Estuvo escrito como una constante con la fecha de hoy y a las 12:00 del día
+    en que se escribió empezó a fallar: las filas nacen con `known_desde =
+    now()`, así que cualquier hora fija de hoy queda antes de que existan y las
+    deja fuera del intervalo de conocimiento. El eje de conocimiento se consulta
+    con un instante real, no con uno inventado.
+    """
+    return conexion.execute(text("SELECT now()")).scalar_one()
 
 
 def _release_publicado(conexion: Connection) -> uuid.UUID:
@@ -78,7 +87,7 @@ def _motivos(conexion: Connection, version: uuid.UUID, fecha: str, capacidad: st
         fila[0]
         for fila in conexion.execute(
             text("SELECT bn_motivos_no_servible(:v, :f, :k, :c)"),
-            {"v": version, "f": fecha, "k": AHORA, "c": capacidad},
+            {"v": version, "f": fecha, "k": _ahora(conexion), "c": capacidad},
         )
     ]
 
@@ -91,7 +100,7 @@ def test_una_version_publicada_y_vigente_es_servible(conexion: Connection) -> No
     servibles = (
         conexion.execute(
             text("SELECT registro_version_id FROM v_hechos_servibles(:f, :k, 'IDENTIFICACION')"),
-            {"f": dt.date(2026, 6, 15), "k": AHORA},
+            {"f": dt.date(2026, 6, 15), "k": _ahora(conexion)},
         )
         .scalars()
         .all()

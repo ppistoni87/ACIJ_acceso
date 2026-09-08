@@ -306,11 +306,22 @@
    ]
   },
   "AT-051": {
-   "motivo": "El cómputo de días hábiles con calendario poblado no está implementado: el esquema exige el calendario y la migración lo modela, pero no hay calculadora ni calendario jurisdiccional cargado."
+   "pruebas": [
+    "tests/unit/test_computo_plazos.py::test_at051_un_feriado_dentro_del_plazo_se_excluye_y_queda_registrado",
+    "tests/unit/test_computo_plazos.py::test_at051_el_mismo_plazo_sin_el_feriado_vence_antes",
+    "tests/unit/test_computo_plazos.py::test_at051_el_fundamento_dice_con_que_calendario_se_calculo",
+    "tests/unit/test_computo_plazos.py::test_un_dia_habil_excepcional_cuenta_aunque_caiga_sabado",
+    "tests/integracion/test_calendarios.py::test_el_calendario_cargado_computa_el_vencimiento",
+    "tests/integracion/test_calendarios.py::test_cada_feriado_queda_atado_al_fragmento_que_lo_declara"
+   ]
   },
   "AT-052": {
    "pruebas": [
-    "tests/integracion/test_esquema_hechos.py::test_dias_habiles_sin_calendario_no_producen_una_fecha"
+    "tests/integracion/test_esquema_hechos.py::test_dias_habiles_sin_calendario_no_producen_una_fecha",
+    "tests/unit/test_computo_plazos.py::test_at052_pasarse_de_la_cobertura_no_produce_una_fecha",
+    "tests/unit/test_computo_plazos.py::test_un_inicio_fuera_de_la_cobertura_tampoco",
+    "tests/unit/test_computo_plazos.py::test_sin_calendario_un_plazo_habil_no_se_computa",
+    "tests/integracion/test_calendarios.py::test_sin_calendario_para_esa_fecha_no_se_devuelve_otro"
    ]
   },
   "AT-053": {

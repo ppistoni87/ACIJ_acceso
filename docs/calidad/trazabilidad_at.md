@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **58**
+- Cubiertos por pruebas que corren: **59**
 - Cubiertos parcialmente: **15**
-- No ejecutados: **7**
-- Pruebas citadas: **145** (ejecutadas)
+- No ejecutados: **6**
+- Pruebas citadas: **155** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -61,8 +61,8 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-048 | Edad oficial en conflicto | HU-F66 | CUBIERTO | PASSED | `test_candidatos_en_conflicto_pueden_coexistir`<br>`test_un_conflicto_abierto_bloquea_la_publicacion_de_ese_hecho` |
 | AT-049 | Suspensión no es revocación | HU-017 | CUBIERTO_PARCIAL | PASSED | `test_una_causal_de_revocacion_no_decide_el_acceso`<br>_Falta: Distinguir suspensión de revocación y detallar el remedio exige el campo criterios_revocacion poblado con texto real: hoy ninguna versión del corpus lo tiene sustantivo._ |
 | AT-050 | Cierre conocido sin cambio web | HU-016 | CUBIERTO | PASSED | `test_una_fecha_fuera_del_periodo_no_se_sirve_como_actual`<br>`test_una_fecha_anterior_a_la_vigencia_no_se_sirve_como_actual` |
-| AT-051 | Días hábiles con feriado | HU-016 | NO_EJECUTADO | — | _El cómputo de días hábiles con calendario poblado no está implementado: el esquema exige el calendario y la migración lo modela, pero no hay calculadora ni calendario jurisdiccional cargado._ |
-| AT-052 | Calendario sin cobertura | HU-016 | CUBIERTO | PASSED | `test_dias_habiles_sin_calendario_no_producen_una_fecha` |
+| AT-051 | Días hábiles con feriado | HU-016 | CUBIERTO | PASSED | `test_at051_un_feriado_dentro_del_plazo_se_excluye_y_queda_registrado`<br>`test_at051_el_mismo_plazo_sin_el_feriado_vence_antes`<br>`test_at051_el_fundamento_dice_con_que_calendario_se_calculo`<br>`test_un_dia_habil_excepcional_cuenta_aunque_caiga_sabado`<br>`test_el_calendario_cargado_computa_el_vencimiento`<br>`test_cada_feriado_queda_atado_al_fragmento_que_lo_declara` |
+| AT-052 | Calendario sin cobertura | HU-016 | CUBIERTO | PASSED | `test_dias_habiles_sin_calendario_no_producen_una_fecha`<br>`test_at052_pasarse_de_la_cobertura_no_produce_una_fecha`<br>`test_un_inicio_fuera_de_la_cobertura_tampoco`<br>`test_sin_calendario_un_plazo_habil_no_se_computa`<br>`test_sin_calendario_para_esa_fecha_no_se_devuelve_otro` |
 | AT-053 | Rango sin año | HU-016 | NO_EJECUTADO | — | _No hay normalizador de rangos de fecha sin año: los plazos se cargan con las fechas que la fuente declara y un rango «del 20 de diciembre al 10 de enero» sin ciclo identificable no tiene todavía dónde quedar como pendiente de contexto._ |
 | AT-054 | Último tramo salarial | HU-F12 | CUBIERTO | PASSED | `test_un_valor_de_vigencia_desconocida_no_se_publica`<br>`test_abierto_fin_no_admite_fecha_de_cierre` |
 | AT-055 | SMVM versus comercio | HU-018 | CUBIERTO | PASSED | `test_sin_valor_vigente_del_parametro_la_condicion_es_desconocida`<br>`test_el_parametro_se_resuelve_a_la_fecha_consultada` |

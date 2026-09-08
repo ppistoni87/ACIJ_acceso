@@ -10,9 +10,9 @@ si una historia declara evidencia en una ruta que ya no existe.
 | --- | --- | --- |
 | NO_INICIADA | 0 | 0 |
 | BLOQUEADA | 0 | 18 |
-| EN_CURSO | 11 | 60 |
+| EN_CURSO | 10 | 60 |
 | ALIAS_REGISTRADO | 0 | 4 |
-| CERRADA | 29 | 1 |
+| CERRADA | 30 | 1 |
 
 ## Historias transversales
 
@@ -33,7 +33,7 @@ si una historia declara evidencia en una ruta que ya no existe.
 | HU-013 | Modelar población y roles del beneficio | analisis_funcional | P0 | EN_CURSO | `src/backend_normativo/db/models/beneficios.py`<br>`src/backend_normativo/reglas/ast.py`<br>_Falta: El AST distingue variables por rol (edad del causante y del representante son campos distintos), pero no hay una regla real del corpus que lo use: AT-041 sigue sin caso._ |
 | HU-014 | Representar criterios lógicos y parámetros | datos_sql | P0 | CERRADA | `src/backend_normativo/reglas/ast.py`<br>`src/backend_normativo/reglas/evaluacion.py`<br>`src/backend_normativo/reglas/beneficio.py`<br>`tests/unit/test_reglas.py` |
 | HU-015 | Preservar excepciones y salvaguardas de no exclusión | analisis_funcional | P0 | CERRADA | `src/backend_normativo/reglas/beneficio.py`<br>`tests/unit/test_reglas.py` |
-| HU-016 | Representar y calcular plazos distintos | datos_sql | P0 | EN_CURSO | `src/backend_normativo/db/models/hechos.py`<br>`tests/integracion/test_esquema_hechos.py`<br>_Falta: El esquema modela plazos, calendarios y excepciones, y exige el calendario antes de producir una fecha hábil. La calculadora de días hábiles y los calendarios jurisdiccionales no están: AT-051 queda sin ejecutar._ |
+| HU-016 | Representar y calcular plazos distintos | datos_sql | P0 | CERRADA | `src/backend_normativo/plazos/computo.py`<br>`src/backend_normativo/plazos/calendarios.py`<br>`tests/unit/test_computo_plazos.py`<br>`tests/integracion/test_calendarios.py`<br>`tests/integracion/test_esquema_hechos.py`<br>`bn plazos calendario 2026`<br>`bn plazos calcular` |
 | HU-017 | Separar suspensión, cese y revocación | analisis_funcional | P0 | EN_CURSO | `src/backend_normativo/curacion/campos.py`<br>`src/backend_normativo/reglas/beneficio.py`<br>`tests/unit/test_reglas.py`<br>_Falta: La distinción entre suspensión, cese y revocación está en el vocabulario y en la evaluación, pero ninguna versión del corpus tiene criterios_revocacion sustantivos con los que ejercerla (AT-049)._ |
 | HU-018 | Modelar cuantías y fórmulas reproducibles | datos_sql | P0 | CERRADA | `src/backend_normativo/db/models/hechos.py`<br>`src/backend_normativo/reglas/evaluacion.py`<br>`tests/integracion/test_esquema_hechos.py`<br>`tests/unit/test_reglas.py` |
 | HU-019 | Cargar trámites y documentos exigidos | ingesta | P0 | EN_CURSO | `src/backend_normativo/ingesta/importadores/directorios.py`<br>`tests/integracion/test_importador_directorios.py`<br>`bn ingesta importar-directorio`<br>_Falta: Los canales de atención están poblados desde los directorios abiertos (766 canales de 233 puntos). Los trámites con sus pasos y documentos exigidos —tablas `tramites`, `tramite_pasos`— no tienen importador: sus fuentes (F45, F24, F56) son fichas HTML que necesitan un adaptador propio._ |
