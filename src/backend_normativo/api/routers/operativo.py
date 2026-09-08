@@ -1,4 +1,5 @@
-"""`GET /v1/beneficios`, `/v1/valores`, `/v1/plazos` y `/v1/puntos-atencion`.
+"""`GET /v1/beneficios`, `/v1/valores`, `/v1/plazos`, `/v1/puntos-atencion` y
+`/v1/barrios-renabap`.
 
 Todo lo operativo se consulta con SQL y tipos. Un monto, una fecha, una
 dirección y un horario salen de la misma entidad o no se responden.
@@ -19,6 +20,7 @@ from backend_normativo.api.contratos import (
     CodigoError,
     DataStatus,
     ErrorRespuesta,
+    Evidencia,
     Pagina,
     Respuesta,
 )
@@ -430,4 +432,111 @@ def puntos_atencion(
                 )
             ]
         ),
+    )
+
+
+class BarrioRenabapResumen(BaseModel):
+    barrio_id: uuid.UUID
+    id_renabap: str
+    nombre: str
+    provincia: str | None
+    departamento: str | None
+    localidad: str | None
+    familias: int | None
+    padron_version: str
+    fecha_corte: dt.date | None
+    evidencia_id: uuid.UUID
+
+
+@router.get("/barrios-renabap", response_model=Respuesta[list[BarrioRenabapResumen]])
+def barrios_renabap(
+    contexto: Contexto = Depends(),
+    nombre: str | None = Query(None, description="Nombre del barrio, parcial."),
+    provincia: str | None = Query(None),
+    padron: str | None = Query(None, description="Versión del padrón; por defecto, la última."),
+) -> Respuesta[list[BarrioRenabapResumen]]:
+    """Barrios del padrón RENABAP en una versión concreta.
+
+    **No figurar en el padrón no es una exclusión jurídica.** Es un dato de ese
+    corte. La respuesta siempre dice contra qué versión del padrón se buscó y
+    por dónde se consulta oficialmente, para que una ausencia no se lea como
+    una conclusión sobre derechos.
+    """
+    version = (
+        padron
+        or contexto.conexion.execute(
+            text("SELECT max(padron_version) FROM barrios_renabap")
+        ).scalar_one_or_none()
+    )
+
+    filas = (
+        contexto.conexion.execute(
+            text(
+                "SELECT b.barrio_id, b.id_renabap, b.nombre, b.provincia, b.departamento, "
+                "       b.localidad, b.familias, b.padron_version, b.fecha_corte, b.evidencia_id "
+                "  FROM barrios_renabap b "
+                " WHERE b.padron_version = :v "
+                "   AND (CAST(:n AS text) IS NULL OR b.nombre ILIKE :n) "
+                "   AND (CAST(:p AS text) IS NULL OR b.provincia ILIKE :p) "
+                " ORDER BY b.provincia, b.nombre LIMIT 100"
+            ),
+            {
+                "v": version,
+                "n": f"%{nombre}%" if nombre else None,
+                "p": f"%{provincia}%" if provincia else None,
+            },
+        )
+        .mappings()
+        .all()
+    )
+
+    corte = filas[0]["fecha_corte"] if filas else None
+    advertencias = [
+        Advertencia(
+            codigo=CodigoError.INSUFFICIENT_EVIDENCE,
+            detalle=(
+                f"Consultado contra el padrón {version} "
+                f"(fecha de corte declarada por la fuente: {corte or 'ninguna'}). "
+                "El padrón es una foto: que un barrio no figure significa que no estaba en "
+                "este corte, no que carezca de protección. La inclusión se consulta y se "
+                "gestiona ante el RENABAP (Secretaría de Integración Socio Urbana)."
+            ),
+        )
+    ]
+    if version is None:
+        advertencias.append(
+            Advertencia(
+                codigo=CodigoError.INSUFFICIENT_EVIDENCE,
+                detalle="No hay ninguna versión del padrón importada; no se puede responder.",
+            )
+        )
+    elif not filas:
+        advertencias.append(
+            Advertencia(
+                codigo=CodigoError.INSUFFICIENT_EVIDENCE,
+                detalle=(
+                    f"Ningún barrio coincide con lo buscado en el padrón {version}. "
+                    "Una ausencia acá no habilita ninguna conclusión sobre derechos."
+                ),
+            )
+        )
+
+    return Respuesta(
+        release_id=contexto.release_id,
+        as_of=contexto.as_of,
+        known_at=contexto.known_at,
+        data_status=DataStatus.PUBLICADO if filas else DataStatus.SIN_RESULTADOS,
+        data=[BarrioRenabapResumen(**dict(f)) for f in filas],
+        evidence=[
+            Evidencia(
+                evidencia_id=fila["evidencia_id"],
+                fragmento=(
+                    f"{fila['nombre']} ({fila['id_renabap']}), {fila['provincia']}, "
+                    f"padrón {fila['padron_version']}"
+                ),
+                source_id="F39",
+            )
+            for fila in filas
+        ],
+        warnings=advertencias,
     )

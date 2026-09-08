@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **54**
+- Cubiertos por pruebas que corren: **55**
 - Cubiertos parcialmente: **14**
-- No ejecutados: **12**
-- Pruebas citadas: **126** (ejecutadas)
+- No ejecutados: **11**
+- Pruebas citadas: **130** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -74,7 +74,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-061 | Horarios por canal | HU-F03 | NO_EJECUTADO | — | _Los canales por tipo con horarios propios (HU-019) no están poblados._ |
 | AT-062 | Atribución de directorio | HU-F44 | NO_EJECUTADO | — | _El directorio de la DPN (F44) no está capturado: la atribución de un operador municipal no tiene datos donde ejercerse._ |
 | AT-063 | Coordenadas locales | HU-020 | NO_EJECUTADO | — | _El dataset de sedes con coordenadas (HU-020) no está cargado: no hay geometría cuyo CRS discutir._ |
-| AT-064 | RENABAP no encontrado | HU-021 | NO_EJECUTADO | — | _El padrón RENABAP (HU-021) no está importado: la tabla existe pero no tiene snapshot donde buscar un barrio._ |
+| AT-064 | RENABAP no encontrado | HU-021 | CUBIERTO | PASSED | `test_at064_un_barrio_ausente_del_padron_no_pierde_derechos`<br>`test_un_barrio_que_sale_del_padron_no_se_borra`<br>`test_no_se_inventa_una_fecha_de_corte`<br>`test_cada_barrio_nace_con_la_evidencia_de_su_fila` |
 | AT-065 | Tabla estacional vacía | HU-F64 | NO_EJECUTADO | — | _F64 (sedes estacionales) no está capturada._ |
 | AT-066 | Fuente secundaria y cita | HU-022 | CUBIERTO_PARCIAL | PASSED | `test_la_recuperacion_devuelve_citas_localizables`<br>_Falta: No hay fuente secundaria de ONG en el corpus poblado: la atribución secundaria se sostiene por el modelo de evidencia, no por un caso real._ |
 | AT-067 | Contenido con instrucciones maliciosas | HU-033 | CUBIERTO | PASSED | `test_at067_las_instrucciones_dentro_de_un_documento_se_guardan_como_texto` |

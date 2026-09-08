@@ -813,6 +813,130 @@
         }
       }
     },
+    "/v1/barrios-renabap": {
+      "get": {
+        "tags": [
+          "operativo"
+        ],
+        "summary": "Barrios Renabap",
+        "description": "Barrios del padrón RENABAP en una versión concreta.\n\n**No figurar en el padrón no es una exclusión jurídica.** Es un dato de ese\ncorte. La respuesta siempre dice contra qué versión del padrón se buscó y\npor dónde se consulta oficialmente, para que una ausencia no se lea como\nuna conclusión sobre derechos.",
+        "operationId": "barrios_renabap_v1_barrios_renabap_get",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nombre del barrio, parcial.",
+              "title": "Nombre"
+            },
+            "description": "Nombre del barrio, parcial."
+          },
+          {
+            "name": "provincia",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provincia"
+            }
+          },
+          {
+            "name": "padron",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Versión del padrón; por defecto, la última.",
+              "title": "Padron"
+            },
+            "description": "Versión del padrón; por defecto, la última."
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha para la que se consulta. Por omisión, hoy.",
+              "title": "As Of"
+            },
+            "description": "Fecha para la que se consulta. Por omisión, hoy."
+          },
+          {
+            "name": "known_at",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada.",
+              "title": "Known At"
+            },
+            "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Respuesta_list_BarrioRenabapResumen__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/evaluaciones-preliminares": {
       "post": {
         "tags": [
@@ -1253,6 +1377,102 @@
           "detalle"
         ],
         "title": "Advertencia"
+      },
+      "BarrioRenabapResumen": {
+        "properties": {
+          "barrio_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Barrio Id"
+          },
+          "id_renabap": {
+            "type": "string",
+            "title": "Id Renabap"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "provincia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provincia"
+          },
+          "departamento": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Departamento"
+          },
+          "localidad": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Localidad"
+          },
+          "familias": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Familias"
+          },
+          "padron_version": {
+            "type": "string",
+            "title": "Padron Version"
+          },
+          "fecha_corte": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Corte"
+          },
+          "evidencia_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Evidencia Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "barrio_id",
+          "id_renabap",
+          "nombre",
+          "provincia",
+          "departamento",
+          "localidad",
+          "familias",
+          "padron_version",
+          "fecha_corte",
+          "evidencia_id"
+        ],
+        "title": "BarrioRenabapResumen"
       },
       "BeneficioResumen": {
         "properties": {
@@ -2439,6 +2659,76 @@
           "data"
         ],
         "title": "Respuesta[dict]"
+      },
+      "Respuesta_list_BarrioRenabapResumen__": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "release_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At"
+          },
+          "data_status": {
+            "$ref": "#/components/schemas/DataStatus"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/BarrioRenabapResumen"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidencia"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Advertencia"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "known_at",
+          "data_status",
+          "data"
+        ],
+        "title": "Respuesta[list[BarrioRenabapResumen]]"
       },
       "Respuesta_list_PlazoResumen__": {
         "properties": {

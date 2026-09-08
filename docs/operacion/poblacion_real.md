@@ -104,6 +104,33 @@ F54 tiene una página de cierre gráfica: se clasificó como tal y las otras sei
 se usaron igual, sin declarar vacío el documento y sin hacerle OCR a la
 carátula.
 
+## Padrón RENABAP
+
+6.467 barrios populares importados como snapshot versionado, cada uno con la
+evidencia de su fila y su identidad lógica conservada entre versiones del
+padrón.
+
+El listado no viaja en el HTML de la página oficial: la página lo renderiza
+desde una planilla publicada cuyo identificador declara su propio script. Ese
+recurso se registró como candidata de F39 con esa evidencia antes de
+promoverse a URL de la fuente, y se capturó por el camino normal.
+
+Dos cosas que el padrón obligó a decidir:
+
+**No se inventa una fecha de corte.** La planilla no declara ninguna. Se
+registra la fecha de captura como referencia y `fecha_corte` queda vacía:
+ponerla ahí haría creer que el padrón se cerró ese día.
+
+**Un barrio que sale del padrón no se borra.** Cada importación crea una
+versión nueva y cierra el intervalo de conocimiento anterior. La versión vieja
+sigue diciendo que ese día estaba, que es lo único que permite responder qué
+decía el padrón anterior.
+
+`GET /v1/barrios-renabap` responde siempre diciendo contra qué versión del
+padrón se buscó y por dónde se gestiona la inclusión. Que un barrio no figure
+es un dato de ese corte y la respuesta lo dice con esas palabras: no habilita
+ninguna conclusión sobre derechos.
+
 ## Lo que falta y por qué
 
 | Falta | Depende de | Afecta |
@@ -112,7 +139,6 @@ carátula.
 | Fechar los documentos PDF por su contenido | Lectura de fecha en el propio documento | AT-075 |
 | Trámites, pasos y canales | Importador de trámites (HU-019) | F03, F45, F60, F61 y los casos operativos |
 | Directorios y puntos de atención | Importador de directorios (HU-020) | F05, F07, F10, F14, F20, F44 |
-| Padrón RENABAP | Importador de padrón (HU-021) | F39, AT-064 |
 | Calendarios jurisdiccionales | Calculadora de días hábiles (HU-016) | AT-051 |
 
 Ninguna de estas es una fuente inaccesible: son capacidades que este alcance no

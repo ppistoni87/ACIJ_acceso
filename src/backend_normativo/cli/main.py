@@ -153,6 +153,41 @@ def ingesta_importar_infoleg(
         typer.echo(f"  aviso: {aviso}")
 
 
+@ingesta.command("importar-renabap")
+def ingesta_importar_renabap(
+    captura: str = typer.Argument(..., help="Id de la captura de la planilla de F39."),
+) -> None:
+    """Importa el padrón RENABAP como snapshot versionado.
+
+    Cada importación crea una versión nueva del padrón en vez de actualizar
+    filas: preguntar si un barrio figura solo tiene sentido contra un corte
+    concreto.
+    """
+    import uuid as _uuid
+
+    from backend_normativo.ingesta.importadores.renabap import (
+        FormaInesperada,
+        ImportadorRenabap,
+    )
+
+    with engine_migrador().begin() as conexion:
+        try:
+            resultado = ImportadorRenabap(conexion).importar_desde_captura(_uuid.UUID(captura))
+        except FormaInesperada as exc:
+            typer.echo(str(exc))
+            raise typer.Exit(1) from exc
+    typer.echo(
+        f"Padrón: {resultado.padron_version}\n"
+        f"Filas leídas: {resultado.filas_leidas}\n"
+        f"Barrios nuevos: {resultado.barrios_nuevos} · "
+        f"ya en este padrón: {resultado.barrios_conocidos}\n"
+        f"Sin identificador RENABAP: {resultado.sin_id}\n"
+        f"Sin cantidad de familias: {resultado.sin_familias}"
+    )
+    for aviso in resultado.avisos:
+        typer.echo(f"  aviso: {aviso}")
+
+
 @ingesta.command("extraer")
 def ingesta_extraer(
     fuente: str | None = typer.Option(None, help="Limitar a una fuente."),

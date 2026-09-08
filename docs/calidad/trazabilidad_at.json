@@ -368,7 +368,12 @@
    "motivo": "El dataset de sedes con coordenadas (HU-020) no está cargado: no hay geometría cuyo CRS discutir."
   },
   "AT-064": {
-   "motivo": "El padrón RENABAP (HU-021) no está importado: la tabla existe pero no tiene snapshot donde buscar un barrio."
+   "pruebas": [
+    "tests/aceptacion/test_casos_aceptacion.py::test_at064_un_barrio_ausente_del_padron_no_pierde_derechos",
+    "tests/integracion/test_importador_renabap.py::test_un_barrio_que_sale_del_padron_no_se_borra",
+    "tests/integracion/test_importador_renabap.py::test_no_se_inventa_una_fecha_de_corte",
+    "tests/integracion/test_importador_renabap.py::test_cada_barrio_nace_con_la_evidencia_de_su_fila"
+   ]
   },
   "AT-065": {
    "motivo": "F64 (sedes estacionales) no está capturada."

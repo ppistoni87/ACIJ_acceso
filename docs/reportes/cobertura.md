@@ -8,11 +8,11 @@ Promediarlas produce un número que suena bien y no significa nada.
 | Concepto | Cantidad |
 |---|---:|
 | Fuentes en el catálogo | 83 |
-| Con al menos una captura | 17 |
-| Con documentos extraídos | 16 |
+| Con al menos una captura | 18 |
+| Con documentos extraídos | 17 |
 | Sin URL conocida | 15 |
 | Con acceso bloqueado o limitado | 0 |
-| Pendientes de capturar | 66 |
+| Pendientes de capturar | 65 |
 
 Una fuente bloqueada no cuenta como poblada.
 
@@ -80,11 +80,11 @@ de responder cuánto se cobra.
 
 | Tabla | Filas |
 |---|---:|
-| capturas | 31 |
-| documentos | 19 |
-| documento_versiones | 19 |
+| capturas | 34 |
+| documentos | 20 |
+| documento_versiones | 20 |
 | unidades_documentales | 1391 |
-| evidencias | 501 |
+| evidencias | 6968 |
 | normas | 423716 |
 | norma_versiones | 9 |
 | relaciones_normativas | 19 |

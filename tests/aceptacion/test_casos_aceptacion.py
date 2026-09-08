@@ -400,3 +400,80 @@ def _version_publicable(conexion: Connection) -> uuid.UUID:
         {"v": version, "e": evidencia},
     )
     return version
+
+
+# --- AT-064: no figurar en el padrón no es una conclusión jurídica ------------
+
+
+def test_at064_un_barrio_ausente_del_padron_no_pierde_derechos(
+    conexion: Connection, cliente_api
+) -> None:
+    """«Mi barrio no figura» es un dato de un corte, no una respuesta sobre
+    derechos. La consulta tiene que decir contra qué versión del padrón se
+    buscó y por dónde se gestiona la inclusión; si devolviera una lista vacía y
+    nada más, quien pregunta leería que no le corresponde nada."""
+    import datetime as dt
+
+    from backend_normativo.ingesta.importadores.renabap import ImportadorRenabap
+
+    cargar_catalogo(conexion)
+    captura = _captura_de_padron(conexion)
+    ImportadorRenabap(conexion).importar(
+        b'"ID Renabap ID Renabap","Barrio Barrio","filtro-provincia Provincia"\n'
+        b'"2552","Rodrigo Bueno","Ciudad Aut\xc3\xb3noma de Buenos Aires"\n',
+        captura_id=captura,
+        capturado_en=dt.datetime(2026, 3, 1, tzinfo=dt.UTC),
+    )
+
+    presente = cliente_api.get("/v1/barrios-renabap", params={"nombre": "Rodrigo"}).json()
+    assert presente["data_status"] == "PUBLICADO"
+    assert presente["data"][0]["padron_version"] == "renabap-2026-03-01"
+    assert presente["evidence"], "Figurar en el padrón se afirma con la fila que lo dice."
+
+    ausente = cliente_api.get("/v1/barrios-renabap", params={"nombre": "Barrio Inexistente"}).json()
+    assert ausente["data_status"] == "SIN_RESULTADOS"
+    detalles = " ".join(w["detalle"] for w in ausente["warnings"])
+    assert "renabap-2026-03-01" in detalles, "Hay que decir contra qué corte se buscó."
+    assert "no que carezca de protección" in detalles
+    assert "se gestiona ante el RENABAP" in detalles
+    assert "ninguna conclusión sobre derechos" in detalles
+
+
+def _captura_de_padron(conexion: Connection) -> uuid.UUID:
+    url_id = conexion.execute(
+        text(
+            "INSERT INTO fuente_urls (source_id, url, rol, tipo_acceso) "
+            "VALUES ('F39', :u, 'DETALLE', 'DESCARGA_ARCHIVO') "
+            "ON CONFLICT (source_id, url) DO UPDATE SET rol = 'DETALLE' RETURNING id"
+        ),
+        {"u": "https://docs.google.com/spreadsheets/d/prueba/gviz/tq?tqx=out:csv"},
+    ).scalar_one()
+    config = conexion.execute(
+        text(
+            "SELECT id FROM fuente_config_versiones WHERE source_id = 'F39' "
+            " ORDER BY version DESC LIMIT 1"
+        )
+    ).scalar_one()
+    corrida = conexion.execute(
+        text(
+            "INSERT INTO corridas_ingesta (source_id, config_version_id, estado, "
+            " extractor_version, solicitadas, descargadas, procesadas, fin) "
+            "VALUES ('F39', :c, 'COMPLETA', 'prueba', 1, 1, 1, now()) RETURNING id"
+        ),
+        {"c": config},
+    ).scalar_one()
+    sha = uuid.uuid4().hex + uuid.uuid4().hex
+    return conexion.execute(
+        text(
+            "INSERT INTO capturas (corrida_id, source_url_id, url_final, http_status, mime, "
+            " bytes, sha256_raw, objeto_uri) "
+            "VALUES (:co, :u, :url, 200, 'text/csv', 100, :sha, :uri) RETURNING id"
+        ),
+        {
+            "co": corrida,
+            "u": url_id,
+            "url": "https://docs.google.com/spreadsheets/d/prueba/gviz/tq?tqx=out:csv",
+            "sha": sha,
+            "uri": f"objeto://sha256/{sha}",
+        },
+    ).scalar_one()

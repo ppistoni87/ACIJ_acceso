@@ -203,9 +203,17 @@
       "falta": "Las tablas de puntos de atención existen; no hay importador de directorios ni tratamiento de coordenadas. Afecta AT-060, AT-062, AT-063 y AT-065."
     },
     "HU-021": {
-      "estado": "NO_INICIADA",
-      "evidencia": [],
-      "falta": "La tabla barrios_renabap existe con su versionado; el padrón no se importó. Afecta AT-064."
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/ingesta/importadores/renabap.py",
+        "src/backend_normativo/api/routers/operativo.py",
+        "tests/integracion/test_importador_renabap.py",
+        "tests/aceptacion/test_casos_aceptacion.py"
+      ],
+      "comandos": [
+        "bn ingesta capturar F39",
+        "bn ingesta importar-renabap"
+      ]
     },
     "HU-022": {
       "estado": "CERRADA",

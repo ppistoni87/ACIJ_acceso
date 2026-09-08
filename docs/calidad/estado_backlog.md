@@ -8,11 +8,11 @@ si una historia declara evidencia en una ruta que ya no existe.
 
 | Estado | Transversales | Por fuente |
 | --- | --- | --- |
-| NO_INICIADA | 4 | 47 |
+| NO_INICIADA | 3 | 46 |
 | BLOQUEADA | 0 | 15 |
-| EN_CURSO | 9 | 16 |
+| EN_CURSO | 9 | 17 |
 | ALIAS_REGISTRADO | 0 | 4 |
-| CERRADA | 27 | 1 |
+| CERRADA | 28 | 1 |
 
 ## Historias transversales
 
@@ -38,7 +38,7 @@ si una historia declara evidencia en una ruta que ya no existe.
 | HU-018 | Modelar cuantías y fórmulas reproducibles | datos_sql | P0 | CERRADA | `src/backend_normativo/db/models/hechos.py`<br>`src/backend_normativo/reglas/evaluacion.py`<br>`tests/integracion/test_esquema_hechos.py`<br>`tests/unit/test_reglas.py` |
 | HU-019 | Cargar trámites y documentos exigidos | ingesta | P0 | NO_INICIADA | <br>_Falta: Las tablas de trámites, pasos y canales existen y tienen sus restricciones, pero no hay importador que las pueble. Afecta AT-059, AT-061 y AT-076._ |
 | HU-020 | Cargar directorios sin mezclar entidades | ingesta | P0 | NO_INICIADA | <br>_Falta: Las tablas de puntos de atención existen; no hay importador de directorios ni tratamiento de coordenadas. Afecta AT-060, AT-062, AT-063 y AT-065._ |
-| HU-021 | Cargar RENABAP como padrón versionado | ingesta | P0 | NO_INICIADA | <br>_Falta: La tabla barrios_renabap existe con su versionado; el padrón no se importó. Afecta AT-064._ |
+| HU-021 | Cargar RENABAP como padrón versionado | ingesta | P0 | CERRADA | `src/backend_normativo/ingesta/importadores/renabap.py`<br>`src/backend_normativo/api/routers/operativo.py`<br>`tests/integracion/test_importador_renabap.py`<br>`tests/aceptacion/test_casos_aceptacion.py`<br>`bn ingesta capturar F39`<br>`bn ingesta importar-renabap` |
 | HU-022 | Validar evidencia y procedencia por campo | calidad_qa | P0 | CERRADA | `src/backend_normativo/db/models/calidad.py`<br>`src/backend_normativo/curacion/campos.py`<br>`tests/integracion/test_campos_y_cobertura.py`<br>`tests/integracion/test_esquema_temporalidad.py` |
 | HU-023 | Resolver vigencia y frescura por capacidad | curacion_juridica | P0 | CERRADA | `src/backend_normativo/politicas/vigencia.py`<br>`src/backend_normativo/curacion/vigencia.py`<br>`tests/integracion/test_publicacion.py`<br>`tests/integracion/test_hechos_servibles.py`<br>`bn curacion vigencia`<br>`bn revision resolver-vigencia` |
 | HU-024 | Detectar y resolver conflictos de fuentes | curacion_juridica | P0 | CERRADA | `src/backend_normativo/curacion/revision.py`<br>`tests/integracion/test_publicacion.py`<br>`tests/integracion/test_hechos_servibles.py`<br>`bn revision pendientes`<br>`bn revision resolver-vigencia` |
@@ -103,7 +103,7 @@ Los números salen de la base, no de una declaración.
 | HU-F36 | F36 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
 | HU-F37 | F37 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
 | HU-F38 | F38 | EN_CURSO | 1 | 1 | 1 | 180 | 0 | 0 | 0 | — |
-| HU-F39 | F39 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
+| HU-F39 | F39 | EN_CURSO | 2 | 3 | 1 | 0 | 0 | 0 | 0 | — |
 | HU-F40 | F40 | EN_CURSO | 1 | 1 | 1 | 228 | 0 | 0 | 0 | — |
 | HU-F41 | F41 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
 | HU-F42 | F42 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
