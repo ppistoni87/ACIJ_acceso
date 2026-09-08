@@ -1,0 +1,164 @@
+{
+ "schema_version": "1.0",
+ "norma": {
+  "external_id": "infoleg:39880:actualizado",
+  "referencia": "Ley 24.714",
+  "rol": "CREA"
+ },
+ "nota": "Lectura curada de la asignación por maternidad. Es la única prestación de la Ley 24.714 cuyo importe no sale de una escala fija sino del sueldo de la propia persona, y una de las dos que el artículo 3 exceptúa del tope de ingresos. También es la única que el artículo 21 deja cobrar en cada empleo cuando hay más de uno. Cada una de esas tres cosas es una excepción a una regla general de la ley, y por eso se cura aparte. Todo entra como candidato.",
+ "beneficio": {
+  "codigo": "AR.ASIGNACION-POR-MATERNIDAD",
+  "nombre": "Asignación por maternidad",
+  "familia": "SEGURIDAD_SOCIAL",
+  "linea": "ASIGNACION_FAMILIAR",
+  "jurisdiccion": "AR",
+  "naturaleza": "PRESTACION_MONETARIA",
+  "descripcion": "Suma igual a la remuneración que la trabajadora hubiera debido percibir en su empleo, que se abona durante el período de licencia legal. Requiere una antigüedad mínima y continuada en el empleo de tres meses.",
+  "unidad_beneficiaria": "PERSONA",
+  "modalidad": "TRANSFERENCIA",
+  "frecuencia": "MENSUAL",
+  "requiere_solicitud": true,
+  "ruta_evidencia": "articulo-11"
+ },
+ "poblaciones": [
+  {
+   "codigo": "AR.TRABAJADORA-EN-LICENCIA-POR-MATERNIDAD",
+   "nombre": "Trabajadora en período de licencia legal por maternidad",
+   "definicion": "Trabajadora comprendida en el régimen que cursa el período de licencia legal por maternidad y acredita tres meses de antigüedad mínima y continuada en el empleo.",
+   "rol_persona": "TITULAR",
+   "alcance": "Es titular y causante a la vez, como en la Asignación por Embarazo: no hay una persona distinta que dé lugar a la prestación. Lo que se mide es su antigüedad y su remuneración.",
+   "ruta_evidencia": "articulo-11"
+  }
+ ],
+ "reglas": [
+  {
+   "clave": "COMPRENDIDA-EN-EL-REGIMEN",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-1/inciso-a-3",
+   "texto_literal": "a) Un subsistema contributivo fundado en los principios de reparto de aplicación a los trabajadores que presten servicios remunerados en relación de dependencia en la actividad privada, cualquiera sea la modalidad de contratación laboral, beneficiarios de la Ley sobre Riesgos de Trabajo y beneficiarios del Seguro de Desempleo, el que se financiará con los recursos previstos en el artículo 5° de la presente ley.",
+   "descripcion": "Estar comprendida en el subsistema contributivo.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "in",
+    "field": "situacion_laboral_del_titular",
+    "values": [
+     "RELACION_DE_DEPENDENCIA_PRIVADA",
+     "BENEFICIARIO_RIESGOS_DEL_TRABAJO",
+     "BENEFICIARIO_SEGURO_DE_DESEMPLEO",
+     "MONOTRIBUTISTA",
+     "SECTOR_PUBLICO",
+     "PENSION_NO_CONTRIBUTIVA",
+     "CASAS_PARTICULARES"
+    ]
+   },
+   "requiere_revision": true,
+   "motivo_revision": "La lista incluye a las empleadas de casas particulares, que el artículo 2 saca del subsistema contributivo «con excepción del derecho a la percepción de la Asignación por Maternidad»: es la única prestación de este subsistema que sí les corresponde. Meterlas en la misma lista hace la regla usable acá y sería incorrecto en cualquier otra lectura de esta ley, así que la lista no se comparte entre prestaciones."
+  },
+  {
+   "clave": "ANTIGUEDAD-MINIMA-DE-TRES-MESES",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-11",
+   "texto_literal": "Para el goce de esta asignación se requerirá una antigüedad mínima y continuada en el empleo de tres meses.",
+   "descripcion": "Acreditar una antigüedad mínima y continuada en el empleo de tres meses.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "compare",
+    "field": "antiguedad_continuada_en_el_empleo",
+    "cmp": ">=",
+    "value": 3,
+    "unit": "meses"
+   },
+   "requiere_revision": true,
+   "motivo_revision": "«Mínima y continuada» pide dos cosas: que llegue a tres meses y que no se haya interrumpido. El árbol guarda la primera; qué interrumpe la continuidad —un cambio de empleador, una licencia sin goce de sueldo, una suspensión— no lo dice la ley y decide el acceso a la única prestación que reemplaza el sueldo durante la licencia."
+  },
+  {
+   "clave": "DURANTE-LA-LICENCIA-LEGAL",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-11",
+   "texto_literal": "que se abonara durante el periodo de licencia legal correspondiente. Para el goce de esta asignación se requerirá una antigüedad mínima y continuada en el empleo de tres meses.",
+   "descripcion": "Se abona durante el período de licencia legal por maternidad.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "cursa_licencia_legal_por_maternidad"
+   },
+   "requiere_revision": true,
+   "motivo_revision": "La ley no dice cuánto dura la licencia ni dónde está escrita: dice «la licencia legal correspondiente», que remite al régimen laboral aplicable, y ese régimen es distinto para el contrato de trabajo común y para casas particulares. De ahí sale cuántos meses se cobra, que es la mitad de la respuesta."
+  },
+  {
+   "clave": "EXCEPTUADA-DEL-TOPE-DE-INGRESOS",
+   "categoria": "EXCEPCION",
+   "ruta_evidencia": "articulo-3",
+   "texto_literal": "Quedan excluidos de las prestaciones de esta ley, con excepción de las asignaciones familiares por maternidad y por hijos con discapacidad, los trabajadores que perciban una remuneración inferior a PESOS CIEN ($ 100) o igual o superior a PESOS CUATRO MIL CON UN CENTAVO ($ 4.000,01). (Tope máximo de remuneración sustituido por art. 1° del Decreto N° 1345/2007 B.O. 5/10/2007. Vigencia: a partir del 1º de julio de 2007).",
+   "descripcion": "La exclusión por remuneración fuera del piso y el techo no alcanza a esta asignación: el artículo 3 la exceptúa expresamente.",
+   "requiere_revision": true,
+   "motivo_revision": "Tiene sentido que esté exceptuada: el importe es el propio sueldo, así que un tope de ingresos que la excluyera dejaría sin cobertura a quien más gana justo cuando deja de cobrar. No se formaliza como condición porque no lo es. Queda por confirmar si la excepción alcanza también al piso mínimo o sólo al techo: el texto excluye por los dos extremos en la misma oración y exceptúa sin distinguir."
+  },
+  {
+   "clave": "SE-PERCIBE-EN-CADA-EMPLEO",
+   "categoria": "EXCEPCION",
+   "ruta_evidencia": "articulo-21",
+   "texto_literal": "Cuando el trabajador se desempeñare en más de un empleo tendrá derecho a la percepción de las prestaciones de la presente ley en el que acredite mayor antigüedad, a excepción de la asignación por maternidad, que será percibida en cada uno de ellos.",
+   "descripcion": "Con más de un empleo, esta asignación se percibe en cada uno, a diferencia de las demás prestaciones de la ley.",
+   "requiere_revision": true,
+   "motivo_revision": "Es coherente con que el importe sea el sueldo: si reemplaza la remuneración, tiene que reemplazar la de cada empleo. Es la excepción a la regla general del mismo artículo, que manda cobrar en el de mayor antigüedad. No se formaliza como condición sobre la persona porque no lo es: cambia cuántas veces se liquida, y el modelo guarda un beneficio con condiciones y no un multiplicador."
+  },
+  {
+   "clave": "CASAS-PARTICULARES-CONSERVA-ESTA-ASIGNACION",
+   "categoria": "EXCEPCION",
+   "ruta_evidencia": "articulo-2",
+   "texto_literal": "quedando excluidas de los incisos a) y b) del citado artículo con excepción del derecho a la percepción de la Asignación por Maternidad establecida por el inciso e) del artículo 6° de la presente ley. Facúltase al Poder Ejecutivo nacional para que dicte las normas pertinentes a efectos de adecuar y extender a las empleadas/os de dicho régimen especial estatutario las demás asignaciones familiares previstas en la presente ley. Facúltase a la Administración Federal de Ingresos Públicos (AFIP) para establecer las alícuotas correspondientes para el financiamiento de la asignación familiar por maternidad correspondiente a las empleadas del Régimen Especial de Contrato de Trabajo para el Personal de Casas Particulares. (Artículo sustituido por art. 72 inc. b) de la Ley N° 26.844 . Vigencia: de aplicación a todas las relaciones laborales alcanzadas por este régimen al momento de su entrada en vigencia)",
+   "descripcion": "Las empleadas de casas particulares quedan excluidas del subsistema contributivo salvo para esta asignación, que sí les corresponde.",
+   "requiere_revision": true,
+   "motivo_revision": "Es la excepción que hace que esta lectura no pueda compartir la lista de situaciones laborales con las demás prestaciones de la ley. El mismo artículo faculta al Poder Ejecutivo a extenderles el resto de las asignaciones y a la AFIP a fijar las alícuotas que la financian: si esas normas existen hoy, no están en el corpus, y de ellas depende si la excepción sigue siendo excepción."
+  },
+  {
+   "clave": "INEMBARGABLE-Y-NO-REMUNERATIVA",
+   "categoria": "SALVAGUARDA",
+   "ruta_evidencia": "articulo-23",
+   "texto_literal": "Las Asignaciones Familiares dispuestas en la presente ley son inembargables, no constituyen remuneración ni están sujetas a gravámenes, atento su naturaleza jurídica, tampoco serán tenidas en cuenta para la determinación del sueldo anual complementario, ni para el pago de las indemnizaciones por despido, enfermedad, accidente o para cualquier otro efecto. No pueden ser enajenadas ni afectadas a terceros por derecho alguno.",
+   "descripcion": "La asignación es inembargable, no constituye remuneración y no puede ser enajenada ni afectada a terceros.",
+   "requiere_revision": true,
+   "motivo_revision": "Acá dice algo más fuerte que en las otras prestaciones: el importe es igual al sueldo y sin embargo no es remuneración, así que no se computa para el aguinaldo ni para las indemnizaciones. Es una consecuencia que la persona no espera y que hay que poder responder."
+  }
+ ],
+ "cuantia": {
+  "tipo": "FORMULA",
+  "ruta_evidencia": "articulo-11",
+  "formula_version": "ley-24714-art11@1",
+  "unidad_beneficiaria": "PERSONA",
+  "descripcion": "Una suma igual a la remuneración que la trabajadora hubiera debido percibir en su empleo durante el período de licencia legal. No es una escala ni un monto fijo: es el propio sueldo.",
+  "parametros": [],
+  "requiere_revision": true,
+  "motivo_revision": "Es la única cuantía de esta ley que no remite a un monto del artículo 18 sino al sueldo de la persona: el inciso e) del artículo 18 lo dice con esas palabras, «la suma que corresponda de acuerdo a lo establecido en el artículo 11». Por eso no tiene parámetros y por eso tampoco tiene valor: depende de un dato de la persona, no de una resolución. Lo que hay que resolver es qué entra en «la remuneración que hubiera debido percibir» —el artículo 4 excluye horas extras y aguinaldo del concepto de remuneración de esta ley, y no está dicho si esa definición se aplica también acá o si acá se toma el sueldo real—."
+ },
+ "plazos": [],
+ "campos_no_informados": [
+  {
+   "campo": "plazos",
+   "motivo": "La duración de la prestación es la de la licencia legal, que esta ley no fija: remite al régimen laboral aplicable. Cargar acá los noventa días del contrato de trabajo común sería traer un plazo de otra norma y aplicárselo también a quien se rige por otro régimen, como las empleadas de casas particulares."
+  },
+  {
+   "campo": "criterios_revocacion",
+   "motivo": "La ley no declara causales de baja. Termina con la licencia, que no es una revocación. Qué pasa si la relación laboral se extingue durante la licencia, o si la antigüedad acreditada resulta menor a tres meses después de haber cobrado, no sale de este texto."
+  },
+  {
+   "campo": "canales",
+   "motivo": "La ley no dice dónde se gestiona. Para las empleadas de casas particulares el mismo artículo 2 faculta a la AFIP a fijar las alícuotas que la financian, lo que sugiere una vía distinta de la del resto del subsistema contributivo, pero sugerir no es decir."
+  }
+ ],
+ "dependencias": [
+  {
+   "referencia": "Régimen de licencia por maternidad de la Ley de Contrato de Trabajo",
+   "motivo": "El artículo 11 abona «durante el período de licencia legal correspondiente» y no dice cuál es. De ahí sale cuántos meses se cobra, que es la mitad de la respuesta."
+  },
+  {
+   "referencia": "Ley 26.844, Régimen Especial para el Personal de Casas Particulares",
+   "motivo": "El artículo 2 conserva esta asignación para ese personal y su licencia se rige por ese régimen, no por la Ley de Contrato de Trabajo. Sin la norma, no se sabe por cuánto tiempo."
+  },
+  {
+   "referencia": "Normas del Poder Ejecutivo y de la AFIP dictadas por el artículo 2",
+   "motivo": "El artículo faculta a extender las demás asignaciones al personal de casas particulares y a fijar las alícuotas de esta. Si esas normas existen, de ellas depende si la excepción sigue siendo excepción."
+  }
+ ]
+}

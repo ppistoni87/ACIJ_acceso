@@ -375,7 +375,7 @@ que «la atención presencial de las sedes permanecerá cerrada hasta el comienz
 del nuevo periodo de inscripción». Eso es el dato de hoy. Rescatar el listado de
 una captura anterior lo presentaría como vigente.
 
-## Nueve beneficios curados
+## Diez beneficios curados
 
 La lectura jurídica vive en `docs/curaduria/`, un archivo por beneficio, y no en
 el código: se puede discutir contra la ley sin leer Python. Cada regla, cada
@@ -395,15 +395,18 @@ siempre—.
 | Asignación por hijo (contributivo) | Ley 24.714 | 10 | 2 | 0 | fórmula sin valor |
 | Asignación por hijo con discapacidad | Ley 24.714 | 8 | 2 | 0 | fórmula sin valor |
 | Ayuda escolar anual | Ley 24.714 | 7 | 3 | 1 | fórmula sin valor |
+| Asignación por maternidad | Ley 24.714 | 7 | 1 | 0 | el propio sueldo |
 
-**Ninguna cuantía tiene monto.** No es una omisión: es lo que las normas dicen.
+**Ninguna cuantía tiene monto**, y una no lo tiene por otra razón: la de
+maternidad es el propio sueldo de la persona, no una escala que alguien
+actualice. Las demás sí dependen de resoluciones que no están en el corpus. No es una omisión: es lo que las normas dicen.
 El artículo 18 de la Ley 24.714 sigue fijando cien pesos por hijo —valor nominal
 de 2007— y el artículo 5 del Decreto 690/06 fija cuotas de cuatrocientos
 cincuenta pesos de 2006. Los montos vigentes salen de resoluciones que no están
 en el corpus. Servir esos números como «lo que vas a cobrar» sería peor que
 decir que no se sabe.
 
-**Cinco prestaciones de la misma ley, curadas por separado.** La Ley 24.714
+**Seis prestaciones de la misma ley, curadas por separado.** La Ley 24.714
 regula catorce; curarla entera como un beneficio haría que las condiciones de la
 asignación por matrimonio se le aplicaran a un chico de cuatro años. La
 diferencia no es teórica:
@@ -422,8 +425,12 @@ diferencia no es teórica:
   artículo 14 sexies se la da también a los titulares de la AUH. Una lectura que
   sólo mire el artículo 6 inciso d) le responde «no te corresponde» justamente a
   quien la ley se la da.
+- La asignación por maternidad está hecha de excepciones: su importe es el
+  propio sueldo y no una escala, se cobra en cada empleo cuando hay más de uno,
+  y el artículo 2 se la conserva a las empleadas de casas particulares, que
+  quedan fuera del resto del subsistema contributivo.
 
-**Lo que las normas no resuelven queda declarado.** De las 98 reglas vigentes,
+**Lo que las normas no resuelven queda declarado.** De las 105 reglas vigentes,
 poco más de la mitad tiene condición ejecutable escrita; el resto conserva su
 texto literal y el motivo por el que no se formalizó. Tres casos que muestran
 por qué:
