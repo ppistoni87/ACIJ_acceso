@@ -122,11 +122,21 @@ Publicar es una transacción: si algo falla, no queda ni el release, ni los
 fragmentos, ni el evento. Un evento huérfano le diría a un consumidor que hay
 una versión nueva que nadie puede leer.
 
+**El orden importa y es el que se equivoca solo.** Aprobar los campos va antes
+de publicar, porque la publicación es lo que promueve las afirmaciones a
+`PUBLISHED`. Publicar primero deja la versión publicada y su ficha servida sin
+una sola cita: aprobarlas después ya no entra en ese release. `bn publicacion
+publicar` lo avisa cuando pasa, y se arregla revirtiendo y volviendo a publicar.
+
 Para dejar de servir un release sin borrar nada:
 
 ```bash
 bn publicacion revertir <release_id> --actor "..." --motivo "..."
 ```
+
+Las versiones vuelven a `APPROVED` y quedan disponibles para otro release; el
+historial del revertido se conserva. Borrar el release dejaría a los
+consumidores citando fragmentos que ya no se pueden explicar.
 
 ## 6. Servir
 

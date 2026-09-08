@@ -393,3 +393,50 @@ def test_publicar_sin_candidatos_no_se_confunde_con_un_control_fallido(
     assert "no pasa los controles de calidad" not in mensaje
     # Sigue siendo un rechazo: quien captura el caso general lo sigue capturando.
     assert isinstance(caido.value, PublicacionRechazada)
+
+
+def test_publicar_antes_de_aprobar_los_campos_lo_avisa(
+    conexion: Connection, version_candidata
+) -> None:
+    """Es el orden que se equivoca solo.
+
+    La publicación es lo que promueve las afirmaciones a PUBLISHED. Aprobarlas
+    después no entra en ese release: la versión queda publicada y su ficha se
+    sirve sin una sola cita, que es indistinguible de una norma sin respaldo.
+    Publicar igual está permitido —una versión puede no tener nada informado que
+    aprobar— pero no en silencio.
+    """
+    incidencia = _incidencia_de_vigencia(conexion)
+    Revisor(conexion).resolver(
+        incidencia,
+        decision="Publicada el 23/12/2025 sin norma derogatoria registrada.",
+        actor="curacion_juridica:persona",
+        fundamento_evidencia_id=_evidencia_cualquiera(conexion),
+        vigencia={
+            "valid_tipo": "ABIERTO_FIN",
+            "valid_desde": "2025-12-23",
+            "estado_legal": "VIGENTE",
+        },
+    )
+    EvaluadorDeCampos(conexion).evaluar()
+
+    resultado = Publicador(conexion).publicar(
+        actor="publicacion:prueba", motivo="corte publicado sin aprobar los campos"
+    )
+
+    assert resultado.versiones_publicadas == 1
+    assert len(resultado.sin_afirmaciones_aprobadas) == 1
+
+
+def test_publicar_con_los_campos_aprobados_no_avisa_nada(
+    conexion: Connection, version_candidata
+) -> None:
+    """El camino correcto no tiene que hacer ruido: aprobar y después publicar."""
+    _aprobar_todo(conexion, version_candidata)
+
+    resultado = Publicador(conexion).publicar(
+        actor="publicacion:prueba", motivo="corte con los campos aprobados"
+    )
+
+    assert resultado.versiones_publicadas == 1
+    assert resultado.sin_afirmaciones_aprobadas == []

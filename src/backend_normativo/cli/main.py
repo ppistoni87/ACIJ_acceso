@@ -1297,6 +1297,38 @@ def publicacion_publicar(
         f"Eventos en outbox: {resultado.eventos_emitidos}\n"
         f"En cuarentena: {len(resultado.en_cuarentena)}"
     )
+    for version in resultado.sin_afirmaciones_aprobadas:
+        typer.echo(
+            f"  aviso: la versión {version} se publicó con todas sus afirmaciones sin "
+            "aprobar. La publicación es lo que las promueve, así que aprobarlas ahora ya "
+            "no entra en este release y su ficha se sirve sin una sola cita. Se arregla "
+            "con `bn revision aprobar-campos` y republicando: `bn publicacion revertir` "
+            "deja de servir este corte sin borrar nada."
+        )
+
+
+@publicacion.command("revertir")
+def publicacion_revertir(
+    release: str = typer.Argument(..., help="Id del release que deja de servirse."),
+    actor: str = typer.Option(..., help="Quién revierte."),
+    motivo: str = typer.Option(..., help="Por qué se revierte."),
+) -> None:
+    """Deja de servir un release sin borrar nada.
+
+    Las versiones vuelven a estado aprobado y quedan disponibles para otro
+    release; el historial del revertido se conserva. Es la vía para volver atrás
+    un corte publicado: borrar el release dejaría a los consumidores citando
+    fragmentos que ya no se pueden explicar.
+    """
+    import uuid as _uuid
+
+    from backend_normativo.publicacion.release import Publicador
+
+    with engine_migrador().begin() as conexion:
+        afectadas = Publicador(conexion).revertir(_uuid.UUID(release), actor=actor, motivo=motivo)
+    typer.echo(
+        f"Release {release} revertido por {actor}.\nVersiones que vuelven a APPROVED: {afectadas}"
+    )
 
 
 @api.command("servir")

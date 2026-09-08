@@ -65,6 +65,12 @@ class ResultadoPublicacion:
     eventos_emitidos: int = 0
     en_cuarentena: list[dict] = field(default_factory=list)
     gates: ResultadoGates | None = None
+    # Versiones que salen publicadas con todas sus afirmaciones todavía sin
+    # aprobar. No impide publicar —una versión puede no tener nada informado que
+    # aprobar—, pero se avisa: la publicación promueve las afirmaciones
+    # aprobadas, así que publicar antes de aprobarlas deja el release sin
+    # evidencia que citar, y la ficha se sirve sin una sola cita.
+    sin_afirmaciones_aprobadas: list[uuid.UUID] = field(default_factory=list)
 
 
 class Publicador:
@@ -86,6 +92,32 @@ class Publicador:
                     "        AND i.severidad IN ('CRITICAL', 'HIGH'))"
                     " ORDER BY rv.known_desde"
                 )
+            ).scalars()
+        )
+
+    def sin_afirmaciones_aprobadas(self, candidatos: list[uuid.UUID]) -> list[uuid.UUID]:
+        """Candidatas que tienen afirmaciones candidatas y ninguna aprobada.
+
+        Es el orden que se equivoca solo: aprobar los siete campos después de
+        publicar no sirve de nada, porque lo que promueve las afirmaciones a
+        PUBLISHED es la publicación. La versión queda publicada y su ficha se
+        sirve sin evidencia, que es indistinguible de una norma sin respaldo.
+        """
+        if not candidatos:
+            return []
+        return list(
+            self.conexion.execute(
+                text(
+                    "SELECT rv.id FROM registro_versiones rv "
+                    " WHERE rv.id = ANY(:ids) "
+                    "   AND EXISTS (SELECT 1 FROM afirmaciones a "
+                    "                WHERE a.registro_version_id = rv.id "
+                    "                  AND a.estado_revision = 'CANDIDATE') "
+                    "   AND NOT EXISTS (SELECT 1 FROM afirmaciones a "
+                    "                    WHERE a.registro_version_id = rv.id "
+                    "                      AND a.estado_revision = 'APPROVED')"
+                ),
+                {"ids": [str(c) for c in candidatos]},
             ).scalars()
         )
 
@@ -166,6 +198,9 @@ class Publicador:
         ).scalar_one()
 
         resultado = ResultadoPublicacion(release_id=release_id, gates=gates)
+        # Se mira antes de promover: después de publicar, todas las aprobadas ya
+        # figuran como publicadas y la pregunta no se puede hacer.
+        resultado.sin_afirmaciones_aprobadas = self.sin_afirmaciones_aprobadas(candidatos)
 
         self.conexion.execute(
             text(
