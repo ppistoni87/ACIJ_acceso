@@ -12,7 +12,7 @@ ninguna, o ser un alias de otra.
 | Alias | 4 |
 | URLs registradas | 73 |
 | Documentos capturados | 11 |
-| Normas identificadas | 8 |
+| Normas identificadas | 423716 |
 | Beneficios registrados | 0 |
 | Dependencias normativas pendientes | 145 |
 
@@ -23,8 +23,8 @@ Incorporaciones al inventario: 16 (D01, D02, D03, D04, D05, D06, D07, D08, D09, 
 
 | Valor | Fuentes |
 |---|---:|
-| ACTIVE | 8 |
-| DISCOVERY | 53 |
+| ACTIVE | 12 |
+| DISCOVERY | 49 |
 | MANUAL | 7 |
 | REFERENCE_ONLY | 13 |
 | RETIRED | 2 |
@@ -33,8 +33,8 @@ Incorporaciones al inventario: 16 (D01, D02, D03, D04, D05, D06, D07, D08, D09, 
 
 | Valor | Fuentes |
 |---|---:|
-| ACCESIBLE | 8 |
-| NO_VERIFICADO | 60 |
+| ACCESIBLE | 12 |
+| NO_VERIFICADO | 56 |
 | SIN_URL_CONOCIDA | 15 |
 
 ## Prioridad

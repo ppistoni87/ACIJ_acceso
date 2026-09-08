@@ -332,6 +332,56 @@ def calidad_trazabilidad(
         raise typer.Exit(1)
 
 
+@calidad.command("backlog")
+def calidad_backlog(
+    salida: Path | None = typer.Option(None, help="Archivo donde escribir el reporte."),
+    formato: str = typer.Option("markdown", help="markdown o json."),
+) -> None:
+    """Estado de las 123 historias, con la evidencia de cierre de cada una."""
+    from dataclasses import asdict
+
+    from backend_normativo.calidad.backlog import EvidenciaInexistente, construir
+    from backend_normativo.calidad.backlog import formatear as formatear_backlog
+
+    with engine_migrador().connect() as conexion:
+        try:
+            reporte = construir(conexion)
+        except EvidenciaInexistente as exc:
+            typer.echo(str(exc))
+            raise typer.Exit(1) from exc
+    texto = (
+        json.dumps(asdict(reporte), ensure_ascii=False, indent=2)
+        if formato == "json"
+        else formatear_backlog(reporte)
+    )
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto + "\n", encoding="utf-8")
+        cerradas = sum(1 for h in reporte.fuentes if h.estado == "CERRADA")
+        typer.echo(
+            f"Reporte escrito en {salida} · fuentes cerradas {cerradas}/{len(reporte.fuentes)}"
+        )
+    else:
+        typer.echo(texto)
+
+
+@calidad.command("diccionario")
+def calidad_diccionario(
+    salida: Path | None = typer.Option(None, help="Archivo donde escribir el diccionario."),
+) -> None:
+    """Diccionario de datos generado desde los modelos, no escrito a mano."""
+    from backend_normativo.db.diccionario import construir
+    from backend_normativo.db.diccionario import formatear as formatear_diccionario
+
+    texto = formatear_diccionario(construir())
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto + "\n", encoding="utf-8")
+        typer.echo(f"Diccionario escrito en {salida}")
+    else:
+        typer.echo(texto)
+
+
 @curacion.command("vigencia")
 def curacion_vigencia(
     fuente: str | None = typer.Option(None, help="Limitar a una fuente."),

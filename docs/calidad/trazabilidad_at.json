@@ -2,77 +2,448 @@
   "schema_version": "1.0",
   "nota": "Mapa entre los 80 casos de aceptación de 04_Calidad_y_Pruebas.json y las pruebas que los ejercen. `pruebas` son nodeids de pytest verificados por `bn calidad trazabilidad`: si un nodeid no existe, el reporte falla en vez de declarar cobertura inexistente. `falta` describe lo que la prueba todavía no cubre del caso; `motivo` explica por qué un caso no se ejecuta.",
   "casos": {
-    "AT-001": {"pruebas": ["tests/integracion/test_esquema_integridad.py::test_dos_leyes_mismo_numero_distinta_jurisdiccion_no_colisionan", "tests/integracion/test_curacion.py::test_dos_normas_con_igual_numero_y_distinta_jurisdiccion_no_se_fusionan"]},
-    "AT-002": {"pruebas": ["tests/integracion/test_importador_infoleg.py::test_dos_corridas_son_idempotentes", "tests/integracion/test_importador_infoleg.py::test_ninguna_norma_queda_sin_identificador", "tests/integracion/test_importador_infoleg.py::test_norma_conjunta_es_una_norma_con_incidencia", "tests/integracion/test_esquema_integridad.py::test_misma_jurisdiccion_y_numero_no_se_duplica"]},
-    "AT-003": {"pruebas": ["tests/integracion/test_esquema_temporalidad.py::test_evidencia_no_puede_citar_una_unidad_de_otra_version"]},
-    "AT-004": {"pruebas": ["tests/integracion/test_catalogo.py::test_las_fuentes_sin_url_conservan_su_brecha", "tests/integracion/test_catalogo.py::test_cada_brecha_tiene_incidencia_abierta_con_responsable", "tests/integracion/test_captura.py::test_una_fuente_sin_url_no_se_automatiza"]},
-    "AT-005": {"pruebas": ["tests/integracion/test_catalogo.py::test_los_alias_apuntan_a_una_sola_fuente_canonica", "tests/integracion/test_catalogo.py::test_un_alias_no_esta_necesariamente_caido"]},
-    "AT-006": {"pruebas": ["tests/integracion/test_catalogo.py::test_los_alias_apuntan_a_una_sola_fuente_canonica"], "falta": "El ancla rota (#44 inexistente en F31) no se reporta todavía: el catálogo conserva el alias pero nadie verifica que el fragmento exista en el documento destino."},
-    "AT-007": {"pruebas": ["tests/integracion/test_captura.py::test_una_corrida_con_rechazos_no_figura_completa", "tests/integracion/test_captura.py::test_un_403_pausa_la_fuente_y_no_la_deja_como_sin_datos"], "falta": "El caso concreto de un 404 con cuerpo HTML extenso no tiene fixture propia; se ejerce la regla general de que un rechazo no es una corrida completa."},
-    "AT-008": {"pruebas": ["tests/integracion/test_captura.py::test_no_se_guardan_cookies_ni_credenciales"], "falta": "Clasificar un 200 con formulario de login como canal/estado de acceso exige el adaptador de trámites, que no está construido."},
-    "AT-009": {"pruebas": ["tests/integracion/test_esquema_temporalidad.py::test_un_304_exige_captura_previa", "tests/integracion/test_captura.py::test_la_revalidacion_reutiliza_el_objeto_previo", "tests/integracion/test_hechos_servibles.py::test_vencer_la_frescura_no_deroga_pero_sí_impide_servir"]},
-    "AT-010": {"pruebas": ["tests/integracion/test_monitoreo.py::test_una_nota_editorial_no_cuenta_como_cambio_de_la_norma", "tests/integracion/test_captura.py::test_la_revalidacion_reutiliza_el_objeto_previo"]},
-    "AT-012": {"pruebas": ["tests/integracion/test_importador_infoleg.py::test_metadata_only_se_conserva"]},
-    "AT-013": {"pruebas": ["tests/integracion/test_importador_infoleg.py::test_los_contadores_no_se_convierten_en_relaciones"]},
-    "AT-014": {"pruebas": ["tests/integracion/test_importador_infoleg.py::test_forma_inesperada_detiene_la_importacion"]},
-    "AT-015": {"pruebas": ["tests/integracion/test_importador_infoleg.py::test_zip_con_ruta_fuera_del_arbol_se_rechaza", "tests/integracion/test_importador_infoleg.py::test_expansion_por_encima_del_presupuesto_se_rechaza"]},
-    "AT-016": {"motivo": "F52 (cronograma con contenedores field-item) no está capturada: su adaptador HTML específico no se construyó en este alcance."},
-    "AT-017": {"motivo": "F27 (inscripción escolar con bloques d-none) no está capturada; la regla de visibilidad CSS no está implementada en el adaptador HTML."},
-    "AT-018": {"motivo": "El adaptador PDF no está construido: sin él no hay validación de magic bytes que probar."},
-    "AT-019": {"motivo": "El adaptador PDF no está construido: la reparación trazada de un prefijo de warning no tiene implementación que ejercer."},
-    "AT-020": {"motivo": "El adaptador PDF no está construido: no hay medición de cobertura por página ni decisión de OCR."},
-    "AT-021": {"motivo": "El adaptador PDF no está construido: no hay extracción de tablas ni asociación con su caption."},
-    "AT-022": {"motivo": "F54 (instructivo con rótulos Paso 1/Paso 2 fuera del orden de lectura) no está capturada."},
-    "AT-023": {"pruebas": ["tests/unit/test_segmentacion.py::test_conserva_el_sufijo_como_parte_de_la_identidad", "tests/unit/test_adaptadores.py::test_el_sufijo_del_articulo_sobrevive_a_la_extraccion"]},
-    "AT-024": {"pruebas": ["tests/unit/test_segmentacion.py::test_un_articulo_sustituido_no_es_una_raiz", "tests/unit/test_adaptadores.py::test_normativaba_no_toma_el_articulo_sustituido_como_propio", "tests/integracion/test_esquema_temporalidad.py::test_articulo_citado_no_colisiona_con_el_articulo_raiz"]},
-    "AT-025": {"pruebas": ["tests/unit/test_segmentacion.py::test_el_texto_no_clasificado_queda_visible", "tests/unit/test_segmentacion.py::test_un_numero_que_retrocede_sin_verbo_queda_marcado_como_ambiguo"]},
-    "AT-026": {"pruebas": ["tests/unit/test_segmentacion.py::test_visto_considerando_y_transitorias_se_conservan"]},
-    "AT-027": {"pruebas": ["tests/unit/test_segmentacion.py::test_un_anexo_reinicia_la_numeracion_sin_marcar_ambiguedad", "tests/unit/test_segmentacion.py::test_el_texto_no_clasificado_queda_visible"]},
-    "AT-028": {"pruebas": ["tests/unit/test_adaptadores.py::test_normativaba_detecta_una_transposicion_de_digitos_en_la_sintesis", "tests/unit/test_adaptadores.py::test_una_cita_normal_a_otra_norma_no_se_reporta_como_discrepancia"]},
-    "AT-029": {"pruebas": ["tests/integracion/test_publicacion.py::test_una_version_publicada_se_sirve_solo_en_las_capacidades_que_sustenta", "tests/integracion/test_api.py::test_la_ficha_se_abstiene_en_las_capacidades_que_no_sustenta"], "falta": "La captura y vinculación del anexo de F19 no está hecha: se prueba que sin el anexo la capacidad PLAZO se abstiene, no que con él se complete."},
-    "AT-030": {"pruebas": ["tests/integracion/test_curacion.py::test_la_nota_produce_la_abrogacion_y_la_restitucion", "tests/unit/test_citas.py::test_la_nota_conserva_la_abrogacion_y_la_restitucion", "tests/integracion/test_publicacion.py::test_abrogada_y_restablecida_no_tiene_lectura_automatica"]},
-    "AT-031": {"pruebas": ["tests/integracion/test_esquema_hechos.py::test_un_valor_de_vigencia_desconocida_no_se_publica", "tests/integracion/test_api.py::test_un_valor_de_otro_periodo_no_se_devuelve", "tests/integracion/test_esquema_hechos.py::test_cuantia_no_informada_no_necesita_inventar_un_monto"]},
-    "AT-032": {"pruebas": ["tests/unit/test_adaptadores.py::test_original_y_actualizado_son_versiones_distintas", "tests/integracion/test_curacion.py::test_la_ficha_no_es_una_version_del_texto"], "falta": "La correspondencia comprobada 10→9 entre versiones (tabla equivalencias_unidades) no está poblada ni ejercida."},
-    "AT-033": {"pruebas": ["tests/integracion/test_publicacion.py::test_una_etiqueta_no_vigente_no_alcanza_para_cerrar_la_vigencia", "tests/unit/test_adaptadores.py::test_normativaba_separa_el_estado_declarado_de_la_conclusion"]},
-    "AT-034": {"pruebas": ["tests/integracion/test_esquema_temporalidad.py::test_condicionado_exige_declarar_la_condicion", "tests/integracion/test_publicacion.py::test_sin_estado_declarado_la_vigencia_va_a_revision"]},
-    "AT-035": {"pruebas": ["tests/integracion/test_monitoreo.py::test_el_impacto_alcanza_a_las_normas_que_la_citan", "tests/integracion/test_curacion.py::test_toda_relacion_nace_candidata_y_con_evidencia"]},
-    "AT-037": {"pruebas": ["tests/integracion/test_curacion.py::test_una_norma_no_registrada_queda_como_referencia_pendiente"]},
-    "AT-038": {"pruebas": ["tests/integracion/test_campos_y_cobertura.py::test_un_campo_sin_senales_dice_donde_se_busco", "tests/integracion/test_esquema_hechos.py::test_no_informado_exige_decir_que_fuentes_se_revisaron"]},
-    "AT-039": {"pruebas": ["tests/integracion/test_esquema_hechos.py::test_no_informado_exige_decir_que_fuentes_se_revisaron", "tests/unit/test_reglas.py::test_una_causal_de_revocacion_no_decide_el_acceso"]},
-    "AT-040": {"pruebas": ["tests/integracion/test_campos_y_cobertura.py::test_evaluacion_completa_no_es_base_completa", "tests/integracion/test_api.py::test_cobertura_separa_evaluado_de_sustantivo"]},
-    "AT-042": {"pruebas": ["tests/unit/test_reglas.py::test_la_tabla_de_verdad_es_la_de_la_especificacion", "tests/unit/test_reglas.py::test_un_dato_que_falta_no_es_un_incumplimiento", "tests/unit/test_reglas.py::test_falta_un_dato_y_el_resultado_pide_datos_en_vez_de_negar"]},
-    "AT-043": {"pruebas": ["tests/unit/test_reglas.py::test_la_tabla_de_verdad_es_la_de_la_especificacion", "tests/unit/test_reglas.py::test_una_condicion_falsa_no_arrastra_a_las_desconocidas", "tests/unit/test_reglas.py::test_una_condicion_cumplida_no_tapa_lo_que_falta"]},
-    "AT-044": {"pruebas": ["tests/unit/test_reglas.py::test_la_tabla_de_verdad_es_la_de_la_especificacion", "tests/unit/test_reglas.py::test_un_dato_declarado_como_nulo_tampoco_lo_es"]},
-    "AT-045": {"pruebas": ["tests/unit/test_reglas.py::test_menor_que_no_es_menor_o_igual", "tests/unit/test_reglas.py::test_los_importes_se_comparan_como_decimales"]},
-    "AT-046": {"pruebas": ["tests/unit/test_reglas.py::test_con_la_excepcion_cumplida_el_bloqueo_no_aplica", "tests/unit/test_reglas.py::test_no_se_niega_sin_haber_evaluado_las_excepciones", "tests/unit/test_reglas.py::test_con_todas_las_excepciones_descartadas_si_hay_negativa_explicable"]},
-    "AT-047": {"pruebas": ["tests/unit/test_reglas.py::test_una_salvaguarda_nunca_excluye_y_siempre_se_informa", "tests/unit/test_reglas.py::test_falta_un_dato_y_el_resultado_pide_datos_en_vez_de_negar"]},
-    "AT-048": {"pruebas": ["tests/integracion/test_esquema_hechos.py::test_candidatos_en_conflicto_pueden_coexistir", "tests/integracion/test_hechos_servibles.py::test_un_conflicto_abierto_bloquea_la_publicacion_de_ese_hecho"]},
-    "AT-049": {"pruebas": ["tests/unit/test_reglas.py::test_una_causal_de_revocacion_no_decide_el_acceso"], "falta": "Distinguir suspensión de revocación y detallar el remedio exige el campo criterios_revocacion poblado con texto real: hoy ninguna versión del corpus lo tiene sustantivo."},
-    "AT-050": {"pruebas": ["tests/integracion/test_hechos_servibles.py::test_una_fecha_fuera_del_periodo_no_se_sirve_como_actual", "tests/integracion/test_api.py::test_una_fecha_anterior_a_la_vigencia_no_se_sirve_como_actual"]},
-    "AT-051": {"motivo": "El cómputo de días hábiles con calendario poblado no está implementado: el esquema exige el calendario y la migración lo modela, pero no hay calculadora ni calendario jurisdiccional cargado."},
-    "AT-052": {"pruebas": ["tests/integracion/test_esquema_hechos.py::test_dias_habiles_sin_calendario_no_producen_una_fecha"]},
-    "AT-054": {"pruebas": ["tests/integracion/test_esquema_hechos.py::test_un_valor_de_vigencia_desconocida_no_se_publica", "tests/integracion/test_esquema_temporalidad.py::test_abierto_fin_no_admite_fecha_de_cierre"]},
-    "AT-055": {"pruebas": ["tests/unit/test_reglas.py::test_sin_valor_vigente_del_parametro_la_condicion_es_desconocida", "tests/unit/test_reglas.py::test_el_parametro_se_resuelve_a_la_fecha_consultada"]},
-    "AT-056": {"motivo": "El adaptador PDF no está construido: sin extracción de tablas no hay período por tabla que normalizar."},
-    "AT-058": {"pruebas": ["tests/integracion/test_esquema_hechos.py::test_dos_valores_aprobados_no_pueden_regir_a_la_vez", "tests/integracion/test_esquema_hechos.py::test_aprobar_una_version_reevalua_el_solapamiento", "tests/integracion/test_monitoreo.py::test_propagar_dos_veces_no_duplica_el_evento"]},
-    "AT-059": {"motivo": "Los canales de atención (HU-019) no están poblados: no hay importador de directorios que pueda encontrarse un literal N/A."},
-    "AT-060": {"pruebas": ["tests/integracion/test_esquema_hechos.py::test_candidatos_en_conflicto_pueden_coexistir"], "falta": "Los puntos de atención (HU-020) no están poblados: el conflicto de piso entre CSV y ficha no tiene datos reales donde darse."},
-    "AT-061": {"motivo": "Los canales por tipo con horarios propios (HU-019) no están poblados."},
-    "AT-062": {"motivo": "El directorio de la DPN (F44) no está capturado: la atribución de un operador municipal no tiene datos donde ejercerse."},
-    "AT-063": {"motivo": "El dataset de sedes con coordenadas (HU-020) no está cargado: no hay geometría cuyo CRS discutir."},
-    "AT-064": {"motivo": "El padrón RENABAP (HU-021) no está importado: la tabla existe pero no tiene snapshot donde buscar un barrio."},
-    "AT-065": {"motivo": "F64 (sedes estacionales) no está capturada."},
-    "AT-066": {"pruebas": ["tests/integracion/test_api.py::test_la_recuperacion_devuelve_citas_localizables"], "falta": "No hay fuente secundaria de ONG en el corpus poblado: la atribución secundaria se sostiene por el modelo de evidencia, no por un caso real."},
-    "AT-068": {"pruebas": ["tests/integracion/test_api.py::test_sin_credencial_configurada_la_administracion_esta_cerrada", "tests/integracion/test_api.py::test_una_credencial_invalida_no_autoriza"]},
-    "AT-070": {"pruebas": ["tests/integracion/test_api.py::test_sin_release_la_recuperacion_no_toca_staging", "tests/integracion/test_publicacion.py::test_solo_se_indexa_texto_dispositivo", "tests/integracion/test_api.py::test_sin_release_publicado_la_respuesta_lo_dice"]},
-    "AT-071": {"pruebas": ["tests/integracion/test_hechos_servibles.py::test_vencer_la_frescura_no_deroga_pero_sí_impide_servir", "tests/integracion/test_campos_y_cobertura.py::test_sin_release_publicado_ninguna_capacidad_sirve_datos"]},
-    "AT-072": {"pruebas": ["tests/integracion/test_monitoreo.py::test_una_entrega_exitosa_lleva_la_clave_de_idempotencia", "tests/integracion/test_monitoreo.py::test_propagar_dos_veces_no_duplica_el_evento", "tests/integracion/test_monitoreo.py::test_una_entrega_fallida_no_marca_el_evento_como_entregado"]},
-    "AT-073": {"pruebas": ["tests/integracion/test_monitoreo.py::test_sin_consumidor_configurado_no_se_declara_ninguna_entrega", "tests/integracion/test_monitoreo.py::test_un_evento_que_agoto_los_intentos_pasa_a_la_cola_de_fallos"]},
-    "AT-074": {"motivo": "La prueba de restauración (HU-037) exige un procedimiento de backup y un entorno aislado que este alcance no construyó."},
-    "AT-075": {"pruebas": ["tests/unit/test_adaptadores.py::test_la_ruta_de_infoleg_distingue_original_de_actualizado"], "falta": "El caso de F67 es un PDF alojado en una carpeta de año viejo: sin adaptador PDF, solo se prueba que la ruta no dicta la identidad de la versión."},
-    "AT-076": {"pruebas": ["tests/integracion/test_esquema_hechos.py::test_cuantia_no_informada_no_necesita_inventar_un_monto"], "falta": "Los trámites (HU-019) no están poblados: la ficha sin costo ni duración no tiene datos reales donde darse."},
-    "AT-077": {"pruebas": ["tests/integracion/test_captura.py::test_no_se_guardan_cookies_ni_credenciales", "tests/integracion/test_captura.py::test_el_planificador_ignora_lo_que_no_se_puede_pedir"]},
-    "AT-078": {"pruebas": ["tests/integracion/test_catalogo.py::test_una_fuente_retirada_explica_por_que", "tests/integracion/test_catalogo.py::test_el_reporte_no_confunde_fuentes_con_leyes"], "falta": "El caso concreto de F09 (directorio municipal caído con lista provincial disponible) no tiene fixture: se prueba la regla de que una fuente retirada explica su motivo, no la sustitución por otra granularidad."},
-    "AT-079": {"pruebas": ["tests/integracion/test_api.py::test_la_evaluacion_aclara_que_no_es_una_decision", "tests/integracion/test_api.py::test_el_cuerpo_de_una_evaluacion_no_se_persiste", "tests/unit/test_reglas.py::test_todo_cumplido_da_un_resultado_preliminar_positivo"]}
+    "AT-001": {
+      "pruebas": [
+        "tests/integracion/test_esquema_integridad.py::test_dos_leyes_mismo_numero_distinta_jurisdiccion_no_colisionan",
+        "tests/integracion/test_curacion.py::test_dos_normas_con_igual_numero_y_distinta_jurisdiccion_no_se_fusionan"
+      ]
+    },
+    "AT-002": {
+      "pruebas": [
+        "tests/integracion/test_importador_infoleg.py::test_dos_corridas_son_idempotentes",
+        "tests/integracion/test_importador_infoleg.py::test_ninguna_norma_queda_sin_identificador",
+        "tests/integracion/test_importador_infoleg.py::test_norma_conjunta_es_una_norma_con_incidencia",
+        "tests/integracion/test_esquema_integridad.py::test_misma_jurisdiccion_y_numero_no_se_duplica"
+      ]
+    },
+    "AT-003": {
+      "pruebas": [
+        "tests/integracion/test_esquema_temporalidad.py::test_evidencia_no_puede_citar_una_unidad_de_otra_version"
+      ]
+    },
+    "AT-004": {
+      "pruebas": [
+        "tests/integracion/test_catalogo.py::test_las_fuentes_sin_url_conservan_su_brecha",
+        "tests/integracion/test_catalogo.py::test_cada_brecha_tiene_incidencia_abierta_con_responsable",
+        "tests/integracion/test_captura.py::test_una_fuente_sin_url_no_se_automatiza"
+      ]
+    },
+    "AT-005": {
+      "pruebas": [
+        "tests/integracion/test_catalogo.py::test_los_alias_apuntan_a_una_sola_fuente_canonica",
+        "tests/integracion/test_catalogo.py::test_un_alias_no_esta_necesariamente_caido"
+      ]
+    },
+    "AT-006": {
+      "pruebas": [
+        "tests/integracion/test_catalogo.py::test_los_alias_apuntan_a_una_sola_fuente_canonica"
+      ],
+      "falta": "El ancla rota (#44 inexistente en F31) no se reporta todavía: el catálogo conserva el alias pero nadie verifica que el fragmento exista en el documento destino."
+    },
+    "AT-007": {
+      "pruebas": [
+        "tests/integracion/test_captura.py::test_una_corrida_con_rechazos_no_figura_completa",
+        "tests/integracion/test_captura.py::test_un_403_pausa_la_fuente_y_no_la_deja_como_sin_datos"
+      ],
+      "falta": "El caso concreto de un 404 con cuerpo HTML extenso no tiene fixture propia; se ejerce la regla general de que un rechazo no es una corrida completa."
+    },
+    "AT-008": {
+      "pruebas": [
+        "tests/integracion/test_captura.py::test_no_se_guardan_cookies_ni_credenciales"
+      ],
+      "falta": "Clasificar un 200 con formulario de login como canal/estado de acceso exige el adaptador de trámites, que no está construido."
+    },
+    "AT-009": {
+      "pruebas": [
+        "tests/integracion/test_esquema_temporalidad.py::test_un_304_exige_captura_previa",
+        "tests/integracion/test_captura.py::test_la_revalidacion_reutiliza_el_objeto_previo",
+        "tests/integracion/test_hechos_servibles.py::test_vencer_la_frescura_no_deroga_pero_sí_impide_servir"
+      ]
+    },
+    "AT-010": {
+      "pruebas": [
+        "tests/integracion/test_monitoreo.py::test_una_nota_editorial_no_cuenta_como_cambio_de_la_norma",
+        "tests/integracion/test_captura.py::test_la_revalidacion_reutiliza_el_objeto_previo"
+      ]
+    },
+    "AT-011": {
+      "pruebas": [
+        "tests/aceptacion/test_casos_aceptacion.py::test_at011_el_catalogo_apunta_al_recurso_de_produccion_de_infoleg",
+        "tests/integracion/test_catalogo.py::test_cada_fuente_tiene_configuracion_con_adaptador_y_presupuesto"
+      ]
+    },
+    "AT-012": {
+      "pruebas": [
+        "tests/integracion/test_importador_infoleg.py::test_metadata_only_se_conserva"
+      ]
+    },
+    "AT-013": {
+      "pruebas": [
+        "tests/integracion/test_importador_infoleg.py::test_los_contadores_no_se_convierten_en_relaciones"
+      ]
+    },
+    "AT-014": {
+      "pruebas": [
+        "tests/integracion/test_importador_infoleg.py::test_forma_inesperada_detiene_la_importacion"
+      ]
+    },
+    "AT-015": {
+      "pruebas": [
+        "tests/integracion/test_importador_infoleg.py::test_zip_con_ruta_fuera_del_arbol_se_rechaza",
+        "tests/integracion/test_importador_infoleg.py::test_expansion_por_encima_del_presupuesto_se_rechaza"
+      ]
+    },
+    "AT-016": {
+      "motivo": "F52 (cronograma con contenedores field-item) no está capturada: su adaptador HTML específico no se construyó en este alcance."
+    },
+    "AT-017": {
+      "motivo": "F27 (inscripción escolar con bloques d-none) no está capturada; la regla de visibilidad CSS no está implementada en el adaptador HTML."
+    },
+    "AT-018": {
+      "motivo": "El adaptador PDF no está construido: sin él no hay validación de magic bytes que probar."
+    },
+    "AT-019": {
+      "motivo": "El adaptador PDF no está construido: la reparación trazada de un prefijo de warning no tiene implementación que ejercer."
+    },
+    "AT-020": {
+      "motivo": "El adaptador PDF no está construido: no hay medición de cobertura por página ni decisión de OCR."
+    },
+    "AT-021": {
+      "motivo": "El adaptador PDF no está construido: no hay extracción de tablas ni asociación con su caption."
+    },
+    "AT-022": {
+      "motivo": "F54 (instructivo con rótulos Paso 1/Paso 2 fuera del orden de lectura) no está capturada."
+    },
+    "AT-023": {
+      "pruebas": [
+        "tests/unit/test_segmentacion.py::test_conserva_el_sufijo_como_parte_de_la_identidad",
+        "tests/unit/test_adaptadores.py::test_el_sufijo_del_articulo_sobrevive_a_la_extraccion"
+      ]
+    },
+    "AT-024": {
+      "pruebas": [
+        "tests/unit/test_segmentacion.py::test_un_articulo_sustituido_no_es_una_raiz",
+        "tests/unit/test_adaptadores.py::test_normativaba_no_toma_el_articulo_sustituido_como_propio",
+        "tests/integracion/test_esquema_temporalidad.py::test_articulo_citado_no_colisiona_con_el_articulo_raiz"
+      ]
+    },
+    "AT-025": {
+      "pruebas": [
+        "tests/unit/test_segmentacion.py::test_el_texto_no_clasificado_queda_visible",
+        "tests/unit/test_segmentacion.py::test_un_numero_que_retrocede_sin_verbo_queda_marcado_como_ambiguo"
+      ]
+    },
+    "AT-026": {
+      "pruebas": [
+        "tests/unit/test_segmentacion.py::test_visto_considerando_y_transitorias_se_conservan"
+      ]
+    },
+    "AT-027": {
+      "pruebas": [
+        "tests/unit/test_segmentacion.py::test_un_anexo_reinicia_la_numeracion_sin_marcar_ambiguedad",
+        "tests/unit/test_segmentacion.py::test_el_texto_no_clasificado_queda_visible"
+      ]
+    },
+    "AT-028": {
+      "pruebas": [
+        "tests/unit/test_adaptadores.py::test_normativaba_detecta_una_transposicion_de_digitos_en_la_sintesis",
+        "tests/unit/test_adaptadores.py::test_una_cita_normal_a_otra_norma_no_se_reporta_como_discrepancia"
+      ]
+    },
+    "AT-029": {
+      "pruebas": [
+        "tests/integracion/test_publicacion.py::test_una_version_publicada_se_sirve_solo_en_las_capacidades_que_sustenta",
+        "tests/integracion/test_api.py::test_la_ficha_se_abstiene_en_las_capacidades_que_no_sustenta"
+      ],
+      "falta": "La captura y vinculación del anexo de F19 no está hecha: se prueba que sin el anexo la capacidad PLAZO se abstiene, no que con él se complete."
+    },
+    "AT-030": {
+      "pruebas": [
+        "tests/integracion/test_curacion.py::test_la_nota_produce_la_abrogacion_y_la_restitucion",
+        "tests/unit/test_citas.py::test_la_nota_conserva_la_abrogacion_y_la_restitucion",
+        "tests/integracion/test_publicacion.py::test_abrogada_y_restablecida_no_tiene_lectura_automatica"
+      ]
+    },
+    "AT-031": {
+      "pruebas": [
+        "tests/integracion/test_esquema_hechos.py::test_un_valor_de_vigencia_desconocida_no_se_publica",
+        "tests/integracion/test_api.py::test_un_valor_de_otro_periodo_no_se_devuelve",
+        "tests/integracion/test_esquema_hechos.py::test_cuantia_no_informada_no_necesita_inventar_un_monto"
+      ]
+    },
+    "AT-032": {
+      "pruebas": [
+        "tests/unit/test_adaptadores.py::test_original_y_actualizado_son_versiones_distintas",
+        "tests/integracion/test_curacion.py::test_la_ficha_no_es_una_version_del_texto"
+      ],
+      "falta": "La correspondencia comprobada 10→9 entre versiones (tabla equivalencias_unidades) no está poblada ni ejercida."
+    },
+    "AT-033": {
+      "pruebas": [
+        "tests/integracion/test_publicacion.py::test_una_etiqueta_no_vigente_no_alcanza_para_cerrar_la_vigencia",
+        "tests/unit/test_adaptadores.py::test_normativaba_separa_el_estado_declarado_de_la_conclusion"
+      ]
+    },
+    "AT-034": {
+      "pruebas": [
+        "tests/integracion/test_esquema_temporalidad.py::test_condicionado_exige_declarar_la_condicion",
+        "tests/integracion/test_publicacion.py::test_sin_estado_declarado_la_vigencia_va_a_revision"
+      ]
+    },
+    "AT-035": {
+      "pruebas": [
+        "tests/integracion/test_monitoreo.py::test_el_impacto_alcanza_a_las_normas_que_la_citan",
+        "tests/integracion/test_curacion.py::test_toda_relacion_nace_candidata_y_con_evidencia"
+      ]
+    },
+    "AT-036": {
+      "pruebas": [
+        "tests/aceptacion/test_casos_aceptacion.py::test_at036_dos_normas_que_se_citan_entre_si_conservan_ambas_aristas",
+        "tests/integracion/test_curacion.py::test_construir_relaciones_dos_veces_no_duplica"
+      ]
+    },
+    "AT-037": {
+      "pruebas": [
+        "tests/integracion/test_curacion.py::test_una_norma_no_registrada_queda_como_referencia_pendiente"
+      ]
+    },
+    "AT-038": {
+      "pruebas": [
+        "tests/integracion/test_campos_y_cobertura.py::test_un_campo_sin_senales_dice_donde_se_busco",
+        "tests/integracion/test_esquema_hechos.py::test_no_informado_exige_decir_que_fuentes_se_revisaron"
+      ]
+    },
+    "AT-039": {
+      "pruebas": [
+        "tests/integracion/test_esquema_hechos.py::test_no_informado_exige_decir_que_fuentes_se_revisaron",
+        "tests/unit/test_reglas.py::test_una_causal_de_revocacion_no_decide_el_acceso"
+      ]
+    },
+    "AT-040": {
+      "pruebas": [
+        "tests/integracion/test_campos_y_cobertura.py::test_evaluacion_completa_no_es_base_completa",
+        "tests/integracion/test_api.py::test_cobertura_separa_evaluado_de_sustantivo"
+      ]
+    },
+    "AT-041": {
+      "pruebas": [
+        "tests/aceptacion/test_casos_reglas.py::test_at041_cada_edad_se_evalua_contra_su_propia_variable",
+        "tests/aceptacion/test_casos_reglas.py::test_at041_la_edad_del_adulto_no_excluye_por_la_del_nino",
+        "tests/aceptacion/test_casos_reglas.py::test_at041_falta_la_edad_del_adulto_y_se_pide_esa_y_no_otra"
+      ],
+      "falta": "La regla es sintética: ninguna norma del corpus tiene todavía una regla real con roles de población poblada desde fuente (HU-013)."
+    },
+    "AT-042": {
+      "pruebas": [
+        "tests/unit/test_reglas.py::test_la_tabla_de_verdad_es_la_de_la_especificacion",
+        "tests/unit/test_reglas.py::test_un_dato_que_falta_no_es_un_incumplimiento",
+        "tests/unit/test_reglas.py::test_falta_un_dato_y_el_resultado_pide_datos_en_vez_de_negar"
+      ]
+    },
+    "AT-043": {
+      "pruebas": [
+        "tests/unit/test_reglas.py::test_la_tabla_de_verdad_es_la_de_la_especificacion",
+        "tests/unit/test_reglas.py::test_una_condicion_falsa_no_arrastra_a_las_desconocidas",
+        "tests/unit/test_reglas.py::test_una_condicion_cumplida_no_tapa_lo_que_falta"
+      ]
+    },
+    "AT-044": {
+      "pruebas": [
+        "tests/unit/test_reglas.py::test_la_tabla_de_verdad_es_la_de_la_especificacion",
+        "tests/unit/test_reglas.py::test_un_dato_declarado_como_nulo_tampoco_lo_es"
+      ]
+    },
+    "AT-045": {
+      "pruebas": [
+        "tests/unit/test_reglas.py::test_menor_que_no_es_menor_o_igual",
+        "tests/unit/test_reglas.py::test_los_importes_se_comparan_como_decimales"
+      ]
+    },
+    "AT-046": {
+      "pruebas": [
+        "tests/unit/test_reglas.py::test_con_la_excepcion_cumplida_el_bloqueo_no_aplica",
+        "tests/unit/test_reglas.py::test_no_se_niega_sin_haber_evaluado_las_excepciones",
+        "tests/unit/test_reglas.py::test_con_todas_las_excepciones_descartadas_si_hay_negativa_explicable"
+      ]
+    },
+    "AT-047": {
+      "pruebas": [
+        "tests/unit/test_reglas.py::test_una_salvaguarda_nunca_excluye_y_siempre_se_informa",
+        "tests/unit/test_reglas.py::test_falta_un_dato_y_el_resultado_pide_datos_en_vez_de_negar"
+      ]
+    },
+    "AT-048": {
+      "pruebas": [
+        "tests/integracion/test_esquema_hechos.py::test_candidatos_en_conflicto_pueden_coexistir",
+        "tests/integracion/test_hechos_servibles.py::test_un_conflicto_abierto_bloquea_la_publicacion_de_ese_hecho"
+      ]
+    },
+    "AT-049": {
+      "pruebas": [
+        "tests/unit/test_reglas.py::test_una_causal_de_revocacion_no_decide_el_acceso"
+      ],
+      "falta": "Distinguir suspensión de revocación y detallar el remedio exige el campo criterios_revocacion poblado con texto real: hoy ninguna versión del corpus lo tiene sustantivo."
+    },
+    "AT-050": {
+      "pruebas": [
+        "tests/integracion/test_hechos_servibles.py::test_una_fecha_fuera_del_periodo_no_se_sirve_como_actual",
+        "tests/integracion/test_api.py::test_una_fecha_anterior_a_la_vigencia_no_se_sirve_como_actual"
+      ]
+    },
+    "AT-051": {
+      "motivo": "El cómputo de días hábiles con calendario poblado no está implementado: el esquema exige el calendario y la migración lo modela, pero no hay calculadora ni calendario jurisdiccional cargado."
+    },
+    "AT-052": {
+      "pruebas": [
+        "tests/integracion/test_esquema_hechos.py::test_dias_habiles_sin_calendario_no_producen_una_fecha"
+      ]
+    },
+    "AT-053": {
+      "motivo": "No hay normalizador de rangos de fecha sin año: los plazos se cargan con las fechas que la fuente declara y un rango «del 20 de diciembre al 10 de enero» sin ciclo identificable no tiene todavía dónde quedar como pendiente de contexto."
+    },
+    "AT-054": {
+      "pruebas": [
+        "tests/integracion/test_esquema_hechos.py::test_un_valor_de_vigencia_desconocida_no_se_publica",
+        "tests/integracion/test_esquema_temporalidad.py::test_abierto_fin_no_admite_fecha_de_cierre"
+      ]
+    },
+    "AT-055": {
+      "pruebas": [
+        "tests/unit/test_reglas.py::test_sin_valor_vigente_del_parametro_la_condicion_es_desconocida",
+        "tests/unit/test_reglas.py::test_el_parametro_se_resuelve_a_la_fecha_consultada"
+      ]
+    },
+    "AT-056": {
+      "motivo": "El adaptador PDF no está construido: sin extracción de tablas no hay período por tabla que normalizar."
+    },
+    "AT-057": {
+      "pruebas": [
+        "tests/aceptacion/test_casos_reglas.py::test_at057_un_tope_es_el_limite_de_una_condicion_no_una_cuantia",
+        "tests/aceptacion/test_casos_reglas.py::test_at057_estar_bajo_el_tope_no_dice_cuanto_se_cobra",
+        "tests/integracion/test_esquema_hechos.py::test_cuantia_no_informada_no_necesita_inventar_un_monto"
+      ]
+    },
+    "AT-058": {
+      "pruebas": [
+        "tests/integracion/test_esquema_hechos.py::test_dos_valores_aprobados_no_pueden_regir_a_la_vez",
+        "tests/integracion/test_esquema_hechos.py::test_aprobar_una_version_reevalua_el_solapamiento",
+        "tests/integracion/test_monitoreo.py::test_propagar_dos_veces_no_duplica_el_evento"
+      ]
+    },
+    "AT-059": {
+      "motivo": "Los canales de atención (HU-019) no están poblados: no hay importador de directorios que pueda encontrarse un literal N/A."
+    },
+    "AT-060": {
+      "pruebas": [
+        "tests/integracion/test_esquema_hechos.py::test_candidatos_en_conflicto_pueden_coexistir"
+      ],
+      "falta": "Los puntos de atención (HU-020) no están poblados: el conflicto de piso entre CSV y ficha no tiene datos reales donde darse."
+    },
+    "AT-061": {
+      "motivo": "Los canales por tipo con horarios propios (HU-019) no están poblados."
+    },
+    "AT-062": {
+      "motivo": "El directorio de la DPN (F44) no está capturado: la atribución de un operador municipal no tiene datos donde ejercerse."
+    },
+    "AT-063": {
+      "motivo": "El dataset de sedes con coordenadas (HU-020) no está cargado: no hay geometría cuyo CRS discutir."
+    },
+    "AT-064": {
+      "motivo": "El padrón RENABAP (HU-021) no está importado: la tabla existe pero no tiene snapshot donde buscar un barrio."
+    },
+    "AT-065": {
+      "motivo": "F64 (sedes estacionales) no está capturada."
+    },
+    "AT-066": {
+      "pruebas": [
+        "tests/integracion/test_api.py::test_la_recuperacion_devuelve_citas_localizables"
+      ],
+      "falta": "No hay fuente secundaria de ONG en el corpus poblado: la atribución secundaria se sostiene por el modelo de evidencia, no por un caso real."
+    },
+    "AT-067": {
+      "pruebas": [
+        "tests/aceptacion/test_casos_aceptacion.py::test_at067_las_instrucciones_dentro_de_un_documento_se_guardan_como_texto"
+      ]
+    },
+    "AT-068": {
+      "pruebas": [
+        "tests/aceptacion/test_casos_aceptacion.py::test_at068_el_rol_ingestor_no_puede_crear_un_release",
+        "tests/integracion/test_api.py::test_sin_credencial_configurada_la_administracion_esta_cerrada",
+        "tests/integracion/test_api.py::test_una_credencial_invalida_no_autoriza"
+      ]
+    },
+    "AT-069": {
+      "pruebas": [
+        "tests/aceptacion/test_casos_aceptacion.py::test_at069_si_falla_la_publicacion_no_queda_release_ni_evento",
+        "tests/integracion/test_publicacion.py::test_publicar_deja_release_fragmentos_evento_y_bitacora"
+      ]
+    },
+    "AT-070": {
+      "pruebas": [
+        "tests/integracion/test_api.py::test_sin_release_la_recuperacion_no_toca_staging",
+        "tests/integracion/test_publicacion.py::test_solo_se_indexa_texto_dispositivo",
+        "tests/integracion/test_api.py::test_sin_release_publicado_la_respuesta_lo_dice"
+      ]
+    },
+    "AT-071": {
+      "pruebas": [
+        "tests/integracion/test_hechos_servibles.py::test_vencer_la_frescura_no_deroga_pero_sí_impide_servir",
+        "tests/integracion/test_campos_y_cobertura.py::test_sin_release_publicado_ninguna_capacidad_sirve_datos"
+      ]
+    },
+    "AT-072": {
+      "pruebas": [
+        "tests/integracion/test_monitoreo.py::test_una_entrega_exitosa_lleva_la_clave_de_idempotencia",
+        "tests/integracion/test_monitoreo.py::test_propagar_dos_veces_no_duplica_el_evento",
+        "tests/integracion/test_monitoreo.py::test_una_entrega_fallida_no_marca_el_evento_como_entregado"
+      ]
+    },
+    "AT-073": {
+      "pruebas": [
+        "tests/integracion/test_monitoreo.py::test_sin_consumidor_configurado_no_se_declara_ninguna_entrega",
+        "tests/integracion/test_monitoreo.py::test_un_evento_que_agoto_los_intentos_pasa_a_la_cola_de_fallos"
+      ]
+    },
+    "AT-074": {
+      "motivo": "La prueba de restauración (HU-037) exige un procedimiento de backup y un entorno aislado que este alcance no construyó."
+    },
+    "AT-075": {
+      "pruebas": [
+        "tests/unit/test_adaptadores.py::test_la_ruta_de_infoleg_distingue_original_de_actualizado"
+      ],
+      "falta": "El caso de F67 es un PDF alojado en una carpeta de año viejo: sin adaptador PDF, solo se prueba que la ruta no dicta la identidad de la versión."
+    },
+    "AT-076": {
+      "pruebas": [
+        "tests/integracion/test_esquema_hechos.py::test_cuantia_no_informada_no_necesita_inventar_un_monto"
+      ],
+      "falta": "Los trámites (HU-019) no están poblados: la ficha sin costo ni duración no tiene datos reales donde darse."
+    },
+    "AT-077": {
+      "pruebas": [
+        "tests/integracion/test_captura.py::test_no_se_guardan_cookies_ni_credenciales",
+        "tests/integracion/test_captura.py::test_el_planificador_ignora_lo_que_no_se_puede_pedir"
+      ]
+    },
+    "AT-078": {
+      "pruebas": [
+        "tests/integracion/test_catalogo.py::test_una_fuente_retirada_explica_por_que",
+        "tests/integracion/test_catalogo.py::test_el_reporte_no_confunde_fuentes_con_leyes"
+      ],
+      "falta": "El caso concreto de F09 (directorio municipal caído con lista provincial disponible) no tiene fixture: se prueba la regla de que una fuente retirada explica su motivo, no la sustitución por otra granularidad."
+    },
+    "AT-079": {
+      "pruebas": [
+        "tests/integracion/test_api.py::test_la_evaluacion_aclara_que_no_es_una_decision",
+        "tests/integracion/test_api.py::test_el_cuerpo_de_una_evaluacion_no_se_persiste",
+        "tests/unit/test_reglas.py::test_todo_cumplido_da_un_resultado_preliminar_positivo"
+      ]
+    },
+    "AT-080": {
+      "pruebas": [
+        "tests/aceptacion/test_casos_aceptacion.py::test_at080_el_conocimiento_posterior_no_borra_la_respuesta_anterior",
+        "tests/integracion/test_esquema_temporalidad.py::test_solo_un_intervalo_de_conocimiento_abierto_por_version"
+      ]
+    }
   }
 }

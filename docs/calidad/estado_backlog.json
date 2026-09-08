@@ -1,0 +1,396 @@
+{
+  "schema_version": "1.0",
+  "nota": "Estado declarado de las 40 historias transversales. `evidencia` son rutas que `bn calidad backlog` verifica que existan: una historia que apunta a un archivo borrado falla el reporte en vez de quedar cerrada sobre nada. Las 83 historias por fuente no están acá: su estado se deriva de la base.",
+  "transversales": {
+    "HU-001": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/catalogo/carga.py",
+        "src/backend_normativo/catalogo/reconciliacion.py",
+        "tests/integracion/test_catalogo.py"
+      ],
+      "comandos": [
+        "bn catalogo validar",
+        "bn catalogo cargar",
+        "bn catalogo conciliar"
+      ]
+    },
+    "HU-002": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/db/models",
+        "src/backend_normativo/migrations/versions/0001_esquema_inicial.py",
+        "src/backend_normativo/migrations/versions/0002_reglas_de_integridad.py",
+        "tests/integracion/test_esquema_integridad.py",
+        "tests/integracion/test_esquema_temporalidad.py",
+        "tests/integracion/test_esquema_hechos.py"
+      ],
+      "comandos": [
+        "alembic upgrade head",
+        "alembic check"
+      ]
+    },
+    "HU-003": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/catalogo/carga.py",
+        "src/backend_normativo/ingesta/planificador.py",
+        "tests/integracion/test_captura.py"
+      ],
+      "comandos": [
+        "bn catalogo cargar"
+      ]
+    },
+    "HU-004": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/ingesta/capturador.py",
+        "src/backend_normativo/ingesta/almacen.py",
+        "src/backend_normativo/ingesta/cliente.py",
+        "tests/integracion/test_captura.py"
+      ],
+      "comandos": [
+        "bn ingesta capturar"
+      ]
+    },
+    "HU-005": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/ingesta/importadores/infoleg.py",
+        "tests/integracion/test_importador_infoleg.py"
+      ],
+      "comandos": [
+        "bn ingesta importar-infoleg"
+      ]
+    },
+    "HU-006": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/ingesta/adaptadores/html.py",
+        "src/backend_normativo/ingesta/adaptadores/normativa_nacional.py",
+        "src/backend_normativo/ingesta/adaptadores/normativa_ba.py",
+        "src/backend_normativo/ingesta/adaptadores/infoleg_legacy.py",
+        "tests/unit/test_adaptadores.py"
+      ],
+      "comandos": [
+        "bn ingesta extraer",
+        "bn ingesta descubrir"
+      ]
+    },
+    "HU-007": {
+      "estado": "NO_INICIADA",
+      "evidencia": [],
+      "falta": "El adaptador PDF no se construyó. Afecta a D07-D09, F38, F40, F54, F62, F63 y F67, y a los casos AT-018 a AT-021, AT-056 y AT-075."
+    },
+    "HU-008": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/curacion/segmentacion.py",
+        "tests/unit/test_segmentacion.py"
+      ],
+      "comandos": [
+        "bn ingesta extraer"
+      ]
+    },
+    "HU-009": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/curacion/identidad.py",
+        "tests/integracion/test_curacion.py",
+        "tests/aceptacion/test_casos_aceptacion.py"
+      ],
+      "comandos": [
+        "bn curacion identidad"
+      ]
+    },
+    "HU-010": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/curacion/citas.py",
+        "src/backend_normativo/curacion/relaciones.py",
+        "tests/unit/test_citas.py",
+        "tests/integracion/test_curacion.py"
+      ],
+      "comandos": [
+        "bn curacion relaciones"
+      ]
+    },
+    "HU-011": {
+      "estado": "EN_CURSO",
+      "evidencia": [
+        "src/backend_normativo/db/models/beneficios.py",
+        "tests/integracion/test_esquema_hechos.py"
+      ],
+      "falta": "El modelo de beneficios existe y se ejercita con datos sintéticos; el corpus real todavía no tiene beneficios cargados desde fuente, porque eso depende de los trámites (HU-019) y los PDF de montos (HU-007)."
+    },
+    "HU-012": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/curacion/campos.py",
+        "src/backend_normativo/db/vocabularios.py",
+        "tests/integracion/test_campos_y_cobertura.py"
+      ],
+      "comandos": [
+        "bn curacion campos",
+        "bn revision aprobar-campos"
+      ]
+    },
+    "HU-013": {
+      "estado": "EN_CURSO",
+      "evidencia": [
+        "src/backend_normativo/db/models/beneficios.py",
+        "src/backend_normativo/reglas/ast.py"
+      ],
+      "falta": "El AST distingue variables por rol (edad del causante y del representante son campos distintos), pero no hay una regla real del corpus que lo use: AT-041 sigue sin caso."
+    },
+    "HU-014": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/reglas/ast.py",
+        "src/backend_normativo/reglas/evaluacion.py",
+        "src/backend_normativo/reglas/beneficio.py",
+        "tests/unit/test_reglas.py"
+      ]
+    },
+    "HU-015": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/reglas/beneficio.py",
+        "tests/unit/test_reglas.py"
+      ]
+    },
+    "HU-016": {
+      "estado": "EN_CURSO",
+      "evidencia": [
+        "src/backend_normativo/db/models/hechos.py",
+        "tests/integracion/test_esquema_hechos.py"
+      ],
+      "falta": "El esquema modela plazos, calendarios y excepciones, y exige el calendario antes de producir una fecha hábil. La calculadora de días hábiles y los calendarios jurisdiccionales no están: AT-051 queda sin ejecutar."
+    },
+    "HU-017": {
+      "estado": "EN_CURSO",
+      "evidencia": [
+        "src/backend_normativo/curacion/campos.py",
+        "src/backend_normativo/reglas/beneficio.py",
+        "tests/unit/test_reglas.py"
+      ],
+      "falta": "La distinción entre suspensión, cese y revocación está en el vocabulario y en la evaluación, pero ninguna versión del corpus tiene criterios_revocacion sustantivos con los que ejercerla (AT-049)."
+    },
+    "HU-018": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/db/models/hechos.py",
+        "src/backend_normativo/reglas/evaluacion.py",
+        "tests/integracion/test_esquema_hechos.py",
+        "tests/unit/test_reglas.py"
+      ]
+    },
+    "HU-019": {
+      "estado": "NO_INICIADA",
+      "evidencia": [],
+      "falta": "Las tablas de trámites, pasos y canales existen y tienen sus restricciones, pero no hay importador que las pueble. Afecta AT-059, AT-061 y AT-076."
+    },
+    "HU-020": {
+      "estado": "NO_INICIADA",
+      "evidencia": [],
+      "falta": "Las tablas de puntos de atención existen; no hay importador de directorios ni tratamiento de coordenadas. Afecta AT-060, AT-062, AT-063 y AT-065."
+    },
+    "HU-021": {
+      "estado": "NO_INICIADA",
+      "evidencia": [],
+      "falta": "La tabla barrios_renabap existe con su versionado; el padrón no se importó. Afecta AT-064."
+    },
+    "HU-022": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/db/models/calidad.py",
+        "src/backend_normativo/curacion/campos.py",
+        "tests/integracion/test_campos_y_cobertura.py",
+        "tests/integracion/test_esquema_temporalidad.py"
+      ]
+    },
+    "HU-023": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/politicas/vigencia.py",
+        "src/backend_normativo/curacion/vigencia.py",
+        "tests/integracion/test_publicacion.py",
+        "tests/integracion/test_hechos_servibles.py"
+      ],
+      "comandos": [
+        "bn curacion vigencia",
+        "bn revision resolver-vigencia"
+      ]
+    },
+    "HU-024": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/curacion/revision.py",
+        "tests/integracion/test_publicacion.py",
+        "tests/integracion/test_hechos_servibles.py"
+      ],
+      "comandos": [
+        "bn revision pendientes",
+        "bn revision resolver-vigencia"
+      ]
+    },
+    "HU-025": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/publicacion/release.py",
+        "src/backend_normativo/publicacion/gates.py",
+        "tests/integracion/test_publicacion.py",
+        "tests/aceptacion/test_casos_aceptacion.py"
+      ],
+      "comandos": [
+        "bn publicacion estado",
+        "bn publicacion publicar"
+      ]
+    },
+    "HU-026": {
+      "estado": "EN_CURSO",
+      "evidencia": [
+        "src/backend_normativo/monitoreo/novedades.py",
+        "tests/integracion/test_monitoreo.py"
+      ],
+      "falta": "El monitor corre sobre las fuentes capturadas; los boletines oficiales (M01-M04) todavía no están en el ciclo periódico."
+    },
+    "HU-027": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/monitoreo/diff.py",
+        "tests/integracion/test_monitoreo.py"
+      ],
+      "comandos": [
+        "bn monitoreo correr"
+      ]
+    },
+    "HU-028": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/monitoreo/impacto.py",
+        "src/backend_normativo/monitoreo/outbox.py",
+        "tests/integracion/test_monitoreo.py"
+      ],
+      "comandos": [
+        "bn monitoreo entregar"
+      ]
+    },
+    "HU-029": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/api/app.py",
+        "src/backend_normativo/api/contratos.py",
+        "src/backend_normativo/api/routers",
+        "tests/integracion/test_api.py"
+      ],
+      "comandos": [
+        "bn api servir",
+        "bn api openapi"
+      ]
+    },
+    "HU-030": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/api/routers/evaluaciones.py",
+        "src/backend_normativo/reglas/beneficio.py",
+        "tests/integracion/test_api.py"
+      ]
+    },
+    "HU-031": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/publicacion/release.py",
+        "src/backend_normativo/api/routers/recuperacion.py",
+        "tests/integracion/test_api.py"
+      ]
+    },
+    "HU-032": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/api/consultas.py",
+        "src/backend_normativo/api/contratos.py",
+        "tests/integracion/test_api.py",
+        "tests/integracion/test_hechos_servibles.py"
+      ]
+    },
+    "HU-033": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/migrations/versions/0002_reglas_de_integridad.py",
+        "src/backend_normativo/api/dependencias.py",
+        "tests/integracion/test_api.py",
+        "tests/aceptacion/test_casos_aceptacion.py"
+      ]
+    },
+    "HU-034": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/calidad/cobertura.py",
+        "src/backend_normativo/publicacion/gates.py",
+        "tests/integracion/test_campos_y_cobertura.py"
+      ],
+      "comandos": [
+        "bn calidad cobertura"
+      ]
+    },
+    "HU-035": {
+      "estado": "EN_CURSO",
+      "evidencia": [
+        "scripts/poblar_corpus.sh",
+        "src/backend_normativo/ingesta/importadores/infoleg.py",
+        "docs/operacion/poblacion_real.md"
+      ],
+      "falta": "El catálogo nacional está importado entero y ocho normas del alcance tienen texto, campos y release. Faltan las fuentes que dependen del adaptador PDF (HU-007) y de los importadores de trámites y directorios (HU-019 a HU-021)."
+    },
+    "HU-036": {
+      "estado": "EN_CURSO",
+      "evidencia": [
+        "docs/calidad/trazabilidad_at.json",
+        "tests/aceptacion/test_casos_aceptacion.py",
+        "docs/calidad/trazabilidad_at.md"
+      ],
+      "comandos": [
+        "bn calidad trazabilidad --ejecutar"
+      ],
+      "falta": "50 de los 80 casos AT están cubiertos y 11 parcialmente; los 19 restantes esperan capacidades que este alcance no construyó. Las 60 consultas conversacionales revisadas que pide la gate no se hicieron."
+    },
+    "HU-037": {
+      "estado": "NO_INICIADA",
+      "evidencia": [],
+      "falta": "No hay procedimiento de backup ni prueba de restauración en entorno aislado, ni medición de rendimiento. Afecta AT-074."
+    },
+    "HU-038": {
+      "estado": "EN_CURSO",
+      "evidencia": [
+        "src/backend_normativo/ingesta/capturador.py",
+        "src/backend_normativo/catalogo/reconciliacion.py",
+        "tests/integracion/test_captura.py"
+      ],
+      "falta": "Una fuente bloqueada se pausa, se registra con motivo y responsable y no se convierte en «sin datos». La vía de carga manual con la misma cadena de evidencia no está implementada."
+    },
+    "HU-039": {
+      "estado": "EN_CURSO",
+      "evidencia": [
+        "docs/operacion/runbook.md",
+        "docs/operacion/diccionario_de_datos.md",
+        "docs/adr",
+        "src/backend_normativo/calidad/backlog.py"
+      ],
+      "comandos": [
+        "bn calidad backlog",
+        "bn calidad trazabilidad"
+      ],
+      "falta": "La documentación y los reportes están; falta la corrida de verificación en un entorno limpio distinto del de desarrollo."
+    },
+    "HU-040": {
+      "estado": "CERRADA",
+      "evidencia": [
+        "docs/adr",
+        "src/backend_normativo/politicas/vigencia.py",
+        "docs/decisiones.md",
+        "tests/integracion/test_publicacion.py"
+      ]
+    }
+  }
+}

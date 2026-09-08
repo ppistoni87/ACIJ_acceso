@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **45**
-- Cubiertos parcialmente: **11**
-- No ejecutados: **24**
-- Pruebas citadas: **98** (ejecutadas)
+- Cubiertos por pruebas que corren: **51**
+- Cubiertos parcialmente: **12**
+- No ejecutados: **17**
+- Pruebas citadas: **113** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -21,7 +21,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-008 | Login con 200 | HU-004 | CUBIERTO_PARCIAL | PASSED | `test_no_se_guardan_cookies_ni_credenciales`<br>_Falta: Clasificar un 200 con formulario de login como canal/estado de acceso exige el adaptador de trámites, que no está construido._ |
 | AT-009 | 304 y frescura | HU-023 | CUBIERTO | PASSED | `test_un_304_exige_captura_previa`<br>`test_la_revalidacion_reutiliza_el_objeto_previo`<br>`test_vencer_la_frescura_no_deroga_pero_sí_impide_servir` |
 | AT-010 | ETag cambia sin semántica | HU-027 | CUBIERTO | PASSED | `test_una_nota_editorial_no_cuenta_como_cambio_de_la_norma`<br>`test_la_revalidacion_reutiliza_el_objeto_previo` |
-| AT-011 | CSV de muestra | HU-F01 | NO_EJECUTADO | — | _Sin motivo declarado._ |
+| AT-011 | CSV de muestra | HU-F01 | CUBIERTO | PASSED | `test_at011_el_catalogo_apunta_al_recurso_de_produccion_de_infoleg`<br>`test_cada_fuente_tiene_configuracion_con_adaptador_y_presupuesto` |
 | AT-012 | CSV sin texto | HU-005 | CUBIERTO | PASSED | `test_metadata_only_se_conserva` |
 | AT-013 | Contadores no son aristas | HU-F01 | CUBIERTO | PASSED | `test_los_contadores_no_se_convierten_en_relaciones` |
 | AT-014 | Cambio de esquema dataset | HU-005 | CUBIERTO | PASSED | `test_forma_inesperada_detiene_la_importacion` |
@@ -46,12 +46,12 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-033 | Modificatoria no vigente | HU-D05 | CUBIERTO | PASSED | `test_una_etiqueta_no_vigente_no_alcanza_para_cerrar_la_vigencia`<br>`test_normativaba_separa_el_estado_declarado_de_la_conclusion` |
 | AT-034 | Condición transitoria pendiente | HU-D06 | CUBIERTO | PASSED | `test_condicionado_exige_declarar_la_condicion`<br>`test_sin_estado_declarado_la_vigencia_va_a_revision` |
 | AT-035 | Novedad candidata de reglamentación | HU-M02 | CUBIERTO | PASSED | `test_el_impacto_alcanza_a_las_normas_que_la_citan`<br>`test_toda_relacion_nace_candidata_y_con_evidencia` |
-| AT-036 | Ciclo legítimo de citas | HU-010 | NO_EJECUTADO | — | _Sin motivo declarado._ |
+| AT-036 | Ciclo legítimo de citas | HU-010 | CUBIERTO | PASSED | `test_at036_dos_normas_que_se_citan_entre_si_conservan_ambas_aristas`<br>`test_construir_relaciones_dos_veces_no_duplica` |
 | AT-037 | Frontera de dependencias | HU-010 | CUBIERTO | PASSED | `test_una_norma_no_registrada_queda_como_referencia_pendiente` |
 | AT-038 | No aplicabilidad fundada | HU-012 | CUBIERTO | PASSED | `test_un_campo_sin_senales_dice_donde_se_busco`<br>`test_no_informado_exige_decir_que_fuentes_se_revisaron` |
 | AT-039 | No informado no es no existe | HU-017 | CUBIERTO | PASSED | `test_no_informado_exige_decir_que_fuentes_se_revisaron`<br>`test_una_causal_de_revocacion_no_decide_el_acceso` |
 | AT-040 | Completitud aparente | HU-012 | CUBIERTO | PASSED | `test_evaluacion_completa_no_es_base_completa`<br>`test_cobertura_separa_evaluado_de_sustantivo` |
-| AT-041 | Roles de población | HU-013 | NO_EJECUTADO | — | _Sin motivo declarado._ |
+| AT-041 | Roles de población | HU-013 | CUBIERTO_PARCIAL | PASSED | `test_at041_cada_edad_se_evalua_contra_su_propia_variable`<br>`test_at041_la_edad_del_adulto_no_excluye_por_la_del_nino`<br>`test_at041_falta_la_edad_del_adulto_y_se_pide_esa_y_no_otra`<br>_Falta: La regla es sintética: ninguna norma del corpus tiene todavía una regla real con roles de población poblada desde fuente (HU-013)._ |
 | AT-042 | AND con desconocido | HU-014 | CUBIERTO | PASSED | `test_la_tabla_de_verdad_es_la_de_la_especificacion`<br>`test_un_dato_que_falta_no_es_un_incumplimiento`<br>`test_falta_un_dato_y_el_resultado_pide_datos_en_vez_de_negar` |
 | AT-043 | OR con alternativa válida | HU-014 | CUBIERTO | PASSED | `test_la_tabla_de_verdad_es_la_de_la_especificacion`<br>`test_una_condicion_falsa_no_arrastra_a_las_desconocidas`<br>`test_una_condicion_cumplida_no_tapa_lo_que_falta` |
 | AT-044 | Negación de desconocido | HU-014 | CUBIERTO | PASSED | `test_la_tabla_de_verdad_es_la_de_la_especificacion`<br>`test_un_dato_declarado_como_nulo_tampoco_lo_es` |
@@ -63,11 +63,11 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-050 | Cierre conocido sin cambio web | HU-016 | CUBIERTO | PASSED | `test_una_fecha_fuera_del_periodo_no_se_sirve_como_actual`<br>`test_una_fecha_anterior_a_la_vigencia_no_se_sirve_como_actual` |
 | AT-051 | Días hábiles con feriado | HU-016 | NO_EJECUTADO | — | _El cómputo de días hábiles con calendario poblado no está implementado: el esquema exige el calendario y la migración lo modela, pero no hay calculadora ni calendario jurisdiccional cargado._ |
 | AT-052 | Calendario sin cobertura | HU-016 | CUBIERTO | PASSED | `test_dias_habiles_sin_calendario_no_producen_una_fecha` |
-| AT-053 | Rango sin año | HU-016 | NO_EJECUTADO | — | _Sin motivo declarado._ |
+| AT-053 | Rango sin año | HU-016 | NO_EJECUTADO | — | _No hay normalizador de rangos de fecha sin año: los plazos se cargan con las fechas que la fuente declara y un rango «del 20 de diciembre al 10 de enero» sin ciclo identificable no tiene todavía dónde quedar como pendiente de contexto._ |
 | AT-054 | Último tramo salarial | HU-F12 | CUBIERTO | PASSED | `test_un_valor_de_vigencia_desconocida_no_se_publica`<br>`test_abierto_fin_no_admite_fecha_de_cierre` |
 | AT-055 | SMVM versus comercio | HU-018 | CUBIERTO | PASSED | `test_sin_valor_vigente_del_parametro_la_condicion_es_desconocida`<br>`test_el_parametro_se_resuelve_a_la_fecha_consultada` |
 | AT-056 | Períodos mixtos en PDF | HU-F62 | NO_EJECUTADO | — | _El adaptador PDF no está construido: sin extracción de tablas no hay período por tabla que normalizar._ |
-| AT-057 | Monto versus tope | HU-018 | NO_EJECUTADO | — | _Sin motivo declarado._ |
+| AT-057 | Monto versus tope | HU-018 | CUBIERTO | PASSED | `test_at057_un_tope_es_el_limite_de_una_condicion_no_una_cuantia`<br>`test_at057_estar_bajo_el_tope_no_dice_cuanto_se_cobra`<br>`test_cuantia_no_informada_no_necesita_inventar_un_monto` |
 | AT-058 | Cambio de parámetro | HU-028 | CUBIERTO | PASSED | `test_dos_valores_aprobados_no_pueden_regir_a_la_vez`<br>`test_aprobar_una_version_reevalua_el_solapamiento`<br>`test_propagar_dos_veces_no_duplica_el_evento` |
 | AT-059 | No informado operativo | HU-F60 | NO_EJECUTADO | — | _Los canales de atención (HU-019) no están poblados: no hay importador de directorios que pueda encontrarse un literal N/A._ |
 | AT-060 | Conflicto de piso | HU-F20 | CUBIERTO_PARCIAL | PASSED | `test_candidatos_en_conflicto_pueden_coexistir`<br>_Falta: Los puntos de atención (HU-020) no están poblados: el conflicto de piso entre CSV y ficha no tiene datos reales donde darse._ |
@@ -77,9 +77,9 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-064 | RENABAP no encontrado | HU-021 | NO_EJECUTADO | — | _El padrón RENABAP (HU-021) no está importado: la tabla existe pero no tiene snapshot donde buscar un barrio._ |
 | AT-065 | Tabla estacional vacía | HU-F64 | NO_EJECUTADO | — | _F64 (sedes estacionales) no está capturada._ |
 | AT-066 | Fuente secundaria y cita | HU-022 | CUBIERTO_PARCIAL | PASSED | `test_la_recuperacion_devuelve_citas_localizables`<br>_Falta: No hay fuente secundaria de ONG en el corpus poblado: la atribución secundaria se sostiene por el modelo de evidencia, no por un caso real._ |
-| AT-067 | Contenido con instrucciones maliciosas | HU-033 | NO_EJECUTADO | — | _Sin motivo declarado._ |
-| AT-068 | Ingestor intenta publicar | HU-033 | CUBIERTO | PASSED | `test_sin_credencial_configurada_la_administracion_esta_cerrada`<br>`test_una_credencial_invalida_no_autoriza` |
-| AT-069 | Release parcial fallido | HU-025 | NO_EJECUTADO | — | _Sin motivo declarado._ |
+| AT-067 | Contenido con instrucciones maliciosas | HU-033 | CUBIERTO | PASSED | `test_at067_las_instrucciones_dentro_de_un_documento_se_guardan_como_texto` |
+| AT-068 | Ingestor intenta publicar | HU-033 | CUBIERTO | PASSED | `test_at068_el_rol_ingestor_no_puede_crear_un_release`<br>`test_sin_credencial_configurada_la_administracion_esta_cerrada`<br>`test_una_credencial_invalida_no_autoriza` |
+| AT-069 | Release parcial fallido | HU-025 | CUBIERTO | PASSED | `test_at069_si_falla_la_publicacion_no_queda_release_ni_evento`<br>`test_publicar_deja_release_fragmentos_evento_y_bitacora` |
 | AT-070 | Índice retrasado | HU-031 | CUBIERTO | PASSED | `test_sin_release_la_recuperacion_no_toca_staging`<br>`test_solo_se_indexa_texto_dispositivo`<br>`test_sin_release_publicado_la_respuesta_lo_dice` |
 | AT-071 | Jobs caídos y TTL | HU-034 | CUBIERTO | PASSED | `test_vencer_la_frescura_no_deroga_pero_sí_impide_servir`<br>`test_sin_release_publicado_ninguna_capacidad_sirve_datos` |
 | AT-072 | Evento repetido | HU-028 | CUBIERTO | PASSED | `test_una_entrega_exitosa_lleva_la_clave_de_idempotencia`<br>`test_propagar_dos_veces_no_duplica_el_evento`<br>`test_una_entrega_fallida_no_marca_el_evento_como_entregado` |
@@ -90,7 +90,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-077 | Formulario público sin envío | HU-F04 | CUBIERTO | PASSED | `test_no_se_guardan_cookies_ni_credenciales`<br>`test_el_planificador_ignora_lo_que_no_se_puede_pedir` |
 | AT-078 | Sustituto de otra granularidad | HU-F09 | CUBIERTO_PARCIAL | PASSED | `test_una_fuente_retirada_explica_por_que`<br>`test_el_reporte_no_confunde_fuentes_con_leyes`<br>_Falta: El caso concreto de F09 (directorio municipal caído con lista provincial disponible) no tiene fixture: se prueba la regla de que una fuente retirada explica su motivo, no la sustitución por otra granularidad._ |
 | AT-079 | Evaluación no administrativa | HU-030 | CUBIERTO | PASSED | `test_la_evaluacion_aclara_que_no_es_una_decision`<br>`test_el_cuerpo_de_una_evaluacion_no_se_persiste`<br>`test_todo_cumplido_da_un_resultado_preliminar_positivo` |
-| AT-080 | Historial bitemporal | HU-009 | NO_EJECUTADO | — | _Sin motivo declarado._ |
+| AT-080 | Historial bitemporal | HU-009 | CUBIERTO | PASSED | `test_at080_el_conocimiento_posterior_no_borra_la_respuesta_anterior`<br>`test_solo_un_intervalo_de_conocimiento_abierto_por_version` |
 
 ## Cómo leer los no ejecutados
 
