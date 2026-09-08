@@ -84,7 +84,7 @@ de responder cuánto se cobra.
 | documentos | 62 |
 | documento_versiones | 63 |
 | unidades_documentales | 1562 |
-| evidencias | 7433 |
+| evidencias | 7493 |
 | normas | 423718 |
 | norma_versiones | 12 |
 | relaciones_normativas | 185 |

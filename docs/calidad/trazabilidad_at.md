@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **67**
-- Cubiertos parcialmente: **13**
+- Cubiertos por pruebas que corren: **68**
+- Cubiertos parcialmente: **12**
 - No ejecutados: **0**
-- Pruebas citadas: **195** (ejecutadas)
+- Pruebas citadas: **199** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -42,7 +42,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-029 | Anexo separado de resolución | HU-F19 | CUBIERTO_PARCIAL | PASSED | `test_una_version_publicada_se_sirve_solo_en_las_capacidades_que_sustenta`<br>`test_la_ficha_se_abstiene_en_las_capacidades_que_no_sustenta`<br>_Falta: La captura y vinculación del anexo de F19 no está hecha: se prueba que sin el anexo la capacidad PLAZO se abstiene, no que con él se complete._ |
 | AT-030 | Abrogación y restablecimiento | HU-F33 | CUBIERTO | PASSED | `test_la_nota_produce_la_abrogacion_y_la_restitucion`<br>`test_la_nota_conserva_la_abrogacion_y_la_restitucion`<br>`test_abrogada_y_restablecida_no_tiene_lectura_automatica` |
 | AT-031 | Monto histórico en ley | HU-F33 | CUBIERTO | PASSED | `test_un_valor_de_vigencia_desconocida_no_se_publica`<br>`test_un_valor_de_otro_periodo_no_se_devuelve`<br>`test_cuantia_no_informada_no_necesita_inventar_un_monto` |
-| AT-032 | Renumeración 10 a 9 | HU-F23 | CUBIERTO_PARCIAL | PASSED | `test_original_y_actualizado_son_versiones_distintas`<br>`test_la_ficha_no_es_una_version_del_texto`<br>_Falta: La correspondencia comprobada 10→9 entre versiones (tabla equivalencias_unidades) no está poblada ni ejercida._ |
+| AT-032 | Renumeración 10 a 9 | HU-F23 | CUBIERTO | PASSED | `test_at032_la_renumeracion_del_10_al_9_queda_registrada`<br>`test_at032_se_consulta_la_unidad_de_la_version_correcta`<br>`test_at032_no_se_sobrescribe_el_articulo_10_actual`<br>`test_una_correspondencia_candidata_no_redirige_la_cita`<br>`test_original_y_actualizado_son_versiones_distintas`<br>`test_la_ficha_no_es_una_version_del_texto` |
 | AT-033 | Modificatoria no vigente | HU-D05 | CUBIERTO | PASSED | `test_una_etiqueta_no_vigente_no_alcanza_para_cerrar_la_vigencia`<br>`test_normativaba_separa_el_estado_declarado_de_la_conclusion` |
 | AT-034 | Condición transitoria pendiente | HU-D06 | CUBIERTO | PASSED | `test_condicionado_exige_declarar_la_condicion`<br>`test_sin_estado_declarado_la_vigencia_va_a_revision`<br>`test_lo_que_la_ley_remite_a_la_reglamentacion_no_se_formaliza`<br>`test_las_normas_que_faltan_quedan_como_incidencia_abierta` |
 | AT-035 | Novedad candidata de reglamentación | HU-M02 | CUBIERTO | PASSED | `test_el_impacto_alcanza_a_las_normas_que_la_citan`<br>`test_toda_relacion_nace_candidata_y_con_evidencia` |

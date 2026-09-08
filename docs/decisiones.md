@@ -188,3 +188,27 @@ listado pasó a leerse como una respuesta afirmativa.
 **Consecuencia:** una envoltura con `UNSUPPORTED_SCOPE` es una abstención,
 cualquiera sea la cantidad de filas. Un control que sólo pasa mientras no hay
 datos no es un control.
+
+## D-18 · Una correspondencia entre versiones se aprueba antes de redirigir una cita
+
+Cuando un texto se consolida, el contenido de un artículo puede quedar en otro
+número. Una regla citada contra el artículo 10 original no se responde con lo
+que hoy dice el artículo 10: se responde con la unidad que efectivamente se
+citó, y sólo se redirige al artículo nuevo cuando alguien comprobó que son el
+mismo contenido.
+
+Emparejar por texto idéntico deriva la correspondencia pero no la comprueba: dos
+párrafos iguales en dos artículos distintos se emparejan solos. Por eso toda
+equivalencia derivada nace `CANDIDATE` y sólo una `APPROVED` redirige, con actor
+y fundamento registrados.
+
+**Consecuencia:** ante la duda no hay redirección, que es lo correcto: devolver
+la unidad citada con su versión es siempre defendible; devolver otra por
+parecido no lo es. Y una equivalencia relaciona unidades, nunca las pisa: el
+artículo 10 de la versión nueva conserva su propio texto.
+
+En el Decreto 1382/2001 la derivación encontró 60 correspondencias reales entre
+el texto original y el actualizado: 59 renumeraciones y una sustitución, la del
+artículo 3, donde InfoLEG consolidó la corrección del Decreto 1407/2001 —«donde
+dice incisos 1) y 5) debe decir incisos 1) a 5)»—. Ese es el caso más silencioso:
+la cita sigue apuntando a un artículo que existe, sólo que ya no dice lo mismo.

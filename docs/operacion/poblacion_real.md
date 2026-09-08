@@ -81,6 +81,31 @@ Los tres casos difíciles que el paquete nombra están resueltos como pide:
   encabezado dice 1621. La discrepancia se detectó como transposición de
   dígitos y quedó registrada; no se creó una norma 1261.
 
+## Correspondencia entre versiones de una norma
+
+El Decreto 1382/2001 tiene en InfoLEG dos textos: el original y el actualizado,
+con 105 y 108 unidades dispositivas. Comparar los dos dio 60 correspondencias
+reales: 59 renumeraciones y una sustitución.
+
+Las 59 son unidades que corren de lugar sin cambiar de texto, porque arriba se
+agregó un párrafo. El inciso 1 del artículo 10 pasa del ordinal 61 al 62; en el
+texto viejo el 62 era el inciso 2. Quien resuelva «la unidad 62 del artículo 10»
+obtiene «tener cónyuge» en una versión y «ser beneficiario del SIJP» en la otra.
+
+La sustitución es el artículo 3, y es el caso más silencioso: conserva su número
+con otro texto. InfoLEG consolidó ahí la corrección del Decreto 1407/2001 —«donde
+dice incisos 1) y 5) debe decir incisos 1) a 5)»—. Una cita al artículo 3 sigue
+apuntando a un artículo que existe; sólo que ya no dice lo mismo.
+
+Las 60 quedaron `CANDIDATE`. Una correspondencia sin aprobar no redirige ninguna
+cita: emparejar por texto idéntico la deriva pero no la comprueba, y dos
+párrafos iguales en artículos distintos se emparejan solos. Aprobar es una
+decisión con actor y fundamento (`bn revision aprobar-equivalencia`).
+
+Cuatro unidades del texto nuevo no vienen de ninguna del viejo y una del viejo
+no tiene destino. No reciben equivalencia: que un texto haya desaparecido no
+significa que su contenido esté en otro lado.
+
 ## Documentos PDF
 
 Ocho fuentes en PDF capturadas y extraídas: D07, D08, D09, F38, F40, F54, F62 y

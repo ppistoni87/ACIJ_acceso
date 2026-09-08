@@ -203,10 +203,13 @@
   },
   "AT-032": {
    "pruebas": [
+    "tests/integracion/test_equivalencias.py::test_at032_la_renumeracion_del_10_al_9_queda_registrada",
+    "tests/integracion/test_equivalencias.py::test_at032_se_consulta_la_unidad_de_la_version_correcta",
+    "tests/integracion/test_equivalencias.py::test_at032_no_se_sobrescribe_el_articulo_10_actual",
+    "tests/integracion/test_equivalencias.py::test_una_correspondencia_candidata_no_redirige_la_cita",
     "tests/unit/test_adaptadores.py::test_original_y_actualizado_son_versiones_distintas",
     "tests/integracion/test_curacion.py::test_la_ficha_no_es_una_version_del_texto"
-   ],
-   "falta": "La correspondencia comprobada 10→9 entre versiones (tabla equivalencias_unidades) no está poblada ni ejercida."
+   ]
   },
   "AT-033": {
    "pruebas": [

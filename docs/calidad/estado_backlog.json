@@ -106,10 +106,14 @@
    "evidencia": [
     "src/backend_normativo/curacion/identidad.py",
     "tests/integracion/test_curacion.py",
-    "tests/aceptacion/test_casos_aceptacion.py"
+    "tests/aceptacion/test_casos_aceptacion.py",
+    "src/backend_normativo/curacion/equivalencias.py",
+    "tests/integracion/test_equivalencias.py"
    ],
    "comandos": [
-    "bn curacion identidad"
+    "bn curacion identidad",
+    "bn curacion equivalencias",
+    "bn revision aprobar-equivalencia"
    ]
   },
   "HU-010": {

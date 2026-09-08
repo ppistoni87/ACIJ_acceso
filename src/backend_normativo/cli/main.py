@@ -900,6 +900,42 @@ def curacion_beneficios(
             typer.echo(f"  aviso: {aviso}")
 
 
+@curacion.command("equivalencias")
+def curacion_equivalencias(
+    norma: str = typer.Argument(..., help="Id de la norma con dos versiones de texto."),
+) -> None:
+    """Deriva a qué unidad de la versión nueva corresponde cada una de la vieja.
+
+    Quedan como candidatas: una correspondencia sin aprobar no redirige ninguna
+    cita. Aprobar es una decisión con nombre y fundamento.
+    """
+    import uuid as _uuid
+
+    from backend_normativo.curacion.equivalencias import (
+        CuradorDeEquivalencias,
+        NormaSinDosVersiones,
+    )
+
+    with engine_migrador().begin() as conexion:
+        try:
+            resultado = CuradorDeEquivalencias(conexion).derivar_para_norma(_uuid.UUID(norma))
+        except NormaSinDosVersiones as exc:
+            typer.echo(str(exc))
+            raise typer.Exit(1) from exc
+    typer.echo(
+        f"Origen: {resultado.origen_version_id}\n"
+        f"Destino: {resultado.destino_version_id}\n"
+        f"Renumeraciones: {resultado.renumeraciones} · sustituciones: "
+        f"{resultado.sustituciones}\n"
+        f"Cambian de artículo: {resultado.cambian_de_articulo}\n"
+        f"Ya registradas: {resultado.ya_registradas}\n"
+        f"Sin correspondencia: {resultado.sin_destino} salieron · "
+        f"{resultado.sin_origen} entraron"
+    )
+    for aviso in resultado.avisos:
+        typer.echo(f"  aviso: {aviso}")
+
+
 @curacion.command("vigencia")
 def curacion_vigencia(
     fuente: str | None = typer.Option(None, help="Limitar a una fuente."),
@@ -1006,6 +1042,30 @@ def revision_resolver_vigencia(
         f"Incidencia {resultado.incidencia_id} resuelta por {actor}. "
         f"Vigencia aplicada: {resultado.aplico_vigencia}"
     )
+
+
+@revision.command("aprobar-equivalencia")
+def revision_aprobar_equivalencia(
+    equivalencia: str = typer.Argument(..., help="Id de la equivalencia candidata."),
+    actor: str = typer.Option(..., help="Quién aprueba."),
+    decision: str = typer.Option(..., help="Por qué esa correspondencia es la correcta."),
+) -> None:
+    """Aprueba una correspondencia entre unidades de dos versiones.
+
+    Sólo una aprobada redirige una cita: hasta entonces la cita vieja se
+    responde con el texto que efectivamente se citó.
+    """
+    import uuid as _uuid
+
+    from backend_normativo.curacion.equivalencias import aprobar
+
+    with engine_migrador().begin() as conexion:
+        try:
+            aprobar(conexion, _uuid.UUID(equivalencia), actor=actor, decision=decision)
+        except ValueError as exc:
+            typer.echo(str(exc))
+            raise typer.Exit(1) from exc
+    typer.echo(f"Equivalencia {equivalencia} aprobada por {actor}.")
 
 
 @revision.command("aprobar-campos")
