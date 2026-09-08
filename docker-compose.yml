@@ -1,0 +1,27 @@
+# Entorno local reproducible. La contraseña de este archivo es de desarrollo:
+# los entornos reales toman sus credenciales del gestor de secretos.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: backend_normativo
+      # Ordenamiento e idioma afectan la búsqueda textual en español.
+      LANG: es_AR.utf8
+    command: >
+      postgres
+      -c shared_preload_libraries=pg_stat_statements
+      -c track_activity_query_size=4096
+    ports:
+      - "5432:5432"
+    volumes:
+      - datos_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d backend_normativo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  datos_pg:

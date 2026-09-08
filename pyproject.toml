@@ -1,0 +1,77 @@
+[project]
+name = "backend-normativo"
+version = "0.1.0"
+description = "Backend normativo de acceso a derechos: corpus SQL con evidencia, calidad y monitoreo."
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "alembic>=1.14",
+    "psycopg[binary]>=3.2",
+    "httpx>=0.27",
+    "selectolax>=0.3.21",
+    "lxml>=5.3",
+    "pypdf>=5.1",
+    "pdfplumber>=0.11",
+    "python-dateutil>=2.9",
+    "orjson>=3.10",
+    "structlog>=24.4",
+    "jsonschema>=4.23",
+    "typer>=0.13",
+    "tenacity>=9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "types-python-dateutil",
+]
+
+[project.scripts]
+bn = "backend_normativo.cli.main:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/backend_normativo"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# Las migraciones son código generado y luego editado a mano: se formatean,
+# pero el orden de imports y el largo de línea los fija Alembic.
+"src/backend_normativo/migrations/versions/*.py" = ["E501", "I001"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "integracion: requiere PostgreSQL",
+    "red: requiere acceso a fuentes externas",
+    "aceptacion: caso AT del paquete funcional",
+]
+
+[tool.mypy]
+python_version = "3.11"
+packages = ["backend_normativo"]
+mypy_path = "src"
+plugins = []
+ignore_missing_imports = true
