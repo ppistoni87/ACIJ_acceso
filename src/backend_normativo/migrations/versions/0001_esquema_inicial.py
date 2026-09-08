@@ -1160,6 +1160,7 @@ def upgrade() -> None:
         sa.Column("paginas", sa.Integer(), nullable=True),
         sa.Column("chars_por_pagina", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column("extraccion_score", sa.Numeric(precision=5, scale=4), nullable=True),
+        sa.Column("identidad_candidata", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column(
             "creado_en",
             postgresql.TIMESTAMP(timezone=True),

@@ -185,6 +185,11 @@ class DocumentoVersion(Base):
     # Señal técnica observable de la extracción. No es un juicio de vigencia ni
     # una aprobación: el score de un modelo no valida un registro.
     extraccion_score: Mapped[float | None] = mapped_column(Numeric(5, 4))
+    # Identidad que el extractor leyó del documento: tipo, número, año, emisor y
+    # fechas tal como los declara la fuente. Es un candidato, no un hecho
+    # aprobado: la identidad resuelta vive en `normas` y `norma_identificadores`,
+    # y puede diferir de esto cuando la revisión lo decide.
+    identidad_candidata: Mapped[dict | None] = mapped_column(JSONB)
     creado_en: Mapped[dt.datetime] = ts_creacion()
 
     __table_args__ = (

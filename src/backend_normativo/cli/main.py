@@ -101,5 +101,65 @@ def ingesta_capturar(
                 typer.echo(f"    incidencia: {incidencia}")
 
 
+@ingesta.command("extraer")
+def ingesta_extraer(
+    fuente: str | None = typer.Option(None, help="Limitar a una fuente."),
+) -> None:
+    """Extrae documentos y unidades de las capturas todavía sin procesar."""
+    from backend_normativo.ingesta.extraccion import Extractor
+
+    with engine_migrador().begin() as conexion:
+        resultado = Extractor(conexion).extraer_pendientes(fuente)
+    typer.echo(
+        f"Documentos nuevos: {resultado.documentos_creados}\n"
+        f"Versiones nuevas: {resultado.versiones_creadas} · "
+        f"sin cambios: {resultado.versiones_repetidas}\n"
+        f"Unidades: {resultado.unidades_creadas}\n"
+        f"URLs candidatas: {resultado.candidatas_creadas}\n"
+        f"Incidencias: {resultado.incidencias_creadas}"
+    )
+    for aviso in resultado.avisos[:20]:
+        typer.echo(f"  aviso: {aviso}")
+
+
+@ingesta.command("descubrir")
+def ingesta_descubrir(
+    fuente: str = typer.Argument(..., help="Fuente cuyas candidatas se promueven."),
+    limite: int = typer.Option(20, help="Máximo de candidatas a promover."),
+) -> None:
+    """Promueve URLs candidatas de una fuente a URLs de esa misma fuente.
+
+    Solo promueve las que son vistas de la propia fuente (por ejemplo, el texto
+    de una norma cuya ficha ya está en el catálogo). Las demás quedan como
+    candidatas para que alguien decida si entran al alcance.
+    """
+    from sqlalchemy import text as sql
+
+    with engine_migrador().begin() as conexion:
+        promovidas = (
+            conexion.execute(
+                sql(
+                    "WITH elegibles AS ("
+                    "  SELECT c.id, c.url FROM fuentes_candidatas c "
+                    "   WHERE c.source_id_origen = :s AND c.estado = 'NUEVA' "
+                    "     AND c.relacion LIKE '%de la misma norma%' "
+                    "   ORDER BY c.descubierta_en LIMIT :lim"
+                    "), insertadas AS ("
+                    "  INSERT INTO fuente_urls (source_id, url, rol, tipo_acceso) "
+                    "  SELECT :s, e.url, 'DETALLE', 'HTTP_GET_PUBLICO' FROM elegibles e "
+                    "  ON CONFLICT (source_id, url) DO NOTHING RETURNING url"
+                    ") UPDATE fuentes_candidatas SET estado = 'PROMOVIDA' "
+                    "  WHERE id IN (SELECT id FROM elegibles) RETURNING url"
+                ),
+                {"s": fuente, "lim": limite},
+            )
+            .scalars()
+            .all()
+        )
+    typer.echo(f"{fuente}: {len(promovidas)} URLs promovidas")
+    for url in promovidas:
+        typer.echo(f"  {url}")
+
+
 if __name__ == "__main__":
     app()
