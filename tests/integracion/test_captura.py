@@ -330,3 +330,38 @@ def test_una_fuente_recien_capturada_deja_de_estar_pendiente(
     # Pasada la frecuencia, vuelve a la cola: revisar de nuevo no es opcional.
     futuro = datetime(2027, 1, 1, tzinfo=UTC)
     assert "D01" in {f.source_id for f in fuentes_pendientes(conexion, ahora=futuro)}
+
+
+def test_un_certificado_que_no_valida_se_reconoce_como_fallo_de_tls() -> None:
+    """httpx envuelve el error de TLS en un `ConnectError`. Sin reconocerlo, un
+    certificado que no cubre al host se archiva como «no se pudo conectar» y la
+    fuente queda como si nadie la hubiera visitado."""
+    import httpx
+
+    from backend_normativo.ingesta.cliente import _es_fallo_tls
+
+    assert _es_fallo_tls(
+        httpx.ConnectError(
+            "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get "
+            "local issuer certificate (_ssl.c:1016)"
+        )
+    )
+    assert not _es_fallo_tls(httpx.ConnectError("All connection attempts failed"))
+
+
+def test_un_404_no_deja_la_fuente_como_sin_visitar(
+    conexion: Connection, catalogo, almacen: AlmacenObjetos
+) -> None:
+    """Un recurso que no está y uno que nadie miró no son lo mismo. Dejar la
+    fuente en NO_VERIFICADO después de un 404 es convertir un error en «sin
+    datos»: el reporte de cobertura diría que está sin empezar."""
+    url = _url_de(conexion, "D01")
+    cliente = ClienteDePrueba({url: [_descarga(url, status=404, error="HTTP 404")]})
+    Capturador(conexion, cliente=cliente, almacen=almacen).capturar_fuente("D01")
+
+    fila = conexion.execute(
+        text("SELECT estado, access_status, motivo_estado FROM fuentes WHERE source_id = 'D01'")
+    ).one()
+    assert fila.access_status == "NO_ENCONTRADA"
+    assert fila.estado == "DEGRADED"
+    assert "ya no está en esa dirección" in fila.motivo_estado

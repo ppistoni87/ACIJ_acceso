@@ -8,11 +8,11 @@ Promediarlas produce un número que suena bien y no significa nada.
 | Concepto | Cantidad |
 |---|---:|
 | Fuentes en el catálogo | 83 |
-| Con al menos una captura | 20 |
-| Con documentos extraídos | 19 |
+| Con al menos una captura | 61 |
+| Con documentos extraídos | 22 |
 | Sin URL conocida | 15 |
-| Con acceso bloqueado o limitado | 0 |
-| Pendientes de capturar | 63 |
+| Con acceso bloqueado o limitado | 2 |
+| Pendientes de capturar | 22 |
 
 Una fuente bloqueada no cuenta como poblada.
 
@@ -20,16 +20,16 @@ Una fuente bloqueada no cuenta como poblada.
 
 | Concepto | Valor |
 |---|---:|
-| Versiones normativas | 9 |
-| Evaluaciones esperadas (siete campos por versión) | 63 |
-| Evaluaciones registradas | 63 (100.0%) |
-| Campos con valor sustantivo validado | 4 (6.35%) |
+| Versiones normativas | 12 |
+| Evaluaciones esperadas (siete campos por versión) | 84 |
+| Evaluaciones registradas | 84 (100.0%) |
+| Campos con valor sustantivo validado | 4 (4.76%) |
 
 | Estado del campo | Cantidad |
 |---|---:|
 | INFORMADO | 4 |
-| NO_INFORMADO_EN_FUENTES_REVISADAS | 31 |
-| PENDIENTE | 28 |
+| NO_INFORMADO_EN_FUENTES_REVISADAS | 36 |
+| PENDIENTE | 44 |
 
 Un campo evaluado sin información no cuenta como valor sustantivo. Cien por
 ciento de evaluación con cero valor sustantivo es un resultado posible y
@@ -40,14 +40,14 @@ aprobado para publicar.
 
 | Severidad | Abiertos |
 |---|---:|
-| HIGH | 27 |
+| HIGH | 31 |
 | INFO | 4489 |
 | LOW | 4 |
-| MEDIUM | 20 |
+| MEDIUM | 24 |
 
 ## (f) Dependencias pendientes
 
-145 referencias normativas citadas que todavía no se resolvieron contra el corpus.
+167 referencias normativas citadas que todavía no se resolvieron contra el corpus.
 
 ## (g) Fidelidad de extracción
 
@@ -55,9 +55,9 @@ Señal técnica observable, separada del juicio sobre el contenido.
 
 | Métrica | Valor |
 |---|---:|
-| score promedio | 0.6948 |
+| score promedio | 0.714 |
 | score minimo | 0.0 |
-| versiones bajo umbral | 5 |
+| versiones bajo umbral | 6 |
 
 ## (h) Capacidades publicables
 
@@ -80,15 +80,15 @@ de responder cuánto se cobra.
 
 | Tabla | Filas |
 |---|---:|
-| capturas | 36 |
-| documentos | 22 |
-| documento_versiones | 22 |
-| unidades_documentales | 1391 |
-| evidencias | 7218 |
-| normas | 423716 |
-| norma_versiones | 9 |
-| relaciones_normativas | 19 |
+| capturas | 79 |
+| documentos | 25 |
+| documento_versiones | 25 |
+| unidades_documentales | 1562 |
+| evidencias | 7274 |
+| normas | 423718 |
+| norma_versiones | 12 |
+| relaciones_normativas | 185 |
 | beneficios | 0 |
-| afirmaciones | 684 |
+| afirmaciones | 944 |
 | releases | 1 |
 

@@ -155,10 +155,22 @@ class Capturador:
 
         if not descarga.exitosa:
             resultado.rechazadas += 1
-            self._abrir_incidencia(
+            # Un recurso que no está y uno que nadie miró no son lo mismo. Sin
+            # degradar la fuente, el reporte de cobertura diría que está sin
+            # empezar, que es exactamente convertir un error en «sin datos».
+            self._degradar_fuente(
                 resultado,
+                voc.AccessStatus.NO_ENCONTRADA
+                if descarga.http_status in (404, 410)
+                else voc.AccessStatus.NO_VERIFICADO,
                 voc.TipoIncidencia.ACCESO_BLOQUEADO,
-                f"{url['url']}: {descarga.error}",
+                f"{url['url']}: {descarga.error}. "
+                + (
+                    "El recurso ya no está en esa dirección; hay que recuperar la identidad "
+                    "de la fuente o registrarla como retirada."
+                    if descarga.http_status in (404, 410)
+                    else "La fuente queda pausada hasta entender el fallo."
+                ),
                 severidad=voc.Severidad.MEDIUM,
             )
             return

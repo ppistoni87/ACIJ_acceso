@@ -164,6 +164,15 @@ class ClienteCaptura:
                 return self._fallo(url, f"Fallo de validación TLS: {exc}", intento, error_tls=True)
             except httpx.HTTPError as exc:
                 ultimo_error = f"{type(exc).__name__}: {exc}"
+                if _es_fallo_tls(exc):
+                    # httpx envuelve el error de TLS en un ConnectError, así que
+                    # el `except ssl.SSLError` de arriba no lo ve. Sin esto, un
+                    # certificado que no cubre al host se archiva como "no se
+                    # pudo conectar" y la fuente queda como si nadie la hubiera
+                    # visitado.
+                    return self._fallo(
+                        url, f"Fallo de validación TLS: {exc}", intento, error_tls=True
+                    )
                 if intento >= presupuesto.reintentos_max:
                     return self._fallo(url, ultimo_error, intento)
                 continue
@@ -226,3 +235,20 @@ class ClienteCaptura:
 
 
 __all__ = ["AccesoNoPermitido", "ClienteCaptura", "Descarga", "Presupuesto"]
+
+
+# Señales de que el fallo es de validación TLS y no de red. httpx envuelve el
+# `ssl.SSLError` en un `ConnectError`, y el texto es lo único que queda.
+MARCAS_TLS = (
+    "certificate verify failed",
+    "certificate_verify_failed",
+    "ssl:",
+    "sslcertverificationerror",
+    "hostname mismatch",
+    "tlsv1",
+)
+
+
+def _es_fallo_tls(exc: Exception) -> bool:
+    texto = str(exc).lower()
+    return any(marca in texto for marca in MARCAS_TLS)

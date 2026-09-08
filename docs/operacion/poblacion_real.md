@@ -154,6 +154,27 @@ La dirección se conserva como la escribió la fuente, con el piso adentro si
 viene adentro. Componer una legible mezclando dos fuentes que no coinciden
 produce una dirección que no existe en ninguna de las dos.
 
+## Estado de las 83 fuentes
+
+Ninguna quedó sin recorrer. 60 en curso, 18 bloqueadas con su motivo y su
+responsable, 4 alias registrados y 1 cerrada con versión publicada.
+
+Los tres bloqueos que aparecieron al recorrer el corpus completo son los que el
+manual describe, y el sistema los trató como corresponde:
+
+| Fuente | Qué pasó | Qué se hizo |
+| --- | --- | --- |
+| M05 (ANSES) | HTTP 403 | La fuente queda pausada. No se rotan identidades ni se evaden controles de acceso |
+| F04 (La Defe) | El certificado no valida contra las CA del sistema | Se registra como `ERROR_TLS`. **No se relaja la validación**: hay que buscar fuente oficial equivalente o carga manual trazada |
+| F06 (CDNNyA subsedes) | HTTP 404 | Se registra como `NO_ENCONTRADA` con la brecha de cobertura de subsedes |
+
+Los 15 bloqueos restantes son fuentes sin URL inequívoca: el manifiesto conserva
+su identificador y su brecha, y nadie inventó una dirección para taparla.
+
+Las páginas capturadas cuya extracción ninguna familia acepta quedan guardadas
+sin extraer, con el aviso que lo dice. Son portales que necesitan un adaptador
+propio: la captura está, el texto no, y el reporte no simula lo contrario.
+
 ## Lo que falta y por qué
 
 | Falta | Depende de | Afecta |
