@@ -683,3 +683,20 @@ separado, citando el artículo que crea su prestación y el párrafo del decreto
 la nombra, y cada una abre su propia incidencia. Se ve cuáles son las cinco y
 cuáles son las siete que no están alcanzadas, sin que el sistema diga que
 ninguna de las doce está vigente ni que todas lo están.
+
+## D-43 · Un documento generado que cambia por regenerarlo no sirve de referencia
+
+El diccionario de datos se arma leyendo los modelos, y volver a correrlo daba un
+archivo distinto sin que hubiera cambiado una línea del esquema. Dos causas: las
+restricciones de cada tabla se leen de un conjunto, que no tiene orden, y una
+columna calculada traía el `repr` de su `Computed`, que incluye la dirección de
+memoria del objeto.
+
+El costo no es estético. El diccionario existe para que un cambio de esquema se
+vea en el diff; si cada regeneración mueve sesenta líneas y cambia un número
+hexadecimal, el cambio real queda escondido entre el ruido y nadie regenera.
+
+**Consecuencia:** las restricciones salen ordenadas por nombre y la columna
+calculada muestra la expresión que la calcula en lugar de su `repr`. Dos
+corridas dan el mismo texto, y eso se prueba: si vuelve a haber una dirección de
+memoria en el documento, falla.

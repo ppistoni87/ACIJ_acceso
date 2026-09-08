@@ -53,7 +53,14 @@ def construir() -> list[TablaDescrita]:
                 )
             defecto = None
             if columna.server_default is not None:
-                defecto = str(getattr(columna.server_default, "arg", columna.server_default))
+                # Una columna calculada trae un `Computed`, cuyo `str()` incluye
+                # la dirección de memoria del objeto: el diccionario salía
+                # distinto en cada corrida por un número que no dice nada. Lo
+                # que interesa es la expresión que la calcula.
+                argumento = getattr(columna.server_default, "sqltext", None)
+                if argumento is None:
+                    argumento = getattr(columna.server_default, "arg", columna.server_default)
+                defecto = str(argumento)
             descrita.columnas.append(
                 ColumnaDescrita(
                     nombre=columna.name,
@@ -63,7 +70,11 @@ def construir() -> list[TablaDescrita]:
                     referencia=referencia,
                 )
             )
-        for restriccion in tabla.constraints:
+        # `tabla.constraints` es un conjunto: iterarlo da un orden distinto en
+        # cada corrida y el diccionario salía reordenado sin que hubiera
+        # cambiado nada del esquema. Un documento generado que cambia solo por
+        # correrlo no se puede comparar contra el anterior.
+        for restriccion in sorted(tabla.constraints, key=lambda r: r.name or ""):
             if isinstance(restriccion, UniqueConstraint):
                 descrita.claves_unicas.append(
                     f"{restriccion.name or 'sin nombre'}: "
