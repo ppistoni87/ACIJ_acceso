@@ -129,6 +129,33 @@ F54 tiene una página de cierre gráfica: se clasificó como tal y las otras sei
 se usaron igual, sin declarar vacío el documento y sin hacerle OCR a la
 carátula.
 
+## Qué período rige para cada tabla de montos
+
+El PDF de montos de becas (F62) trae once tablas repartidas en cinco páginas, y
+la página 4 tiene tres tablas con tres meses distintos. Asociarlas por cercanía
+haría que una tabla herede el monto de otro mes.
+
+Mirando la geometría se ve que el epígrafe no está arriba de la tabla: **es su
+primera fila**, adentro del recuadro. «CORRESPONDIENTES AL MES DE OCTUBRE 2025»
+cae entre el borde superior y el inferior de su propia tabla. Eso convierte la
+asociación en contención y no en proximidad: un período que está adentro de una
+tabla no puede pertenecer a otra.
+
+Diez de las once tablas quedaron fechadas así, contra una antes. Dos detalles
+del documento real:
+
+- La primera tabla de la página 5 dice «CORRESPONDIENTES A LOS MESES DE
+  DICIEMBRE A MARZO 2026» y cubre cuatro meses. Quedarse con «marzo 2026»
+  perdería diciembre, enero y febrero.
+- La tabla de topes de monotributo de la página 3 no lleva su período adentro:
+  lo lleva en una nota al pie, «**Hasta diciembre 2025», y la tabla misma tiene
+  un «**». La marca es lo que las une, no la distancia.
+
+La única que quedó en revisión es la de la página 7, y es correcto: no declara
+período adentro y los dos que menciona la página —«ciclo lectivo 2026» y
+«octubre 2018»— están cientos de puntos más abajo, en un párrafo. Fecharla con
+ellos sería fecharla con el período de un texto que habla de otra cosa.
+
 ## Padrón RENABAP
 
 6.467 barrios populares importados como snapshot versionado, cada uno con la

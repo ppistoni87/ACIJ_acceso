@@ -270,3 +270,24 @@ unidades —empieza en el artículo 3 y termina dos párrafos después—, así 
 buscarla unidad por unidad no encuentra ninguna de las dos mitades; y el PDF
 parte el identificador en dos renglones (`IF-2025-` / `53544032-GCABA-SSGDA`),
 que sigue siendo el mismo documento.
+
+## D-22 · El período de una tabla está adentro de la tabla, no cerca
+
+El PDF de montos de becas tiene tres tablas y tres meses en la misma página.
+Asociarlos por cercanía haría que una tabla herede el monto de otro mes, que es
+la clase de error que nadie nota hasta que alguien cobra de menos.
+
+Mirando dónde está cada cosa se ve que el epígrafe no está arriba de la tabla:
+es su primera fila, adentro del recuadro. Eso convierte la asociación en
+contención y no en proximidad: un período que está adentro de una tabla no puede
+pertenecer a otra.
+
+**Consecuencia:** una tabla se fecha con el período que declara adentro. Si no
+declara ninguno, se fecha con la nota al pie que ella misma llama —la marca
+`**` que está en la tabla y encabeza la nota es lo que las une—. Un período que
+está suelto en un párrafo de la página no fecha ninguna tabla, y dos períodos
+dentro de la misma tabla la dejan en revisión: cuál rige para qué fila es una
+lectura, no una deducción.
+
+Sobre el PDF real esto pasó de una tabla fechada a diez de once. La restante
+queda en revisión con el motivo puesto.

@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **71**
-- Cubiertos parcialmente: **9**
+- Cubiertos por pruebas que corren: **73**
+- Cubiertos parcialmente: **7**
 - No ejecutados: **0**
-- Pruebas citadas: **216** (ejecutadas)
+- Pruebas citadas: **219** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -31,7 +31,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-018 | PDF sin magic | HU-F40 | CUBIERTO | PASSED | `test_una_pagina_de_error_con_encabezado_de_pdf_no_es_un_documento` |
 | AT-019 | Prefijo PDF conocido | HU-F40 | CUBIERTO | PASSED | `test_el_prefijo_real_del_boletin_de_caba_se_repara`<br>`test_un_prefijo_de_advertencia_se_recorta_y_queda_registrado`<br>`test_un_prefijo_desmedido_no_se_repara` |
 | AT-020 | PDF página gráfica | HU-007 | CUBIERTO | PASSED | `test_una_pagina_grafica_no_vacia_el_documento`<br>`test_un_documento_sin_texto_dice_que_no_sustenta_nada`<br>`test_el_umbral_de_pagina_distingue_texto_de_folio` |
-| AT-021 | Tabla PDF y caption posterior | HU-F62 | CUBIERTO_PARCIAL | PASSED | `test_una_tabla_sin_periodo_declarado_no_lo_hereda_del_archivo`<br>`test_un_epigrafe_posterior_no_alcanza_para_fechar_dos_tablas`<br>`test_una_tabla_con_un_solo_periodo_declarado_lo_toma`<br>_Falta: La detección de tablas la hace pdfplumber; lo que estas pruebas fijan es la decisión propia —con qué período se asocia cada tabla—, con la página como doble. Sobre el PDF real de F62 el adaptador dejó 10 tablas en revisión._ |
+| AT-021 | Tabla PDF y caption posterior | HU-F62 | CUBIERTO | PASSED | `test_at021_el_periodo_que_la_tabla_declara_adentro_la_fecha`<br>`test_at021_una_nota_al_pie_que_la_tabla_llama_si_la_fecha`<br>`test_at056_tres_tablas_y_tres_periodos_en_la_misma_pagina_no_se_mezclan`<br>`test_at056_un_periodo_en_un_parrafo_lejano_no_fecha_la_tabla`<br>`test_una_tabla_sin_periodo_declarado_no_lo_hereda_del_archivo`<br>`test_dos_periodos_dentro_de_la_misma_tabla_la_dejan_en_revision`<br>`test_un_rango_de_meses_conserva_los_dos_extremos`<br>`test_una_nota_al_pie_sin_marca_en_la_tabla_no_la_fecha` |
 | AT-022 | Orden de pasos Canva | HU-F54 | CUBIERTO_PARCIAL | PASSED | `test_at022_un_paso_con_aclaraciones_no_se_convierte_en_cuatro_pasos`<br>`test_at022_las_aclaraciones_no_se_pierden`<br>`test_el_tramite_se_carga_con_sus_pasos_en_orden`<br>_Falta: Se prueba que los pasos no se aplanen ni se ordenen por posición en el documento. El caso concreto de F54 —rótulos «Paso 1/Paso 2» en un PDF cuyo orden de lectura los pone después del texto— necesita además asociar rótulo y contenido dentro del PDF._ |
 | AT-023 | Artículo con sufijo | HU-008 | CUBIERTO | PASSED | `test_conserva_el_sufijo_como_parte_de_la_identidad`<br>`test_el_sufijo_del_articulo_sobrevive_a_la_extraccion` |
 | AT-024 | Artículo citado dentro de sustitución | HU-008 | CUBIERTO | PASSED | `test_un_articulo_sustituido_no_es_una_raiz`<br>`test_normativaba_no_toma_el_articulo_sustituido_como_propio`<br>`test_articulo_citado_no_colisiona_con_el_articulo_raiz` |
@@ -66,7 +66,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-053 | Rango sin año | HU-016 | CUBIERTO | PASSED | `test_at053_un_rango_sin_año_queda_pendiente_de_contexto`<br>`test_at053_el_año_en_curso_no_se_usa_nunca`<br>`test_at053_un_ciclo_declarado_no_fecha_las_inscripciones`<br>`test_at053_el_ciclo_queda_registrado_para_quien_lo_resuelva`<br>`test_un_rango_que_cruza_el_año_lo_deriva_y_lo_dice`<br>`test_un_año_aportado_a_sabiendas_fecha_el_rango_y_queda_marcado` |
 | AT-054 | Último tramo salarial | HU-F12 | CUBIERTO | PASSED | `test_un_valor_de_vigencia_desconocida_no_se_publica`<br>`test_abierto_fin_no_admite_fecha_de_cierre` |
 | AT-055 | SMVM versus comercio | HU-018 | CUBIERTO | PASSED | `test_sin_valor_vigente_del_parametro_la_condicion_es_desconocida`<br>`test_el_parametro_se_resuelve_a_la_fecha_consultada` |
-| AT-056 | Períodos mixtos en PDF | HU-F62 | CUBIERTO_PARCIAL | PASSED | `test_dos_periodos_en_la_misma_pagina_dejan_la_asociacion_en_revision`<br>`test_el_ciclo_lectivo_se_reconoce_como_periodo`<br>_Falta: Igual que AT-021: la asociación de período se verifica con un doble de página. En F62, con tres períodos y tres tablas en la misma página, ninguna se resolvió por cercanía._ |
+| AT-056 | Períodos mixtos en PDF | HU-F62 | CUBIERTO | PASSED | `test_at021_el_periodo_que_la_tabla_declara_adentro_la_fecha`<br>`test_at021_una_nota_al_pie_que_la_tabla_llama_si_la_fecha`<br>`test_at056_tres_tablas_y_tres_periodos_en_la_misma_pagina_no_se_mezclan`<br>`test_at056_un_periodo_en_un_parrafo_lejano_no_fecha_la_tabla`<br>`test_una_tabla_sin_periodo_declarado_no_lo_hereda_del_archivo`<br>`test_dos_periodos_dentro_de_la_misma_tabla_la_dejan_en_revision`<br>`test_un_rango_de_meses_conserva_los_dos_extremos`<br>`test_una_nota_al_pie_sin_marca_en_la_tabla_no_la_fecha` |
 | AT-057 | Monto versus tope | HU-018 | CUBIERTO | PASSED | `test_at057_un_tope_es_el_limite_de_una_condicion_no_una_cuantia`<br>`test_at057_estar_bajo_el_tope_no_dice_cuanto_se_cobra`<br>`test_cuantia_no_informada_no_necesita_inventar_un_monto`<br>`test_la_cuantia_no_sirve_un_piso_como_si_fuera_el_monto` |
 | AT-058 | Cambio de parámetro | HU-028 | CUBIERTO | PASSED | `test_dos_valores_aprobados_no_pueden_regir_a_la_vez`<br>`test_aprobar_una_version_reevalua_el_solapamiento`<br>`test_propagar_dos_veces_no_duplica_el_evento` |
 | AT-059 | No informado operativo | HU-F60 | CUBIERTO | PASSED | `test_at059_un_literal_de_sin_dato_no_se_carga_como_telefono`<br>`test_un_nombre_que_dice_na_no_se_pega_al_programa` |

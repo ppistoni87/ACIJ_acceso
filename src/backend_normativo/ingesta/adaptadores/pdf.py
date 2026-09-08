@@ -64,6 +64,21 @@ RE_PERIODO = re.compile(
 )
 RE_CICLO = re.compile(r"ciclo\s+lectivo\s+(?P<anio>(?:19|20)\d{2})", re.IGNORECASE)
 
+# «CORRESPONDIENTES A LOS MESES DE DICIEMBRE A MARZO 2026» cubre cuatro meses.
+# Quedarse con «marzo 2026» perdería diciembre, enero y febrero.
+RE_RANGO_DE_MESES = re.compile(
+    r"(?P<desde>enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|"
+    r"octubre|noviembre|diciembre)\s+a\s+"
+    r"(?P<hasta>enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|"
+    r"octubre|noviembre|diciembre)\s+(?:de\s+)?(?P<anio>(?:19|20)\d{2})",
+    re.IGNORECASE,
+)
+
+# Una llamada al pie: «**», «(1)», «(a)». Cuando la misma marca está adentro de
+# la tabla y encabeza una línea de abajo, esa línea es su nota, no un párrafo
+# suelto que quedó cerca.
+RE_MARCA_AL_PIE = re.compile(r"^(?P<marca>\*{1,3}|\(\d{1,2}\)|\(\w\))\s*(?P<resto>\S.*)$")
+
 
 class PdfInvalido(Exception):
     """Los bytes no son un PDF y no se los va a tratar como si lo fueran."""
@@ -221,18 +236,26 @@ def leer(datos: bytes) -> LecturaPdf:
 
 
 def _tablas_de(pagina, numero: int, texto: str) -> list[TablaUbicada]:
-    """Asocia cada tabla con el período que la encabeza, si lo hay.
+    """Asocia cada tabla con el período que declara adentro, si declara uno.
 
-    La regla es de orden de lectura: el epígrafe que fecha una tabla va antes.
-    Si el único período del texto de la página aparece después de la tabla, o si
-    hay más de uno, no se elige por cercanía: queda ambiguo.
+    En el PDF de F62 el epígrafe no está arriba de la tabla: es su primera fila.
+    «CORRESPONDIENTES AL MES DE OCTUBRE 2025» cae dentro del recuadro de su
+    propia tabla, así que la asociación es por contención y no por cercanía: un
+    período que está adentro de una tabla no puede pertenecer a otra.
+
+    Un período suelto en el cuerpo de la página no fecha ninguna tabla —en la
+    página 7 los dos que hay están cientos de puntos más abajo, en un párrafo—
+    y dos períodos dentro de la misma tabla la dejan ambigua.
     """
     try:
         crudas = pagina.extract_tables() or []
+        recuadros = pagina.find_tables() or []
     except Exception:  # pragma: no cover - pdfplumber puede fallar en tablas raras
         return []
 
-    periodos = _periodos_en_orden(texto)
+    dentro = _periodos_por_recuadro(pagina, recuadros)
+    al_pie = _periodos_al_pie(pagina, recuadros)
+    sueltos = _periodos_en_orden(texto)
     tablas: list[TablaUbicada] = []
     for orden, tabla in enumerate(crudas, start=1):
         ubicada = TablaUbicada(
@@ -241,27 +264,102 @@ def _tablas_de(pagina, numero: int, texto: str) -> list[TablaUbicada]:
             filas=len(tabla),
             columnas=max((len(f) for f in tabla), default=0),
         )
-        if len(periodos) == 1 and len(crudas) == 1:
-            ubicada.periodo = periodos[0]
-        elif not periodos:
+        propios = dentro.get(orden - 1, []) or al_pie.get(orden - 1, [])
+        if len(propios) == 1:
+            ubicada.periodo = propios[0]
+        elif len(propios) > 1:
             ubicada.periodo_ambiguo = True
             ubicada.motivo_ambiguedad = (
-                "La página no declara ningún período. El período no se toma del nombre "
-                "del archivo ni de la fecha de subida."
+                f"La tabla declara {len(propios)} períodos adentro ({', '.join(propios)}). "
+                "Cuál de ellos rige para qué fila es una lectura, no una deducción."
+            )
+        elif not sueltos:
+            ubicada.periodo_ambiguo = True
+            ubicada.motivo_ambiguedad = (
+                "Ni la tabla ni la página declaran un período. El período no se toma del "
+                "nombre del archivo ni de la fecha de subida."
             )
         else:
             ubicada.periodo_ambiguo = True
             ubicada.motivo_ambiguedad = (
-                f"La página menciona {len(periodos)} período(s) ({', '.join(periodos)}) y "
-                f"{len(crudas)} tabla(s). Asociar por cercanía haría que una tabla herede "
-                "el período de otra."
+                f"La tabla no declara período adentro y la página menciona "
+                f"{len(sueltos)} ({', '.join(sueltos)}) fuera de toda tabla. Tomarlos "
+                "sería fechar la tabla con el período de un párrafo."
             )
         tablas.append(ubicada)
     return tablas
 
 
+def _periodos_por_recuadro(pagina, recuadros) -> dict[int, list[str]]:
+    """Los períodos que caen dentro del recuadro de cada tabla."""
+    if not recuadros:
+        return {}
+    try:
+        lineas = pagina.extract_text_lines() or []
+    except Exception:  # pragma: no cover - depende del PDF
+        return {}
+
+    por_tabla: dict[int, list[str]] = {}
+    for indice, recuadro in enumerate(recuadros):
+        _, arriba, _, abajo = recuadro.bbox
+        encontrados: list[str] = []
+        for linea in lineas:
+            if not arriba <= linea["top"] <= abajo:
+                continue
+            for etiqueta in _periodos_en_orden(linea["text"]):
+                if etiqueta not in encontrados:
+                    encontrados.append(etiqueta)
+        por_tabla[indice] = encontrados
+    return por_tabla
+
+
+def _periodos_al_pie(pagina, recuadros) -> dict[int, list[str]]:
+    """Los períodos de una nota al pie que la tabla misma llama.
+
+    En la página 3 de F62 la tabla de topes lleva un «**» adentro y debajo dice
+    «**Hasta diciembre 2025». La marca es lo que las une: no es el párrafo que
+    quedó más cerca, es la nota que la tabla convoca.
+    """
+    if not recuadros:
+        return {}
+    try:
+        lineas = pagina.extract_text_lines() or []
+    except Exception:  # pragma: no cover - depende del PDF
+        return {}
+
+    limites = [r.bbox[3] for r in recuadros]
+    por_tabla: dict[int, list[str]] = {}
+    for indice, recuadro in enumerate(recuadros):
+        abajo = recuadro.bbox[3]
+        # La marca se busca en la franja de esta tabla —desde donde terminó la
+        # anterior hasta donde termina ésta— y la nota, entre el final de ésta
+        # y el de la siguiente. Así una llamada no cruza de tabla.
+        desde = limites[indice - 1] if indice else 0.0
+        hasta = limites[indice + 1] if indice + 1 < len(limites) else float("inf")
+        franja = " ".join(linea["text"] for linea in lineas if desde <= linea["top"] <= abajo)
+        encontrados: list[str] = []
+        for linea in lineas:
+            if not abajo < linea["top"] < hasta:
+                continue
+            marca = RE_MARCA_AL_PIE.match(" ".join(linea["text"].split()))
+            if marca is None or marca.group("marca") not in franja:
+                continue
+            for etiqueta in _periodos_en_orden(marca.group("resto")):
+                if etiqueta not in encontrados:
+                    encontrados.append(etiqueta)
+        por_tabla[indice] = encontrados
+    return por_tabla
+
+
 def _periodos_en_orden(texto: str) -> list[str]:
     encontrados: list[str] = []
+    for coincidencia in RE_RANGO_DE_MESES.finditer(texto):
+        etiqueta = (
+            f"{coincidencia.group('desde').lower()} a {coincidencia.group('hasta').lower()} "
+            f"{coincidencia.group('anio')}"
+        )
+        if etiqueta not in encontrados:
+            encontrados.append(etiqueta)
     for coincidencia in RE_CICLO.finditer(texto):
         etiqueta = f"ciclo lectivo {coincidencia.group('anio')}"
         if etiqueta not in encontrados:

@@ -134,11 +134,15 @@
   },
   "AT-021": {
    "pruebas": [
+    "tests/unit/test_adaptador_pdf.py::test_at021_el_periodo_que_la_tabla_declara_adentro_la_fecha",
+    "tests/unit/test_adaptador_pdf.py::test_at021_una_nota_al_pie_que_la_tabla_llama_si_la_fecha",
+    "tests/unit/test_adaptador_pdf.py::test_at056_tres_tablas_y_tres_periodos_en_la_misma_pagina_no_se_mezclan",
+    "tests/unit/test_adaptador_pdf.py::test_at056_un_periodo_en_un_parrafo_lejano_no_fecha_la_tabla",
     "tests/unit/test_adaptador_pdf.py::test_una_tabla_sin_periodo_declarado_no_lo_hereda_del_archivo",
-    "tests/unit/test_adaptador_pdf.py::test_un_epigrafe_posterior_no_alcanza_para_fechar_dos_tablas",
-    "tests/unit/test_adaptador_pdf.py::test_una_tabla_con_un_solo_periodo_declarado_lo_toma"
-   ],
-   "falta": "La detección de tablas la hace pdfplumber; lo que estas pruebas fijan es la decisión propia —con qué período se asocia cada tabla—, con la página como doble. Sobre el PDF real de F62 el adaptador dejó 10 tablas en revisión."
+    "tests/unit/test_adaptador_pdf.py::test_dos_periodos_dentro_de_la_misma_tabla_la_dejan_en_revision",
+    "tests/unit/test_adaptador_pdf.py::test_un_rango_de_meses_conserva_los_dos_extremos",
+    "tests/unit/test_adaptador_pdf.py::test_una_nota_al_pie_sin_marca_en_la_tabla_no_la_fecha"
+   ]
   },
   "AT-022": {
    "pruebas": [
@@ -381,10 +385,15 @@
   },
   "AT-056": {
    "pruebas": [
-    "tests/unit/test_adaptador_pdf.py::test_dos_periodos_en_la_misma_pagina_dejan_la_asociacion_en_revision",
-    "tests/unit/test_adaptador_pdf.py::test_el_ciclo_lectivo_se_reconoce_como_periodo"
-   ],
-   "falta": "Igual que AT-021: la asociación de período se verifica con un doble de página. En F62, con tres períodos y tres tablas en la misma página, ninguna se resolvió por cercanía."
+    "tests/unit/test_adaptador_pdf.py::test_at021_el_periodo_que_la_tabla_declara_adentro_la_fecha",
+    "tests/unit/test_adaptador_pdf.py::test_at021_una_nota_al_pie_que_la_tabla_llama_si_la_fecha",
+    "tests/unit/test_adaptador_pdf.py::test_at056_tres_tablas_y_tres_periodos_en_la_misma_pagina_no_se_mezclan",
+    "tests/unit/test_adaptador_pdf.py::test_at056_un_periodo_en_un_parrafo_lejano_no_fecha_la_tabla",
+    "tests/unit/test_adaptador_pdf.py::test_una_tabla_sin_periodo_declarado_no_lo_hereda_del_archivo",
+    "tests/unit/test_adaptador_pdf.py::test_dos_periodos_dentro_de_la_misma_tabla_la_dejan_en_revision",
+    "tests/unit/test_adaptador_pdf.py::test_un_rango_de_meses_conserva_los_dos_extremos",
+    "tests/unit/test_adaptador_pdf.py::test_una_nota_al_pie_sin_marca_en_la_tabla_no_la_fecha"
+   ]
   },
   "AT-057": {
    "pruebas": [

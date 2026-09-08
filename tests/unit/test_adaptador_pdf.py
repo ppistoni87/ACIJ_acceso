@@ -220,31 +220,137 @@ def test_el_umbral_de_pagina_distingue_texto_de_folio() -> None:
 # biblioteca la reconozca igual entre versiones.
 
 
+class _Recuadro:
+    """El recuadro de una tabla: lo único que importa acá es dónde empieza y
+    dónde termina verticalmente."""
+
+    def __init__(self, arriba: float, abajo: float) -> None:
+        self.bbox = (0.0, arriba, 100.0, abajo)
+
+
 class _PaginaConTablas:
-    def __init__(self, tablas: list[list[list[str]]]) -> None:
+    """Un doble de página con geometría.
+
+    La asociación de período dejó de ser un conteo y pasó a ser una lectura de
+    dónde está cada cosa, así que el doble tiene que tener posiciones: sin
+    ellas, la prueba no dice nada sobre lo que hace el adaptador.
+    """
+
+    def __init__(
+        self,
+        tablas: list[list[list[str]]],
+        recuadros: list[tuple[float, float]] | None = None,
+        lineas: list[tuple[float, str]] | None = None,
+    ) -> None:
         self._tablas = tablas
+        self._recuadros = [_Recuadro(a, b) for a, b in (recuadros or [])]
+        self._lineas = lineas or []
 
     def extract_tables(self):
         return self._tablas
+
+    def find_tables(self):
+        return self._recuadros
+
+    def extract_text_lines(self):
+        return [{"top": top, "text": texto} for top, texto in self._lineas]
 
 
 TABLA_MONTOS = [["Nivel", "Monto"], ["Inicial", "10000"], ["Primario", "12000"]]
 TABLA_MONOTRIBUTO = [["Categoria", "Tope"], ["A", "5000"]]
 
 
-def test_una_tabla_con_un_solo_periodo_declarado_lo_toma() -> None:
-    tablas = _tablas_de(
-        _PaginaConTablas([TABLA_MONTOS]), 1, "Topes de ingresos marzo 2025\nNivel Monto"
+# --- AT-021 y AT-056: qué período rige para cada tabla ------------------------
+
+
+def test_at021_el_periodo_que_la_tabla_declara_adentro_la_fecha() -> None:
+    """En el PDF de F62 el epígrafe no está arriba de la tabla: es su primera
+    fila, adentro del recuadro."""
+    pagina = _PaginaConTablas(
+        [TABLA_MONTOS],
+        recuadros=[(195, 326)],
+        lineas=[(206, "CORRESPONDIENTES AL MES DE OCTUBRE 2025"), (240, "Inicial 10000")],
     )
-    assert len(tablas) == 1
-    assert tablas[0].periodo == "marzo 2025"
+    tablas = _tablas_de(pagina, 4, "CORRESPONDIENTES AL MES DE OCTUBRE 2025")
+    assert tablas[0].periodo == "octubre 2025"
     assert tablas[0].periodo_ambiguo is False
+
+
+def test_at056_tres_tablas_y_tres_periodos_en_la_misma_pagina_no_se_mezclan() -> None:
+    """La página 4 de F62: cada tabla lleva su mes adentro. Ninguna hereda el
+    del vecino porque el período está contenido, no cerca."""
+    pagina = _PaginaConTablas(
+        [TABLA_MONTOS, TABLA_MONTOS, TABLA_MONTOS],
+        recuadros=[(195, 326), (340, 471), (483, 618)],
+        lineas=[
+            (206, "CORRESPONDIENTES A EL MES DE SEPTIEMBRE 2025"),
+            (350, "CORRESPONDIENTES AL MES DE OCTUBRE 2025"),
+            (497, "CORRESPONDIENTES AL MES DE NOVIEMBRE 2025"),
+        ],
+    )
+    tablas = _tablas_de(pagina, 4, "septiembre 2025 octubre 2025 noviembre 2025")
+    assert [t.periodo for t in tablas] == [
+        "septiembre 2025",
+        "octubre 2025",
+        "noviembre 2025",
+    ]
+    assert not _avisos_de_tablas(tablas)
+
+
+def test_at056_un_periodo_en_un_parrafo_lejano_no_fecha_la_tabla() -> None:
+    """La página 7 de F62: la tabla está arriba y los dos períodos que menciona
+    la página están cientos de puntos más abajo, en el cuerpo del texto."""
+    pagina = _PaginaConTablas(
+        [TABLA_MONOTRIBUTO],
+        recuadros=[(72, 107)],
+        lineas=[
+            (80, "Categoria Tope"),
+            (356, "asistencia a partir del ciclo lectivo 2026 debe realizarse"),
+            (706, "de 2018)"),
+        ],
+    )
+    tablas = _tablas_de(pagina, 7, "ciclo lectivo 2026 octubre 2018")
+    assert tablas[0].periodo is None
+    assert tablas[0].periodo_ambiguo is True
+    assert "fechar la tabla con el período de un párrafo" in tablas[0].motivo_ambiguedad
+
+
+def test_at021_una_nota_al_pie_que_la_tabla_llama_si_la_fecha() -> None:
+    """La página 3 de F62: la tabla lleva un «**» y debajo dice «**Hasta
+    diciembre 2025». La marca es lo que las une, no la distancia."""
+    pagina = _PaginaConTablas(
+        [TABLA_MONOTRIBUTO],
+        recuadros=[(408, 638)],
+        lineas=[
+            (395, "**"),
+            (446, "A $ 749.383,16"),
+            (642, "**Hasta diciembre 2025"),
+        ],
+    )
+    tablas = _tablas_de(pagina, 3, "Los ingresos mensuales tope para dichas categorías son:")
+    assert tablas[0].periodo == "diciembre 2025"
+
+
+def test_una_nota_al_pie_sin_marca_en_la_tabla_no_la_fecha() -> None:
+    """Un párrafo que empieza con un asterisco y habla de otra cosa no es la
+    nota de esta tabla."""
+    pagina = _PaginaConTablas(
+        [TABLA_MONOTRIBUTO],
+        recuadros=[(408, 638)],
+        lineas=[(446, "A $ 749.383,16"), (642, "*Vigente desde enero 2024")],
+    )
+    tablas = _tablas_de(pagina, 3, "tope")
+    assert tablas[0].periodo is None
+    assert tablas[0].periodo_ambiguo is True
 
 
 def test_una_tabla_sin_periodo_declarado_no_lo_hereda_del_archivo() -> None:
     """Tomar el año del nombre del archivo o de la fecha de subida es la forma
     más común de fechar mal una tabla de montos."""
-    tablas = _tablas_de(_PaginaConTablas([TABLA_MONTOS]), 1, "Nivel Monto\nInicial 10000")
+    pagina = _PaginaConTablas(
+        [TABLA_MONTOS], recuadros=[(100, 200)], lineas=[(150, "Inicial 10000")]
+    )
+    tablas = _tablas_de(pagina, 1, "Nivel Monto\nInicial 10000")
     assert tablas[0].periodo is None
     assert tablas[0].periodo_ambiguo is True
     assert "no se toma del nombre del archivo" in tablas[0].motivo_ambiguedad
@@ -253,20 +359,19 @@ def test_una_tabla_sin_periodo_declarado_no_lo_hereda_del_archivo() -> None:
     assert avisos and avisos[0].severidad == "HIGH"
 
 
-def test_dos_periodos_en_la_misma_pagina_dejan_la_asociacion_en_revision() -> None:
-    """Asociar por cercanía haría que la tabla de monotributo herede el período
-    de la de ingresos, que es de otro mes y de otro año."""
-    texto = (
-        "Topes de ingresos marzo 2025\nNivel Monto\nInicial 10000\n"
-        "Monotributo enero 2024\nCategoria Tope\nA 5000"
+def test_dos_periodos_dentro_de_la_misma_tabla_la_dejan_en_revision() -> None:
+    """Cuál de los dos rige para qué fila es una lectura, no una deducción."""
+    pagina = _PaginaConTablas(
+        [TABLA_MONTOS],
+        recuadros=[(100, 300)],
+        lineas=[(120, "marzo 2025"), (200, "enero 2024"), (250, "Inicial 10000")],
     )
-    tablas = _tablas_de(_PaginaConTablas([TABLA_MONTOS, TABLA_MONOTRIBUTO]), 3, texto)
-    assert len(tablas) == 2
-    assert all(t.periodo is None and t.periodo_ambiguo for t in tablas)
-    assert all("herede el período de otra" in t.motivo_ambiguedad for t in tablas)
+    tablas = _tablas_de(pagina, 3, "marzo 2025 enero 2024")
+    assert tablas[0].periodo is None
+    assert "2 períodos adentro" in tablas[0].motivo_ambiguedad
 
     avisos = _avisos_de_tablas(tablas)
-    assert "2 tabla(s) sin período inequívoco" in str(avisos[0])
+    assert "1 tabla(s) sin período inequívoco" in str(avisos[0])
     assert "página 3" in str(avisos[0])
 
 
@@ -275,16 +380,12 @@ def test_el_ciclo_lectivo_se_reconoce_como_periodo() -> None:
     assert _periodos_en_orden("Marco legal - ciclo lectivo 2026") == ["ciclo lectivo 2026"]
 
 
-def test_un_epigrafe_posterior_no_alcanza_para_fechar_dos_tablas() -> None:
-    """Una sola tabla y un solo período se asocian; agregar una segunda tabla
-    rompe esa certeza aunque el período siga siendo uno."""
-    una = _tablas_de(_PaginaConTablas([TABLA_MONTOS]), 1, "Nivel Monto\nVigencia 2025")
-    assert una[0].periodo == "2025"
-
-    dos = _tablas_de(
-        _PaginaConTablas([TABLA_MONTOS, TABLA_MONOTRIBUTO]), 1, "Nivel Monto\nVigencia 2025"
-    )
-    assert all(t.periodo_ambiguo for t in dos)
+def test_un_rango_de_meses_conserva_los_dos_extremos() -> None:
+    """«DICIEMBRE A MARZO 2026» cubre cuatro meses; quedarse con marzo perdería
+    diciembre, enero y febrero."""
+    assert _periodos_en_orden("CORRESPONDIENTES A LOS MESES DE DICIEMBRE A MARZO 2026") == [
+        "diciembre a marzo 2026"
+    ]
 
 
 # --- AT-075: la ruta no fecha el documento ------------------------------------
