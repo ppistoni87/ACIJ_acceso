@@ -136,7 +136,11 @@ class Extractor:
                 text(
                     "SELECT c.id FROM capturas c "
                     "JOIN fuente_urls u ON u.id = c.source_url_id "
-                    "WHERE coalesce(c.http_status, 0) <> 304 "
+                    # Un 404 con una página de error extensa se lee como
+                    # cualquier HTML y produciría un documento con el texto de
+                    # «no encontrado». La captura se conserva —es la prueba de
+                    # lo que devolvió esa URL— y no se extrae.
+                    "WHERE coalesce(c.http_status, 200) BETWEEN 200 AND 299 "
                     "  AND (CAST(:sid AS text) IS NULL OR u.source_id = :sid) "
                     "  AND NOT EXISTS (SELECT 1 FROM documento_versiones dv "
                     "                  WHERE dv.captura_id = c.id) "

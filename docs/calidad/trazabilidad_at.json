@@ -46,10 +46,12 @@
   },
   "AT-007": {
    "pruebas": [
-    "tests/integracion/test_captura.py::test_una_corrida_con_rechazos_no_figura_completa",
-    "tests/integracion/test_captura.py::test_un_403_pausa_la_fuente_y_no_la_deja_como_sin_datos"
-   ],
-   "falta": "El caso concreto de un 404 con cuerpo HTML extenso no tiene fixture propia; se ejerce la regla general de que un rechazo no es una corrida completa."
+    "tests/integracion/test_captura.py::test_at007_un_404_con_pagina_extensa_no_produce_ninguna_norma",
+    "tests/integracion/test_captura.py::test_at007_la_captura_del_error_se_conserva_con_su_status",
+    "tests/integracion/test_captura.py::test_at007_la_corrida_no_figura_completa_para_contenido",
+    "tests/integracion/test_captura.py::test_un_404_no_deja_la_fuente_como_sin_visitar",
+    "tests/integracion/test_captura.py::test_una_corrida_con_rechazos_no_figura_completa"
+   ]
   },
   "AT-008": {
    "pruebas": [
@@ -100,9 +102,13 @@
   "AT-016": {
    "pruebas": [
     "tests/unit/test_adaptador_pagina.py::test_at016_un_contenedor_vacio_no_se_toma_como_el_contenido",
-    "tests/unit/test_adaptador_pagina.py::test_at016_una_pagina_sin_contenedores_vacios_no_avisa_de_nada"
-   ],
-   "falta": "Se prueba que un contenedor vacío no se tome como el contenido y que la ausencia quede reportada. La validación del período al que corresponde cada contenedor —qué mes es el del cronograma— necesita normalizar fechas dentro de la página."
+    "tests/unit/test_adaptador_pagina.py::test_at016_el_contenedor_con_contenido_es_el_que_se_toma",
+    "tests/unit/test_adaptador_pagina.py::test_at016_un_cronograma_que_dice_este_mes_no_declara_su_periodo",
+    "tests/unit/test_adaptador_pagina.py::test_at016_los_dias_sin_anio_del_cronograma_se_listan",
+    "tests/unit/test_adaptador_pagina.py::test_at016_el_periodo_no_se_completa_con_la_fecha_de_captura",
+    "tests/unit/test_adaptador_pagina.py::test_at016_una_pagina_sin_contenedores_vacios_no_avisa_de_nada",
+    "tests/unit/test_adaptador_pagina.py::test_un_cronograma_que_declara_su_periodo_no_queda_pendiente"
+   ]
   },
   "AT-017": {
    "pruebas": [

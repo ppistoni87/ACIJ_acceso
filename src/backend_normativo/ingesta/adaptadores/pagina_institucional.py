@@ -53,6 +53,20 @@ SELECTOR_CONTENEDORES = ".field-item, .panel, .card, .accordion-item, section"
 # adentro, que es como viene el período que todavía no arrancó.
 MINIMO_UTIL = 40
 
+# «correspondiente a este mes», «del corriente año»: el período existe y la
+# página no dice cuál es. Es la forma más silenciosa de un cronograma sin fecha,
+# porque el texto se lee completo y parece que dijera algo.
+RE_PERIODO_RELATIVO = re.compile(
+    r"\b(?:este|el\s+presente|el\s+corriente|del\s+corriente|el\s+actual)\s+"
+    r"(?:mes|a[ñn]o|per[ií]odo|ciclo)\b|\ba\s+la\s+fecha\b",
+    re.I,
+)
+RE_DIA_SIN_ANIO = re.compile(
+    r"\b\d{1,2}\s+de\s+(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|"
+    r"septiembre|setiembre|octubre|noviembre|diciembre)\b(?!\s+de\s+\d{4})",
+    re.I,
+)
+
 RE_CIERRE = re.compile(
     r"\b(no hay|sin)\b[^.]{0,60}\b(sedes?|puntos?|turnos?|vacantes?|inscripci[oó]n)\b"
     r"|\b(cerrad[ao]s?|finaliz[oó]|no disponible|pr[oó]ximamente)\b",
@@ -68,7 +82,14 @@ class LecturaPagina:
     contenedores_vacios: int = 0
     ocultos: list[str] = field(default_factory=list)
     cierre_declarado: str | None = None
+    periodo_relativo: str | None = None
+    dias_sin_anio: list[str] = field(default_factory=list)
     avisos: list[Aviso] = field(default_factory=list)
+
+    @property
+    def periodo_determinado(self) -> bool:
+        """El cronograma dice a qué período corresponde."""
+        return not self.periodo_relativo and not self.dias_sin_anio
 
 
 def leer(html: str, *, url: str = "") -> LecturaPagina:
@@ -111,6 +132,8 @@ def leer(html: str, *, url: str = "") -> LecturaPagina:
             )
         )
 
+    _revisar_periodo(lectura)
+
     lectura.cierre_declarado = _cierre(lectura.texto)
     if lectura.cierre_declarado:
         lectura.avisos.append(
@@ -141,6 +164,44 @@ def _contar_contenedores(principal: Node) -> tuple[int, int]:
         if len(" ".join(c.text(separator=" ", strip=True).split())) < MINIMO_UTIL
     )
     return len(contenedores), vacios
+
+
+def _revisar_periodo(lectura: LecturaPagina) -> None:
+    """A qué período corresponde lo que la página publica.
+
+    El cronograma de Progresar dice «correspondiente a este mes inicia el 9 de
+    febrero». Ni «este mes» ni «9 de febrero» dicen de qué año son, y la fecha
+    de captura no lo resuelve: una página que quedó sin actualizar publica el
+    cronograma del mes pasado con las mismas palabras.
+    """
+    relativo = RE_PERIODO_RELATIVO.search(lectura.texto)
+    lectura.periodo_relativo = relativo.group(0) if relativo else None
+    lectura.dias_sin_anio = [
+        " ".join(m.group(0).split()) for m in RE_DIA_SIN_ANIO.finditer(lectura.texto)
+    ]
+    if lectura.periodo_determinado:
+        return
+
+    partes = []
+    if lectura.periodo_relativo:
+        partes.append(
+            f"La página fecha su contenido en términos relativos («{lectura.periodo_relativo}») "
+            "y no dice a qué período corresponde."
+        )
+    if lectura.dias_sin_anio:
+        muestra = ", ".join(lectura.dias_sin_anio[:4])
+        partes.append(f"{len(lectura.dias_sin_anio)} fecha(s) sin año ({muestra}).")
+    partes.append(
+        "No se completa con el año de la captura: una página sin actualizar publica el "
+        "cronograma del mes pasado con las mismas palabras."
+    )
+    lectura.avisos.append(
+        Aviso(
+            " ".join(partes),
+            tipo=TipoIncidencia.VIGENCIA_INDETERMINADA,
+            severidad=Severidad.HIGH,
+        )
+    )
 
 
 def _cierre(texto: str) -> str | None:

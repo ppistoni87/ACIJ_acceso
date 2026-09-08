@@ -155,6 +155,23 @@ class Capturador:
 
         if not descarga.exitosa:
             resultado.rechazadas += 1
+            # Un 404 suele traer una página entera. Se guarda como lo que es
+            # —la respuesta que dio esa URL, con su status— para poder mostrar
+            # qué contestó y notar cuándo deja de contestar eso. No se extrae:
+            # la consulta de extracción sólo toma capturas 2xx.
+            if descarga.contenido:
+                objeto = self.almacen.guardar(descarga.contenido)
+                resultado.capturas.append(
+                    self._insertar_captura(
+                        resultado.corrida_id,
+                        url["id"],
+                        descarga,
+                        sha256=objeto.sha256,
+                        objeto_uri=objeto.uri,
+                        bytes_=objeto.bytes,
+                        captura_previa_id=None,
+                    )
+                )
             # Un recurso que no está y uno que nadie miró no son lo mismo. Sin
             # degradar la fuente, el reporte de cobertura diría que está sin
             # empezar, que es exactamente convertir un error en «sin datos».

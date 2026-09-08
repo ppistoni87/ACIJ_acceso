@@ -365,3 +365,96 @@ def test_un_404_no_deja_la_fuente_como_sin_visitar(
     assert fila.access_status == "NO_ENCONTRADA"
     assert fila.estado == "DEGRADED"
     assert "ya no está en esa dirección" in fila.motivo_estado
+
+
+# --- AT-007: un 404 que trae una página HTML extensa -------------------------
+
+# El cuerpo que devuelven los portales cuando la URL ya no existe: una página
+# completa, con navegación y buscador, que se lee como cualquier otro HTML.
+PAGINA_DE_ERROR = (
+    b"<html><head><title>Pagina no encontrada</title></head><body><main>"
+    b"<h1>La pagina que buscas no existe</h1>"
+    b"<p>Es posible que el contenido haya sido movido o dado de baja. "
+    b"Te sugerimos volver al inicio o usar el buscador del sitio para encontrar "
+    b"lo que necesitas. Tambien podes consultar las secciones destacadas.</p>"
+    b"<nav><a href='/'>Inicio</a><a href='/tramites'>Tramites</a></nav>"
+    b"</main></body></html>"
+)
+
+
+def test_at007_un_404_con_pagina_extensa_no_produce_ninguna_norma(
+    conexion: Connection, catalogo, almacen: AlmacenObjetos
+) -> None:
+    """La página de error se lee como cualquier HTML: si se extrajera, el corpus
+    tendría un documento que dice «la página que buscás no existe»."""
+    url = _url_de(conexion, "D01")
+    cliente = ClienteDePrueba(
+        {url: [_descarga(url, status=404, contenido=PAGINA_DE_ERROR, error="HTTP 404")]}
+    )
+    Capturador(conexion, cliente=cliente, almacen=almacen).capturar_fuente("D01")
+
+    from backend_normativo.ingesta.extraccion import Extractor
+
+    Extractor(conexion, almacen=almacen).extraer_pendientes("D01")
+
+    assert (
+        conexion.execute(
+            text(
+                "SELECT count(*) FROM documento_versiones dv "
+                "  JOIN documentos d ON d.id = dv.documento_id WHERE d.source_id = 'D01'"
+            )
+        ).scalar_one()
+        == 0
+    )
+    assert conexion.execute(text("SELECT count(*) FROM normas")).scalar_one() == 0
+
+
+def test_at007_la_captura_del_error_se_conserva_con_su_status(
+    conexion: Connection, catalogo, almacen: AlmacenObjetos
+) -> None:
+    """Es la prueba de qué contestó esa URL, y permite notar cuándo deja de
+    contestar eso."""
+    url = _url_de(conexion, "D01")
+    cliente = ClienteDePrueba(
+        {url: [_descarga(url, status=404, contenido=PAGINA_DE_ERROR, error="HTTP 404")]}
+    )
+    Capturador(conexion, cliente=cliente, almacen=almacen).capturar_fuente("D01")
+
+    fila = (
+        conexion.execute(
+            text(
+                "SELECT c.http_status, c.bytes, c.sha256_raw FROM capturas c "
+                "  JOIN fuente_urls u ON u.id = c.source_url_id WHERE u.source_id = 'D01'"
+            )
+        )
+        .mappings()
+        .one()
+    )
+    assert fila["http_status"] == 404
+    assert fila["bytes"] == len(PAGINA_DE_ERROR)
+    assert almacen.leer(fila["sha256_raw"]) == PAGINA_DE_ERROR
+
+
+def test_at007_la_corrida_no_figura_completa_para_contenido(
+    conexion: Connection, catalogo, almacen: AlmacenObjetos
+) -> None:
+    """Descargar la página de error no es haber conseguido el contenido."""
+    url = _url_de(conexion, "D01")
+    cliente = ClienteDePrueba(
+        {url: [_descarga(url, status=404, contenido=PAGINA_DE_ERROR, error="HTTP 404")]}
+    )
+    Capturador(conexion, cliente=cliente, almacen=almacen).capturar_fuente("D01")
+
+    fila = (
+        conexion.execute(
+            text(
+                "SELECT estado, solicitadas, descargadas, rechazadas FROM corridas_ingesta "
+                " WHERE source_id = 'D01' ORDER BY inicio DESC LIMIT 1"
+            )
+        )
+        .mappings()
+        .one()
+    )
+    assert fila["estado"] != "COMPLETA"
+    assert fila["rechazadas"] == 1
+    assert fila["descargadas"] == 0

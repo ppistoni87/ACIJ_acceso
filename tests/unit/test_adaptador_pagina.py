@@ -192,3 +192,63 @@ def test_lo_observado_viaja_como_identidad_candidata() -> None:
     pagina = documento.identidad["pagina"]
     assert pagina["ocultos"]
     assert pagina["contenedores"] >= 0
+
+
+# --- AT-016: a qué período corresponde el cronograma -------------------------
+
+# Texto real de la página de cronograma de Progresar (F52).
+CRONOGRAMA = """
+<html><body><main>
+  <h1>Cronograma de pagos y monto</h1>
+  <div class="field-item"></div>
+  <div class="field-item">
+    <p>El cronograma de pagos de la beca Progresar correspondiente a este mes
+       inicia el 9 de febrero.</p>
+    <p>DNI terminado en 0 y 1: 9 de febrero. 2 y 3: 10 de febrero.</p>
+    <p>El monto de la beca Progresar es de $35.000.-</p>
+  </div>
+</main></body></html>
+"""
+
+CRONOGRAMA_FECHADO = CRONOGRAMA.replace(
+    "correspondiente a este mes\n       inicia el 9 de febrero",
+    "correspondiente a febrero de 2026\n       inicia el 9 de febrero de 2026",
+).replace(
+    "9 de febrero. 2 y 3: 10 de febrero", "9 de febrero de 2026. 2 y 3: 10 de febrero de 2026"
+)
+
+
+def test_at016_un_cronograma_que_dice_este_mes_no_declara_su_periodo() -> None:
+    """«Correspondiente a este mes» se lee entero y parece que dijera algo."""
+    lectura = leer(CRONOGRAMA)
+    assert lectura.periodo_determinado is False
+    assert lectura.periodo_relativo == "este mes"
+
+
+def test_at016_los_dias_sin_anio_del_cronograma_se_listan() -> None:
+    lectura = leer(CRONOGRAMA)
+    assert "9 de febrero" in lectura.dias_sin_anio
+    assert "10 de febrero" in lectura.dias_sin_anio
+
+
+def test_at016_el_periodo_no_se_completa_con_la_fecha_de_captura() -> None:
+    """Una página sin actualizar publica el cronograma del mes pasado con las
+    mismas palabras."""
+    lectura = leer(CRONOGRAMA)
+    aviso = next(a for a in lectura.avisos if "no dice a qué período" in str(a))
+    assert "no se completa con el año de la captura" in str(aviso).lower()
+    assert aviso.severidad == "HIGH"
+
+
+def test_at016_el_contenedor_con_contenido_es_el_que_se_toma() -> None:
+    """El primero viene vacío; el segundo trae el cronograma."""
+    lectura = leer(CRONOGRAMA)
+    assert lectura.contenedores_vacios == 1
+    assert "9 de febrero" in lectura.texto
+    assert "$35.000" in lectura.texto
+
+
+def test_un_cronograma_que_declara_su_periodo_no_queda_pendiente() -> None:
+    lectura = leer(CRONOGRAMA_FECHADO)
+    assert lectura.periodo_determinado is True
+    assert not any("no dice a qué período" in str(a) for a in lectura.avisos)

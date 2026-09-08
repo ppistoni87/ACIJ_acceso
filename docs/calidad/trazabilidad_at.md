@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **74**
-- Cubiertos parcialmente: **6**
+- Cubiertos por pruebas que corren: **76**
+- Cubiertos parcialmente: **4**
 - No ejecutados: **0**
-- Pruebas citadas: **225** (ejecutadas)
+- Pruebas citadas: **233** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -17,7 +17,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-004 | Fuente sin URL | HU-001 | CUBIERTO | PASSED | `test_las_fuentes_sin_url_conservan_su_brecha`<br>`test_cada_brecha_tiene_incidencia_abierta_con_responsable`<br>`test_una_fuente_sin_url_no_se_automatiza` |
 | AT-005 | Alias F65 | HU-F65 | CUBIERTO | PASSED | `test_los_alias_apuntan_a_una_sola_fuente_canonica`<br>`test_un_alias_no_esta_necesariamente_caido` |
 | AT-006 | Alias con fragmento | HU-F28 | CUBIERTO | PASSED | `test_at006_el_ancla_inexistente_se_reporta_como_rota`<br>`test_at006_el_alias_se_conserva_aunque_el_ancla_no_resuelva`<br>`test_at006_ningun_mapeo_por_semejanza_numerica`<br>`test_at006_la_incidencia_dice_que_no_se_resolvio_por_parecido`<br>`test_sin_captura_del_destino_no_se_declara_rota_ni_valida`<br>`test_los_alias_apuntan_a_una_sola_fuente_canonica` |
-| AT-007 | 404 con HTML | HU-004 | CUBIERTO_PARCIAL | PASSED | `test_una_corrida_con_rechazos_no_figura_completa`<br>`test_un_403_pausa_la_fuente_y_no_la_deja_como_sin_datos`<br>_Falta: El caso concreto de un 404 con cuerpo HTML extenso no tiene fixture propia; se ejerce la regla general de que un rechazo no es una corrida completa._ |
+| AT-007 | 404 con HTML | HU-004 | CUBIERTO | PASSED | `test_at007_un_404_con_pagina_extensa_no_produce_ninguna_norma`<br>`test_at007_la_captura_del_error_se_conserva_con_su_status`<br>`test_at007_la_corrida_no_figura_completa_para_contenido`<br>`test_un_404_no_deja_la_fuente_como_sin_visitar`<br>`test_una_corrida_con_rechazos_no_figura_completa` |
 | AT-008 | Login con 200 | HU-004 | CUBIERTO | PASSED | `test_at008_una_pantalla_de_acceso_no_se_publica_como_tramite`<br>`test_no_se_guardan_cookies_ni_credenciales` |
 | AT-009 | 304 y frescura | HU-023 | CUBIERTO | PASSED | `test_un_304_exige_captura_previa`<br>`test_la_revalidacion_reutiliza_el_objeto_previo`<br>`test_vencer_la_frescura_no_deroga_pero_sí_impide_servir` |
 | AT-010 | ETag cambia sin semántica | HU-027 | CUBIERTO | PASSED | `test_una_nota_editorial_no_cuenta_como_cambio_de_la_norma`<br>`test_la_revalidacion_reutiliza_el_objeto_previo` |
@@ -26,7 +26,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-013 | Contadores no son aristas | HU-F01 | CUBIERTO | PASSED | `test_los_contadores_no_se_convierten_en_relaciones` |
 | AT-014 | Cambio de esquema dataset | HU-005 | CUBIERTO | PASSED | `test_forma_inesperada_detiene_la_importacion` |
 | AT-015 | ZIP malicioso o sobredimensionado | HU-005 | CUBIERTO | PASSED | `test_zip_con_ruta_fuera_del_arbol_se_rechaza`<br>`test_expansion_por_encima_del_presupuesto_se_rechaza` |
-| AT-016 | Contenedor vacío | HU-F52 | CUBIERTO_PARCIAL | PASSED | `test_at016_un_contenedor_vacio_no_se_toma_como_el_contenido`<br>`test_at016_una_pagina_sin_contenedores_vacios_no_avisa_de_nada`<br>_Falta: Se prueba que un contenedor vacío no se tome como el contenido y que la ausencia quede reportada. La validación del período al que corresponde cada contenedor —qué mes es el del cronograma— necesita normalizar fechas dentro de la página._ |
+| AT-016 | Contenedor vacío | HU-F52 | CUBIERTO | PASSED | `test_at016_un_contenedor_vacio_no_se_toma_como_el_contenido`<br>`test_at016_el_contenedor_con_contenido_es_el_que_se_toma`<br>`test_at016_un_cronograma_que_dice_este_mes_no_declara_su_periodo`<br>`test_at016_los_dias_sin_anio_del_cronograma_se_listan`<br>`test_at016_el_periodo_no_se_completa_con_la_fecha_de_captura`<br>`test_at016_una_pagina_sin_contenedores_vacios_no_avisa_de_nada`<br>`test_un_cronograma_que_declara_su_periodo_no_queda_pendiente` |
 | AT-017 | Bloque escolar oculto | HU-F27 | CUBIERTO | PASSED | `test_at017_el_bloque_oculto_no_entra_como_contenido_vigente`<br>`test_at017_los_dos_contextos_quedan_separados_no_descartados`<br>`test_las_formas_de_ocultar_que_usan_los_portales_se_reconocen`<br>`test_una_clase_que_solo_contiene_la_palabra_no_cuenta_como_oculta`<br>`test_el_texto_oculto_se_devuelve_sin_repetir_anidados` |
 | AT-018 | PDF sin magic | HU-F40 | CUBIERTO | PASSED | `test_una_pagina_de_error_con_encabezado_de_pdf_no_es_un_documento` |
 | AT-019 | Prefijo PDF conocido | HU-F40 | CUBIERTO | PASSED | `test_el_prefijo_real_del_boletin_de_caba_se_repara`<br>`test_un_prefijo_de_advertencia_se_recorta_y_queda_registrado`<br>`test_un_prefijo_desmedido_no_se_repara` |

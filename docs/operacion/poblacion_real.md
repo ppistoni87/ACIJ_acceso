@@ -234,6 +234,24 @@ La dirección se conserva como la escribió la fuente, con el piso adentro si
 viene adentro. Componer una legible mezclando dos fuentes que no coinciden
 produce una dirección que no existe en ninguna de las dos.
 
+## Cronogramas que no dicen de cuándo son
+
+La página de cronograma de pagos de Progresar (F52) tiene cuatro contenedores y
+dos vienen vacíos: se toma el que tiene contenido, no el primero. Y lo que ese
+contenedor publica es un cronograma sin período: «El cronograma de pagos de la
+beca Progresar correspondiente a **este mes** inicia el 9 de febrero», con las
+fechas de la tabla —9, 10, 11, 12 y 13 de febrero— también sin año.
+
+El monto y el orden por terminación de DNI se conservan, que son datos. Lo que
+no se afirma es a qué mes corresponden. Completar el año con la fecha de captura
+sería el mismo error que fechar un PDF por su carpeta, con un agravante: una
+página que quedó sin actualizar publica el cronograma del mes pasado con
+exactamente las mismas palabras.
+
+La página de inscripción escolar (F17) cae en lo mismo por otra vía: dice «este
+año». Las otras dos páginas institucionales del corpus sí declaran su período y
+no quedan pendientes.
+
 ## Estado de las 83 fuentes
 
 Ninguna quedó sin recorrer. 60 en curso, 18 bloqueadas con su motivo y su

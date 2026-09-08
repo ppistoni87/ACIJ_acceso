@@ -308,3 +308,30 @@ por repetición en vez de configurarse.
 Un número repetido, un salto en la serie o un paso que sólo trae una captura de
 pantalla se cargan como están y se reportan. Renumerar por orden de aparición
 inventaría una secuencia que el documento no declara.
+
+## D-24 · Una página de error se guarda y no se extrae
+
+Un `404` de un portal suele traer una página completa, con navegación y
+buscador, que se lee como cualquier otro HTML. Extraerla mete en el corpus un
+documento cuyo texto dice «la página que buscás no existe».
+
+**Consecuencia:** la respuesta se captura con su status real —es la prueba de
+qué contestó esa URL, y permite notar cuándo deja de contestar eso— y la
+extracción sólo toma capturas `2xx`. La corrida no figura completa: haber
+descargado la página de error no es haber conseguido el contenido.
+
+## D-25 · «Este mes» no es un período
+
+El cronograma de pagos de Progresar dice «correspondiente a este mes inicia el 9
+de febrero», y las fechas de la tabla no llevan año. El texto se lee entero y
+parece que dijera algo.
+
+Completar el año con la fecha de captura es el mismo error que fechar un PDF por
+su carpeta, con un agravante: una página que quedó sin actualizar publica el
+cronograma del mes pasado con exactamente las mismas palabras, así que la
+suposición no sólo es silenciosa, además es probable.
+
+**Consecuencia:** una página que fecha su contenido en términos relativos, o que
+trae días sin año, queda con su período indeterminado y lo declara. El contenido
+se conserva —el monto y el orden por terminación de DNI son datos— y lo que no
+se afirma es a qué mes corresponden.
