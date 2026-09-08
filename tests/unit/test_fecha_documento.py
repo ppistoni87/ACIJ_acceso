@@ -156,3 +156,34 @@ def test_un_documento_sin_texto_lo_dice_en_vez_de_usar_la_ruta() -> None:
     lectura = leer("   ", url="https://x.gob.ar/sites/default/files/2021/08/guia.pdf")
     assert lectura.fecha is None
     assert "La ruta no la reemplaza" in lectura.motivo
+
+
+# --- Un documento grande no cuelga la ingesta --------------------------------
+
+
+def test_los_parentesis_se_calculan_una_vez_y_no_por_fecha() -> None:
+    """Buscar el paréntesis que envuelve cada fecha recorriendo el texto desde
+    el principio vuelve la lectura cuadrática. Un boletín de 240 KB con cuatro
+    mil fechas tardaba treinta y un segundos: tiempo de ingesta que una captura
+    legítima puede consumir entero."""
+    import time
+
+    texto = "Artículo 1. El plazo vence el 30/06/2025 y no hay prórroga. " * 4000
+    arranque = time.perf_counter()
+    lectura = leer(texto)
+    tardanza = time.perf_counter() - arranque
+
+    assert len(lectura.halladas) == 4000
+    assert tardanza < 5.0, f"tardó {tardanza:.1f} s: el recorrido volvió a ser cuadrático"
+
+
+def test_una_nota_con_parentesis_anidados_sigue_leyendose_entera() -> None:
+    """El cálculo por lotes tiene que seguir devolviendo el paréntesis externo."""
+    texto = (
+        "Artículo 5.- Las prestaciones se abonan por mes vencido.\n"
+        "(Artículo 5° sustituido por el artículo 1° del Decreto 148/2021 (B.O. 6112), "
+        "publicado el 29/04/2021. Vigencia: a partir del día siguiente)"
+    )
+    lectura = leer(texto)
+    assert [h.clase for h in lectura.halladas] == [DATA_OTRO_ACTO]
+    assert lectura.actos_citados == ["Decreto 148/2021"]

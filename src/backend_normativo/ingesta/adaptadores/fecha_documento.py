@@ -18,6 +18,7 @@ es un dato aparte y útil— pero no se usan.
 
 from __future__ import annotations
 
+import bisect
 import datetime as dt
 import re
 import urllib.parse
@@ -129,14 +130,14 @@ def _fecha(dia: str, mes: str, anio: str) -> dt.date | None:
         return None
 
 
-def _parentesis(texto: str, posicion: int) -> str | None:
-    """El paréntesis más externo que envuelve la posición, si hay uno.
+def _parentesis_del_texto(texto: str) -> list[tuple[int, int]]:
+    """Los tramos entre paréntesis más externos, en un solo recorrido.
 
-    Se busca el externo y no el más cercano porque las notas de consolidación
-    llevan paréntesis adentro —«…Decreto 148/2021 (B.O. 6112). Vigencia: a
-    partir de (…)»—: quedarse con el interno pierde la nota entera y con ella
-    el verbo que dice que esa fecha es de otro acto.
+    Buscarlos por cada fecha vuelve la lectura cuadrática: un boletín de 240 KB
+    con cuatro mil fechas tardaba treinta y un segundos, que es tiempo de
+    ingesta que una captura legítima puede consumir entero.
     """
+    tramos: list[tuple[int, int]] = []
     profundidad = 0
     inicio = -1
     for i, caracter in enumerate(texto):
@@ -147,11 +148,23 @@ def _parentesis(texto: str, posicion: int) -> str | None:
         elif caracter == ")" and profundidad > 0:
             profundidad -= 1
             if profundidad == 0:
-                if inicio <= posicion < i:
-                    return texto[inicio : i + 1]
-                if i > posicion:
-                    return None
-    return None
+                tramos.append((inicio, i + 1))
+    return tramos
+
+
+def _envoltura(texto: str, tramos: list[tuple[int, int]], posicion: int) -> str | None:
+    """El tramo entre paréntesis que envuelve la posición, si hay uno.
+
+    Se busca el externo y no el más cercano porque las notas de consolidación
+    llevan paréntesis adentro —«…Decreto 148/2021 (B.O. 6112). Vigencia: a
+    partir de (…)»—: quedarse con el interno pierde la nota entera y con ella
+    el verbo que dice que esa fecha es de otro acto.
+    """
+    izquierda = bisect.bisect_right(tramos, (posicion, len(texto) + 1)) - 1
+    if izquierda < 0:
+        return None
+    inicio, fin = tramos[izquierda]
+    return texto[inicio:fin] if inicio <= posicion < fin else None
 
 
 def _contexto(texto: str, inicio: int, fin: int) -> str:
@@ -169,12 +182,14 @@ def leer(texto: str, *, url: str | None = None) -> LecturaDeFecha:
         return lectura
 
     fechan_el_documento = _las_que_fechan(texto)
+    # Los paréntesis se calculan una vez para todo el texto, no por fecha.
+    tramos = _parentesis_del_texto(texto)
 
     for inicio, fin, crudo, partes in _candidatas(texto):
         fecha = _fecha(*partes)
         if fecha is None:
             continue
-        citada = _acto_citado(_parentesis(texto, inicio))
+        citada = _acto_citado(_envoltura(texto, tramos, inicio))
         if citada:
             clase, norma = DATA_OTRO_ACTO, citada
         elif fecha in fechan_el_documento:

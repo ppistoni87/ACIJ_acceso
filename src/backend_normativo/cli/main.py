@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import typer
@@ -12,6 +13,22 @@ from backend_normativo.catalogo.carga import cargar_catalogo
 from backend_normativo.catalogo.manifiesto import cargar_manifiesto
 from backend_normativo.catalogo.reconciliacion import construir_reporte, formatear
 from backend_normativo.db.session import engine_migrador
+
+# El nombre de una base no se puede pasar como parámetro a `CREATE DATABASE`:
+# va interpolado en la sentencia. Como estos comandos además hacen `DROP`, el
+# nombre se valida antes de tocar el motor.
+RE_NOMBRE_DE_BASE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]{0,62}$")
+
+
+def _base_valida(base: str) -> str:
+    if not RE_NOMBRE_DE_BASE.match(base):
+        raise typer.BadParameter(
+            f"«{base}» no es un nombre de base válido. Se admiten letras, dígitos y guion "
+            "bajo, empezando por letra o guion bajo. El nombre se interpola en un "
+            "CREATE/DROP DATABASE y no puede llevar comillas ni separadores."
+        )
+    return base
+
 
 app = typer.Typer(help="Backend normativo de acceso a derechos.", no_args_is_help=True)
 catalogo = typer.Typer(help="Catálogo de fuentes.", no_args_is_help=True)
@@ -525,7 +542,7 @@ def operacion_restaurar(
 
     ajustes = get_settings()
     url_actual = str(ajustes.database_url)
-    url_destino = url_actual.rsplit("/", 1)[0] + "/" + base
+    url_destino = url_actual.rsplit("/", 1)[0] + "/" + _base_valida(base)
 
     try:
         manifiesto = leer_manifiesto(origen)
@@ -784,7 +801,7 @@ def calidad_ensayo_actualizacion(
     from backend_normativo.config import get_settings
 
     url_actual = str(get_settings().database_url)
-    url_ensayo = url_actual.rsplit("/", 1)[0] + "/" + base
+    url_ensayo = url_actual.rsplit("/", 1)[0] + "/" + _base_valida(base)
 
     admin = create_engine(url_actual.rsplit("/", 1)[0] + "/postgres", isolation_level="AUTOCOMMIT")
     with admin.connect() as conexion:
