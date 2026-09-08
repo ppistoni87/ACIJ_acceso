@@ -172,3 +172,22 @@ def crear_fuente(conexion: Connection):
         return source_id
 
     return _crear
+
+
+@pytest.fixture
+def cliente_api(engine_pruebas: Engine, conexion: Connection):
+    """Cliente de la API atado a la transacción de la prueba.
+
+    Las rutas usan la misma conexión que el resto del caso, así que ven los
+    datos que la prueba preparó y todo se revierte al terminar.
+    """
+    from fastapi.testclient import TestClient
+
+    from backend_normativo.api.app import crear_app
+    from backend_normativo.api.dependencias import conexion_administracion, conexion_lectura
+
+    app = crear_app()
+    app.dependency_overrides[conexion_lectura] = lambda: conexion
+    app.dependency_overrides[conexion_administracion] = lambda: conexion
+    with TestClient(app) as cliente:
+        yield cliente

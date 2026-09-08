@@ -1,0 +1,3220 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Backend normativo de acceso a derechos",
+    "description": "\nAPI de consulta del corpus normativo de acceso a derechos.\n\nToda respuesta lleva la misma envoltura: `schema_version`, `release_id`,\n`as_of`, `known_at`, `data_status`, `evidence`, `missing_fields` y `warnings`.\nSin `as_of` una respuesta no dice para cuándo vale; sin `release_id` no se puede\nreproducir; sin `missing_fields` una abstención sería indistinguible de un \"no\".\n\nLos errores son tipados. Información insuficiente es un estado de dominio y\nnunca se disfraza de 500.\n\nEsta API no otorga, no rechaza y no revoca prestaciones. Devuelve lo que dicen\nlas normas publicadas, con la evidencia que lo sostiene y lo que falta averiguar.\n",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/v1/normas": {
+      "get": {
+        "tags": [
+          "normas"
+        ],
+        "summary": "Listar Normas",
+        "description": "Normas del corpus con su cobertura de campos.\n\nDevuelve normas identificadas aunque todavía no tengan versiones publicadas:\nsaber que una norma existe y que su ficha está incompleta es información\nútil, y ocultarla haría creer que no existe.",
+        "operationId": "listar_normas_v1_normas_get",
+        "parameters": [
+          {
+            "name": "texto",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Búsqueda textual en el título.",
+              "title": "Texto"
+            },
+            "description": "Búsqueda textual en el título."
+          },
+          {
+            "name": "jurisdiccion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Jurisdiccion"
+            }
+          },
+          {
+            "name": "tipo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tipo"
+            }
+          },
+          {
+            "name": "numero",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Numero"
+            }
+          },
+          {
+            "name": "anio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Anio"
+            }
+          },
+          {
+            "name": "materia",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Materia"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 25,
+              "title": "Limite"
+            }
+          },
+          {
+            "name": "desplazamiento",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Desplazamiento"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha para la que se consulta. Por omisión, hoy.",
+              "title": "As Of"
+            },
+            "description": "Fecha para la que se consulta. Por omisión, hoy."
+          },
+          {
+            "name": "known_at",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada.",
+              "title": "Known At"
+            },
+            "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Respuesta_Pagina_NormaResumen__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/normas/{norma_id}": {
+      "get": {
+        "tags": [
+          "normas"
+        ],
+        "summary": "Obtener Norma",
+        "description": "Ficha de una norma: versiones, siete campos, relaciones y pendientes.\n\nCada versión declara si puede servirse para la capacidad consultada y, si no,\npor qué. Una abstención explicada es información; una lista vacía no.",
+        "operationId": "obtener_norma_v1_normas__norma_id__get",
+        "parameters": [
+          {
+            "name": "norma_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Norma Id"
+            }
+          },
+          {
+            "name": "capacidad",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Capacidad para la que se evalúa si cada versión puede servirse.",
+              "default": "IDENTIFICACION",
+              "title": "Capacidad"
+            },
+            "description": "Capacidad para la que se evalúa si cada versión puede servirse."
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha para la que se consulta. Por omisión, hoy.",
+              "title": "As Of"
+            },
+            "description": "Fecha para la que se consulta. Por omisión, hoy."
+          },
+          {
+            "name": "known_at",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada.",
+              "title": "Known At"
+            },
+            "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Respuesta_NormaDetalle_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/beneficios": {
+      "get": {
+        "tags": [
+          "operativo"
+        ],
+        "summary": "Listar Beneficios",
+        "description": "Beneficios candidatos.\n\nPertenecer a una población no implica tener derecho: el filtro acota la\nbúsqueda, no infiere elegibilidad. Para saber si corresponde hay que evaluar\nlas reglas, que es lo que hace `POST /v1/evaluaciones-preliminares`.",
+        "operationId": "listar_beneficios_v1_beneficios_get",
+        "parameters": [
+          {
+            "name": "poblacion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Código de población destinataria.",
+              "title": "Poblacion"
+            },
+            "description": "Código de población destinataria."
+          },
+          {
+            "name": "territorio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Jurisdicción.",
+              "title": "Territorio"
+            },
+            "description": "Jurisdicción."
+          },
+          {
+            "name": "linea",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Linea"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 25,
+              "title": "Limite"
+            }
+          },
+          {
+            "name": "desplazamiento",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Desplazamiento"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha para la que se consulta. Por omisión, hoy.",
+              "title": "As Of"
+            },
+            "description": "Fecha para la que se consulta. Por omisión, hoy."
+          },
+          {
+            "name": "known_at",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada.",
+              "title": "Known At"
+            },
+            "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Respuesta_Pagina_BeneficioResumen__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/valores": {
+      "get": {
+        "tags": [
+          "operativo"
+        ],
+        "summary": "Valores",
+        "description": "Valor de un parámetro para la fecha consultada.\n\nNunca se devuelve el último valor por fecha máxima: se devuelve el que se\naplica a la fecha pedida. Servir el monto de otro período es la forma más\ndirecta de dar una respuesta incorrecta que parece correcta.",
+        "operationId": "valores_v1_valores_get",
+        "parameters": [
+          {
+            "name": "concepto",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Código del parámetro.",
+              "title": "Concepto"
+            },
+            "description": "Código del parámetro."
+          },
+          {
+            "name": "territorio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Territorio"
+            }
+          },
+          {
+            "name": "segmento",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Segmento"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha para la que se consulta. Por omisión, hoy.",
+              "title": "As Of"
+            },
+            "description": "Fecha para la que se consulta. Por omisión, hoy."
+          },
+          {
+            "name": "known_at",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada.",
+              "title": "Known At"
+            },
+            "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Respuesta_list_ValorParametro__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/plazos": {
+      "get": {
+        "tags": [
+          "operativo"
+        ],
+        "summary": "Plazos",
+        "description": "Plazos con su tipo y su estado calculado a la fecha.\n\nUn plazo relativo sin evento de inicio conocido responde \"desconocido\", no\nuna fecha inventada.",
+        "operationId": "plazos_v1_plazos_get",
+        "parameters": [
+          {
+            "name": "beneficio_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Beneficio Id"
+            }
+          },
+          {
+            "name": "tramite_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tramite Id"
+            }
+          },
+          {
+            "name": "convocatoria",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Convocatoria"
+            }
+          },
+          {
+            "name": "ciclo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ciclo"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha para la que se consulta. Por omisión, hoy.",
+              "title": "As Of"
+            },
+            "description": "Fecha para la que se consulta. Por omisión, hoy."
+          },
+          {
+            "name": "known_at",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada.",
+              "title": "Known At"
+            },
+            "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Respuesta_list_PlazoResumen__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/puntos-atencion": {
+      "get": {
+        "tags": [
+          "operativo"
+        ],
+        "summary": "Puntos Atencion",
+        "description": "Puntos de atención con sus canales.\n\nSin coordenadas válidas no se afirma cercanía. El horario es por canal: el\nde la mesa presencial no se copia al teléfono.",
+        "operationId": "puntos_atencion_v1_puntos_atencion_get",
+        "parameters": [
+          {
+            "name": "jurisdiccion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Jurisdiccion"
+            }
+          },
+          {
+            "name": "localidad",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Localidad"
+            }
+          },
+          {
+            "name": "tipo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tipo"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha para la que se consulta. Por omisión, hoy.",
+              "title": "As Of"
+            },
+            "description": "Fecha para la que se consulta. Por omisión, hoy."
+          },
+          {
+            "name": "known_at",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada.",
+              "title": "Known At"
+            },
+            "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Respuesta_list_PuntoAtencion__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/evaluaciones-preliminares": {
+      "post": {
+        "tags": [
+          "evaluación"
+        ],
+        "summary": "Evaluar",
+        "operationId": "evaluar_v1_evaluaciones_preliminares_post",
+        "parameters": [
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha para la que se consulta. Por omisión, hoy.",
+              "title": "As Of"
+            },
+            "description": "Fecha para la que se consulta. Por omisión, hoy."
+          },
+          {
+            "name": "known_at",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada.",
+              "title": "Known At"
+            },
+            "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudEvaluacion"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Respuesta_ResultadoEvaluacion_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/recuperacion": {
+      "post": {
+        "tags": [
+          "recuperación"
+        ],
+        "summary": "Recuperar",
+        "operationId": "recuperar_v1_recuperacion_post",
+        "parameters": [
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha para la que se consulta. Por omisión, hoy.",
+              "title": "As Of"
+            },
+            "description": "Fecha para la que se consulta. Por omisión, hoy."
+          },
+          {
+            "name": "known_at",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada.",
+              "title": "Known At"
+            },
+            "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudRecuperacion"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Respuesta_ResultadoRecuperacion_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cobertura": {
+      "get": {
+        "tags": [
+          "recuperación"
+        ],
+        "summary": "Cobertura",
+        "description": "Denominadores y pendientes, separados de lo validado y publicable.",
+        "operationId": "cobertura_v1_cobertura_get",
+        "parameters": [
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha para la que se consulta. Por omisión, hoy.",
+              "title": "As Of"
+            },
+            "description": "Fecha para la que se consulta. Por omisión, hoy."
+          },
+          {
+            "name": "known_at",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada.",
+              "title": "Known At"
+            },
+            "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Respuesta_dict_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/revisiones/{incidencia_id}/resolver": {
+      "post": {
+        "tags": [
+          "administración"
+        ],
+        "summary": "Resolver Revision",
+        "operationId": "resolver_revision_v1_admin_revisiones__incidencia_id__resolver_post",
+        "parameters": [
+          {
+            "name": "incidencia_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Incidencia Id"
+            }
+          },
+          {
+            "name": "X-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudResolucion"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Resolver Revision V1 Admin Revisiones  Incidencia Id  Resolver Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/releases": {
+      "post": {
+        "tags": [
+          "administración"
+        ],
+        "summary": "Crear Release",
+        "operationId": "crear_release_v1_admin_releases_post",
+        "parameters": [
+          {
+            "name": "X-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudRelease"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Crear Release V1 Admin Releases Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/salud": {
+      "get": {
+        "tags": [
+          "operativo"
+        ],
+        "summary": "Salud",
+        "operationId": "salud_salud_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Salud Salud Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Advertencia": {
+        "properties": {
+          "codigo": {
+            "$ref": "#/components/schemas/CodigoError"
+          },
+          "detalle": {
+            "type": "string",
+            "title": "Detalle"
+          }
+        },
+        "type": "object",
+        "required": [
+          "codigo",
+          "detalle"
+        ],
+        "title": "Advertencia"
+      },
+      "BeneficioResumen": {
+        "properties": {
+          "beneficio_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Beneficio Id"
+          },
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "linea": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linea"
+          },
+          "familia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Familia"
+          },
+          "jurisdiccion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jurisdiccion"
+          },
+          "naturaleza": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Naturaleza"
+          },
+          "versiones_publicadas": {
+            "type": "integer",
+            "title": "Versiones Publicadas"
+          }
+        },
+        "type": "object",
+        "required": [
+          "beneficio_id",
+          "codigo",
+          "nombre",
+          "linea",
+          "familia",
+          "jurisdiccion",
+          "naturaleza",
+          "versiones_publicadas"
+        ],
+        "title": "BeneficioResumen"
+      },
+      "CoberturaDeCampos": {
+        "properties": {
+          "poblacion_destinataria": {
+            "type": "string",
+            "title": "Poblacion Destinataria",
+            "default": "PENDIENTE"
+          },
+          "criterios_aplicabilidad": {
+            "type": "string",
+            "title": "Criterios Aplicabilidad",
+            "default": "PENDIENTE"
+          },
+          "plazos": {
+            "type": "string",
+            "title": "Plazos",
+            "default": "PENDIENTE"
+          },
+          "criterios_revocacion": {
+            "type": "string",
+            "title": "Criterios Revocacion",
+            "default": "PENDIENTE"
+          },
+          "interdependencias": {
+            "type": "string",
+            "title": "Interdependencias",
+            "default": "PENDIENTE"
+          },
+          "beneficio_otorgado": {
+            "type": "string",
+            "title": "Beneficio Otorgado",
+            "default": "PENDIENTE"
+          },
+          "no_descartar": {
+            "type": "string",
+            "title": "No Descartar",
+            "default": "PENDIENTE"
+          }
+        },
+        "type": "object",
+        "title": "CoberturaDeCampos",
+        "description": "Estado de los siete campos pedidos para una versión."
+      },
+      "CodigoError": {
+        "type": "string",
+        "enum": [
+          "SOURCE_UNAVAILABLE",
+          "STALE_DATA",
+          "CONFLICT",
+          "INSUFFICIENT_EVIDENCE",
+          "UNKNOWN_IDENTITY",
+          "UNSUPPORTED_SCOPE",
+          "INVALID_REQUEST",
+          "NOT_AUTHORIZED",
+          "VERSION_CONFLICT"
+        ],
+        "title": "CodigoError",
+        "description": "Errores tipados del contrato.\n\nInformación insuficiente es un estado de dominio, no un fallo del servidor:\nnunca se disfraza de 500."
+      },
+      "CondicionRespuesta": {
+        "properties": {
+          "texto_literal": {
+            "type": "string",
+            "title": "Texto Literal"
+          },
+          "categoria": {
+            "type": "string",
+            "title": "Categoria"
+          },
+          "resultado": {
+            "type": "string",
+            "title": "Resultado"
+          },
+          "explicacion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Explicacion"
+          },
+          "alcance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alcance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "texto_literal",
+          "categoria",
+          "resultado"
+        ],
+        "title": "CondicionRespuesta"
+      },
+      "DataStatus": {
+        "type": "string",
+        "enum": [
+          "PUBLICADO",
+          "PARCIAL",
+          "NO_PUBLICABLE",
+          "SIN_RESULTADOS"
+        ],
+        "title": "DataStatus",
+        "description": "Qué tan sostenible es lo que devuelve la respuesta."
+      },
+      "Evidencia": {
+        "properties": {
+          "evidencia_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Evidencia Id"
+          },
+          "fragmento": {
+            "type": "string",
+            "title": "Fragmento"
+          },
+          "norma": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Norma"
+          },
+          "unidad": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unidad"
+          },
+          "url_fuente": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url Fuente"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "capturado_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capturado En"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evidencia_id",
+          "fragmento"
+        ],
+        "title": "Evidencia",
+        "description": "Localizador verificable de una afirmación."
+      },
+      "Fragmento": {
+        "properties": {
+          "chunk_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Chunk Id"
+          },
+          "texto": {
+            "type": "string",
+            "title": "Texto"
+          },
+          "norma": {
+            "type": "string",
+            "title": "Norma"
+          },
+          "unidad": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unidad"
+          },
+          "url_fuente": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url Fuente"
+          },
+          "relevancia": {
+            "type": "number",
+            "title": "Relevancia"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chunk_id",
+          "texto",
+          "norma",
+          "unidad",
+          "url_fuente",
+          "relevancia"
+        ],
+        "title": "Fragmento"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "NormaDetalle": {
+        "properties": {
+          "norma": {
+            "$ref": "#/components/schemas/NormaResumen"
+          },
+          "versiones": {
+            "items": {
+              "$ref": "#/components/schemas/VersionNorma"
+            },
+            "type": "array",
+            "title": "Versiones"
+          },
+          "campos": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Campos"
+          },
+          "relaciones": {
+            "items": {
+              "$ref": "#/components/schemas/RelacionResumen"
+            },
+            "type": "array",
+            "title": "Relaciones"
+          },
+          "referencias_pendientes": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Referencias Pendientes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "norma"
+        ],
+        "title": "NormaDetalle"
+      },
+      "NormaResumen": {
+        "properties": {
+          "norma_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Norma Id"
+          },
+          "jurisdiccion": {
+            "type": "string",
+            "title": "Jurisdiccion"
+          },
+          "tipo": {
+            "type": "string",
+            "title": "Tipo"
+          },
+          "numero": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Numero"
+          },
+          "anio": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anio"
+          },
+          "titulo": {
+            "type": "string",
+            "title": "Titulo"
+          },
+          "emisor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Emisor"
+          },
+          "identificadores": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Identificadores"
+          },
+          "identidad_incierta": {
+            "type": "boolean",
+            "title": "Identidad Incierta",
+            "default": false
+          },
+          "versiones_publicadas": {
+            "type": "integer",
+            "title": "Versiones Publicadas",
+            "default": 0
+          },
+          "cobertura_de_campos": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CoberturaDeCampos"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "norma_id",
+          "jurisdiccion",
+          "tipo",
+          "numero",
+          "anio",
+          "titulo"
+        ],
+        "title": "NormaResumen"
+      },
+      "Pagina_BeneficioResumen_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BeneficioResumen"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limite": {
+            "type": "integer",
+            "title": "Limite"
+          },
+          "desplazamiento": {
+            "type": "integer",
+            "title": "Desplazamiento"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limite",
+          "desplazamiento"
+        ],
+        "title": "Pagina[BeneficioResumen]"
+      },
+      "Pagina_NormaResumen_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/NormaResumen"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limite": {
+            "type": "integer",
+            "title": "Limite"
+          },
+          "desplazamiento": {
+            "type": "integer",
+            "title": "Desplazamiento"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limite",
+          "desplazamiento"
+        ],
+        "title": "Pagina[NormaResumen]"
+      },
+      "PlazoResumen": {
+        "properties": {
+          "plazo_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Plazo Id"
+          },
+          "tipo": {
+            "type": "string",
+            "title": "Tipo"
+          },
+          "inicio": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inicio"
+          },
+          "fin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fin"
+          },
+          "hora_cierre": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hora Cierre"
+          },
+          "zona_horaria": {
+            "type": "string",
+            "title": "Zona Horaria"
+          },
+          "cantidad": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cantidad"
+          },
+          "unidad": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unidad"
+          },
+          "tipo_dia": {
+            "type": "string",
+            "title": "Tipo Dia"
+          },
+          "evento_inicio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evento Inicio"
+          },
+          "estado_calculado": {
+            "type": "string",
+            "title": "Estado Calculado"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plazo_id",
+          "tipo",
+          "inicio",
+          "fin",
+          "hora_cierre",
+          "zona_horaria",
+          "cantidad",
+          "unidad",
+          "tipo_dia",
+          "evento_inicio",
+          "estado_calculado"
+        ],
+        "title": "PlazoResumen"
+      },
+      "PuntoAtencion": {
+        "properties": {
+          "punto_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Punto Id"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "tipo": {
+            "type": "string",
+            "title": "Tipo"
+          },
+          "organismo": {
+            "type": "string",
+            "title": "Organismo"
+          },
+          "organismo_operador": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organismo Operador"
+          },
+          "direccion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Direccion"
+          },
+          "localidad": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Localidad"
+          },
+          "lat": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lat"
+          },
+          "lng": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lng"
+          },
+          "canales": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Canales"
+          },
+          "verificado_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verificado En"
+          }
+        },
+        "type": "object",
+        "required": [
+          "punto_id",
+          "nombre",
+          "tipo",
+          "organismo",
+          "organismo_operador",
+          "direccion",
+          "localidad",
+          "lat",
+          "lng",
+          "verificado_en"
+        ],
+        "title": "PuntoAtencion"
+      },
+      "RelacionResumen": {
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "title": "Tipo"
+          },
+          "direccion": {
+            "type": "string",
+            "title": "Direccion"
+          },
+          "norma": {
+            "type": "string",
+            "title": "Norma"
+          },
+          "alcance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alcance"
+          },
+          "estado_revision": {
+            "type": "string",
+            "title": "Estado Revision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipo",
+          "direccion",
+          "norma",
+          "estado_revision"
+        ],
+        "title": "RelacionResumen"
+      },
+      "Respuesta_NormaDetalle_": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "release_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At"
+          },
+          "data_status": {
+            "$ref": "#/components/schemas/DataStatus"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NormaDetalle"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidencia"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Advertencia"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "known_at",
+          "data_status",
+          "data"
+        ],
+        "title": "Respuesta[NormaDetalle]"
+      },
+      "Respuesta_Pagina_BeneficioResumen__": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "release_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At"
+          },
+          "data_status": {
+            "$ref": "#/components/schemas/DataStatus"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Pagina_BeneficioResumen_"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidencia"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Advertencia"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "known_at",
+          "data_status",
+          "data"
+        ],
+        "title": "Respuesta[Pagina[BeneficioResumen]]"
+      },
+      "Respuesta_Pagina_NormaResumen__": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "release_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At"
+          },
+          "data_status": {
+            "$ref": "#/components/schemas/DataStatus"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Pagina_NormaResumen_"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidencia"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Advertencia"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "known_at",
+          "data_status",
+          "data"
+        ],
+        "title": "Respuesta[Pagina[NormaResumen]]"
+      },
+      "Respuesta_ResultadoEvaluacion_": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "release_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At"
+          },
+          "data_status": {
+            "$ref": "#/components/schemas/DataStatus"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ResultadoEvaluacion"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidencia"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Advertencia"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "known_at",
+          "data_status",
+          "data"
+        ],
+        "title": "Respuesta[ResultadoEvaluacion]"
+      },
+      "Respuesta_ResultadoRecuperacion_": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "release_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At"
+          },
+          "data_status": {
+            "$ref": "#/components/schemas/DataStatus"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ResultadoRecuperacion"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidencia"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Advertencia"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "known_at",
+          "data_status",
+          "data"
+        ],
+        "title": "Respuesta[ResultadoRecuperacion]"
+      },
+      "Respuesta_dict_": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "release_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At"
+          },
+          "data_status": {
+            "$ref": "#/components/schemas/DataStatus"
+          },
+          "data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Data"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidencia"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Advertencia"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "known_at",
+          "data_status",
+          "data"
+        ],
+        "title": "Respuesta[dict]"
+      },
+      "Respuesta_list_PlazoResumen__": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "release_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At"
+          },
+          "data_status": {
+            "$ref": "#/components/schemas/DataStatus"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/PlazoResumen"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidencia"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Advertencia"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "known_at",
+          "data_status",
+          "data"
+        ],
+        "title": "Respuesta[list[PlazoResumen]]"
+      },
+      "Respuesta_list_PuntoAtencion__": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "release_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At"
+          },
+          "data_status": {
+            "$ref": "#/components/schemas/DataStatus"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/PuntoAtencion"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidencia"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Advertencia"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "known_at",
+          "data_status",
+          "data"
+        ],
+        "title": "Respuesta[list[PuntoAtencion]]"
+      },
+      "Respuesta_list_ValorParametro__": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "release_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At"
+          },
+          "data_status": {
+            "$ref": "#/components/schemas/DataStatus"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ValorParametro"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidencia"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Advertencia"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "known_at",
+          "data_status",
+          "data"
+        ],
+        "title": "Respuesta[list[ValorParametro]]"
+      },
+      "ResultadoEvaluacion": {
+        "properties": {
+          "resultado": {
+            "type": "string",
+            "title": "Resultado"
+          },
+          "condiciones_cumplidas": {
+            "items": {
+              "$ref": "#/components/schemas/CondicionRespuesta"
+            },
+            "type": "array",
+            "title": "Condiciones Cumplidas"
+          },
+          "condiciones_no_cumplidas": {
+            "items": {
+              "$ref": "#/components/schemas/CondicionRespuesta"
+            },
+            "type": "array",
+            "title": "Condiciones No Cumplidas"
+          },
+          "condiciones_desconocidas": {
+            "items": {
+              "$ref": "#/components/schemas/CondicionRespuesta"
+            },
+            "type": "array",
+            "title": "Condiciones Desconocidas"
+          },
+          "salvaguardas": {
+            "items": {
+              "$ref": "#/components/schemas/CondicionRespuesta"
+            },
+            "type": "array",
+            "title": "Salvaguardas"
+          },
+          "reglas_posteriores": {
+            "items": {
+              "$ref": "#/components/schemas/CondicionRespuesta"
+            },
+            "type": "array",
+            "title": "Reglas Posteriores"
+          },
+          "preguntas_faltantes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Preguntas Faltantes"
+          },
+          "reglas_evaluadas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reglas Evaluadas"
+          },
+          "aclaracion": {
+            "type": "string",
+            "title": "Aclaracion",
+            "default": "Esta es una orientación preliminar sobre lo que dicen las normas publicadas. No otorga, no rechaza y no revoca ninguna prestación: la decisión la toma el organismo competente."
+          }
+        },
+        "type": "object",
+        "required": [
+          "resultado"
+        ],
+        "title": "ResultadoEvaluacion"
+      },
+      "ResultadoRecuperacion": {
+        "properties": {
+          "fragmentos": {
+            "items": {
+              "$ref": "#/components/schemas/Fragmento"
+            },
+            "type": "array",
+            "title": "Fragmentos"
+          },
+          "conflictos_pertinentes": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Conflictos Pertinentes"
+          },
+          "aclaracion": {
+            "type": "string",
+            "title": "Aclaracion",
+            "default": "Los fragmentos sirven para explicar y citar. Los montos, las fechas y los datos de contacto se consultan con las operaciones tipadas, no combinando fragmentos."
+          }
+        },
+        "type": "object",
+        "title": "ResultadoRecuperacion"
+      },
+      "SolicitudEvaluacion": {
+        "properties": {
+          "beneficio_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Beneficio Id"
+          },
+          "hechos": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Hechos"
+          },
+          "fecha": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "beneficio_id"
+        ],
+        "title": "SolicitudEvaluacion"
+      },
+      "SolicitudRecuperacion": {
+        "properties": {
+          "consulta": {
+            "type": "string",
+            "title": "Consulta"
+          },
+          "jurisdiccion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jurisdiccion"
+          },
+          "limite": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Limite",
+            "default": 10
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "consulta"
+        ],
+        "title": "SolicitudRecuperacion"
+      },
+      "SolicitudRelease": {
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Motivo"
+          },
+          "candidatos": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidatos"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "motivo"
+        ],
+        "title": "SolicitudRelease"
+      },
+      "SolicitudResolucion": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Decision"
+          },
+          "fundamento_evidencia_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fundamento Evidencia Id"
+          },
+          "vigencia": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Vigencia"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "estado_esperado": {
+            "type": "string",
+            "title": "Estado Esperado",
+            "default": "ABIERTA"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision"
+        ],
+        "title": "SolicitudResolucion"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ValorParametro": {
+        "properties": {
+          "parametro": {
+            "type": "string",
+            "title": "Parametro"
+          },
+          "concepto": {
+            "type": "string",
+            "title": "Concepto"
+          },
+          "valor": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Valor"
+          },
+          "unidad": {
+            "type": "string",
+            "title": "Unidad"
+          },
+          "moneda": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Moneda"
+          },
+          "periodo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Periodo"
+          },
+          "territorio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Territorio"
+          },
+          "segmento": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Segmento"
+          },
+          "vigencia_desde": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vigencia Desde"
+          },
+          "vigencia_hasta": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vigencia Hasta"
+          },
+          "evidencia_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Evidencia Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "parametro",
+          "concepto",
+          "valor",
+          "unidad",
+          "moneda",
+          "periodo",
+          "territorio",
+          "segmento",
+          "vigencia_desde",
+          "vigencia_hasta",
+          "evidencia_id"
+        ],
+        "title": "ValorParametro"
+      },
+      "VersionNorma": {
+        "properties": {
+          "version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Version Id"
+          },
+          "tipo_version": {
+            "type": "string",
+            "title": "Tipo Version"
+          },
+          "estado_legal_declarado": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estado Legal Declarado"
+          },
+          "estado_legal_validado": {
+            "type": "string",
+            "title": "Estado Legal Validado"
+          },
+          "valid_tipo": {
+            "type": "string",
+            "title": "Valid Tipo"
+          },
+          "valid_desde": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Desde"
+          },
+          "valid_hasta": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Hasta"
+          },
+          "verificado_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verificado En"
+          },
+          "reverificar_antes_de": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reverificar Antes De"
+          },
+          "servible": {
+            "type": "boolean",
+            "title": "Servible"
+          },
+          "motivos_no_servible": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Motivos No Servible"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version_id",
+          "tipo_version",
+          "estado_legal_declarado",
+          "estado_legal_validado",
+          "valid_tipo",
+          "valid_desde",
+          "valid_hasta",
+          "verificado_en",
+          "reverificar_antes_de",
+          "servible"
+        ],
+        "title": "VersionNorma"
+      },
+      "Vigencia": {
+        "properties": {
+          "valid_tipo": {
+            "type": "string",
+            "title": "Valid Tipo"
+          },
+          "valid_desde": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Desde"
+          },
+          "valid_hasta": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Hasta"
+          },
+          "condicion_vigencia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Condicion Vigencia"
+          },
+          "estado_legal": {
+            "type": "string",
+            "title": "Estado Legal",
+            "default": "NO_DETERMINADA"
+          },
+          "ttl_dias": {
+            "type": "integer",
+            "title": "Ttl Dias",
+            "default": 30
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "valid_tipo"
+        ],
+        "title": "Vigencia"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "normas",
+      "description": "Identidad, versiones y siete campos."
+    },
+    {
+      "name": "operativo",
+      "description": "Beneficios, valores, plazos y atención."
+    },
+    {
+      "name": "evaluación",
+      "description": "Evaluación preliminar de aplicabilidad."
+    },
+    {
+      "name": "recuperación",
+      "description": "Fragmentos citables y cobertura."
+    },
+    {
+      "name": "administración",
+      "description": "Revisión y publicación."
+    }
+  ]
+}

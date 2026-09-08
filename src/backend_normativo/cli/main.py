@@ -24,7 +24,9 @@ revision = typer.Typer(help="Revisión de dominio.", no_args_is_help=True)
 publicacion = typer.Typer(help="Publicación de releases.", no_args_is_help=True)
 app.add_typer(calidad, name="calidad")
 app.add_typer(revision, name="revision")
+api = typer.Typer(help="API de consulta.", no_args_is_help=True)
 app.add_typer(publicacion, name="publicacion")
+app.add_typer(api, name="api")
 
 
 @catalogo.command("validar")
@@ -426,6 +428,35 @@ def publicacion_publicar(
         f"Eventos en outbox: {resultado.eventos_emitidos}\n"
         f"En cuarentena: {len(resultado.en_cuarentena)}"
     )
+
+
+@api.command("servir")
+def api_servir(
+    host: str = typer.Option("127.0.0.1", help="Interfaz donde escuchar."),
+    puerto: int = typer.Option(8000, help="Puerto."),
+    recargar: bool = typer.Option(False, help="Recargar al cambiar el código."),
+) -> None:
+    """Levanta la API de consulta."""
+    import uvicorn
+
+    uvicorn.run("backend_normativo.api.app:app", host=host, port=puerto, reload=recargar)
+
+
+@api.command("openapi")
+def api_openapi(
+    salida: Path = typer.Option(
+        Path("docs/openapi.json"), help="Archivo donde escribir el contrato."
+    ),
+) -> None:
+    """Escribe el contrato OpenAPI a un archivo versionable."""
+    from backend_normativo.api.app import crear_app
+
+    salida.parent.mkdir(parents=True, exist_ok=True)
+    salida.write_text(
+        json.dumps(crear_app().openapi(), ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    typer.echo(f"Contrato escrito en {salida}")
 
 
 if __name__ == "__main__":

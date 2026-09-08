@@ -63,6 +63,12 @@ ignore = ["RUF001", "RUF002", "RUF003", "B008"]
 pythonpath = ["src"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+filterwarnings = [
+    # La deprecación viene de starlette al usar su TestClient con httpx.
+    "ignore:Using `httpx` with `starlette.testclient`:DeprecationWarning",
+    "ignore:Using `httpx` with `starlette.testclient`",
+    "ignore:The anyio.abc.BlockingPortal alias is deprecated:DeprecationWarning",
+]
 markers = [
     "integracion: requiere PostgreSQL",
     "red: requiere acceso a fuentes externas",
