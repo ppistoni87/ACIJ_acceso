@@ -336,11 +336,19 @@ class Capturador:
             estado = voc.EstadoCorrida.FALLIDA
         resultado.estado = estado
 
+        # Una corrida que cierra en FALLIDA o PARCIAL sin decir por qué obliga a
+        # buscar el motivo en otra tabla. El motivo ya está: son las incidencias
+        # que la corrida abrió. Copiarlas acá es lo que hace que la fila de la
+        # corrida se explique sola cuando alguien la mire dentro de seis meses.
+        detalle = None
+        if estado is not voc.EstadoCorrida.COMPLETA and resultado.incidencias:
+            detalle = " | ".join(resultado.incidencias)
+
         self.conexion.execute(
             text(
                 "UPDATE corridas_ingesta SET estado = :estado, fin = :fin, "
                 "  solicitadas = :sol, descargadas = :desc, procesadas = :proc, "
-                "  rechazadas = :rech "
+                "  rechazadas = :rech, detalle_error = :detalle "
                 "WHERE id = :id"
             ),
             {
@@ -350,6 +358,7 @@ class Capturador:
                 "desc": resultado.descargadas,
                 "proc": resultado.procesadas,
                 "rech": resultado.rechazadas,
+                "detalle": detalle,
                 "id": resultado.corrida_id,
             },
         )

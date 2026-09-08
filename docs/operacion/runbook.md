@@ -149,7 +149,28 @@ bn calidad backlog --salida docs/calidad/estado_backlog.md
 bn calidad diccionario --salida docs/operacion/diccionario_de_datos.md
 ```
 
-## 8. Respaldo y restauración
+## 8. Puesta en marcha desde cero
+
+```bash
+bash scripts/corrida_limpia.sh                         # base nueva, catálogo, red y curación
+bash scripts/corrida_limpia.sh bn_prueba /tmp/x.md D06 F19   # variante corta, tres fuentes
+```
+
+Crea una base vacía, corre las migraciones, carga las 83 fuentes del catálogo,
+recorre la red con el **mismo planificador que corre en producción** —no con una
+lista escrita a mano—, cura encima de lo capturado y escribe
+`docs/reportes/corrida_limpia.md` con el tiempo de cada paso y el resultado
+fuente por fuente. Al cerrar destruye la base: si algo del reporte se pudiera
+explicar por estado previo, no hay estado previo del que agarrarse.
+
+Sirve para dos cosas: verificar que un entorno nuevo levanta entero, y medir
+cuánto tarda. Si un paso falla, la base **queda en pie** para inspeccionarla y el
+reporte se escribe igual, con el paso que falló marcado.
+
+Lo que no prueba es que corra igual desde otra red. Para eso hay que correrlo
+allá y comparar los dos reportes.
+
+## 9. Respaldo y restauración
 
 ```bash
 bn operacion respaldar var/respaldo/$(date +%F)
@@ -168,7 +189,7 @@ evidencias, que los eventos ya entregados sigan entregados y que los checkpoints
 de ingesta conserven su posición. Si algo de eso falla, el comando termina con
 error: una restauración que nadie verificó no es una restauración.
 
-## 9. Qué hacer cuando algo falla
+## 10. Qué hacer cuando algo falla
 
 | Síntoma | Qué significa | Qué hacer |
 | --- | --- | --- |
@@ -180,7 +201,7 @@ error: una restauración que nadie verificó no es una restauración.
 | `alembic check` reporta diferencias | Un modelo cambió sin migración | Generar la migración; no editar `0001` a mano |
 | Una prueba de trazabilidad falla por nodeid inexistente | Se renombró una prueba | Actualizar `docs/calidad/trazabilidad_at.json`: el mapa miente hasta corregirlo |
 
-## 10. Lo que este sistema no hace
+## 11. Lo que este sistema no hace
 
 Está acá para que nadie lo pida por error:
 

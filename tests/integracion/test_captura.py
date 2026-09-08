@@ -292,6 +292,47 @@ def test_una_corrida_con_rechazos_no_figura_completa(
     assert fila.fin is not None
 
 
+def test_una_corrida_fallida_dice_por_que_fallo(
+    conexion: Connection, catalogo, almacen: AlmacenObjetos
+) -> None:
+    """El motivo vive en la fila de la corrida, no solo en otra tabla.
+
+    Un reporte por fuente lee `corridas_ingesta`. Si ahí dice FALLIDA y nada más,
+    el que lo lee tiene que salir a buscar el motivo a mano, y una corrida sin
+    motivo es indistinguible de una fuente que no tenía nada para dar.
+    """
+    url = _url_de(conexion, "D01")
+    cliente = ClienteDePrueba({url: [_descarga(url, status=403, error="HTTP 403")]})
+
+    resultado = Capturador(conexion, cliente=cliente, almacen=almacen).capturar_fuente("D01")
+
+    detalle = conexion.execute(
+        text("SELECT detalle_error FROM corridas_ingesta WHERE id = :id"),
+        {"id": resultado.corrida_id},
+    ).scalar_one()
+    assert detalle is not None
+    assert "403" in detalle
+    assert detalle == " | ".join(resultado.incidencias)
+
+
+def test_una_corrida_completa_no_inventa_un_error(
+    conexion: Connection, catalogo, almacen: AlmacenObjetos
+) -> None:
+    """Sin fallo no hay detalle: un campo de error con texto en una corrida que
+    anduvo bien haría ruido en cualquier tablero que filtre por él."""
+    url = _url_de(conexion, "D01")
+    cliente = ClienteDePrueba({url: [_descarga(url, contenido=b"<html>ok</html>")]})
+
+    resultado = Capturador(conexion, cliente=cliente, almacen=almacen).capturar_fuente("D01")
+
+    fila = conexion.execute(
+        text("SELECT estado, detalle_error FROM corridas_ingesta WHERE id = :id"),
+        {"id": resultado.corrida_id},
+    ).one()
+    assert fila.estado == "COMPLETA"
+    assert fila.detalle_error is None
+
+
 # --- Planificación ------------------------------------------------------------
 
 
