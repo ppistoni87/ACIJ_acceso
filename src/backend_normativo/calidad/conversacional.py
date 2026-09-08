@@ -222,6 +222,16 @@ def _clasificar_campo(cuerpo: dict, campo: str) -> tuple[str, str]:
 
 
 def _clasificar_envoltura(cuerpo: dict, cuantos: int) -> tuple[str, str]:
+    # Una advertencia de alcance dice que la pregunta no es la que este listado
+    # responde, y eso no depende de cuántas filas haya. Contar las filas primero
+    # es cómo un listado de beneficios terminaría leyéndose como «sí, lo tenés
+    # aprobado»: mientras el corpus estuvo vacío el caso pasaba solo porque no
+    # había nada que devolver.
+    fuera_de_alcance = next(
+        (a for a in cuerpo["warnings"] if a["codigo"] == "UNSUPPORTED_SCOPE"), None
+    )
+    if fuera_de_alcance:
+        return ("SE_ABSTIENE", fuera_de_alcance["detalle"])
     if cuantos and cuerpo["data_status"] == "PUBLICADO":
         return ("RESPONDE_CON_EVIDENCIA", f"{cuantos} resultado(s) sobre el release publicado.")
     if cuerpo["warnings"]:

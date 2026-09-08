@@ -133,10 +133,12 @@ ninguna conclusión sobre derechos.
 
 ## Directorios de atención
 
-233 puntos de atención y 766 canales importados desde dos datasets abiertos:
-sedes comunales de CABA (F20) y efectores de desarrollo humano (F60).
+311 puntos de atención y 1.077 canales importados desde dos datasets abiertos
+—sedes comunales de CABA (21 puntos, 61 canales) y efectores de desarrollo
+humano (212 y 766)— y desde el directorio en HTML de la Defensoría del Pueblo de
+la Nación (78 y 250).
 
-Los dos casos que el manual anticipa aparecieron tal cual:
+Los casos que el manual anticipa aparecieron tal cual:
 
 **Las coordenadas no son WGS84.** El dataset de sedes comunales trae
 `POINT (28615.88 70947.08)`: una grilla local, sin CRS declarado. Interpretado
@@ -149,6 +151,32 @@ proyección. No se responde por cercanía hasta entonces.
 tipo y teléfono. 153 campos se guardaron como ausencia. El resto de la fila se
 conserva: perder un correo electrónico bueno porque el teléfono venía vacío
 sería descartar información por información.
+
+**Quien publica el listado no es quien atiende.** El directorio de la DPN trae
+tres secciones con el mismo formato: 4 oficinas regionales, 17 receptorías y 57
+defensorías provinciales y municipales que son organismos autónomos. Las 57
+quedaron con su propio organismo titular, en su propia jurisdicción, y con la
+DPN como operadora del listado. A quien pregunta quién lo atiende en Avellaneda
+se le responde el Defensor del Pueblo de Avellaneda. La carga abrió una
+incidencia: la competencia y los horarios los fija cada organismo, no quien lo
+lista.
+
+**El recuento de la fuente encontró un error de lectura.** Cada panel del
+directorio anuncia cuántas oficinas contiene. La primera versión del importador
+leía sólo la primera de cada panel y cargó 39 de 78 sin que nada fallara: las
+restricciones se cumplían y los reportes daban bien. Verificar el recuento
+declarado contra lo leído es lo que lo mostró.
+
+**Los correos vienen protegidos y no se toman.** Las 76 direcciones de correo
+del directorio están ofuscadas con una protección contra recolección
+automática. Se registró que el canal existe, con `publico` en falso y una nota
+que remite al sitio del organismo; el valor no se decodificó.
+
+**Un teléfono publicado se guarda como está.** De los 78 teléfonos, 36 son un
+número único y se normalizaron. Los otros 42 traen varias líneas separadas por
+`/`, internos o rótulos: partirlos fabricaría números que nadie publicó, así
+que queda el texto de la fuente sin normalizar. Dos resultaron ser WhatsApp y
+no se ofrecen como teléfono.
 
 La dirección se conserva como la escribió la fuente, con el piso adentro si
 viene adentro. Componer una legible mezclando dos fuentes que no coinciden
@@ -275,7 +303,7 @@ puede quedar sin revisión si ya está aprobada.
 | Vincular el anexo D07 con su resolución D04 | Curación de identidad sobre PDF | AT-029 |
 | Fechar los documentos PDF por su contenido | Lectura de fecha en el propio documento | AT-075 |
 | Fichas de trámite fuera del portal nacional | Un adaptador por portal (F24, F56 en buenosaires.gob.ar) | Trámites de CABA |
-| Directorios en HTML | Adaptador por portal (HU-020) | F05, F07, F10, F44 |
+| Directorios en HTML de F05, F07 y F10 | Un adaptador por portal: F44 ya está cargado; F05 y F07 son páginas de navegación cuyo listado vive en otra URL y F10 arma su tabla desde una planilla publicada | F05, F07, F10 |
 | Ferias administrativas y judiciales, y feriados provinciales | Otros calendarios además del nacional | Plazos judiciales y provinciales |
 
 Ninguna de estas es una fuente inaccesible: son capacidades que este alcance no

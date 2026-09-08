@@ -68,3 +68,45 @@ def test_el_conjunto_no_es_todo_afirmacion_ni_todo_abstencion(reporte) -> None:
     assert esperas >= {"RESPONDE_CON_EVIDENCIA", "SE_ABSTIENE"}
     afirman = sum(1 for r in reporte.resultados if r.espera == "RESPONDE_CON_EVIDENCIA")
     assert afirman >= 20
+
+
+# --- AT-079: un listado con resultados no afirma elegibilidad ----------------
+
+
+def test_una_advertencia_de_alcance_se_abstiene_aunque_haya_resultados() -> None:
+    """«¿Ya tengo aprobado el beneficio?» no se responde con el listado.
+
+    Mientras el corpus estuvo vacío este caso pasaba solo porque no había nada
+    que devolver. Con un beneficio publicado, contar las filas antes de mirar la
+    advertencia convierte un listado en una afirmación de derecho.
+    """
+    envoltura = {
+        "data_status": "PUBLICADO",
+        "warnings": [
+            {
+                "codigo": "UNSUPPORTED_SCOPE",
+                "detalle": "Este listado no infiere elegibilidad.",
+            }
+        ],
+    }
+    clase, motivo = conversacional._clasificar_envoltura(envoltura, cuantos=1)
+    assert clase == "SE_ABSTIENE"
+    assert motivo == "Este listado no infiere elegibilidad."
+
+
+def test_una_advertencia_que_no_es_de_alcance_no_anula_la_respuesta() -> None:
+    """El padrón RENABAP responde con resultados y una salvedad sobre el corte:
+    esa salvedad acompaña al dato, no lo reemplaza."""
+    envoltura = {
+        "data_status": "PUBLICADO",
+        "warnings": [{"codigo": "INSUFFICIENT_EVIDENCE", "detalle": "El padrón es una foto."}],
+    }
+    clase, _ = conversacional._clasificar_envoltura(envoltura, cuantos=3)
+    assert clase == "RESPONDE_CON_EVIDENCIA"
+
+
+def test_el_listado_de_beneficios_se_abstiene_sobre_el_corpus_publicado(reporte) -> None:
+    """Sobre el release real, no sobre una envoltura armada a mano."""
+    casos = {c.id: c for c in reporte.resultados}
+    assert casos["CV-079"].observado == "SE_ABSTIENE"
+    assert casos["CV-092"].observado == "SE_ABSTIENE"

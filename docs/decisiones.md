@@ -130,3 +130,61 @@ nunca se convierte en "sin datos".
 
 Un fallo de TLS se registra igual y se busca una fuente oficial equivalente o
 una carga manual. La validación no se desactiva.
+
+## D-13 · Quien publica un directorio no es quien atiende
+
+La Defensoría del Pueblo de la Nación publica, en la misma página y con el mismo
+formato, sus oficinas regionales, sus receptorías y las defensorías provinciales
+y municipales, que son organismos autónomos. Cargarlas todas como oficinas
+propias haría que a quien vive en Avellaneda se le respondiera que lo atiende la
+Defensoría de la Nación, y quien reclama ante el organismo equivocado pierde
+tiempo que a veces es un plazo.
+
+**Consecuencia:** un punto de atención distingue el organismo titular del
+organismo operador. Las defensorías de la tercera sección quedan con su propio
+titular, en su propia jurisdicción, y con la DPN como quien publica el listado.
+La carga abre una incidencia: la competencia y los horarios los fija cada
+organismo, no quien lo lista.
+
+## D-14 · Un dato protegido contra la recolección automática no se recolecta
+
+El directorio publica las direcciones de correo ofuscadas con una protección de
+Cloudflare. Esa protección existe precisamente para impedir que un proceso
+automático las junte.
+
+**Consecuencia:** se registra que el canal de correo existe, con `publico` en
+falso y una nota que remite al sitio del organismo, y el valor no se decodifica.
+Un dato que se puede obtener no es un dato que corresponda tomar.
+
+## D-15 · Un teléfono publicado se guarda como está
+
+`(11) 4227-7184 / 7110 / 4222-8226` son tres líneas de las que «7110» no se marca
+sola, y `(299) 449.1200 int. 4600` lleva interno. Partir esos textos en números
+sueltos fabrica líneas que nadie publicó.
+
+**Consecuencia:** se guarda el texto tal como lo publica la fuente y se normaliza
+sólo cuando es un único número sin ambigüedad. Un valor normalizado, cuando
+existe, se puede marcar sin dudar; cuando no existe, queda el texto.
+
+## D-16 · El recuento que publica la fuente es un control
+
+Cada panel del directorio anuncia cuántas oficinas contiene («Buenos Aires | 16»).
+Una primera versión de este importador leía sólo la primera oficina de cada panel
+y cargó 39 de 78 sin que nada fallara: los datos entraban, las restricciones se
+cumplían y el reporte daba bien.
+
+**Consecuencia:** cuando la fuente declara un recuento, se verifica contra lo
+leído y la diferencia se informa. Una lectura incompleta que no avisa es peor que
+un error, porque nadie la va a buscar.
+
+## D-17 · Una advertencia de alcance no se compensa con resultados
+
+`GET /v1/beneficios` responde siempre con la advertencia de que el listado no
+infiere elegibilidad. La evaluación conversacional contaba primero las filas, así
+que mientras el corpus estuvo vacío el caso «¿ya tengo aprobado el beneficio?»
+pasaba por no tener nada que devolver; con un beneficio publicado, el mismo
+listado pasó a leerse como una respuesta afirmativa.
+
+**Consecuencia:** una envoltura con `UNSUPPORTED_SCOPE` es una abstención,
+cualquiera sea la cantidad de filas. Un control que sólo pasa mientras no hay
+datos no es un control.

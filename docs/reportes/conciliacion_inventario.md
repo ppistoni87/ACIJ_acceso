@@ -10,10 +10,10 @@ ninguna, o ser un alias de otra.
 | Fuentes en el catálogo | 84 |
 | Fuentes canónicas (sin alias) | 80 |
 | Alias | 4 |
-| URLs registradas | 76 |
-| Documentos capturados | 59 |
+| URLs registradas | 78 |
+| Documentos capturados | 62 |
 | Normas identificadas | 423718 |
-| Beneficios registrados | 0 |
+| Beneficios registrados | 1 |
 | Dependencias normativas pendientes | 167 |
 
 Identificadores originales F01–F67 presentes: 67 de 67.

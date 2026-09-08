@@ -410,10 +410,12 @@
   },
   "AT-062": {
    "pruebas": [
-    "tests/integracion/test_importador_directorios.py::test_at059_un_literal_de_sin_dato_no_se_carga_como_telefono",
-    "tests/integracion/test_esquema_hechos.py::test_candidatos_en_conflicto_pueden_coexistir"
-   ],
-   "falta": "El directorio de la DPN (F44) está capturado y extraído como página institucional, pero sus oficinas no se cargaron como puntos de atención: separar el organismo titular del operador municipal necesita leer la estructura de ese portal, no solo su texto."
+    "tests/integracion/test_importador_dpn.py::test_at062_una_defensoria_municipal_queda_con_su_propio_organismo",
+    "tests/integracion/test_importador_dpn.py::test_at062_la_defensoria_municipal_pertenece_a_su_jurisdiccion",
+    "tests/integracion/test_importador_dpn.py::test_at062_ninguna_defensoria_ajena_figura_como_oficina_de_la_dpn",
+    "tests/integracion/test_importador_dpn.py::test_at062_la_carga_de_terceros_abre_una_incidencia",
+    "tests/integracion/test_importador_dpn.py::test_una_oficina_propia_queda_como_delegacion_de_la_dpn"
+   ]
   },
   "AT-063": {
    "pruebas": [

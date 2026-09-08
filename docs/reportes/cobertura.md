@@ -40,9 +40,9 @@ aprobado para publicar.
 
 | Severidad | Abiertos |
 |---|---:|
-| HIGH | 31 |
+| HIGH | 34 |
 | INFO | 4489 |
-| LOW | 20 |
+| LOW | 19 |
 | MEDIUM | 48 |
 
 ## (f) Dependencias pendientes
@@ -80,15 +80,15 @@ de responder cuánto se cobra.
 
 | Tabla | Filas |
 |---|---:|
-| capturas | 81 |
-| documentos | 59 |
-| documento_versiones | 60 |
+| capturas | 84 |
+| documentos | 62 |
+| documento_versiones | 63 |
 | unidades_documentales | 1562 |
-| evidencias | 7311 |
+| evidencias | 7433 |
 | normas | 423718 |
 | norma_versiones | 12 |
 | relaciones_normativas | 185 |
-| beneficios | 0 |
+| beneficios | 1 |
 | afirmaciones | 944 |
 | releases | 1 |
 

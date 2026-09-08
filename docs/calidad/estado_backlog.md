@@ -37,7 +37,7 @@ si una historia declara evidencia en una ruta que ya no existe.
 | HU-017 | Separar suspensión, cese y revocación | analisis_funcional | P0 | CERRADA | `src/backend_normativo/curacion/beneficios.py`<br>`docs/curaduria/ley-caba-6935.json`<br>`tests/integracion/test_curacion_beneficios.py`<br>`src/backend_normativo/reglas/beneficio.py`<br>`bn curacion beneficios` |
 | HU-018 | Modelar cuantías y fórmulas reproducibles | datos_sql | P0 | CERRADA | `src/backend_normativo/db/models/hechos.py`<br>`src/backend_normativo/reglas/evaluacion.py`<br>`tests/integracion/test_esquema_hechos.py`<br>`tests/unit/test_reglas.py` |
 | HU-019 | Cargar trámites y documentos exigidos | ingesta | P0 | CERRADA | `src/backend_normativo/ingesta/adaptadores/tramite_argentina.py`<br>`src/backend_normativo/curacion/tramites.py`<br>`tests/unit/test_adaptador_tramite.py`<br>`tests/integracion/test_tramites.py`<br>`bn ingesta extraer`<br>`bn curacion tramites` |
-| HU-020 | Cargar directorios sin mezclar entidades | ingesta | P0 | CERRADA | `src/backend_normativo/ingesta/importadores/directorios.py`<br>`tests/integracion/test_importador_directorios.py`<br>`bn ingesta capturar F20 F60`<br>`bn ingesta importar-directorio` |
+| HU-020 | Cargar directorios sin mezclar entidades | ingesta | P0 | CERRADA | `src/backend_normativo/ingesta/importadores/directorios.py`<br>`tests/integracion/test_importador_directorios.py`<br>`src/backend_normativo/ingesta/importadores/dpn.py`<br>`tests/integracion/test_importador_dpn.py`<br>`bn ingesta capturar F20 F60 F44`<br>`bn ingesta importar-directorio`<br>`bn ingesta importar-dpn` |
 | HU-021 | Cargar RENABAP como padrón versionado | ingesta | P0 | CERRADA | `src/backend_normativo/ingesta/importadores/renabap.py`<br>`src/backend_normativo/api/routers/operativo.py`<br>`tests/integracion/test_importador_renabap.py`<br>`tests/aceptacion/test_casos_aceptacion.py`<br>`bn ingesta capturar F39`<br>`bn ingesta importar-renabap` |
 | HU-022 | Validar evidencia y procedencia por campo | calidad_qa | P0 | CERRADA | `src/backend_normativo/db/models/calidad.py`<br>`src/backend_normativo/curacion/campos.py`<br>`tests/integracion/test_campos_y_cobertura.py`<br>`tests/integracion/test_esquema_temporalidad.py` |
 | HU-023 | Resolver vigencia y frescura por capacidad | curacion_juridica | P0 | CERRADA | `src/backend_normativo/politicas/vigencia.py`<br>`src/backend_normativo/curacion/vigencia.py`<br>`tests/integracion/test_publicacion.py`<br>`tests/integracion/test_hechos_servibles.py`<br>`bn curacion vigencia`<br>`bn revision resolver-vigencia` |
@@ -63,91 +63,91 @@ si una historia declara evidencia en una ruta que ya no existe.
 
 Los números salen de la base, no de una declaración.
 
-| HU | Fuente | Estado | URLs | Capturas | Versiones | Unidades | Normas | Campos | Publicadas | Detención |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| HU-F01 | F01 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
-| HU-F02 | F02 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F03 | F03 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F04 | F04 | BLOQUEADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1016). No se relaja la validación de TLS; hay que buscar una fuente oficial equivalente o hacer carga manual trazada. Responsable: ingesta. |
-| HU-F05 | F05 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F06 | F06 | BLOQUEADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | https://buenosaires.gob.ar/gcaba_historico/node/86736: HTTP 404. El recurso ya no está en esa dirección; hay que recuperar la identidad de la fuente o registrarla como retirada. Responsable: ingesta. |
-| HU-F07 | F07 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F08 | F08 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F09 | F09 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F10 | F10 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F11 | F11 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F12 | F12 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F13 | F13 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F14 | F14 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F15 | F15 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F16 | F16 | EN_CURSO | 2 | 2 | 2 | 0 | 0 | 0 | 0 | — |
-| HU-F17 | F17 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F18 | F18 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F19 | F19 | EN_CURSO | 1 | 1 | 1 | 34 | 1 | 7 | 0 | — |
-| HU-F20 | F20 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F21 | F21 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F22 | F22 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F23 | F23 | EN_CURSO | 1 | 1 | 1 | 104 | 1 | 7 | 0 | — |
-| HU-F24 | F24 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F25 | F25 | EN_CURSO | 1 | 1 | 1 | 33 | 1 | 7 | 0 | — |
-| HU-F26 | F26 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F27 | F27 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F28 | F28 | ALIAS_REGISTRADO | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Alias de F31: el contenido canónico vive allí y no se duplica. La identidad se conserva igual. |
-| HU-F29 | F29 | ALIAS_REGISTRADO | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Alias de F27: el contenido canónico vive allí y no se duplica. La identidad se conserva igual. |
-| HU-F30 | F30 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F31 | F31 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F32 | F32 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F33 | F33 | EN_CURSO | 1 | 2 | 1 | 172 | 1 | 7 | 0 | — |
-| HU-F34 | F34 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F35 | F35 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F36 | F36 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F37 | F37 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F38 | F38 | EN_CURSO | 1 | 1 | 1 | 180 | 0 | 0 | 0 | — |
-| HU-F39 | F39 | EN_CURSO | 2 | 3 | 2 | 0 | 0 | 0 | 0 | — |
-| HU-F40 | F40 | EN_CURSO | 1 | 1 | 1 | 228 | 0 | 0 | 0 | — |
-| HU-F41 | F41 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
-| HU-F42 | F42 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F43 | F43 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F44 | F44 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F45 | F45 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F46 | F46 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
-| HU-F47 | F47 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
-| HU-F48 | F48 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
-| HU-F49 | F49 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F50 | F50 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F51 | F51 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F52 | F52 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F53 | F53 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F54 | F54 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F55 | F55 | ALIAS_REGISTRADO | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Alias de F24: el contenido canónico vive allí y no se duplica. La identidad se conserva igual. |
-| HU-F56 | F56 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F57 | F57 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F58 | F58 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F59 | F59 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F60 | F60 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F61 | F61 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F62 | F62 | EN_CURSO | 1 | 1 | 1 | 3 | 0 | 0 | 0 | — |
-| HU-F63 | F63 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F64 | F64 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F65 | F65 | ALIAS_REGISTRADO | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Alias de F17: el contenido canónico vive allí y no se duplica. La identidad se conserva igual. |
-| HU-F66 | F66 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-F67 | F67 | EN_CURSO | 2 | 2 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-D01 | D01 | EN_CURSO | 3 | 4 | 3 | 213 | 1 | 14 | 0 | — |
-| HU-D02 | D02 | EN_CURSO | 2 | 3 | 2 | 5 | 1 | 7 | 0 | — |
-| HU-D03 | D03 | EN_CURSO | 1 | 2 | 1 | 38 | 1 | 7 | 0 | — |
-| HU-D04 | D04 | EN_CURSO | 1 | 2 | 1 | 34 | 1 | 7 | 0 | — |
-| HU-D05 | D05 | EN_CURSO | 1 | 2 | 1 | 30 | 1 | 7 | 0 | — |
-| HU-D06 | D06 | CERRADA | 1 | 2 | 1 | 98 | 1 | 7 | 1 | — |
-| HU-D07 | D07 | EN_CURSO | 1 | 2 | 1 | 3 | 0 | 0 | 0 | — |
-| HU-D08 | D08 | EN_CURSO | 1 | 2 | 1 | 187 | 0 | 0 | 0 | — |
-| HU-D09 | D09 | EN_CURSO | 1 | 2 | 1 | 111 | 0 | 0 | 0 | — |
-| HU-D10 | D10 | EN_CURSO | 1 | 2 | 1 | 89 | 1 | 7 | 0 | — |
-| HU-M01 | M01 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
-| HU-M02 | M02 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-M03 | M03 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
-| HU-M04 | M04 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
-| HU-M05 | M05 | EN_CURSO | 2 | 1 | 0 | 0 | 0 | 0 | 0 | — |
-| HU-M06 | M06 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
+| HU | Fuente | Estado | URLs | Capturas | Versiones | Unidades | Puntos | Normas | Campos | Publicadas | Detención |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| HU-F01 | F01 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F02 | F02 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F03 | F03 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F04 | F04 | BLOQUEADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1016). No se relaja la validación de TLS; hay que buscar una fuente oficial equivalente o hacer carga manual trazada. Responsable: ingesta. |
+| HU-F05 | F05 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F06 | F06 | BLOQUEADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | https://buenosaires.gob.ar/gcaba_historico/node/86736: HTTP 404. El recurso ya no está en esa dirección; hay que recuperar la identidad de la fuente o registrarla como retirada. Responsable: ingesta. |
+| HU-F07 | F07 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F08 | F08 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F09 | F09 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F10 | F10 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F11 | F11 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F12 | F12 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F13 | F13 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F14 | F14 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F15 | F15 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F16 | F16 | EN_CURSO | 2 | 2 | 2 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F17 | F17 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F18 | F18 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F19 | F19 | EN_CURSO | 1 | 1 | 1 | 34 | 0 | 1 | 7 | 0 | — |
+| HU-F20 | F20 | EN_CURSO | 1 | 1 | 1 | 0 | 21 | 0 | 0 | 0 | — |
+| HU-F21 | F21 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F22 | F22 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F23 | F23 | EN_CURSO | 1 | 1 | 1 | 104 | 0 | 1 | 7 | 0 | — |
+| HU-F24 | F24 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F25 | F25 | EN_CURSO | 1 | 1 | 1 | 33 | 0 | 1 | 7 | 0 | — |
+| HU-F26 | F26 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F27 | F27 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F28 | F28 | ALIAS_REGISTRADO | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Alias de F31: el contenido canónico vive allí y no se duplica. La identidad se conserva igual. |
+| HU-F29 | F29 | ALIAS_REGISTRADO | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Alias de F27: el contenido canónico vive allí y no se duplica. La identidad se conserva igual. |
+| HU-F30 | F30 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F31 | F31 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F32 | F32 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F33 | F33 | EN_CURSO | 1 | 2 | 1 | 172 | 0 | 1 | 7 | 0 | — |
+| HU-F34 | F34 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F35 | F35 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F36 | F36 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F37 | F37 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F38 | F38 | EN_CURSO | 1 | 1 | 1 | 180 | 0 | 0 | 0 | 0 | — |
+| HU-F39 | F39 | EN_CURSO | 2 | 3 | 2 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F40 | F40 | EN_CURSO | 1 | 1 | 1 | 228 | 0 | 0 | 0 | 0 | — |
+| HU-F41 | F41 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F42 | F42 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F43 | F43 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F44 | F44 | EN_CURSO | 3 | 4 | 4 | 0 | 78 | 0 | 0 | 0 | — |
+| HU-F45 | F45 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F46 | F46 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F47 | F47 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F48 | F48 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F49 | F49 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F50 | F50 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F51 | F51 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F52 | F52 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F53 | F53 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F54 | F54 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F55 | F55 | ALIAS_REGISTRADO | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Alias de F24: el contenido canónico vive allí y no se duplica. La identidad se conserva igual. |
+| HU-F56 | F56 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F57 | F57 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F58 | F58 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F59 | F59 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
+| HU-F60 | F60 | EN_CURSO | 1 | 1 | 1 | 0 | 212 | 0 | 0 | 0 | — |
+| HU-F61 | F61 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F62 | F62 | EN_CURSO | 1 | 1 | 1 | 3 | 0 | 0 | 0 | 0 | — |
+| HU-F63 | F63 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F64 | F64 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F65 | F65 | ALIAS_REGISTRADO | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Alias de F17: el contenido canónico vive allí y no se duplica. La identidad se conserva igual. |
+| HU-F66 | F66 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-F67 | F67 | EN_CURSO | 2 | 2 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-D01 | D01 | EN_CURSO | 3 | 4 | 3 | 213 | 0 | 1 | 14 | 0 | — |
+| HU-D02 | D02 | EN_CURSO | 2 | 3 | 2 | 5 | 0 | 1 | 7 | 0 | — |
+| HU-D03 | D03 | EN_CURSO | 1 | 2 | 1 | 38 | 0 | 1 | 7 | 0 | — |
+| HU-D04 | D04 | EN_CURSO | 1 | 2 | 1 | 34 | 0 | 1 | 7 | 0 | — |
+| HU-D05 | D05 | EN_CURSO | 1 | 2 | 1 | 30 | 0 | 1 | 7 | 0 | — |
+| HU-D06 | D06 | CERRADA | 1 | 2 | 1 | 98 | 0 | 1 | 7 | 1 | — |
+| HU-D07 | D07 | EN_CURSO | 1 | 2 | 1 | 3 | 0 | 0 | 0 | 0 | — |
+| HU-D08 | D08 | EN_CURSO | 1 | 2 | 1 | 187 | 0 | 0 | 0 | 0 | — |
+| HU-D09 | D09 | EN_CURSO | 1 | 2 | 1 | 111 | 0 | 0 | 0 | 0 | — |
+| HU-D10 | D10 | EN_CURSO | 1 | 2 | 1 | 89 | 0 | 1 | 7 | 0 | — |
+| HU-M01 | M01 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-M02 | M02 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-M03 | M03 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-M04 | M04 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-M05 | M05 | EN_CURSO | 2 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-M06 | M06 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
 
 ## Cómo leer los estados
 

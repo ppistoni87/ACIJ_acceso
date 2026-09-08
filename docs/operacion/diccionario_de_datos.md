@@ -92,12 +92,12 @@ Un valor observado para un campo de una versión, con su estado y respaldo.
 
 **Verificaciones**
 
+- `ck_afirmaciones_no_informado_con_fuentes_revisadas: estado_campo <> 'NO_INFORMADO_EN_FUENTES_REVISADAS' OR (fuentes_revisadas IS NOT NULL AND jsonb_array_length(fuentes_revisadas) > 0)`
+- `ck_afirmaciones_estado_campo_vocabulario: estado_campo IN ('PENDIENTE', 'INFORMADO', 'NO_INFORMADO_EN_FUENTES_REVISADAS', 'NO_APLICA_JUSTIFICADO', 'EN_CONFLICTO')`
+- `ck_afirmaciones_campo_path_no_vacio: length(btrim(campo_path)) > 0`
 - `ck_afirmaciones_estado_revision_vocabulario: estado_revision IN ('CANDIDATE', 'IN_REVIEW', 'APPROVED', 'PUBLISHED', 'QUARANTINED', 'SUPERSEDED', 'REJECTED')`
 - `ck_afirmaciones_informado_con_valor_y_evidencia: estado_campo <> 'INFORMADO' OR (valor IS NOT NULL AND evidencia_id IS NOT NULL)`
 - `ck_afirmaciones_no_aplica_con_motivo_y_fundamento: estado_campo <> 'NO_APLICA_JUSTIFICADO' OR (motivo IS NOT NULL AND evidencia_id IS NOT NULL)`
-- `ck_afirmaciones_no_informado_con_fuentes_revisadas: estado_campo <> 'NO_INFORMADO_EN_FUENTES_REVISADAS' OR (fuentes_revisadas IS NOT NULL AND jsonb_array_length(fuentes_revisadas) > 0)`
-- `ck_afirmaciones_campo_path_no_vacio: length(btrim(campo_path)) > 0`
-- `ck_afirmaciones_estado_campo_vocabulario: estado_campo IN ('PENDIENTE', 'INFORMADO', 'NO_INFORMADO_EN_FUENTES_REVISADAS', 'NO_APLICA_JUSTIFICADO', 'EN_CONFLICTO')`
 
 **Índices**
 
@@ -395,10 +395,10 @@ Subtipo de `registro_versiones`. El horario es por canal: el de la mesa
 
 **Verificaciones**
 
-- `ck_canales_presencial_con_punto: tipo <> 'PRESENCIAL' OR punto_id IS NOT NULL`
 - `ck_canales_tipo_vocabulario: tipo IN ('PRESENCIAL', 'TELEFONO', 'WHATSAPP', 'EMAIL', 'WEB', 'FORMULARIO_WEB', 'REDES_SOCIALES', 'CORREO_POSTAL')`
-- `ck_canales_email_normalizado_plausible: tipo <> 'EMAIL' OR valor_normalizado IS NULL OR valor_normalizado LIKE '%@%'`
 - `ck_canales_valor_crudo_no_vacio: length(btrim(valor_crudo)) > 0`
+- `ck_canales_presencial_con_punto: tipo <> 'PRESENCIAL' OR punto_id IS NOT NULL`
+- `ck_canales_email_normalizado_plausible: tipo <> 'EMAIL' OR valor_normalizado IS NULL OR valor_normalizado LIKE '%@%'`
 
 **Índices**
 
@@ -439,13 +439,13 @@ Bytes originales de un recurso público, inmutables.
 
 **Verificaciones**
 
-- `ck_capturas_sha256_semantico_hex: sha256_semantico IS NULL OR sha256_semantico ~ '^[0-9a-f]{64}$'`
-- `ck_capturas_http_status_valido: http_status IS NULL OR (http_status BETWEEN 100 AND 599)`
 - `ck_capturas_objeto_uri_con_esquema: objeto_uri ~ '^[a-z][a-z0-9+.-]*://'`
+- `ck_capturas_http_status_valido: http_status IS NULL OR (http_status BETWEEN 100 AND 599)`
+- `ck_capturas_sha256_semantico_hex: sha256_semantico IS NULL OR sha256_semantico ~ '^[0-9a-f]{64}$'`
 - `ck_capturas_bytes_no_negativos: bytes IS NULL OR bytes >= 0`
 - `ck_capturas_revalidacion_304_exige_captura_previa: http_status <> 304 OR captura_previa_id IS NOT NULL`
-- `ck_capturas_sha256_raw_hex: sha256_raw ~ '^[0-9a-f]{64}$'`
 - `ck_capturas_sin_autoprevia: captura_previa_id <> id`
+- `ck_capturas_sha256_raw_hex: sha256_raw ~ '^[0-9a-f]{64}$'`
 
 **Índices**
 
@@ -558,10 +558,10 @@ Resultado de un control (DQ01–DQ18) sobre una versión o una corrida.
 
 **Verificaciones**
 
-- `ck_controles_calidad_severidad_vocabulario: severidad IN ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO')`
-- `ck_controles_calidad_control_con_objeto: registro_version_id IS NOT NULL OR corrida_id IS NOT NULL`
 - `ck_controles_calidad_falla_con_observado: resultado <> 'FALLA' OR observado IS NOT NULL`
+- `ck_controles_calidad_control_con_objeto: registro_version_id IS NOT NULL OR corrida_id IS NOT NULL`
 - `ck_controles_calidad_resultado_vocabulario: resultado IN ('PASA', 'FALLA', 'ADVERTENCIA', 'NO_APLICA')`
+- `ck_controles_calidad_severidad_vocabulario: severidad IN ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO')`
 
 **Índices**
 
@@ -594,13 +594,13 @@ Una ejecución del pipeline sobre una fuente, con la versión de
 
 **Verificaciones**
 
-- `ck_corridas_ingesta_estado_vocabulario: estado IN ('EN_CURSO', 'COMPLETA', 'PARCIAL', 'FALLIDA', 'CANCELADA')`
-- `ck_corridas_ingesta_completa_reconciliada: estado <> 'COMPLETA' OR (fin IS NOT NULL AND procesadas + rechazadas = solicitadas)`
-- `ck_corridas_ingesta_contadores_no_negativos: solicitadas >= 0 AND descargadas >= 0 AND procesadas >= 0 AND rechazadas >= 0`
-- `ck_corridas_ingesta_descargadas_hasta_solicitadas: descargadas <= solicitadas`
-- `ck_corridas_ingesta_fin_posterior_a_inicio: fin IS NULL OR fin >= inicio`
-- `ck_corridas_ingesta_procesadas_hasta_descargadas: procesadas <= descargadas`
 - `ck_corridas_ingesta_resueltas_hasta_solicitadas: procesadas + rechazadas <= solicitadas`
+- `ck_corridas_ingesta_contadores_no_negativos: solicitadas >= 0 AND descargadas >= 0 AND procesadas >= 0 AND rechazadas >= 0`
+- `ck_corridas_ingesta_estado_vocabulario: estado IN ('EN_CURSO', 'COMPLETA', 'PARCIAL', 'FALLIDA', 'CANCELADA')`
+- `ck_corridas_ingesta_descargadas_hasta_solicitadas: descargadas <= solicitadas`
+- `ck_corridas_ingesta_completa_reconciliada: estado <> 'COMPLETA' OR (fin IS NOT NULL AND procesadas + rechazadas = solicitadas)`
+- `ck_corridas_ingesta_procesadas_hasta_descargadas: procesadas <= descargadas`
+- `ck_corridas_ingesta_fin_posterior_a_inicio: fin IS NULL OR fin >= inicio`
 
 **Índices**
 
@@ -689,13 +689,13 @@ Versión textual de un documento, anclada a la captura de la que salió.
 
 **Verificaciones**
 
-- `ck_documento_versiones_fecha_con_tipo_declarado: fecha_documento IS NULL OR tipo_fecha <> 'DESCONOCIDA'`
 - `ck_documento_versiones_tipo_version_vocabulario: tipo_version IN ('ORIGINAL', 'ACTUALIZADO', 'CONSOLIDADO', 'NO_DETERMINADO')`
 - `ck_documento_versiones_hash_texto_hex: hash_texto ~ '^[0-9a-f]{64}$'`
-- `ck_documento_versiones_tipo_fecha_vocabulario: tipo_fecha IN ('SANCION', 'PROMULGACION', 'PUBLICACION', 'FIRMA', 'CABECERA', 'ACTUALIZACION_SITIO', 'DESCONOCIDA')`
 - `ck_documento_versiones_version_positiva: version >= 1`
-- `ck_documento_versiones_score_entre_cero_y_uno: extraccion_score IS NULL OR (extraccion_score BETWEEN 0 AND 1)`
 - `ck_documento_versiones_modo_extraccion_vocabulario: modo_extraccion IN ('HTML', 'JSON', 'CSV', 'PDF_TEXTO', 'PDF_OCR', 'MANUAL')`
+- `ck_documento_versiones_tipo_fecha_vocabulario: tipo_fecha IN ('SANCION', 'PROMULGACION', 'PUBLICACION', 'FIRMA', 'CABECERA', 'ACTUALIZACION_SITIO', 'DESCONOCIDA')`
+- `ck_documento_versiones_score_entre_cero_y_uno: extraccion_score IS NULL OR (extraccion_score BETWEEN 0 AND 1)`
+- `ck_documento_versiones_fecha_con_tipo_declarado: fecha_documento IS NULL OR tipo_fecha <> 'DESCONOCIDA'`
 
 **Índices**
 
@@ -753,9 +753,9 @@ Correspondencia entre unidades de versiones distintas: renumeración,
 
 **Verificaciones**
 
+- `ck_equivalencias_unidades_origen_distinto_destino: origen_unidad_id <> destino_unidad_id`
 - `ck_equivalencias_unidades_tipo_vocabulario: tipo IN ('RENUMERACION', 'SUSTITUCION', 'DIVISION', 'FUSION', 'INCORPORACION')`
 - `ck_equivalencias_unidades_estado_revision_vocabulario: estado_revision IN ('CANDIDATE', 'IN_REVIEW', 'APPROVED', 'PUBLISHED', 'QUARANTINED', 'SUPERSEDED', 'REJECTED')`
-- `ck_equivalencias_unidades_origen_distinto_destino: origen_unidad_id <> destino_unidad_id`
 
 **Índices**
 
@@ -784,8 +784,8 @@ Una fila por cada uno de los siete campos pedidos, por ficha evaluada.
 
 **Verificaciones**
 
-- `ck_evaluaciones_completitud_estado_vocabulario: estado IN ('PENDIENTE', 'INFORMADO', 'NO_INFORMADO_EN_FUENTES_REVISADAS', 'NO_APLICA_JUSTIFICADO', 'EN_CONFLICTO')`
 - `ck_evaluaciones_completitud_campo_solicitado_vocabulario: campo_solicitado IN ('poblacion_destinataria', 'criterios_aplicabilidad', 'plazos', 'criterios_revocacion', 'interdependencias', 'beneficio_otorgado', 'no_descartar')`
+- `ck_evaluaciones_completitud_estado_vocabulario: estado IN ('PENDIENTE', 'INFORMADO', 'NO_INFORMADO_EN_FUENTES_REVISADAS', 'NO_APLICA_JUSTIFICADO', 'EN_CONFLICTO')`
 
 **Índices**
 
@@ -820,8 +820,8 @@ Evento interno pendiente de entrega a un consumidor configurado.
 
 **Verificaciones**
 
-- `ck_eventos_outbox_tipo_vocabulario: tipo IN ('RELEASE_PUBLICADO', 'NORMA_ACTUALIZADA', 'VALOR_ACTUALIZADO', 'PLAZO_ACTUALIZADO', 'CANAL_ACTUALIZADO', 'CONFLICTO_ABIERTO', 'FUENTE_DEGRADADA')`
 - `ck_eventos_outbox_intentos_no_negativos: intentos >= 0`
+- `ck_eventos_outbox_tipo_vocabulario: tipo IN ('RELEASE_PUBLICADO', 'NORMA_ACTUALIZADA', 'VALOR_ACTUALIZADO', 'PLAZO_ACTUALIZADO', 'CANAL_ACTUALIZADO', 'CONFLICTO_ABIERTO', 'FUENTE_DEGRADADA')`
 
 **Índices**
 
@@ -916,11 +916,11 @@ URL HTTP(S) concreta. Sin plantillas ni secretos, y sin quitar parámetros
 
 **Verificaciones**
 
-- `ck_fuente_urls_tipo_acceso_vocabulario: tipo_acceso IN ('HTTP_GET_PUBLICO', 'API_PUBLICA', 'DESCARGA_ARCHIVO', 'CARGA_MANUAL')`
 - `ck_fuente_urls_url_sin_plantilla: url !~ '[{}]'`
-- `ck_fuente_urls_sin_autopadre: url_padre_id IS NULL OR url_padre_id <> id`
 - `ck_fuente_urls_rol_vocabulario: rol IN ('ENTRADA', 'LISTADO', 'DETALLE', 'DESCARGA', 'API', 'ANEXO', 'ALTERNATIVA')`
+- `ck_fuente_urls_sin_autopadre: url_padre_id IS NULL OR url_padre_id <> id`
 - `ck_fuente_urls_url_concreta: url ~ '^(https?|manual)://'`
+- `ck_fuente_urls_tipo_acceso_vocabulario: tipo_acceso IN ('HTTP_GET_PUBLICO', 'API_PUBLICA', 'DESCARGA_ARCHIVO', 'CARGA_MANUAL')`
 
 **Índices**
 
@@ -964,13 +964,13 @@ Catálogo del corpus. `source_id` conserva los identificadores del paquete
 
 **Verificaciones**
 
+- `ck_fuentes_politica_acceso_vocabulario: politica_acceso IN ('PUBLIC_READ_ONLY_WITH_VALID_TLS_NO_THIRD_PARTY_KEYS', 'NO_AUTOMATION_UNTIL_IDENTIFIED_AND_PUBLIC', 'MANUAL_ONLY')`
+- `ck_fuentes_access_status_vocabulario: access_status IN ('NO_VERIFICADO', 'ACCESIBLE', 'ACCESO_LIMITADO', 'BLOQUEADA', 'ERROR_TLS', 'NO_ENCONTRADA', 'SIN_URL_CONOCIDA')`
 - `ck_fuentes_clase_vocabulario: clase IN ('DATASET', 'BOLETIN', 'PORTAL_NORMATIVO', 'FICHA_TRAMITE', 'DIRECTORIO', 'DOCUMENTO', 'PADRON', 'CANAL_ATENCION', 'ALIAS', 'OTRA')`
-- `ck_fuentes_estado_vocabulario: estado IN ('DISCOVERY', 'ACTIVE', 'DEGRADED', 'QUARANTINED', 'REFERENCE_ONLY', 'MANUAL', 'RETIRED')`
 - `ck_fuentes_prioridad_vocabulario: prioridad IN ('P0', 'P1', 'P2', 'P3')`
 - `ck_fuentes_sin_autoalias: alias_of IS NULL OR alias_of <> source_id`
-- `ck_fuentes_politica_acceso_vocabulario: politica_acceso IN ('PUBLIC_READ_ONLY_WITH_VALID_TLS_NO_THIRD_PARTY_KEYS', 'NO_AUTOMATION_UNTIL_IDENTIFIED_AND_PUBLIC', 'MANUAL_ONLY')`
 - `ck_fuentes_estado_excepcional_con_motivo: estado NOT IN ('DEGRADED','QUARANTINED','RETIRED') OR motivo_estado IS NOT NULL`
-- `ck_fuentes_access_status_vocabulario: access_status IN ('NO_VERIFICADO', 'ACCESIBLE', 'ACCESO_LIMITADO', 'BLOQUEADA', 'ERROR_TLS', 'NO_ENCONTRADA', 'SIN_URL_CONOCIDA')`
+- `ck_fuentes_estado_vocabulario: estado IN ('DISCOVERY', 'ACTIVE', 'DEGRADED', 'QUARANTINED', 'REFERENCE_ONLY', 'MANUAL', 'RETIRED')`
 
 **Índices**
 
@@ -1003,8 +1003,8 @@ Descubrimiento acotado y deduplicado. No es una cola de rastreo
 **Verificaciones**
 
 - `ck_fuentes_candidatas_prioridad_vocabulario: prioridad IS NULL OR prioridad IN ('P0', 'P1', 'P2', 'P3')`
-- `ck_fuentes_candidatas_estado_vocabulario: estado IN ('NUEVA', 'EN_EVALUACION', 'PROMOVIDA', 'DESCARTADA', 'DUPLICADA')`
 - `ck_fuentes_candidatas_url_http_concreta: url ~ '^https?://'`
+- `ck_fuentes_candidatas_estado_vocabulario: estado IN ('NUEVA', 'EN_EVALUACION', 'PROMOVIDA', 'DESCARTADA', 'DUPLICADA')`
 
 **Índices**
 
@@ -1038,10 +1038,10 @@ Conflicto o ambigüedad que necesita decisión humana.
 
 **Verificaciones**
 
-- `ck_incidencias_revision_tipo_vocabulario: tipo IN ('CONFLICTO_DE_FUENTES', 'IDENTIDAD_AMBIGUA', 'DISCREPANCIA_NUMERACION', 'VIGENCIA_INDETERMINADA', 'COBERTURA_EXTRACCION', 'ACCESO_BLOQUEADO', 'CAMBIO_DE_ESQUEMA', 'DATO_FALTANTE_CRITICO')`
-- `ck_incidencias_revision_severidad_vocabulario: severidad IN ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO')`
-- `ck_incidencias_revision_resuelta_con_decision_y_actor: estado <> 'RESUELTA' OR (decision IS NOT NULL AND decidido_por IS NOT NULL AND resuelta_en IS NOT NULL)`
 - `ck_incidencias_revision_estado_vocabulario: estado IN ('ABIERTA', 'EN_REVISION', 'RESUELTA', 'DIFERIDA')`
+- `ck_incidencias_revision_tipo_vocabulario: tipo IN ('CONFLICTO_DE_FUENTES', 'IDENTIDAD_AMBIGUA', 'DISCREPANCIA_NUMERACION', 'VIGENCIA_INDETERMINADA', 'COBERTURA_EXTRACCION', 'ACCESO_BLOQUEADO', 'CAMBIO_DE_ESQUEMA', 'DATO_FALTANTE_CRITICO')`
+- `ck_incidencias_revision_resuelta_con_decision_y_actor: estado <> 'RESUELTA' OR (decision IS NOT NULL AND decidido_por IS NOT NULL AND resuelta_en IS NOT NULL)`
+- `ck_incidencias_revision_severidad_vocabulario: severidad IN ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO')`
 
 **Índices**
 
@@ -1069,8 +1069,8 @@ Jerarquía acíclica. `id` es un slug estable (`AR`, `AR-C`, `AR-B`, ...)
 
 **Verificaciones**
 
-- `ck_jurisdicciones_nivel_vocabulario: nivel IN ('NACIONAL', 'PROVINCIAL', 'CIUDAD_AUTONOMA', 'MUNICIPAL', 'COMUNAL', 'SUPRANACIONAL')`
 - `ck_jurisdicciones_sin_autopadre: parent_id IS NULL OR parent_id <> id`
+- `ck_jurisdicciones_nivel_vocabulario: nivel IN ('NACIONAL', 'PROVINCIAL', 'CIUDAD_AUTONOMA', 'MUNICIPAL', 'COMUNAL', 'SUPRANACIONAL')`
 
 **Índices**
 
@@ -1096,8 +1096,8 @@ Identificadores oficiales alternativos, cada uno con su espacio de
 
 **Verificaciones**
 
-- `ck_norma_identificadores_namespace_no_vacio: length(btrim(namespace)) > 0`
 - `ck_norma_identificadores_url_http_concreta: url_oficial IS NULL OR url_oficial ~ '^https?://'`
+- `ck_norma_identificadores_namespace_no_vacio: length(btrim(namespace)) > 0`
 
 **Índices**
 
@@ -1222,7 +1222,7 @@ Subtipo de `registro_versiones`: el valor de un parámetro para un período,
 | `territorio_id` | VARCHAR(32) | sí | — | `jurisdicciones.id` |
 | `segmento` | TEXT | sí | — | — |
 | `dimensiones` | JSONB | sí | — | — |
-| `dimensiones_hash` | TEXT | no | `Computed(<sqlalchemy.sql.elements.TextClause object at 0x7f23984360d0>, persisted=True)` | — |
+| `dimensiones_hash` | TEXT | no | `Computed(<sqlalchemy.sql.elements.TextClause object at 0x7f6fced42ad0>, persisted=True)` | — |
 | `rango_aplicacion` | DATERANGE | sí | — | — |
 | `publicable` | BOOLEAN | no | `false` | — |
 
@@ -1259,9 +1259,9 @@ Concepto medible con unidad propia. Los catálogos se mantienen separados:
 
 **Verificaciones**
 
+- `ck_parametros_moneda_iso4217: moneda IS NULL OR moneda ~ '^[A-Z]{3}$'`
 - `ck_parametros_codigo_normalizado: codigo ~ '^[A-Z0-9][A-Z0-9_.-]*$'`
 - `ck_parametros_importe_con_moneda: unidad <> 'MONEDA' OR moneda IS NOT NULL`
-- `ck_parametros_moneda_iso4217: moneda IS NULL OR moneda ~ '^[A-Z]{3}$'`
 
 ## plazos
 
@@ -1300,14 +1300,14 @@ Subtipo de `registro_versiones`.
 
 **Verificaciones**
 
-- `ck_plazos_tipo_vocabulario: tipo IN ('VIGENCIA_JURIDICA', 'CONVOCATORIA', 'DURACION_BENEFICIO', 'RENOVACION', 'PRESENTACION_DOCUMENTAL', 'RESPUESTA_ORGANISMO', 'SUBSANACION', 'RECURSO', 'FECHA_PAGO')`
-- `ck_plazos_relativo_con_unidad_y_evento: cantidad IS NULL OR (cantidad >= 0 AND unidad IS NOT NULL AND evento_inicio IS NOT NULL)`
-- `ck_plazos_tipo_dia_vocabulario: tipo_dia IN ('CORRIDO', 'HABIL_ADMINISTRATIVO', 'HABIL_JUDICIAL', 'NO_INFORMADO')`
-- `ck_plazos_fechado_o_relativo_no_ambos: (inicio IS NOT NULL OR fin IS NOT NULL) <> (cantidad IS NOT NULL)`
-- `ck_plazos_habil_exige_calendario: tipo_dia NOT IN ('HABIL_ADMINISTRATIVO','HABIL_JUDICIAL') OR calendario_id IS NOT NULL`
 - `ck_plazos_un_solo_propietario_principal: (CASE WHEN beneficio_version_id IS NOT NULL THEN 1 ELSE 0 END) + (CASE WHEN tramite_version_id IS NOT NULL THEN 1 ELSE 0 END) + (CASE WHEN norma_version_id IS NOT NULL THEN 1 ELSE 0 END) = 1`
 - `ck_plazos_fin_tras_inicio: fin IS NULL OR inicio IS NULL OR fin >= inicio`
+- `ck_plazos_habil_exige_calendario: tipo_dia NOT IN ('HABIL_ADMINISTRATIVO','HABIL_JUDICIAL') OR calendario_id IS NOT NULL`
 - `ck_plazos_ciclo_positivo: ciclo IS NULL OR ciclo >= 1`
+- `ck_plazos_tipo_dia_vocabulario: tipo_dia IN ('CORRIDO', 'HABIL_ADMINISTRATIVO', 'HABIL_JUDICIAL', 'NO_INFORMADO')`
+- `ck_plazos_fechado_o_relativo_no_ambos: (inicio IS NOT NULL OR fin IS NOT NULL) <> (cantidad IS NOT NULL)`
+- `ck_plazos_relativo_con_unidad_y_evento: cantidad IS NULL OR (cantidad >= 0 AND unidad IS NOT NULL AND evento_inicio IS NOT NULL)`
+- `ck_plazos_tipo_vocabulario: tipo IN ('VIGENCIA_JURIDICA', 'CONVOCATORIA', 'DURACION_BENEFICIO', 'RENOVACION', 'PRESENTACION_DOCUMENTAL', 'RESPUESTA_ORGANISMO', 'SUBSANACION', 'RECURSO', 'FECHA_PAGO')`
 
 **Índices**
 
@@ -1362,8 +1362,8 @@ Subtipo de `registro_versiones`. Coordenadas WGS84 válidas o ninguna: sin
 **Verificaciones**
 
 - `ck_punto_versiones_coordenadas_en_rango: lat IS NULL OR (lat BETWEEN -90 AND 90 AND lng BETWEEN -180 AND 180)`
-- `ck_punto_versiones_coordenadas_completas_o_ausentes: (lat IS NULL) = (lng IS NULL)`
 - `ck_punto_versiones_coordenadas_con_crs: lat IS NULL OR crs IS NOT NULL`
+- `ck_punto_versiones_coordenadas_completas_o_ausentes: (lat IS NULL) = (lng IS NULL)`
 
 **Índices**
 
@@ -1418,9 +1418,9 @@ Cita cuya norma destino todavía no se pudo identificar. Se conserva el
 
 **Verificaciones**
 
+- `ck_referencias_pendientes_resuelta_con_relacion: estado <> 'RESUELTA' OR (relacion_resultante_id IS NOT NULL AND resuelta_en IS NOT NULL)`
 - `ck_referencias_pendientes_texto_cita_no_vacio: length(btrim(texto_cita)) > 0`
 - `ck_referencias_pendientes_estado_vocabulario: estado IN ('PENDIENTE', 'RESUELTA', 'IRRESOLUBLE')`
-- `ck_referencias_pendientes_resuelta_con_relacion: estado <> 'RESUELTA' OR (relacion_resultante_id IS NOT NULL AND resuelta_en IS NOT NULL)`
 
 **Índices**
 
@@ -1457,17 +1457,17 @@ Supertipo controlado. Cada subtipo referencia una fila de esta tabla y un
 
 **Verificaciones**
 
+- `ck_registro_versiones_cerrado_con_ambos_extremos: valid_tipo <> 'CERRADO' OR (valid_desde IS NOT NULL AND valid_hasta IS NOT NULL)`
 - `ck_registro_versiones_estado_revision_vocabulario: estado_revision IN ('CANDIDATE', 'IN_REVIEW', 'APPROVED', 'PUBLISHED', 'QUARANTINED', 'SUPERSEDED', 'REJECTED')`
-- `ck_registro_versiones_abierto_fin_sin_hasta: valid_tipo <> 'ABIERTO_FIN' OR valid_hasta IS NULL`
-- `ck_registro_versiones_publicado_con_release_y_verificacion: estado_revision <> 'PUBLISHED' OR (release_id IS NOT NULL AND verificado_en IS NOT NULL)`
-- `ck_registro_versiones_valid_tipo_vocabulario: valid_tipo IN ('CERRADO', 'ABIERTO_FIN', 'ABIERTO_INICIO', 'PUNTUAL', 'CONDICIONADO', 'DESCONOCIDO')`
 - `ck_registro_versiones_entidad_tipo_vocabulario: entidad_tipo IN ('norma', 'beneficio', 'parametro_valor', 'plazo', 'tramite', 'punto_atencion', 'canal', 'barrio_renabap')`
+- `ck_registro_versiones_abierto_fin_sin_hasta: valid_tipo <> 'ABIERTO_FIN' OR valid_hasta IS NULL`
+- `ck_registro_versiones_valid_tipo_vocabulario: valid_tipo IN ('CERRADO', 'ABIERTO_FIN', 'ABIERTO_INICIO', 'PUNTUAL', 'CONDICIONADO', 'DESCONOCIDO')`
+- `ck_registro_versiones_condicionado_con_condicion: valid_tipo <> 'CONDICIONADO' OR condicion_vigencia IS NOT NULL`
+- `ck_registro_versiones_publicado_con_release_y_verificacion: estado_revision <> 'PUBLISHED' OR (release_id IS NOT NULL AND verificado_en IS NOT NULL)`
 - `ck_registro_versiones_valid_ordenado: valid_hasta IS NULL OR valid_desde IS NULL OR valid_hasta >= valid_desde`
 - `ck_registro_versiones_puntual_un_solo_dia: valid_tipo <> 'PUNTUAL' OR (valid_desde IS NOT NULL AND valid_hasta = valid_desde)`
 - `ck_registro_versiones_numero_version_positivo: numero_version >= 1`
 - `ck_registro_versiones_known_ordenado: known_hasta IS NULL OR known_hasta >= known_desde`
-- `ck_registro_versiones_condicionado_con_condicion: valid_tipo <> 'CONDICIONADO' OR condicion_vigencia IS NOT NULL`
-- `ck_registro_versiones_cerrado_con_ambos_extremos: valid_tipo <> 'CERRADO' OR (valid_desde IS NOT NULL AND valid_hasta IS NOT NULL)`
 
 **Índices**
 
@@ -1539,8 +1539,8 @@ Condición jurídica con su texto literal y, cuando fue validada, su AST.
 **Verificaciones**
 
 - `ck_reglas_ejecutable_solo_tras_validacion: requiere_revision = true OR (ast IS NOT NULL AND estado_revision IN ('APPROVED','PUBLISHED'))`
-- `ck_reglas_estado_revision_vocabulario: estado_revision IN ('CANDIDATE', 'IN_REVIEW', 'APPROVED', 'PUBLISHED', 'QUARANTINED', 'SUPERSEDED', 'REJECTED')`
 - `ck_reglas_ast_con_version_de_esquema: ast IS NULL OR ast_schema_version IS NOT NULL`
+- `ck_reglas_estado_revision_vocabulario: estado_revision IN ('CANDIDATE', 'IN_REVIEW', 'APPROVED', 'PUBLISHED', 'QUARANTINED', 'SUPERSEDED', 'REJECTED')`
 - `ck_reglas_categoria_vocabulario: categoria IN ('APLICABILIDAD', 'EXCLUSION', 'EXCEPCION', 'PRIORIDAD', 'SALVAGUARDA', 'REVOCACION', 'SUSPENSION', 'CESE', 'SUBSANACION', 'REHABILITACION', 'COMPATIBILIDAD')`
 - `ck_reglas_texto_literal_no_vacio: length(btrim(texto_literal)) > 0`
 
@@ -1609,8 +1609,8 @@ Corte publicable de proyecciones. Una consulta nunca mezcla dos releases
 **Verificaciones**
 
 - `ck_releases_publicado_con_acta: estado <> 'PUBLICADO' OR (publicado_en IS NOT NULL AND aprobado_por IS NOT NULL  AND manifest_hash IS NOT NULL)`
-- `ck_releases_estado_vocabulario: estado IN ('BORRADOR', 'PUBLICADO', 'REVERTIDO')`
 - `ck_releases_manifest_hash_hex: manifest_hash IS NULL OR manifest_hash ~ '^[0-9a-f]{64}$'`
+- `ck_releases_estado_vocabulario: estado IN ('BORRADOR', 'PUBLICADO', 'REVERTIDO')`
 
 **Índices**
 
@@ -1664,8 +1664,8 @@ Subtipo de `registro_versiones`.
 
 **Verificaciones**
 
-- `ck_tramite_versiones_url_http_concreta: cta_url IS NULL OR cta_url ~ '^https?://'`
 - `ck_tramite_versiones_estado_operativo_vocabulario: estado_operativo IN ('DISPONIBLE', 'SIN_TURNOS', 'SUSPENDIDO', 'NO_INFORMADO')`
+- `ck_tramite_versiones_url_http_concreta: cta_url IS NULL OR cta_url ~ '^https?://'`
 
 **Índices**
 
@@ -1693,8 +1693,8 @@ Procedimiento con identidad propia. Un botón duplicado en dos páginas no
 
 **Verificaciones**
 
-- `ck_tramites_codigo_normalizado: codigo ~ '^[A-Z0-9][A-Z0-9_.-]*$'`
 - `ck_tramites_publico_vocabulario: publico IN ('CIUDADANO', 'INSTITUCIONAL', 'AMBOS', 'NO_INFORMADO')`
+- `ck_tramites_codigo_normalizado: codigo ~ '^[A-Z0-9][A-Z0-9_.-]*$'`
 
 **Índices**
 
@@ -1730,11 +1730,11 @@ Segmento del texto con su lugar en la jerarquía.
 
 **Verificaciones**
 
-- `ck_unidades_documentales_offsets_ordenados: fin IS NULL OR inicio IS NULL OR fin >= inicio`
-- `ck_unidades_documentales_tipo_vocabulario: tipo IN ('PREAMBULO', 'VISTO', 'CONSIDERANDO', 'LIBRO', 'TITULO', 'CAPITULO', 'SECCION', 'ARTICULO', 'INCISO', 'PARRAFO', 'ANEXO', 'TRANSITORIA', 'FIRMA', 'TABLA', 'NO_RECONOCIDO')`
-- `ck_unidades_documentales_paginas_ordenadas: pagina_hasta IS NULL OR pagina_desde IS NULL OR pagina_hasta >= pagina_desde`
 - `ck_unidades_documentales_rol_contenido_vocabulario: rol_contenido IN ('DISPOSITIVO', 'CITADO', 'SUSTITUTIVO', 'INCORPORADO', 'HISTORICO', 'NOTA')`
+- `ck_unidades_documentales_paginas_ordenadas: pagina_hasta IS NULL OR pagina_desde IS NULL OR pagina_hasta >= pagina_desde`
 - `ck_unidades_documentales_sin_autopadre: parent_id IS NULL OR parent_id <> id`
+- `ck_unidades_documentales_tipo_vocabulario: tipo IN ('PREAMBULO', 'VISTO', 'CONSIDERANDO', 'LIBRO', 'TITULO', 'CAPITULO', 'SECCION', 'ARTICULO', 'INCISO', 'PARRAFO', 'ANEXO', 'TRANSITORIA', 'FIRMA', 'TABLA', 'NO_RECONOCIDO')`
+- `ck_unidades_documentales_offsets_ordenados: fin IS NULL OR inicio IS NULL OR fin >= inicio`
 
 **Índices**
 

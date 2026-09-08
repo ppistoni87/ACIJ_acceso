@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **66**
-- Cubiertos parcialmente: **14**
+- Cubiertos por pruebas que corren: **67**
+- Cubiertos parcialmente: **13**
 - No ejecutados: **0**
-- Pruebas citadas: **190** (ejecutadas)
+- Pruebas citadas: **195** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -72,7 +72,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-059 | No informado operativo | HU-F60 | CUBIERTO | PASSED | `test_at059_un_literal_de_sin_dato_no_se_carga_como_telefono`<br>`test_un_nombre_que_dice_na_no_se_pega_al_programa` |
 | AT-060 | Conflicto de piso | HU-F20 | CUBIERTO_PARCIAL | PASSED | `test_at060_la_direccion_se_conserva_como_la_escribio_la_fuente`<br>`test_candidatos_en_conflicto_pueden_coexistir`<br>_Falta: Se prueba que la dirección no se recomponga y que dos candidatos en conflicto puedan coexistir; el contraste concreto entre el CSV de comunas y la ficha de la misma subsede necesita capturar además esa ficha._ |
 | AT-061 | Horarios por canal | HU-F03 | CUBIERTO | PASSED | `test_at061_el_horario_es_del_canal_presencial_y_no_se_copia` |
-| AT-062 | Atribución de directorio | HU-F44 | CUBIERTO_PARCIAL | PASSED | `test_at059_un_literal_de_sin_dato_no_se_carga_como_telefono`<br>`test_candidatos_en_conflicto_pueden_coexistir`<br>_Falta: El directorio de la DPN (F44) está capturado y extraído como página institucional, pero sus oficinas no se cargaron como puntos de atención: separar el organismo titular del operador municipal necesita leer la estructura de ese portal, no solo su texto._ |
+| AT-062 | Atribución de directorio | HU-F44 | CUBIERTO | PASSED | `test_at062_una_defensoria_municipal_queda_con_su_propio_organismo`<br>`test_at062_la_defensoria_municipal_pertenece_a_su_jurisdiccion`<br>`test_at062_ninguna_defensoria_ajena_figura_como_oficina_de_la_dpn`<br>`test_at062_la_carga_de_terceros_abre_una_incidencia`<br>`test_una_oficina_propia_queda_como_delegacion_de_la_dpn` |
 | AT-063 | Coordenadas locales | HU-020 | CUBIERTO | PASSED | `test_at063_una_coordenada_en_grilla_local_no_se_usa_como_wgs84`<br>`test_at063_la_incidencia_dice_que_falta_confirmar_la_proyeccion`<br>`test_una_coordenada_plausible_como_wgs84_si_se_usa`<br>`test_una_geometria_ilegible_se_conserva_cruda` |
 | AT-064 | RENABAP no encontrado | HU-021 | CUBIERTO | PASSED | `test_at064_un_barrio_ausente_del_padron_no_pierde_derechos`<br>`test_un_barrio_que_sale_del_padron_no_se_borra`<br>`test_no_se_inventa_una_fecha_de_corte`<br>`test_cada_barrio_nace_con_la_evidencia_de_su_fila` |
 | AT-065 | Tabla estacional vacía | HU-F64 | CUBIERTO | PASSED | `test_at065_una_sede_cerrada_es_el_dato_no_una_falta_de_datos`<br>`test_at065_el_fragmento_del_cierre_no_arranca_a_mitad_de_palabra`<br>`test_una_pagina_con_sedes_abiertas_no_declara_cierre` |

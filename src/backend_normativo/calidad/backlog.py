@@ -76,6 +76,7 @@ class HistoriaDeFuente:
     documentos: int = 0
     versiones: int = 0
     unidades: int = 0
+    puntos: int = 0
     normas: int = 0
     campos_evaluados: int = 0
     versiones_publicadas: int = 0
@@ -156,6 +157,14 @@ def _metricas_por_fuente(conexion: Connection) -> dict[str, dict]:
                 "  (SELECT count(*) FROM unidades_documentales ud JOIN documento_versiones dv "
                 "     ON dv.id = ud.doc_version_id JOIN documentos d ON d.id = dv.documento_id "
                 "    WHERE d.source_id = f.source_id) AS unidades, "
+                # Un directorio no produce unidades documentales: produce
+                # puntos de atención. Sin esta cuenta el reporte dice que una
+                # fuente cargada no dio nada.
+                "  (SELECT count(DISTINCT c.punto_id) FROM canales c "
+                "     JOIN evidencias e ON e.id = c.evidencia_id "
+                "     JOIN documento_versiones dv ON dv.id = e.doc_version_id "
+                "     JOIN documentos d ON d.id = dv.documento_id "
+                "    WHERE d.source_id = f.source_id AND c.punto_id IS NOT NULL) AS puntos, "
                 "  (SELECT count(DISTINCT nv.norma_id) FROM norma_versiones nv "
                 "     JOIN documento_versiones dv ON dv.id = nv.doc_version_id "
                 "     JOIN documentos d ON d.id = dv.documento_id "
@@ -235,6 +244,7 @@ def _historia_de_fuente(historia: dict, metricas: dict) -> HistoriaDeFuente:
         documentos=metricas["documentos"],
         versiones=metricas["versiones"],
         unidades=metricas["unidades"],
+        puntos=metricas["puntos"],
         normas=metricas["normas"],
         campos_evaluados=metricas["campos"],
         versiones_publicadas=metricas["publicadas"],
@@ -300,14 +310,15 @@ def formatear(reporte: ReporteBacklog) -> str:
         "",
         "Los números salen de la base, no de una declaración.",
         "",
-        "| HU | Fuente | Estado | URLs | Capturas | Versiones | Unidades | Normas | Campos "
-        "| Publicadas | Detención |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| HU | Fuente | Estado | URLs | Capturas | Versiones | Unidades | Puntos "
+        "| Normas | Campos | Publicadas | Detención |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for h in reporte.fuentes:
         lineas.append(
             f"| {h.id} | {h.source_id} | {h.estado} | {h.urls} | {h.capturas} | {h.versiones} "
-            f"| {h.unidades} | {h.normas} | {h.campos_evaluados} | {h.versiones_publicadas} "
+            f"| {h.unidades} | {h.puntos} | {h.normas} | {h.campos_evaluados} "
+            f"| {h.versiones_publicadas} "
             f"| {h.detencion or '—'} |"
         )
 

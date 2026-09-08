@@ -229,6 +229,41 @@ def ingesta_importar_directorio(
         typer.echo(f"  aviso: {aviso}")
 
 
+@ingesta.command("importar-dpn")
+def ingesta_importar_dpn(
+    captura: str = typer.Argument(..., help="Id de la captura de una sección de F44."),
+) -> None:
+    """Importa una sección del directorio de la Defensoría del Pueblo de la Nación.
+
+    Las dos primeras secciones son oficinas de la DPN. La tercera lista
+    defensorías provinciales y municipales, que son organismos autónomos: se
+    cargan con su propio organismo titular y con la DPN como operadora del
+    listado, no como oficinas suyas.
+    """
+    import uuid as _uuid
+
+    from backend_normativo.ingesta.importadores.dpn import FormaInesperada, ImportadorDpn
+
+    with engine_migrador().begin() as conexion:
+        try:
+            resultado = ImportadorDpn(conexion).importar_desde_captura(_uuid.UUID(captura))
+        except FormaInesperada as exc:
+            typer.echo(str(exc))
+            raise typer.Exit(1) from exc
+    titular = "la DPN" if resultado.propias_de_la_dpn else "cada organismo listado"
+    typer.echo(
+        f"Sección: {resultado.seccion}\n"
+        f"Oficinas leídas: {resultado.oficinas} · titular: {titular}\n"
+        f"Puntos nuevos: {resultado.puntos_creados} · ya conocidos: "
+        f"{resultado.puntos_conocidos}\n"
+        f"Canales: {resultado.canales}\n"
+        f"Correos no tomados por venir ofuscados: {resultado.correos_no_tomados}\n"
+        f"Sin dirección publicada: {resultado.sin_direccion}"
+    )
+    for aviso in resultado.avisos:
+        typer.echo(f"  aviso: {aviso}")
+
+
 @ingesta.command("cargar-manual")
 def ingesta_cargar_manual(
     fuente: str = typer.Argument(..., help="Identificador de la fuente (F42, M05, ...)."),

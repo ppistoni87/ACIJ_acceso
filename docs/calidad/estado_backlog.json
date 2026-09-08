@@ -1,467 +1,470 @@
 {
-  "schema_version": "1.0",
-  "nota": "Estado declarado de las 40 historias transversales. `evidencia` son rutas que `bn calidad backlog` verifica que existan: una historia que apunta a un archivo borrado falla el reporte en vez de quedar cerrada sobre nada. Las 83 historias por fuente no están acá: su estado se deriva de la base.",
-  "transversales": {
-    "HU-001": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/catalogo/carga.py",
-        "src/backend_normativo/catalogo/reconciliacion.py",
-        "tests/integracion/test_catalogo.py"
-      ],
-      "comandos": [
-        "bn catalogo validar",
-        "bn catalogo cargar",
-        "bn catalogo conciliar"
-      ]
-    },
-    "HU-002": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/db/models",
-        "src/backend_normativo/migrations/versions/0001_esquema_inicial.py",
-        "src/backend_normativo/migrations/versions/0002_reglas_de_integridad.py",
-        "tests/integracion/test_esquema_integridad.py",
-        "tests/integracion/test_esquema_temporalidad.py",
-        "tests/integracion/test_esquema_hechos.py"
-      ],
-      "comandos": [
-        "alembic upgrade head",
-        "alembic check"
-      ]
-    },
-    "HU-003": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/catalogo/carga.py",
-        "src/backend_normativo/ingesta/planificador.py",
-        "tests/integracion/test_captura.py"
-      ],
-      "comandos": [
-        "bn catalogo cargar"
-      ]
-    },
-    "HU-004": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/ingesta/capturador.py",
-        "src/backend_normativo/ingesta/almacen.py",
-        "src/backend_normativo/ingesta/cliente.py",
-        "tests/integracion/test_captura.py"
-      ],
-      "comandos": [
-        "bn ingesta capturar"
-      ]
-    },
-    "HU-005": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/ingesta/importadores/infoleg.py",
-        "tests/integracion/test_importador_infoleg.py"
-      ],
-      "comandos": [
-        "bn ingesta importar-infoleg"
-      ]
-    },
-    "HU-006": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/ingesta/adaptadores/html.py",
-        "src/backend_normativo/ingesta/adaptadores/normativa_nacional.py",
-        "src/backend_normativo/ingesta/adaptadores/normativa_ba.py",
-        "src/backend_normativo/ingesta/adaptadores/infoleg_legacy.py",
-        "tests/unit/test_adaptadores.py",
-        "src/backend_normativo/ingesta/adaptadores/pagina_institucional.py",
-        "tests/unit/test_adaptador_pagina.py"
-      ],
-      "comandos": [
-        "bn ingesta extraer",
-        "bn ingesta descubrir"
-      ]
-    },
-    "HU-007": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/ingesta/adaptadores/pdf.py",
-        "tests/unit/test_adaptador_pdf.py",
-        "tests/fixtures/prefijo_boletin_caba.json"
-      ],
-      "comandos": [
-        "bn ingesta capturar D07 D08 D09 F38 F40 F54 F62 F63",
-        "bn ingesta extraer"
-      ]
-    },
-    "HU-008": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/curacion/segmentacion.py",
-        "tests/unit/test_segmentacion.py"
-      ],
-      "comandos": [
-        "bn ingesta extraer"
-      ]
-    },
-    "HU-009": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/curacion/identidad.py",
-        "tests/integracion/test_curacion.py",
-        "tests/aceptacion/test_casos_aceptacion.py"
-      ],
-      "comandos": [
-        "bn curacion identidad"
-      ]
-    },
-    "HU-010": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/curacion/citas.py",
-        "src/backend_normativo/curacion/relaciones.py",
-        "tests/unit/test_citas.py",
-        "tests/integracion/test_curacion.py"
-      ],
-      "comandos": [
-        "bn curacion relaciones"
-      ]
-    },
-    "HU-011": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/curacion/beneficios.py",
-        "docs/curaduria/ley-caba-6935.json",
-        "tests/integracion/test_curacion_beneficios.py",
-        "src/backend_normativo/db/models/beneficios.py"
-      ],
-      "comandos": [
-        "bn curacion beneficios"
-      ]
-    },
-    "HU-012": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/curacion/campos.py",
-        "src/backend_normativo/db/vocabularios.py",
-        "tests/integracion/test_campos_y_cobertura.py"
-      ],
-      "comandos": [
-        "bn curacion campos",
-        "bn revision aprobar-campos"
-      ]
-    },
-    "HU-013": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/curacion/beneficios.py",
-        "docs/curaduria/ley-caba-6935.json",
-        "tests/integracion/test_curacion_beneficios.py",
-        "src/backend_normativo/reglas/ast.py",
-        "tests/aceptacion/test_casos_reglas.py"
-      ],
-      "comandos": [
-        "bn curacion beneficios"
-      ]
-    },
-    "HU-014": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/reglas/ast.py",
-        "src/backend_normativo/reglas/evaluacion.py",
-        "src/backend_normativo/reglas/beneficio.py",
-        "tests/unit/test_reglas.py"
-      ]
-    },
-    "HU-015": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/reglas/beneficio.py",
-        "tests/unit/test_reglas.py"
-      ]
-    },
-    "HU-016": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/plazos/computo.py",
-        "src/backend_normativo/plazos/calendarios.py",
-        "tests/unit/test_computo_plazos.py",
-        "tests/integracion/test_calendarios.py",
-        "tests/integracion/test_esquema_hechos.py"
-      ],
-      "comandos": [
-        "bn plazos calendario 2026",
-        "bn plazos calcular"
-      ]
-    },
-    "HU-017": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/curacion/beneficios.py",
-        "docs/curaduria/ley-caba-6935.json",
-        "tests/integracion/test_curacion_beneficios.py",
-        "src/backend_normativo/reglas/beneficio.py"
-      ],
-      "comandos": [
-        "bn curacion beneficios"
-      ]
-    },
-    "HU-018": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/db/models/hechos.py",
-        "src/backend_normativo/reglas/evaluacion.py",
-        "tests/integracion/test_esquema_hechos.py",
-        "tests/unit/test_reglas.py"
-      ]
-    },
-    "HU-019": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/ingesta/adaptadores/tramite_argentina.py",
-        "src/backend_normativo/curacion/tramites.py",
-        "tests/unit/test_adaptador_tramite.py",
-        "tests/integracion/test_tramites.py"
-      ],
-      "comandos": [
-        "bn ingesta extraer",
-        "bn curacion tramites"
-      ]
-    },
-    "HU-020": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/ingesta/importadores/directorios.py",
-        "tests/integracion/test_importador_directorios.py"
-      ],
-      "comandos": [
-        "bn ingesta capturar F20 F60",
-        "bn ingesta importar-directorio"
-      ]
-    },
-    "HU-021": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/ingesta/importadores/renabap.py",
-        "src/backend_normativo/api/routers/operativo.py",
-        "tests/integracion/test_importador_renabap.py",
-        "tests/aceptacion/test_casos_aceptacion.py"
-      ],
-      "comandos": [
-        "bn ingesta capturar F39",
-        "bn ingesta importar-renabap"
-      ]
-    },
-    "HU-022": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/db/models/calidad.py",
-        "src/backend_normativo/curacion/campos.py",
-        "tests/integracion/test_campos_y_cobertura.py",
-        "tests/integracion/test_esquema_temporalidad.py"
-      ]
-    },
-    "HU-023": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/politicas/vigencia.py",
-        "src/backend_normativo/curacion/vigencia.py",
-        "tests/integracion/test_publicacion.py",
-        "tests/integracion/test_hechos_servibles.py"
-      ],
-      "comandos": [
-        "bn curacion vigencia",
-        "bn revision resolver-vigencia"
-      ]
-    },
-    "HU-024": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/curacion/revision.py",
-        "tests/integracion/test_publicacion.py",
-        "tests/integracion/test_hechos_servibles.py"
-      ],
-      "comandos": [
-        "bn revision pendientes",
-        "bn revision resolver-vigencia"
-      ]
-    },
-    "HU-025": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/publicacion/release.py",
-        "src/backend_normativo/publicacion/gates.py",
-        "tests/integracion/test_publicacion.py",
-        "tests/aceptacion/test_casos_aceptacion.py"
-      ],
-      "comandos": [
-        "bn publicacion estado",
-        "bn publicacion publicar"
-      ]
-    },
-    "HU-026": {
-      "estado": "EN_CURSO",
-      "evidencia": [
-        "src/backend_normativo/monitoreo/novedades.py",
-        "tests/integracion/test_monitoreo.py"
-      ],
-      "falta": "El monitor corre sobre las fuentes capturadas y el ensayo de actualización ejercita diff, impacto y evento de punta a punta. Los boletines oficiales (M01-M04) están capturados pero todavía no en un ciclo periódico: eso necesita un planificador corriendo, no más código."
-    },
-    "HU-027": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/monitoreo/diff.py",
-        "tests/integracion/test_monitoreo.py"
-      ],
-      "comandos": [
-        "bn monitoreo correr"
-      ]
-    },
-    "HU-028": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/monitoreo/impacto.py",
-        "src/backend_normativo/monitoreo/outbox.py",
-        "tests/integracion/test_monitoreo.py"
-      ],
-      "comandos": [
-        "bn monitoreo entregar"
-      ]
-    },
-    "HU-029": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/api/app.py",
-        "src/backend_normativo/api/contratos.py",
-        "src/backend_normativo/api/routers",
-        "tests/integracion/test_api.py"
-      ],
-      "comandos": [
-        "bn api servir",
-        "bn api openapi"
-      ]
-    },
-    "HU-030": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/api/routers/evaluaciones.py",
-        "src/backend_normativo/reglas/beneficio.py",
-        "tests/integracion/test_api.py"
-      ]
-    },
-    "HU-031": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/publicacion/release.py",
-        "src/backend_normativo/api/routers/recuperacion.py",
-        "tests/integracion/test_api.py"
-      ]
-    },
-    "HU-032": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/api/consultas.py",
-        "src/backend_normativo/api/contratos.py",
-        "tests/integracion/test_api.py",
-        "tests/integracion/test_hechos_servibles.py"
-      ]
-    },
-    "HU-033": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/migrations/versions/0002_reglas_de_integridad.py",
-        "src/backend_normativo/api/dependencias.py",
-        "tests/integracion/test_api.py",
-        "tests/aceptacion/test_casos_aceptacion.py"
-      ]
-    },
-    "HU-034": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/calidad/cobertura.py",
-        "src/backend_normativo/publicacion/gates.py",
-        "tests/integracion/test_campos_y_cobertura.py"
-      ],
-      "comandos": [
-        "bn calidad cobertura"
-      ]
-    },
-    "HU-035": {
-      "estado": "EN_CURSO",
-      "evidencia": [
-        "scripts/poblar_corpus.sh",
-        "src/backend_normativo/ingesta/importadores/infoleg.py",
-        "docs/operacion/poblacion_real.md",
-        "docs/reportes/actualizacion_controlada.md"
-      ],
-      "falta": "El catálogo nacional está importado entero (423.718 normas), el padrón RENABAP y dos directorios abiertos están cargados, las 83 fuentes fueron recorridas y 31 páginas institucionales, 8 PDF y 2 fichas de trámite están extraídos. Falta que las fuentes capturadas y extraídas se conviertan en beneficios con reglas: eso depende de curación jurídica, no de más ingesta.",
-      "comandos": [
-        "bn ingesta importar-infoleg",
-        "bn calidad ensayo-actualizacion"
-      ]
-    },
-    "HU-036": {
-      "estado": "EN_CURSO",
-      "evidencia": [
-        "docs/calidad/trazabilidad_at.json",
-        "docs/calidad/consultas_conversacionales.json",
-        "tests/aceptacion/test_casos_aceptacion.py",
-        "tests/aceptacion/test_conversacional.py",
-        "docs/calidad/trazabilidad_at.md",
-        "docs/calidad/consultas_conversacionales.md"
-      ],
-      "comandos": [
-        "bn calidad trazabilidad --ejecutar",
-        "bn calidad consultas"
-      ],
-      "falta": "El conjunto conversacional cumple la gate DQ18 (98 consultas, 59 críticas, todas pasan) y los 80 casos AT se ejecutan: 64 cubiertos y 16 parciales, cada uno diciendo qué parte todavía no se ejerce. Falta la revisión experta humana de las respuestas, que es lo que la gate llama «conjunto experto revisado» y ningún automatismo puede firmar."
-    },
-    "HU-037": {
-      "estado": "EN_CURSO",
-      "evidencia": [
-        "src/backend_normativo/operacion/respaldo.py",
-        "tests/aceptacion/test_respaldo.py",
-        "docs/reportes/restauracion.md"
-      ],
-      "comandos": [
-        "bn operacion respaldar",
-        "bn operacion restaurar"
-      ],
-      "falta": "El respaldo y la restauración verificada están y se corrieron sobre la base real: 22 objetos, 1 release, 6.968 evidencias y 98 fragmentos restaurados e íntegros en 13 segundos. Falta la medición de rendimiento bajo carga, que necesita un entorno representativo y no la máquina de desarrollo."
-    },
-    "HU-038": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "src/backend_normativo/ingesta/manual.py",
-        "src/backend_normativo/migrations/versions/0003_carga_manual.py",
-        "tests/integracion/test_carga_manual.py",
-        "tests/integracion/test_captura.py"
-      ],
-      "comandos": [
-        "bn ingesta bloqueadas",
-        "bn ingesta cargar-manual"
-      ]
-    },
-    "HU-039": {
-      "estado": "EN_CURSO",
-      "evidencia": [
-        "docs/operacion/runbook.md",
-        "docs/operacion/diccionario_de_datos.md",
-        "docs/adr",
-        "src/backend_normativo/calidad/backlog.py",
-        "docs/calidad/estado_backlog.json"
-      ],
-      "comandos": [
-        "bn calidad backlog",
-        "bn calidad trazabilidad"
-      ],
-      "falta": "La documentación y los reportes están y se regeneran solos; `bn calidad ensayo-actualizacion` y `bn operacion restaurar` levantan bases desde cero, con lo que la reproducibilidad de las migraciones queda probada en cada corrida. Falta el ciclo completo de población en una máquina distinta de la de desarrollo."
-    },
-    "HU-040": {
-      "estado": "CERRADA",
-      "evidencia": [
-        "docs/adr",
-        "src/backend_normativo/politicas/vigencia.py",
-        "docs/decisiones.md",
-        "tests/integracion/test_publicacion.py"
-      ]
-    }
+ "schema_version": "1.0",
+ "nota": "Estado declarado de las 40 historias transversales. `evidencia` son rutas que `bn calidad backlog` verifica que existan: una historia que apunta a un archivo borrado falla el reporte en vez de quedar cerrada sobre nada. Las 83 historias por fuente no están acá: su estado se deriva de la base.",
+ "transversales": {
+  "HU-001": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/catalogo/carga.py",
+    "src/backend_normativo/catalogo/reconciliacion.py",
+    "tests/integracion/test_catalogo.py"
+   ],
+   "comandos": [
+    "bn catalogo validar",
+    "bn catalogo cargar",
+    "bn catalogo conciliar"
+   ]
+  },
+  "HU-002": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/db/models",
+    "src/backend_normativo/migrations/versions/0001_esquema_inicial.py",
+    "src/backend_normativo/migrations/versions/0002_reglas_de_integridad.py",
+    "tests/integracion/test_esquema_integridad.py",
+    "tests/integracion/test_esquema_temporalidad.py",
+    "tests/integracion/test_esquema_hechos.py"
+   ],
+   "comandos": [
+    "alembic upgrade head",
+    "alembic check"
+   ]
+  },
+  "HU-003": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/catalogo/carga.py",
+    "src/backend_normativo/ingesta/planificador.py",
+    "tests/integracion/test_captura.py"
+   ],
+   "comandos": [
+    "bn catalogo cargar"
+   ]
+  },
+  "HU-004": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/ingesta/capturador.py",
+    "src/backend_normativo/ingesta/almacen.py",
+    "src/backend_normativo/ingesta/cliente.py",
+    "tests/integracion/test_captura.py"
+   ],
+   "comandos": [
+    "bn ingesta capturar"
+   ]
+  },
+  "HU-005": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/ingesta/importadores/infoleg.py",
+    "tests/integracion/test_importador_infoleg.py"
+   ],
+   "comandos": [
+    "bn ingesta importar-infoleg"
+   ]
+  },
+  "HU-006": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/ingesta/adaptadores/html.py",
+    "src/backend_normativo/ingesta/adaptadores/normativa_nacional.py",
+    "src/backend_normativo/ingesta/adaptadores/normativa_ba.py",
+    "src/backend_normativo/ingesta/adaptadores/infoleg_legacy.py",
+    "tests/unit/test_adaptadores.py",
+    "src/backend_normativo/ingesta/adaptadores/pagina_institucional.py",
+    "tests/unit/test_adaptador_pagina.py"
+   ],
+   "comandos": [
+    "bn ingesta extraer",
+    "bn ingesta descubrir"
+   ]
+  },
+  "HU-007": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/ingesta/adaptadores/pdf.py",
+    "tests/unit/test_adaptador_pdf.py",
+    "tests/fixtures/prefijo_boletin_caba.json"
+   ],
+   "comandos": [
+    "bn ingesta capturar D07 D08 D09 F38 F40 F54 F62 F63",
+    "bn ingesta extraer"
+   ]
+  },
+  "HU-008": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/curacion/segmentacion.py",
+    "tests/unit/test_segmentacion.py"
+   ],
+   "comandos": [
+    "bn ingesta extraer"
+   ]
+  },
+  "HU-009": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/curacion/identidad.py",
+    "tests/integracion/test_curacion.py",
+    "tests/aceptacion/test_casos_aceptacion.py"
+   ],
+   "comandos": [
+    "bn curacion identidad"
+   ]
+  },
+  "HU-010": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/curacion/citas.py",
+    "src/backend_normativo/curacion/relaciones.py",
+    "tests/unit/test_citas.py",
+    "tests/integracion/test_curacion.py"
+   ],
+   "comandos": [
+    "bn curacion relaciones"
+   ]
+  },
+  "HU-011": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/curacion/beneficios.py",
+    "docs/curaduria/ley-caba-6935.json",
+    "tests/integracion/test_curacion_beneficios.py",
+    "src/backend_normativo/db/models/beneficios.py"
+   ],
+   "comandos": [
+    "bn curacion beneficios"
+   ]
+  },
+  "HU-012": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/curacion/campos.py",
+    "src/backend_normativo/db/vocabularios.py",
+    "tests/integracion/test_campos_y_cobertura.py"
+   ],
+   "comandos": [
+    "bn curacion campos",
+    "bn revision aprobar-campos"
+   ]
+  },
+  "HU-013": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/curacion/beneficios.py",
+    "docs/curaduria/ley-caba-6935.json",
+    "tests/integracion/test_curacion_beneficios.py",
+    "src/backend_normativo/reglas/ast.py",
+    "tests/aceptacion/test_casos_reglas.py"
+   ],
+   "comandos": [
+    "bn curacion beneficios"
+   ]
+  },
+  "HU-014": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/reglas/ast.py",
+    "src/backend_normativo/reglas/evaluacion.py",
+    "src/backend_normativo/reglas/beneficio.py",
+    "tests/unit/test_reglas.py"
+   ]
+  },
+  "HU-015": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/reglas/beneficio.py",
+    "tests/unit/test_reglas.py"
+   ]
+  },
+  "HU-016": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/plazos/computo.py",
+    "src/backend_normativo/plazos/calendarios.py",
+    "tests/unit/test_computo_plazos.py",
+    "tests/integracion/test_calendarios.py",
+    "tests/integracion/test_esquema_hechos.py"
+   ],
+   "comandos": [
+    "bn plazos calendario 2026",
+    "bn plazos calcular"
+   ]
+  },
+  "HU-017": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/curacion/beneficios.py",
+    "docs/curaduria/ley-caba-6935.json",
+    "tests/integracion/test_curacion_beneficios.py",
+    "src/backend_normativo/reglas/beneficio.py"
+   ],
+   "comandos": [
+    "bn curacion beneficios"
+   ]
+  },
+  "HU-018": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/db/models/hechos.py",
+    "src/backend_normativo/reglas/evaluacion.py",
+    "tests/integracion/test_esquema_hechos.py",
+    "tests/unit/test_reglas.py"
+   ]
+  },
+  "HU-019": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/ingesta/adaptadores/tramite_argentina.py",
+    "src/backend_normativo/curacion/tramites.py",
+    "tests/unit/test_adaptador_tramite.py",
+    "tests/integracion/test_tramites.py"
+   ],
+   "comandos": [
+    "bn ingesta extraer",
+    "bn curacion tramites"
+   ]
+  },
+  "HU-020": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/ingesta/importadores/directorios.py",
+    "tests/integracion/test_importador_directorios.py",
+    "src/backend_normativo/ingesta/importadores/dpn.py",
+    "tests/integracion/test_importador_dpn.py"
+   ],
+   "comandos": [
+    "bn ingesta capturar F20 F60 F44",
+    "bn ingesta importar-directorio",
+    "bn ingesta importar-dpn"
+   ]
+  },
+  "HU-021": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/ingesta/importadores/renabap.py",
+    "src/backend_normativo/api/routers/operativo.py",
+    "tests/integracion/test_importador_renabap.py",
+    "tests/aceptacion/test_casos_aceptacion.py"
+   ],
+   "comandos": [
+    "bn ingesta capturar F39",
+    "bn ingesta importar-renabap"
+   ]
+  },
+  "HU-022": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/db/models/calidad.py",
+    "src/backend_normativo/curacion/campos.py",
+    "tests/integracion/test_campos_y_cobertura.py",
+    "tests/integracion/test_esquema_temporalidad.py"
+   ]
+  },
+  "HU-023": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/politicas/vigencia.py",
+    "src/backend_normativo/curacion/vigencia.py",
+    "tests/integracion/test_publicacion.py",
+    "tests/integracion/test_hechos_servibles.py"
+   ],
+   "comandos": [
+    "bn curacion vigencia",
+    "bn revision resolver-vigencia"
+   ]
+  },
+  "HU-024": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/curacion/revision.py",
+    "tests/integracion/test_publicacion.py",
+    "tests/integracion/test_hechos_servibles.py"
+   ],
+   "comandos": [
+    "bn revision pendientes",
+    "bn revision resolver-vigencia"
+   ]
+  },
+  "HU-025": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/publicacion/release.py",
+    "src/backend_normativo/publicacion/gates.py",
+    "tests/integracion/test_publicacion.py",
+    "tests/aceptacion/test_casos_aceptacion.py"
+   ],
+   "comandos": [
+    "bn publicacion estado",
+    "bn publicacion publicar"
+   ]
+  },
+  "HU-026": {
+   "estado": "EN_CURSO",
+   "evidencia": [
+    "src/backend_normativo/monitoreo/novedades.py",
+    "tests/integracion/test_monitoreo.py"
+   ],
+   "falta": "El monitor corre sobre las fuentes capturadas y el ensayo de actualización ejercita diff, impacto y evento de punta a punta. Los boletines oficiales (M01-M04) están capturados pero todavía no en un ciclo periódico: eso necesita un planificador corriendo, no más código."
+  },
+  "HU-027": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/monitoreo/diff.py",
+    "tests/integracion/test_monitoreo.py"
+   ],
+   "comandos": [
+    "bn monitoreo correr"
+   ]
+  },
+  "HU-028": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/monitoreo/impacto.py",
+    "src/backend_normativo/monitoreo/outbox.py",
+    "tests/integracion/test_monitoreo.py"
+   ],
+   "comandos": [
+    "bn monitoreo entregar"
+   ]
+  },
+  "HU-029": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/api/app.py",
+    "src/backend_normativo/api/contratos.py",
+    "src/backend_normativo/api/routers",
+    "tests/integracion/test_api.py"
+   ],
+   "comandos": [
+    "bn api servir",
+    "bn api openapi"
+   ]
+  },
+  "HU-030": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/api/routers/evaluaciones.py",
+    "src/backend_normativo/reglas/beneficio.py",
+    "tests/integracion/test_api.py"
+   ]
+  },
+  "HU-031": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/publicacion/release.py",
+    "src/backend_normativo/api/routers/recuperacion.py",
+    "tests/integracion/test_api.py"
+   ]
+  },
+  "HU-032": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/api/consultas.py",
+    "src/backend_normativo/api/contratos.py",
+    "tests/integracion/test_api.py",
+    "tests/integracion/test_hechos_servibles.py"
+   ]
+  },
+  "HU-033": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/migrations/versions/0002_reglas_de_integridad.py",
+    "src/backend_normativo/api/dependencias.py",
+    "tests/integracion/test_api.py",
+    "tests/aceptacion/test_casos_aceptacion.py"
+   ]
+  },
+  "HU-034": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/calidad/cobertura.py",
+    "src/backend_normativo/publicacion/gates.py",
+    "tests/integracion/test_campos_y_cobertura.py"
+   ],
+   "comandos": [
+    "bn calidad cobertura"
+   ]
+  },
+  "HU-035": {
+   "estado": "EN_CURSO",
+   "evidencia": [
+    "scripts/poblar_corpus.sh",
+    "src/backend_normativo/ingesta/importadores/infoleg.py",
+    "docs/operacion/poblacion_real.md",
+    "docs/reportes/actualizacion_controlada.md"
+   ],
+   "falta": "El catálogo nacional está importado entero (423.718 normas), el padrón RENABAP y dos directorios abiertos están cargados, las 83 fuentes fueron recorridas y 31 páginas institucionales, 8 PDF y 2 fichas de trámite están extraídos. Falta que las fuentes capturadas y extraídas se conviertan en beneficios con reglas: eso depende de curación jurídica, no de más ingesta.",
+   "comandos": [
+    "bn ingesta importar-infoleg",
+    "bn calidad ensayo-actualizacion"
+   ]
+  },
+  "HU-036": {
+   "estado": "EN_CURSO",
+   "evidencia": [
+    "docs/calidad/trazabilidad_at.json",
+    "docs/calidad/consultas_conversacionales.json",
+    "tests/aceptacion/test_casos_aceptacion.py",
+    "tests/aceptacion/test_conversacional.py",
+    "docs/calidad/trazabilidad_at.md",
+    "docs/calidad/consultas_conversacionales.md"
+   ],
+   "comandos": [
+    "bn calidad trazabilidad --ejecutar",
+    "bn calidad consultas"
+   ],
+   "falta": "El conjunto conversacional cumple la gate DQ18 (98 consultas, 59 críticas, todas pasan) y los 80 casos AT se ejecutan: 64 cubiertos y 16 parciales, cada uno diciendo qué parte todavía no se ejerce. Falta la revisión experta humana de las respuestas, que es lo que la gate llama «conjunto experto revisado» y ningún automatismo puede firmar."
+  },
+  "HU-037": {
+   "estado": "EN_CURSO",
+   "evidencia": [
+    "src/backend_normativo/operacion/respaldo.py",
+    "tests/aceptacion/test_respaldo.py",
+    "docs/reportes/restauracion.md"
+   ],
+   "comandos": [
+    "bn operacion respaldar",
+    "bn operacion restaurar"
+   ],
+   "falta": "El respaldo y la restauración verificada están y se corrieron sobre la base real: 22 objetos, 1 release, 6.968 evidencias y 98 fragmentos restaurados e íntegros en 13 segundos. Falta la medición de rendimiento bajo carga, que necesita un entorno representativo y no la máquina de desarrollo."
+  },
+  "HU-038": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "src/backend_normativo/ingesta/manual.py",
+    "src/backend_normativo/migrations/versions/0003_carga_manual.py",
+    "tests/integracion/test_carga_manual.py",
+    "tests/integracion/test_captura.py"
+   ],
+   "comandos": [
+    "bn ingesta bloqueadas",
+    "bn ingesta cargar-manual"
+   ]
+  },
+  "HU-039": {
+   "estado": "EN_CURSO",
+   "evidencia": [
+    "docs/operacion/runbook.md",
+    "docs/operacion/diccionario_de_datos.md",
+    "docs/adr",
+    "src/backend_normativo/calidad/backlog.py",
+    "docs/calidad/estado_backlog.json"
+   ],
+   "comandos": [
+    "bn calidad backlog",
+    "bn calidad trazabilidad"
+   ],
+   "falta": "La documentación y los reportes están y se regeneran solos; `bn calidad ensayo-actualizacion` y `bn operacion restaurar` levantan bases desde cero, con lo que la reproducibilidad de las migraciones queda probada en cada corrida. Falta el ciclo completo de población en una máquina distinta de la de desarrollo."
+  },
+  "HU-040": {
+   "estado": "CERRADA",
+   "evidencia": [
+    "docs/adr",
+    "src/backend_normativo/politicas/vigencia.py",
+    "docs/decisiones.md",
+    "tests/integracion/test_publicacion.py"
+   ]
   }
+ }
 }
