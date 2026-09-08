@@ -792,25 +792,36 @@ class CuradorDeBeneficios:
                 "cobra— va en `vacios_declarados`, que abre una incidencia con el motivo. Como "
                 "campo no informado no actualizaba nada y el motivo se perdía."
             )
-        actualizadas = self.conexion.execute(
+        # Se inserta si no está. En una base poblada desde cero la evaluación
+        # todavía no existe cuando corre la curación: los siete campos se
+        # evalúan después, porque varios salen de la lectura curada. Un UPDATE
+        # a secas no encontraba fila y terminaba sin error, así que en cada
+        # puesta en marcha limpia se perdía el motivo que la curaduría había
+        # escrito y el campo quedaba en PENDIENTE, indistinguible de uno que
+        # nadie miró.
+        self.conexion.execute(
             text(
-                "UPDATE evaluaciones_completitud SET estado = :estado, motivo = :motivo, "
-                "  evaluado_en = now() "
-                " WHERE norma_version_id = :nv AND campo_solicitado = :campo"
+                "INSERT INTO evaluaciones_completitud "
+                "(norma_version_id, campo_solicitado, estado, fuentes_revisadas, motivo, "
+                " revisor_id) VALUES (:nv, :campo, :estado, :fuentes, :motivo, :revisor) "
+                "ON CONFLICT (norma_version_id, beneficio_version_id, campo_solicitado) "
+                "DO UPDATE SET estado = EXCLUDED.estado, motivo = EXCLUDED.motivo, "
+                "  evaluado_en = now()"
             ),
             {
                 "nv": norma_version_id,
                 "campo": campo["campo"],
                 "estado": "NO_INFORMADO_EN_FUENTES_REVISADAS",
+                # La restricción del esquema pide que un campo no informado diga
+                # qué se revisó para decirlo: acá lo revisado es el texto de la
+                # norma, que es de dónde sale la lectura.
+                "fuentes": json.dumps(
+                    [{"tipo": "LECTURA_CURADA", "norma_version": str(norma_version_id)}]
+                ),
                 "motivo": campo["motivo"],
+                "revisor": "curacion:lectura-curada",
             },
-        ).rowcount
-        if not actualizadas:
-            raise LecturaInvalida(
-                f"No hay evaluación de completitud del campo {campo['campo']!r} para esta "
-                "versión de la norma, así que declararlo no informado no cambia nada. Las "
-                "evaluaciones las crea `bn curacion campos`: hay que correrlo antes."
-            )
+        )
 
     def _vacio_declarado(self, referencia_origen: str, vacio: dict) -> None:
         """Lo que la norma no da y no es uno de los siete campos.
@@ -977,9 +988,17 @@ def cargar_todas(conexion: Connection, raiz: pathlib.Path | None = None) -> list
     curador = CuradorDeBeneficios(conexion)
     resultados: list[ResultadoCuracion] = []
     for ruta in sorted(base.glob("*.json")):
+        # Cada lectura entera o nada. Sin el punto de retorno, una que falla a
+        # mitad deja escritas sus reglas y su beneficio y no llega a sus
+        # dependencias: la base queda con un beneficio que parece cargado, los
+        # totales lo cuentan y el motivo del fallo se lee como un aviso más.
+        punto = conexion.begin_nested()
         try:
-            resultados.append(curador.cargar(ruta))
+            resultado = curador.cargar(ruta)
+            punto.commit()
+            resultados.append(resultado)
         except LecturaInvalida as error:
+            punto.rollback()
             resultados.append(
                 ResultadoCuracion(
                     avisos=[f"{ruta.name} no se cargó: {error}"],

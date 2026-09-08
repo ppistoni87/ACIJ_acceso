@@ -15,11 +15,11 @@ Generado por `scripts/corrida_limpia.sh`. La base se crea y se destruye en la
 misma corrida: si algo de acá se pudiera explicar por estado previo, no habría
 estado previo del que agarrarse.
 
-- Arranque: `2026-09-08T21:20:21+00:00`
-- Cierre: `2026-09-08T21:26:43+00:00`
+- Arranque: `2026-09-08T22:20:55+00:00`
+- Cierre: `2026-09-08T22:27:29+00:00`
 - Resultado: **completa**
 - Base: `backend_normativo_limpia`
-- Fuentes que el planificador deja pendientes al cerrar: `3`
+- Fuentes que el planificador deja pendientes al cerrar: `2`
 
 ## Pasos
 
@@ -28,19 +28,19 @@ corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
 
 | Paso | Duración | Última línea |
 | --- | ---: | --- |
-| migraciones | 1.4 s | INFO  [alembic.runtime.migration] Running upgrade 0006_indice_de_listado -> 0007_servibl… |
-| población completa | 379.3 s | Incidencias abiertas: 12 |
-| planificación al cierre (en seco) | 0.6 s | alguien corre el comando. |
+| migraciones | 1.3 s | INFO  [alembic.runtime.migration] Running upgrade 0006_indice_de_listado -> 0007_servibl… |
+| población completa | 391.4 s | Incidencias abiertas: 12 |
+| planificación al cierre (en seco) | 0.7 s | alguien corre el comando. |
 
 ## Con qué quedó la base
 
 | Qué | Cuántos |
 | --- | ---: |
 | Fuentes en el catálogo | 84 |
-| Capturas | 68 |
+| Capturas | 69 |
 | Unidades documentales | 989 |
 | Beneficios curados | 16 |
-| Incidencias abiertas | 4607 |
+| Incidencias abiertas | 4663 |
 
 Las incidencias abiertas no son un fallo de la corrida: son lo que el sistema
 encontró y no resolvió solo. Una corrida limpia que no abriera ninguna estaría
@@ -59,10 +59,9 @@ algo distinto de los datos.
 | --- | --- | ---: | ---: | ---: | --- |
 | D07 | FALLIDA | 1 | 0 | 1 | https://documentosboletinoficial.buenosaires.gob.ar/publico/PE-RES-MEDGC-MEDGC-1621-25-ANX.pdf: RemoteProtocol |
 | F04 | FALLIDA | 1 | 0 | 1 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL |
-| M05 | FALLIDA | 1 | 0 | 1 | https://www.anses.gob.ar/: HTTP 403. La fuente queda pausada; no se rotan identidades ni se evaden controles d |
 | C01 | COMPLETA | 1 | 1 | 0 |  |
-| D01 | COMPLETA | 1 | 1 | 0 |  |
 | D01 | COMPLETA | 3 | 3 | 0 |  |
+| D01 | COMPLETA | 1 | 1 | 0 |  |
 | D02 | COMPLETA | 1 | 1 | 0 |  |
 | D02 | COMPLETA | 2 | 2 | 0 |  |
 | D03 | COMPLETA | 1 | 1 | 0 |  |
@@ -121,6 +120,7 @@ algo distinto de los datos.
 | M02 | COMPLETA | 1 | 1 | 0 |  |
 | M03 | COMPLETA | 1 | 1 | 0 |  |
 | M04 | COMPLETA | 1 | 1 | 0 |  |
+| M05 | COMPLETA | 1 | 1 | 0 |  |
 | M06 | COMPLETA | 1 | 1 | 0 |  |
 
 No todas las corridas en `FALLIDA` son iguales. Un tiempo de espera agotado o una
@@ -151,9 +151,9 @@ Ninguna: las 19 lecturas curadas encontraron su norma en el corpus.
 | Tipo | Cuántas |
 | --- | ---: |
 | IDENTIDAD_AMBIGUA | 4492 |
+| DATO_FALTANTE_CRITICO | 74 |
 | COBERTURA_EXTRACCION | 42 |
 | VIGENCIA_INDETERMINADA | 23 |
-| DATO_FALTANTE_CRITICO | 22 |
-| ACCESO_BLOQUEADO | 18 |
-| CONFLICTO_DE_FUENTES | 5 |
+| ACCESO_BLOQUEADO | 17 |
+| CONFLICTO_DE_FUENTES | 10 |
 | DISCREPANCIA_NUMERACION | 5 |

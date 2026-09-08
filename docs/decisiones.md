@@ -700,3 +700,31 @@ hexadecimal, el cambio real queda escondido entre el ruido y nadie regenera.
 calculada muestra la expresión que la calcula en lugar de su `repr`. Dos
 corridas dan el mismo texto, y eso se prueba: si vuelve a haber una dirección de
 memoria en el documento, falla.
+
+## D-44 · Una lectura curada entra entera o no entra
+
+Una corrida limpia decía «16 beneficios curados» y en la base había cuatro
+lecturas cargadas de diecinueve. Las otras quince se rechazaban a mitad de
+camino y nadie se enteraba, por tres razones que se tapaban entre sí.
+
+La primera: la población evalúa los siete campos *después* de cargar los
+beneficios, porque varios de ellos salen de la lectura curada. Así que cuando la
+curación quería declarar un campo como no informado, la fila de evaluación
+todavía no existía y el `UPDATE` no encontraba nada. En una base de desarrollo,
+donde alguien ya había corrido los campos alguna vez, funcionaba; desde cero, no.
+
+La segunda: el cargador escribe el beneficio, sus poblaciones y sus reglas antes
+de llegar a los campos, las dependencias y los conflictos. Una lectura que se
+rechazaba tarde dejaba escrita la primera mitad, y el beneficio quedaba en la
+base sin las dependencias ni los conflictos que la lectura declaraba.
+
+La tercera: el reporte contaba `beneficios`, y esa fila la escribe el cargador
+en su primer paso. Los quince beneficios a medio cargar entraban en el total y
+el total decía que estaba todo.
+
+**Consecuencia:** declarar un campo no informado crea la evaluación si no está,
+que es lo que corresponde —la lectura curada es la fuente de esa afirmación—.
+Cada lectura se carga dentro de un punto de retorno, así que la que falla no
+deja nada. Y el reporte cuenta los beneficios que tienen al menos una regla: uno
+sin ninguna condición no es un beneficio curado, y contarlo era lo que hacía que
+el total tapara el problema.

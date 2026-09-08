@@ -290,3 +290,41 @@ def test_un_conflicto_que_cita_un_texto_que_no_lo_dice_detiene_la_carga(
         )
     ).scalar_one()
     assert abiertas == 0
+
+
+def test_una_lectura_que_falla_no_deja_media_carga(
+    conexion: Connection, normas, tmp_path: pathlib.Path
+) -> None:
+    """Entera o nada.
+
+    El cargador escribe el beneficio y sus reglas antes de llegar a las
+    dependencias y los conflictos. Sin punto de retorno, una lectura que falla
+    tarde dejaba un beneficio que parecía cargado —los totales lo contaban— y
+    el motivo del fallo se leía como un aviso más entre los de las que sí
+    cargaron.
+    """
+    from backend_normativo.curacion.beneficios import cargar_todas
+
+    lectura = json.loads(LECTURA_LEY.read_text(encoding="utf-8"))
+    # Una cita que no está en la unidad que dice citar: el cargador la rechaza
+    # cuando ya escribió el beneficio, la población y varias reglas.
+    lectura["conflictos"][0]["texto_literal"] = "Esto no lo dice ninguna unidad de la norma."
+    raiz = tmp_path / "repo"
+    (raiz / "docs" / "curaduria").mkdir(parents=True)
+    (raiz / "docs" / "curaduria" / "ley-caba-547.json").write_text(
+        json.dumps(lectura, ensure_ascii=False), encoding="utf-8"
+    )
+
+    resultados = cargar_todas(conexion, raiz=raiz)
+    assert [r.no_cargada for r in resultados] == ["ley-caba-547.json"]
+    assert not resultados[0].falta_la_norma
+
+    reglas = conexion.execute(
+        text(
+            "SELECT count(*) FROM reglas r JOIN evidencias e ON e.id = r.evidencia_id "
+            "  JOIN documento_versiones dv ON dv.id = e.doc_version_id "
+            "  JOIN documentos d ON d.id = dv.documento_id "
+            " WHERE d.external_id = 'normativaba:11223:original'"
+        )
+    ).scalar_one()
+    assert reglas == 0

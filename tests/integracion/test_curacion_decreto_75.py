@@ -243,3 +243,60 @@ def test_un_campo_no_informado_fuera_de_los_siete_detiene_la_carga(
     with pytest.raises(LecturaInvalida) as error:
         CuradorDeBeneficios(conexion).cargar(ruta)
     assert "vacios_declarados" in str(error.value)
+
+
+def test_un_campo_no_informado_entra_aunque_todavia_no_se_hayan_evaluado_los_campos(
+    conexion: Connection, tmp_path: pathlib.Path
+) -> None:
+    """En una base poblada desde cero la evaluación todavía no existe.
+
+    Los siete campos se evalúan después de la curación, porque varios salen de
+    la lectura curada. Un UPDATE a secas no encontraba fila y terminaba sin
+    error: en cada puesta en marcha limpia se perdía el motivo que la curaduría
+    había escrito, y el campo quedaba en PENDIENTE, indistinguible de uno que
+    nadie miró.
+    """
+    from tests.integracion.test_curacion import _documento_norma
+
+    cargar_catalogo(conexion)
+    _documento_norma(
+        conexion,
+        source_id="F23",
+        external_id="normativaba:273414:original",
+        tipo_version="ORIGINAL",
+        identidad={
+            "jurisdiccion": "AR-C",
+            "normativaba_id": "273414",
+            "tipo": "DECRETO",
+            "numero": "75",
+            "anio": 2015,
+            "titulo": "RÉGIMEN DE BECAS ESTUDIANTILES",
+            "fechas": {"PUBLICACION": "2015-02-20"},
+        },
+        unidades=UNIDADES,
+    )
+    ResolutorIdentidad(conexion).resolver_pendientes()
+    # A propósito no se corre `EvaluadorDeCampos`: es el orden de la población
+    # real, donde los campos se evalúan después de cargar los beneficios.
+    lectura = json.loads(LECTURA.read_text(encoding="utf-8"))
+    lectura["campos_no_informados"] = [
+        {
+            "campo": "criterios_revocacion",
+            "motivo": "El decreto no dice por qué se pierde la beca; eso está en la Ley 2917.",
+        }
+    ]
+    ruta = tmp_path / "sin-evaluar-campos.json"
+    ruta.write_text(json.dumps(lectura, ensure_ascii=False), encoding="utf-8")
+
+    CuradorDeBeneficios(conexion).cargar(ruta)
+    estado, motivo = conexion.execute(
+        text(
+            "SELECT ec.estado, ec.motivo FROM evaluaciones_completitud ec "
+            "  JOIN norma_versiones nv ON nv.registro_version_id = ec.norma_version_id "
+            "  JOIN normas n ON n.id = nv.norma_id "
+            " WHERE n.numero = '75' AND n.anio = 2015 "
+            "   AND ec.campo_solicitado = 'criterios_revocacion'"
+        )
+    ).one()
+    assert estado == "NO_INFORMADO_EN_FUENTES_REVISADAS"
+    assert "Ley 2917" in motivo

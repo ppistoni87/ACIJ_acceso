@@ -66,7 +66,13 @@ escribir_reporte() {
   fuentes_cargadas=$(sql "SELECT count(*) FROM fuentes" 2>/dev/null || echo "—")
   capturas=$(sql "SELECT count(*) FROM capturas" 2>/dev/null || echo "—")
   unidades=$(sql "SELECT count(*) FROM unidades_documentales" 2>/dev/null || echo "—")
-  beneficios=$(sql "SELECT count(*) FROM beneficios" 2>/dev/null || echo "—")
+  # Se cuentan los que tienen al menos una regla. `beneficios` a secas contaba
+  # también los que una lectura fallida dejó escritos antes de rechazarse: un
+  # beneficio sin ninguna condición no es un beneficio curado, y contarlo hacía
+  # que el total tapara justamente las lecturas que no habían entrado.
+  beneficios=$(sql "SELECT count(DISTINCT bv.beneficio_id) FROM beneficio_versiones bv
+                      JOIN reglas r ON r.beneficio_version_id = bv.registro_version_id" \
+                 2>/dev/null || echo "—")
   incidencias=$(sql "SELECT count(*) FROM incidencias_revision WHERE estado='ABIERTA'" \
     2>/dev/null || echo "—")
 
@@ -197,7 +203,9 @@ escribir_reporte() {
     # entrado: una cita que no encuentra su unidad detiene esa lectura y deja
     # las demás. Cada lectura cargada ata su beneficio a su norma, así que las
     # filas de ese vínculo son la cuenta de las que sí entraron.
-    cargadas=$(sql "SELECT count(*) FROM beneficio_normas")
+    cargadas=$(sql "SELECT count(*) FROM beneficio_normas bn
+                      WHERE EXISTS (SELECT 1 FROM reglas r
+                                     WHERE r.beneficio_version_id = bn.beneficio_version_id)")
     if [ "${cargadas}" != "$((lecturas - faltantes))" ]; then
       echo "> **Faltan lecturas:** ${lecturas} lecturas curadas, ${faltantes} sin su norma en el"
       echo "> corpus, así que tendrían que haber entrado $((lecturas - faltantes)) y entraron"
