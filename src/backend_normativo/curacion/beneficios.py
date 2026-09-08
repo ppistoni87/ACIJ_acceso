@@ -60,6 +60,7 @@ class ResultadoCuracion:
     plazos: int = 0
     campos_no_informados: int = 0
     dependencias: int = 0
+    conflictos: int = 0
     avisos: list[str] = field(default_factory=list)
 
 
@@ -98,7 +99,7 @@ class CuradorDeBeneficios:
             resultado.reglas_sin_formalizar += int(sin_formalizar)
         self._dependencias_entre_reglas(lectura.get("reglas", ()), claves)
         self._retirar_reglas_que_la_lectura_ya_no_tiene(
-            version_id, lectura.get("reglas", ()), resultado
+            version_id, doc_version_id, lectura.get("reglas", ()), resultado
         )
 
         if lectura.get("cuantia"):
@@ -116,6 +117,10 @@ class CuradorDeBeneficios:
         for dependencia in lectura.get("dependencias", ()):
             self._dependencia(lectura["norma"]["referencia"], dependencia)
             resultado.dependencias += 1
+
+        for conflicto in lectura.get("conflictos", ()):
+            self._conflicto(lectura["norma"]["referencia"], conflicto, unidades)
+            resultado.conflictos += 1
 
         self._avisos(lectura, resultado)
         return resultado
@@ -434,7 +439,11 @@ class CuradorDeBeneficios:
         return regla_id, sin_formalizar
 
     def _retirar_reglas_que_la_lectura_ya_no_tiene(
-        self, version_id: uuid.UUID, reglas, resultado: ResultadoCuracion
+        self,
+        version_id: uuid.UUID,
+        doc_version_id: uuid.UUID,
+        reglas,
+        resultado: ResultadoCuracion,
     ) -> None:
         """Una cita corregida no deja atrás la versión vieja de la regla.
 
@@ -448,17 +457,25 @@ class CuradorDeBeneficios:
         para esto. Lo que ya pasó por revisión no se toca por editar un archivo
         —retirar una regla aprobada es una decisión de revisión, no una
         consecuencia de guardar un JSON— y se avisa para que alguien lo mire.
+
+        Una lectura solo retira lo que ella misma escribió. Un beneficio puede
+        estar leído desde más de una norma —la que lo crea y la que le sustituye
+        artículos— y esas lecturas comparten la versión del beneficio; sin
+        acotar por el texto citado, cargar una retiraría las reglas de la otra y
+        el resultado dependería del orden de los archivos.
         """
         vigentes = [" ".join(r["texto_literal"].split()) for r in reglas]
         sobrantes = (
             self.conexion.execute(
                 text(
-                    "SELECT id, estado_revision, texto_literal FROM reglas "
-                    " WHERE beneficio_version_id = :bv "
-                    "   AND regexp_replace(btrim(texto_literal), '\\s+', ' ', 'g') "
+                    "SELECT r.id, r.estado_revision, r.texto_literal FROM reglas r "
+                    "  JOIN evidencias e ON e.id = r.evidencia_id "
+                    " WHERE r.beneficio_version_id = :bv "
+                    "   AND e.doc_version_id = :dv "
+                    "   AND regexp_replace(btrim(r.texto_literal), '\\s+', ' ', 'g') "
                     "       <> ALL(:vigentes)"
                 ),
-                {"bv": version_id, "vigentes": vigentes or [""]},
+                {"bv": version_id, "dv": doc_version_id, "vigentes": vigentes or [""]},
             )
             .mappings()
             .all()
@@ -784,6 +801,53 @@ class CuradorDeBeneficios:
             },
         )
 
+    def _conflicto(self, referencia_origen: str, conflicto: dict, unidades: dict) -> None:
+        """Dos textos del corpus dicen cosas distintas sobre lo mismo.
+
+        Esto no lo resuelve la curaduría ni el modelo: cuál de los dos textos
+        rige es una cuestión jurídica, y elegir uno de los dos al cargar sería
+        decidirla en silencio y con la apariencia de un dato. Lo que se puede
+        hacer sin decidir nada es dejar el conflicto escrito, con las dos citas
+        localizadas, para que quien tenga competencia lo resuelva.
+
+        La cita propia se verifica como cualquier otra: un conflicto que apunta
+        a un texto que no dice lo que se afirma no es un conflicto, es un error
+        de lectura, y prefiere fallar acá antes que abrir una incidencia falsa.
+        """
+        self._verificar_cita(
+            unidades,
+            conflicto["ruta_evidencia"],
+            conflicto["texto_literal"],
+            f"conflicto {conflicto['clave']!r}",
+        )
+        if conflicto["ruta_evidencia"] not in unidades:
+            raise LecturaInvalida(
+                f"El conflicto {conflicto['clave']!r} cita la unidad "
+                f"{conflicto['ruta_evidencia']!r} y esa ruta no existe en el texto capturado."
+            )
+        descripcion = (
+            f"{referencia_origen} · {conflicto['clave']}: {conflicto['descripcion']} "
+            f"Este texto: {conflicto['ruta_evidencia']}. "
+            f"El otro: {conflicto['otra_norma']} {conflicto['otra_ruta']}."
+        )
+        ya = self.conexion.execute(
+            text("SELECT 1 FROM incidencias_revision WHERE descripcion = :d"),
+            {"d": descripcion},
+        ).first()
+        if ya is not None:
+            return
+        self.conexion.execute(
+            text(
+                "INSERT INTO incidencias_revision (tipo, severidad, estado, descripcion, "
+                " responsable_rol) VALUES (:t, :s, 'ABIERTA', :d, 'curacion juridica')"
+            ),
+            {
+                "t": TipoIncidencia.CONFLICTO_DE_FUENTES.value,
+                "s": Severidad.HIGH.value,
+                "d": descripcion,
+            },
+        )
+
     def _avisos(self, lectura: dict, resultado: ResultadoCuracion) -> None:
         resultado.avisos.append(
             f"El beneficio y sus {resultado.reglas} regla(s) quedan como candidatos. La "
@@ -816,6 +880,12 @@ class CuradorDeBeneficios:
                     "guardado y validado, y no se ejecuta hasta que alguien con competencia "
                     "jurídica lo apruebe. Cada una dice en su motivo qué hay que decidir."
                 )
+        if resultado.conflictos:
+            resultado.avisos.append(
+                f"{resultado.conflictos} conflicto(s) entre textos del corpus quedan abiertos "
+                "como incidencia. Cuál de los dos textos rige es una decisión jurídica: la "
+                "carga deja las dos citas localizadas y no elige."
+            )
         if resultado.dependencias:
             resultado.avisos.append(
                 f"{resultado.dependencias} norma(s) de las que este beneficio depende no están "

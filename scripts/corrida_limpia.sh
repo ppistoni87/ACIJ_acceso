@@ -157,14 +157,18 @@ escribir_reporte() {
     echo "lectura, es que la fuente no entregó en esta corrida."
     echo
     faltantes=0
+    esperados=""
     for archivo in docs/curaduria/*.json; do
       [ -e "${archivo}" ] || continue
       externo=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['norma']['external_id'])" "${archivo}")
+      codigo=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['beneficio']['codigo'])" "${archivo}")
       existe=$(sql "SELECT count(*) FROM documentos WHERE external_id = '${externo}'")
       if [ "${existe}" = "0" ]; then
         faltantes=$((faltantes + 1))
         [ "${faltantes}" = 1 ] && { echo "| Lectura | Norma que le falta |"; echo "| --- | --- |"; }
         echo "| \`$(basename "${archivo}")\` | \`${externo}\` |"
+      else
+        esperados="${esperados}${codigo}\n"
       fi
     done
     lecturas=$(ls docs/curaduria/*.json 2>/dev/null | wc -l)
@@ -172,15 +176,18 @@ escribir_reporte() {
       echo "Ninguna: las ${lecturas} lecturas curadas encontraron su norma en el corpus."
     fi
     echo
-    # Cada lectura declara un beneficio y ningún código se repite, así que las
-    # que cargaron más las que faltan tienen que dar el total. Si no da, el
-    # reporte se está contradiciendo y lo dice: un informe que se desmiente a sí
-    # mismo sin avisar es peor que no tenerlo.
-    if [ "$((beneficios + faltantes))" != "${lecturas}" ]; then
-      echo "> **El reporte no cierra:** ${lecturas} lecturas curadas, ${beneficios} beneficios"
-      echo "> cargados y ${faltantes} sin su norma. Los tres números tienen que sumar. Hay un"
-      echo "> error en este informe o una lectura que cargó a medias; no se puede leer como"
-      echo "> evidencia hasta resolverlo."
+    # Una lectura no es un beneficio: un mismo beneficio puede estar leído desde
+    # la norma que lo crea y desde la que después le sustituye artículos. Lo que
+    # tiene que cerrar es la cuenta de códigos distintos entre las lecturas cuya
+    # norma sí está en el corpus. Si no da, el reporte se está contradiciendo y
+    # lo dice: un informe que se desmiente a sí mismo sin avisar es peor que no
+    # tenerlo.
+    distintos=$(printf "%b" "${esperados}" | sort -u | grep -c . || true)
+    if [ "${beneficios}" != "${distintos}" ]; then
+      echo "> **El reporte no cierra:** ${lecturas} lecturas curadas, ${faltantes} sin su norma"
+      echo "> en el corpus y ${distintos} código(s) de beneficio distinto(s) entre las que sí la"
+      echo "> tienen, pero la base quedó con ${beneficios}. Hay un error en este informe o una"
+      echo "> lectura que cargó a medias; no se puede leer como evidencia hasta resolverlo."
       echo
     fi
     echo "## Incidencias que abrió la corrida"

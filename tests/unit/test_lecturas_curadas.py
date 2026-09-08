@@ -171,10 +171,24 @@ def test_ninguna_cita_se_come_a_otra_de_la_misma_lectura(lectura: dict) -> None:
     assert engullidas == []
 
 
-def test_ningun_codigo_de_beneficio_se_repite_entre_lecturas() -> None:
-    """Dos lecturas con el mismo código serían el mismo beneficio en la base, y
-    la segunda pisaría a la primera sin que nadie se entere."""
-    codigos = collections.Counter(
-        json.loads(ruta.read_text(encoding="utf-8"))["beneficio"]["codigo"] for ruta in LECTURAS
-    )
-    assert [c for c, n in codigos.items() if n > 1] == []
+def test_un_beneficio_repetido_es_otra_norma_y_no_otra_lectura_de_la_misma() -> None:
+    """Un beneficio puede estar leído desde más de una norma.
+
+    La que lo crea y la que después le sustituye artículos hablan del mismo
+    beneficio, y separarlo en dos códigos diría que hay dos becas donde hay una.
+    Lo que no puede pasar es que dos lecturas del mismo código lean la misma
+    norma: ahí sí una pisa a la otra sin que nadie se entere.
+    """
+    por_codigo: dict[str, list[tuple[str, str]]] = {}
+    for ruta in LECTURAS:
+        lectura = json.loads(ruta.read_text(encoding="utf-8"))
+        por_codigo.setdefault(lectura["beneficio"]["codigo"], []).append(
+            (lectura["norma"]["external_id"], lectura["norma"].get("rol", "CREA"))
+        )
+    for codigo, lecturas in por_codigo.items():
+        externos = [e for e, _ in lecturas]
+        assert len(set(externos)) == len(externos), (
+            f"{codigo} está leído dos veces desde el mismo texto: {externos}"
+        )
+        crean = [e for e, rol in lecturas if rol == "CREA"]
+        assert len(crean) <= 1, f"{codigo} dice estar creado por más de una norma: {crean}"

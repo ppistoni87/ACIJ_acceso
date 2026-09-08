@@ -593,3 +593,43 @@ justamente lo que la norma no da.
 descripción de lo que se recibe. Un monto fijo, en cambio, se rechaza con su
 motivo hasta que haya un caso real: escribir ese camino a ciegas sería adivinar
 cómo se guarda un número que después se sirve como «lo que vas a cobrar».
+
+## D-39 · Un beneficio puede estar leído desde más de una norma
+
+La beca de comedor la crea la Ordenanza 43.478 de 1989 y la Ley 547 de 2001 le
+sustituye los artículos que dicen quién accede y con qué umbral. Es la misma
+beca. Partirla en dos códigos de beneficio habría dicho que hay dos becas donde
+hay una, y descartar la ley habría dejado la lectura anclada a un texto que
+otro texto reemplazó.
+
+Que las dos lecturas compartan la versión del beneficio rompía algo que no se
+veía: la carga marca `SUPERSEDED` las reglas del beneficio que la lectura ya no
+contiene —así se retira una cita corregida— y ninguna regla de la ordenanza
+figura en el archivo de la ley. Cargar la segunda retiraba a la primera, y cuál
+sobrevivía dependía del orden alfabético de los archivos.
+
+**Consecuencia:** una lectura solo retira lo que ella misma escribió: el barrido
+se acota al texto que esa lectura cita. Dos lecturas del mismo beneficio tienen
+que leer normas distintas y solo una puede decir que lo crea, y eso se verifica
+sobre los archivos antes de tocar la base.
+
+## D-40 · Un conflicto entre dos textos del corpus se escribe, no se resuelve
+
+NormativaBA publica como texto consolidado de la Ordenanza 43.478 un artículo 16
+anterior al que la Ley 547 puso en su lugar. Los dos están en el corpus y dan
+resultados distintos para la misma familia: uno mide en «sueldos mínimos» sin
+definirlos, beca total hasta dos; el otro mide contra el sueldo del convenio de
+empleados de comercio, beca total hasta 2,5 y con más tope por cada hijo en la
+escuela pública.
+
+Elegir uno al cargar habría sido resolver una cuestión jurídica en silencio y
+con la apariencia de un dato. Cargar solo uno de los dos habría sido lo mismo
+sin dejar rastro. Descartar los dos habría borrado del corpus la única beca
+alimentaria escolar que tiene texto.
+
+**Consecuencia:** una lectura curada puede declarar un conflicto con otro texto
+del corpus. La carga verifica la cita propia como cualquier otra —un conflicto
+que apunta a un texto que no lo dice es un error de lectura y detiene la
+carga—, guarda las dos reglas con su evidencia y abre una incidencia
+`CONFLICTO_DE_FUENTES` que localiza las dos redacciones. Quién decide cuál rige
+tiene nombre: `curacion juridica`.

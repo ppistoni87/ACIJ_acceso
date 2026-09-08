@@ -375,9 +375,9 @@ que «la atención presencial de las sedes permanecerá cerrada hasta el comienz
 del nuevo periodo de inscripción». Eso es el dato de hoy. Rescatar el listado de
 una captura anterior lo presentaría como vigente.
 
-## Dieciséis beneficios curados
+## Dieciséis beneficios curados, en diecisiete lecturas
 
-La lectura jurídica vive en `docs/curaduria/`, un archivo por beneficio, y no en
+La lectura jurídica vive en `docs/curaduria/`, un archivo por lectura, y no en
 el código: se puede discutir contra la ley sin leer Python. Cada regla, cada
 plazo y cada cuantía apunta a la unidad documental que la sostiene, y el cargador
 verifica que el texto citado esté adentro de esa unidad —es lo único que una
@@ -390,6 +390,7 @@ siempre—.
 | Régimen de Becas Estudiantiles | Ley CABA 2917/2008 | 9 | 3 | 4 | fórmula sin valor |
 | Subsidio para familias en situación de calle | Decreto CABA 690/2006 | 14 | 2 | 2 | fórmula sin valor |
 | Beca de comedor, refrigerio y vianda | Ordenanza CABA 43.478 | 16 | 2 | 4 | en especie |
+| Beca de comedor, refrigerio y vianda | Ley CABA 547/2001 (modifica) | 9 | 1 | 0 | la fija la ordenanza |
 | Asignación Universal por Hijo | Ley 24.714 | 16 | 2 | 0 | fórmula sin valor |
 | Asignación por Embarazo | Ley 24.714 | 9 | 1 | 2 | fórmula sin valor |
 | Asignación por hijo (contributivo) | Ley 24.714 | 10 | 2 | 0 | fórmula sin valor |
@@ -411,6 +412,30 @@ de 2007— y el artículo 5 del Decreto 690/06 fija cuotas de cuatrocientos
 cincuenta pesos de 2006. Los montos vigentes salen de resoluciones que no están
 en el corpus. Servir esos números como «lo que vas a cobrar» sería peor que
 decir que no se sabe.
+
+**Una beca leída desde dos normas.** La beca de comedor aparece dos veces en la
+tabla y es una sola beca: la Ordenanza 43.478 la crea en 1989 y la Ley CABA 547
+le sustituye en 2001 los artículos que dicen quién accede. Partirla en dos
+códigos habría dicho que hay dos becas; quedarse con la ordenanza sola habría
+dejado la lectura anclada a un texto que otro texto reemplazó.
+
+Y las dos redacciones no dicen lo mismo. El consolidado que publica NormativaBA
+—que sigue mostrando el artículo 16 anterior a la ley— enumera causales y mide
+el ingreso en «sueldos mínimos» sin definirlos: beca total hasta dos, media beca
+hasta cuatro. La Ley 547 no enumera causales: mide el ingreso total del grupo
+familiar contra el sueldo mínimo del convenio de empleados de comercio, beca
+total hasta 2,5 y media beca hasta 3,5, con un quince por ciento más de tope por
+cada hijo que además vaya a la escuela pública y una deducción por enfermedad
+crónica de algún integrante.
+
+Para la misma familia eso puede dar becada o no becada. Cuál rige es una
+decisión jurídica y no la toma la curaduría: las dos redacciones quedan en la
+base con su cita, y la carga abre una incidencia `CONFLICTO_DE_FUENTES` que
+localiza las dos. También queda dicho lo que la ley sí resuelve y el corpus no:
+define la unidad que la ordenanza dejaba sin definir, pero es un piso de
+convenio colectivo que ninguna fuente del corpus publica, así que el parámetro
+entra sin valor y las reglas que lo usan devuelven desconocido —no «no
+calificás», sino «no se sabe»—.
 
 **Las doce prestaciones de la misma ley, curadas por separado.** La Ley 24.714
 define doce prestaciones y las doce están curadas, una por archivo. Curarla

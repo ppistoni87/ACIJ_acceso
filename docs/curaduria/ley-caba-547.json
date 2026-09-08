@@ -1,0 +1,201 @@
+{
+ "schema_version": "1.0",
+ "norma": {
+  "external_id": "normativaba:11223:original",
+  "referencia": "Ley CABA 547",
+  "rol": "MODIFICA"
+ },
+ "nota": "Lectura curada de la Ley 547, que en 2001 sustituyó los artículos 10 y 16 de la Ordenanza 43.478 —la norma que crea la beca de comedor, refrigerio y vianda— y con eso cambió quién accede y con qué umbral. Se lee sobre el mismo beneficio que la ordenanza, no sobre uno nuevo: la beca es la misma, lo que cambió es su condición de acceso. Dos cosas que esta lectura deja escritas y no resuelve. La primera es que el texto consolidado que NormativaBA publica de la Ordenanza 43.478 sigue mostrando el artículo 16 anterior a esta ley, así que el corpus tiene dos redacciones del mismo artículo diciendo cosas distintas; cuál rige es una decisión jurídica y queda como conflicto abierto, con las dos citas localizadas. La segunda es que esta ley sí define la unidad que la ordenanza dejaba sin definir —el sueldo mínimo del convenio de empleados de comercio— pero es un valor de convenio colectivo que no está en el corpus, así que el parámetro entra sin valor y las reglas que lo usan devuelven desconocido. Todo entra como candidato: nada de esto se sirve hasta que una persona con competencia jurídica lo apruebe.",
+ "beneficio": {
+  "codigo": "CABA.BECA-COMEDOR-ESCOLAR",
+  "nombre": "Beca de comedor, refrigerio y vianda",
+  "familia": "ALIMENTARIA",
+  "linea": "BECA",
+  "jurisdiccion": "AR-C",
+  "naturaleza": "PRESTACION_EN_ESPECIE",
+  "descripcion": "Beca total o media beca para afrontar los gastos de comedor, refrigerio y vianda de los alumnos que concurren a escuelas de la Ciudad. Se otorga por ciclo lectivo y la decide una Comisión de Becas que funciona en cada escuela, sobre datos declarados por el solicitante.",
+  "unidad_beneficiaria": "PERSONA",
+  "modalidad": "SERVICIO",
+  "frecuencia": "DIARIA",
+  "requiere_solicitud": true,
+  "ruta_evidencia": "articulo-1/articulo-10[sustitutivo:2]"
+ },
+ "poblaciones": [
+  {
+   "codigo": "CABA.FAMILIA-DEL-ALUMNO-COMEDOR",
+   "nombre": "Familia o persona a cargo del alumno",
+   "definicion": "Grupo familiar cuyo ingreso mensual total se compara con el tope del artículo 16 sustituido para decidir entre beca total, media beca y ninguna.",
+   "rol_persona": "GRUPO_FAMILIAR",
+   "alcance": "No es beneficiaria: es la unidad sobre la que se mide el ingreso. Quien come es el alumno. La Ley 547 lo dice más claro que la ordenanza que sustituye —«la totalidad de los ingresos mensuales del grupo familiar»— y eso importa: no es el ingreso de quien solicita, es el de todos.",
+   "ruta_evidencia": "articulo-2/articulo-16[sustitutivo:4]"
+  }
+ ],
+ "reglas": [
+  {
+   "clave": "DESAYUNO-O-MERIENDA-GRATUITO-SIN-BECA",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-1/articulo-10[sustitutivo:2]",
+   "texto_literal": "El Poder Ejecutivo brindará un servicio de desayuno o de merienda en forma indistinta y gratuita a todos los alumnos que lo consuman en las escuelas dependientes del Gobierno de la Ciudad incorporadas al respectivo programa.",
+   "descripcion": "El desayuno o la merienda es gratuito para todo alumno que lo consuma en una escuela incorporada al programa, sin beca y sin condición de ingresos.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "alumno_de_escuela_de_la_ciudad"
+   },
+   "requiere_revision": true,
+   "motivo_revision": "Es la regla que más cambia lo que alguien recibe como respuesta y la que más fácil se pierde: el desayuno o la merienda no se piden, no se becan y no miran el ingreso de nadie. La condición se escribió sobre la única cualidad que el texto exige del alumno —concurrir a una escuela de la Ciudad— y le falta la otra mitad, que la escuela esté «incorporada al respectivo programa»: eso no es una cualidad de la persona sino de la escuela, y el corpus no tiene la lista de escuelas incorporadas. Hasta que esté, la regla afirma de más para quien va a una escuela que no está en el programa."
+  },
+  {
+   "clave": "BECAS-EN-CANTIDAD-QUE-FIJA-LA-LEGISLATURA",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-1/articulo-10[sustitutivo:2]",
+   "texto_literal": "el Poder Ejecutivo otorgará becas totales o medias becas, cuyas características y cantidades fijará anualmente la Legislatura de la Ciudad",
+   "descripcion": "Las características y la cantidad de becas las fija la Legislatura cada año.",
+   "requiere_revision": true,
+   "motivo_revision": "No es una condición que cumpla una persona: es un cupo anual decidido por otro poder y fuera del corpus. Formalizarla como condición de acceso sería inventar un requisito; omitirla sería peor, porque haría creer que cumplir el artículo 16 alcanza para tener la beca cuando el número de becas del año puede no alcanzar. Queda declarada para que la respuesta no prometa lo que depende de un cupo."
+  },
+  {
+   "clave": "CENA-INCLUIDA-EN-INTERNADO-O-JARDIN-MATERNAL",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-1/articulo-10[sustitutivo:2]",
+   "texto_literal": "Para los asistentes a jardines maternales o a escuelas o colegios con régimen de internado, el beneficio que se otorgue comprenderá también el pago del gasto que insuma el servicio de cena",
+   "descripcion": "En jardines maternales y en escuelas o colegios con internado la beca cubre además la cena.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "any",
+    "args": [
+     {"schema_version": "1.0", "op": "is_true", "field": "asiste_a_jardin_maternal"},
+     {"schema_version": "1.0", "op": "is_true", "field": "asiste_a_escuela_con_internado"}
+    ]
+   },
+   "requiere_revision": true,
+   "motivo_revision": "No decide si alguien accede a la beca sino qué comidas cubre la beca que ya le corresponde, y el modelo guarda un beneficio con condiciones, no un beneficio con alcances variables. La condición está escrita sobre lo que el texto sí distingue —dónde asiste el alumno— y qué representa ese verdadero es lo que la revisión tiene que decidir: hoy leída como aplicabilidad diría que solo acceden los de internado, que es lo contrario de lo que la ley dice."
+  },
+  {
+   "clave": "BECA-TOTAL-POR-INGRESO-HASTA-2,5-SUELDOS-DE-COMERCIO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-2/articulo-16[sustitutivo:4]",
+   "texto_literal": "otorgará becas totales a los mismos cuando la totalidad de los ingresos mensuales del grupo familiar al que pertenecen no supere el equivalente al sueldo mínimo fijado en el convenio para empleados de comercio, multiplicado por 2,5.",
+   "descripcion": "Corresponde beca total cuando el ingreso mensual total del grupo familiar no supera 2,5 sueldos mínimos del convenio de empleados de comercio.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "compare",
+    "field": "ingreso_mensual_del_hogar",
+    "cmp": "<=",
+    "parameter": "CABA.SUELDO-MINIMO-CONVENIO-COMERCIO",
+    "unit": "ARS",
+    "factor": "2.5"
+   },
+   "parametros": [
+    {
+     "codigo": "CABA.SUELDO-MINIMO-CONVENIO-COMERCIO",
+     "rol": "UMBRAL"
+    }
+   ],
+   "requiere_revision": true,
+   "motivo_revision": "El umbral está definido —el sueldo mínimo del convenio de empleados de comercio— y aun así el parámetro entra sin valor: es un piso de convenio colectivo que se renegocia y que ninguna fuente del corpus publica. Es un parámetro distinto del «sueldo mínimo» de la ordenanza que esta ley sustituye, y por eso tiene código propio: unificarlos sería decidir que son lo mismo, que es justamente lo que la ordenanza no decía. Mientras no tenga valor aprobado, la regla devuelve desconocido."
+  },
+  {
+   "clave": "MEDIA-BECA-POR-INGRESO-ENTRE-2,5-Y-3,5-SUELDOS-DE-COMERCIO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-2/articulo-16[sustitutivo:4]",
+   "texto_literal": "se otorgarán medias becas cuando los referidos ingresos superen el tope establecido para las becas totales sin llegar a exceder el equivalente al sueldo mínimo fijado en el convenio para empleados de comercio, multiplicado por 3,5.",
+   "descripcion": "Corresponde media beca cuando el ingreso del grupo familiar pasa el tope de la beca total y no supera 3,5 sueldos mínimos del convenio de empleados de comercio.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "all",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "compare",
+      "field": "ingreso_mensual_del_hogar",
+      "cmp": ">",
+      "parameter": "CABA.SUELDO-MINIMO-CONVENIO-COMERCIO",
+      "unit": "ARS",
+      "factor": "2.5"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "compare",
+      "field": "ingreso_mensual_del_hogar",
+      "cmp": "<=",
+      "parameter": "CABA.SUELDO-MINIMO-CONVENIO-COMERCIO",
+      "unit": "ARS",
+      "factor": "3.5"
+     }
+    ]
+   },
+   "parametros": [
+    {
+     "codigo": "CABA.SUELDO-MINIMO-CONVENIO-COMERCIO",
+     "rol": "UMBRAL"
+    }
+   ],
+   "requiere_revision": true,
+   "motivo_revision": "El mismo parámetro sin valor, y la misma decisión de fondo que la lectura de la ordenanza dejó abierta: el modelo guarda un beneficio con condiciones y acá conviven la condición de la beca entera y la de la mitad, sin que nada en la estructura diga que dan resultados distintos. La diferencia está en la descripción y en el texto literal de cada regla. Además el tramo se escribió como «mayor que 2,5 y menor o igual que 3,5» porque el texto dice «superen el tope» y «sin llegar a exceder»: si la revisión leyera el tope de la beca total como excluyente, el borde de 2,5 cambiaría de lado."
+  },
+  {
+   "clave": "TOPE-SE-INCREMENTA-15-POR-CIENTO-POR-CADA-NIÑO-ADICIONAL",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-2/parrafo-5",
+   "texto_literal": "Cuando el grupo familiar esté integrado por más de un niño que concurra a la escuela pública, el tope de ingresos fijado para determinar la modalidad de la beca a otorgarse de conformidad a lo dispuesto en el presente artículo, se incrementará en un quince por ciento (15%) por cada niño que se sume.",
+   "descripcion": "El tope de ingresos sube un 15% por cada niño del grupo familiar que concurra a la escuela pública además del primero.",
+   "requiere_revision": true,
+   "motivo_revision": "No es una condición sobre la persona: modifica el umbral de las dos reglas anteriores. El AST del modelo compara un campo contra un parámetro y no sabe correr el parámetro según cuántos hermanos van a la escuela pública, así que formalizarla exigiría o un parámetro por cantidad de niños o un campo con el tope ya calculado, y ninguna de las dos cosas la dice la ley. Se deja escrita porque omitirla dejaría afuera a familias que la ley incluye: con dos hijos en la escuela pública el tope de la beca total no es 2,5 sueldos, es 2,875."
+  },
+  {
+   "clave": "DEDUCCION-POR-ENFERMEDAD-CRONICA-DEL-GRUPO-FAMILIAR",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-2/parrafo-6",
+   "texto_literal": "En caso que un integrante del grupo familiar se encuentre afectado por una enfermedad crónica que requiera tratamiento continuo o por períodos prolongados, los gastos derivados de dicho tratamiento podrán deducirse del monto del ingreso mensual del grupo familiar que se toma como base para el otorgamiento de becas totales y medias becas.",
+   "descripcion": "Los gastos de tratamiento de un integrante del grupo familiar con enfermedad crónica pueden deducirse del ingreso que se compara con el tope.",
+   "requiere_revision": true,
+   "motivo_revision": "Tampoco es una condición sobre la persona: cambia el número que se compara, no el umbral. Y dice «podrán deducirse», no «se deducirán», así que ni siquiera es automática. Formalizarla como si el ingreso computable fuera el ingreso menos los gastos de tratamiento convertiría una facultad de la Comisión en un derecho. Queda declarada porque una respuesta que la omita le dice «no calificás» a una familia que con la deducción sí calificaría."
+  },
+  {
+   "clave": "BECA-TOTAL-PARA-HIJO-DE-DOCENTE-A-CARGO-DEL-COMEDOR",
+   "categoria": "EXCEPCION",
+   "ruta_evidencia": "articulo-2/parrafo-7",
+   "texto_literal": "Se concederán también becas totales, con prescindencia de los ingresos del grupo familiar, cuando se trate de hijos de personal docente, en el caso en que dicho personal se encuentre a cargo de los alumnos en turno de comedor que almuercen dentro del ámbito de éste.",
+   "descripcion": "El hijo del docente que está a cargo del turno de comedor tiene beca total sin que se miren los ingresos de su familia.",
+   "requiere_revision": true,
+   "motivo_revision": "Es la única causal del artículo que expresamente prescinde del ingreso, y depende de un hecho que no es del alumno ni de su familia sino del puesto de trabajo de su madre o su padre en ese turno: que el docente esté a cargo de los alumnos que almuerzan en el comedor. El corpus no tiene ese dato ni un campo donde ponerlo. Se conserva sin condición ejecutable porque escribirla sobre «es hijo de docente» a secas ampliaría la excepción a todo el personal docente de la Ciudad.",
+   "excepcion_de": "BECA-TOTAL-POR-INGRESO-HASTA-2,5-SUELDOS-DE-COMERCIO"
+  },
+  {
+   "clave": "DATOS-POR-DECLARACION-JURADA-LEY-547",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-2/parrafo-8",
+   "texto_literal": "Los datos del solicitante, en los que se constate la situación socioeconómica familiar y particular que le permita acceder a la beca serán suministrados por declaración jurada, pudiendo la Comisión de Becas solicitar otros datos en aquellos casos en que lo considere necesario.",
+   "descripcion": "La situación socioeconómica se acredita por declaración jurada, y la Comisión de Becas puede pedir otros datos si lo considera necesario.",
+   "requiere_revision": true,
+   "motivo_revision": "No es una condición de acceso sino la vía de acreditación de todas las demás, y una que baja la barrera: la ley no pide documentación probatoria. Se conserva por la misma razón que en la ordenanza —omitida, alguien podría suponer que hay que probar los ingresos— y se declara aparte porque el texto no es el mismo: la ordenanza decía «simple declaración jurada» y esta ley dice «declaración jurada». Si esa palabra cambia algo es una lectura jurídica, no una diferencia de transcripción que se pueda unificar al cargar."
+  }
+ ],
+ "conflictos": [
+  {
+   "clave": "ARTICULO-16-CON-DOS-REDACCIONES-EN-EL-CORPUS",
+   "ruta_evidencia": "articulo-2",
+   "texto_literal": "Sustitúyese el artículo 16 de la Ordenanza N° 43.478",
+   "otra_norma": "Ordenanza CABA 43.478, texto consolidado publicado por NormativaBA (normativaba:38345:actualizado)",
+   "otra_ruta": "capitulo-VI/articulo-16",
+   "descripcion": "El artículo 16 de la Ordenanza 43.478 está en el corpus con dos redacciones que dan resultados distintos para la misma familia. La que publica NormativaBA como texto consolidado enumera causales y mide el ingreso en «sueldos mínimos» sin definirlos: beca total hasta dos, media beca hasta cuatro. La que instituye esta ley en 2001 no enumera causales: mide el ingreso total del grupo familiar contra el sueldo mínimo del convenio de empleados de comercio, beca total hasta 2,5 y media beca hasta 3,5, con un 15% más de tope por cada niño y una deducción por enfermedad crónica. Cuál rige es una decisión jurídica: el texto consolidado es posterior como publicación y anterior como redacción, y esta lectura no la toma."
+  }
+ ],
+ "campos_no_informados": [
+  {
+   "campo": "cuantias",
+   "motivo": "La ley sustituye las condiciones de acceso y no fija el valor de la ración ni el importe de la beca: sigue saliendo de la licitación de cada distrito, que no está en el corpus. Lo único que cuantifica son topes de ingreso, que son la condición y no la cuantía."
+  }
+ ],
+ "dependencias": [
+  {
+   "referencia": "Sueldo mínimo del convenio colectivo de empleados de comercio",
+   "motivo": "Es el umbral de las dos reglas que deciden entre beca total, media beca y ninguna, y es un valor de convenio colectivo que se renegocia y que ninguna fuente del corpus publica. Mientras el parámetro no tenga valor aprobado, esas reglas devuelven desconocido: no es que la familia no califique, es que no se sabe."
+  },
+  {
+   "referencia": "Ordenanza CABA 45.518",
+   "motivo": "Esta ley cita los artículos que sustituye «texto conforme» a los artículos 12 y 14 de la Ordenanza 45.518, que no está en el corpus. Sin ella no se puede reconstruir por qué camino llegó el artículo 16 a la redacción que esta ley reemplaza, que es parte de lo que hace falta para resolver el conflicto de redacciones."
+  }
+ ]
+}
