@@ -1,0 +1,385 @@
+{
+ "schema_version": "1.0",
+ "norma": {
+  "external_id": "normativaba:38345:actualizado",
+  "referencia": "Ordenanza CABA 43.478",
+  "rol": "CREA"
+ },
+ "nota": "Lectura curada de la beca de comedor, refrigerio y vianda de la Ordenanza 43.478. Es una norma de 1989 con texto consolidado, y eso se nota en los umbrales: las causales del artículo 16 se miden en «sueldos mínimos», una unidad que la ordenanza no define y que hoy no tiene un referente obvio. Curarla sin decirlo habría convertido una duda de identidad del parámetro en un criterio de acceso. Todo entra como candidato: nada de esto se sirve hasta que una persona con competencia jurídica lo apruebe.",
+ "beneficio": {
+  "codigo": "CABA.BECA-COMEDOR-ESCOLAR",
+  "nombre": "Beca de comedor, refrigerio y vianda",
+  "familia": "ALIMENTARIA",
+  "linea": "BECA",
+  "jurisdiccion": "AR-C",
+  "naturaleza": "PRESTACION_EN_ESPECIE",
+  "descripcion": "Beca total o media beca para afrontar los gastos de comedor, refrigerio y vianda de los alumnos que concurren a escuelas de la Ciudad. Se otorga por ciclo lectivo y la decide una Comisión de Becas que funciona en cada escuela, sobre datos declarados por el solicitante.",
+  "unidad_beneficiaria": "PERSONA",
+  "modalidad": "SERVICIO",
+  "frecuencia": "DIARIA",
+  "requiere_solicitud": true,
+  "ruta_evidencia": "capitulo-VI/articulo-10"
+ },
+ "poblaciones": [
+  {
+   "codigo": "CABA.ALUMNO-DE-ESCUELA-DE-LA-COMUNA",
+   "nombre": "Alumnos de escuelas dependientes de la Ciudad",
+   "definicion": "Alumnos que concurren a las escuelas dependientes de la comuna y usan el servicio de comedor, refrigerio o vianda.",
+   "rol_persona": "TITULAR",
+   "alcance": "La beca es del alumno y se presta como servicio, no como dinero: quien la recibe come. Las condiciones del artículo 16, en cambio, se miden casi todas sobre su familia.",
+   "ruta_evidencia": "capitulo-VI/articulo-10"
+  },
+  {
+   "codigo": "CABA.FAMILIA-DEL-ALUMNO-COMEDOR",
+   "nombre": "Familia o persona a cargo del alumno",
+   "definicion": "Grupo cuyo ingreso mensual, composición y situación se ponderan en las causales del artículo 16 para otorgar beca total o media beca.",
+   "rol_persona": "GRUPO_FAMILIAR",
+   "alcance": "No es beneficiaria: es la unidad sobre la que se miden los ingresos. Quien come es el alumno.",
+   "ruta_evidencia": "capitulo-VI/articulo-16/parrafo-40"
+  }
+ ],
+ "reglas": [
+  {
+   "clave": "ALUMNO-DE-ESCUELA-DE-LA-COMUNA",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "capitulo-VI/articulo-10",
+   "texto_literal": "El Departamento Ejecutivo otorgará a los alumnos que concurran a las escuelas dependientes de la comuna, becas totales o medias becas para afrontar los gastos de Comedor, Refrigerio y Vianda,",
+   "descripcion": "Concurrir a una escuela dependiente de la Ciudad.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "alumno_de_escuela_de_la_ciudad"
+   }
+  },
+  {
+   "clave": "BECA-TOTAL-POR-PROGRAMA-ALIMENTARIO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "capitulo-VI/articulo-16/parrafo-39",
+   "texto_literal": "A los alumnos, que sean hijos de beneficiarios de Programas Alimentarlos Nacionales, Provinciales o Municipales.",
+   "descripcion": "Corresponde beca total al alumno hijo de beneficiarios de programas alimentarios nacionales, provinciales o municipales.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "hogar_percibe_programa_alimentario"
+   }
+  },
+  {
+   "clave": "BECA-TOTAL-POR-INGRESO-HASTA-DOS-SUELDOS",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "capitulo-VI/articulo-16/parrafo-40",
+   "texto_literal": "Alumnos cuyas familias tengan ingresos hasta dos (2) sueldos mínimos.",
+   "descripcion": "Corresponde beca total al alumno cuya familia tiene ingresos de hasta dos sueldos mínimos.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "compare",
+    "field": "ingreso_mensual_del_hogar",
+    "cmp": "<=",
+    "parameter": "CABA.SUELDO-MINIMO",
+    "unit": "ARS",
+    "factor": "2"
+   },
+   "parametros": [
+    {
+     "codigo": "CABA.SUELDO-MINIMO",
+     "rol": "UMBRAL"
+    }
+   ],
+   "requiere_revision": true,
+   "motivo_revision": "«Sueldo mínimo» no está definido en la ordenanza. En 1989 la Municipalidad tenía su propio sueldo mínimo, distinto del salario mínimo, vital y móvil nacional; hoy el primero no existe con ese nombre. Se creó un parámetro propio en vez de apuntar al SMVM: mapearlos sería decidir, sin que lo diga ninguna norma, cuál es el umbral que separa a quien come gratis de quien paga media ración. Mientras el parámetro no tenga valor aprobado, la regla devuelve desconocido."
+  },
+  {
+   "clave": "BECA-TOTAL-POR-HOGAR-MONOPARENTAL",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "capitulo-VI/articulo-16/parrafo-40",
+   "texto_literal": "Alumnos que estén a cargo de una sola persona (padre, madre, tutor o encargado) cuyo ingreso mensual sea hasta dos (2) sueldos mínimos.",
+   "descripcion": "Corresponde beca total al alumno a cargo de una sola persona cuyo ingreso mensual llega hasta dos sueldos mínimos.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "all",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "alumno_a_cargo_de_una_sola_persona"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "compare",
+      "field": "ingreso_mensual_del_responsable",
+      "cmp": "<=",
+      "parameter": "CABA.SUELDO-MINIMO",
+      "unit": "ARS",
+      "factor": "2"
+     }
+    ]
+   },
+   "parametros": [
+    {
+     "codigo": "CABA.SUELDO-MINIMO",
+     "rol": "UMBRAL"
+    }
+   ],
+   "requiere_revision": true,
+   "motivo_revision": "Mismo parámetro sin definir que la causal anterior, y una diferencia que no hay que perder: acá el umbral se mide sobre el ingreso de la persona a cargo y allá sobre el de la familia. Unificarlos sería más prolijo y cambiaría quién entra."
+  },
+  {
+   "clave": "BECA-TOTAL-POR-EXCOMBATIENTE-DE-MALVINAS",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "capitulo-VI/articulo-16/parrafo-40",
+   "texto_literal": "Alumnos que sean hijos de ex combatientes de Malvinas. Alumnos a cargo de jubilados y/o pensionados que perciban un haber hasta dos sueldos mínimos. Alumnos cuyas familias tengan ingresos hasta dos (2) sueldos mínimos.",
+   "descripcion": "Corresponde beca total al alumno hijo de ex combatientes de Malvinas.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "alumno_hijo_de_excombatiente_de_malvinas"
+   }
+  },
+  {
+   "clave": "BECA-TOTAL-POR-JUBILADO-O-PENSIONADO-A-CARGO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "capitulo-VI/articulo-16/parrafo-40",
+   "texto_literal": "Alumnos a cargo de jubilados y/o pensionados que perciban un haber hasta dos sueldos mínimos.",
+   "descripcion": "Corresponde beca total al alumno a cargo de jubilados o pensionados cuyo haber llega hasta dos sueldos mínimos.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "all",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "alumno_a_cargo_de_jubilado_o_pensionado"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "compare",
+      "field": "haber_previsional_del_responsable",
+      "cmp": "<=",
+      "parameter": "CABA.SUELDO-MINIMO",
+      "unit": "ARS",
+      "factor": "2"
+     }
+    ]
+   },
+   "parametros": [
+    {
+     "codigo": "CABA.SUELDO-MINIMO",
+     "rol": "UMBRAL"
+    }
+   ],
+   "requiere_revision": true,
+   "motivo_revision": "El mismo parámetro sin definir. Además el texto dice «dos sueldos mínimos» sin el número entre paréntesis que sí usa en las otras causales: es la misma cifra, y se deja anotado porque en una norma consolidada de 1989 una diferencia de redacción puede ser un error de transcripción o una diferencia real."
+  },
+  {
+   "clave": "MEDIA-BECA-POR-INGRESO-HASTA-CUATRO-SUELDOS",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "capitulo-VI/articulo-16/parrafo-42",
+   "texto_literal": "Alumnos cuyas familias perciban un haber hasta cuatro (4) sueldos mínimos. Alumnos que provengan de familias numerosas, con hermanos en edad escolar cuando hicieran uso del comedor dos o más hermanos. Alumnos discapacitados o bajo tratamiento médico prolongado. Alumnos hijos de personal docente o no docente de la Escuela.",
+   "descripcion": "Corresponde media beca al alumno cuya familia percibe un haber de hasta cuatro sueldos mínimos.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "compare",
+    "field": "ingreso_mensual_del_hogar",
+    "cmp": "<=",
+    "parameter": "CABA.SUELDO-MINIMO",
+    "unit": "ARS",
+    "factor": "4"
+   },
+   "parametros": [
+    {
+     "codigo": "CABA.SUELDO-MINIMO",
+     "rol": "UMBRAL"
+    }
+   ],
+   "requiere_revision": true,
+   "motivo_revision": "El mismo parámetro sin definir. Y el modelo guarda un beneficio con condiciones, no dos niveles del mismo beneficio: esta regla y las de beca total conviven en la misma lista sin que nada diga que una da el cien por ciento y otra la mitad. Cómo se representa esa diferencia es lo que la revisión tiene que decidir; mientras tanto está en la descripción de cada regla y en el texto literal."
+  },
+  {
+   "clave": "MEDIA-BECA-POR-FAMILIA-NUMEROSA",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "capitulo-VI/articulo-16/parrafo-42",
+   "texto_literal": "Alumnos que provengan de familias numerosas, con hermanos en edad escolar cuando hicieran uso del comedor dos o más hermanos.",
+   "descripcion": "Corresponde media beca al alumno de familia numerosa cuando dos o más hermanos en edad escolar usan el comedor.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "compare",
+    "field": "hermanos_en_edad_escolar_que_usan_el_comedor",
+    "cmp": ">=",
+    "value": 2,
+    "unit": "cantidad"
+   },
+   "requiere_revision": true,
+   "motivo_revision": "La causal pide dos cosas —familia numerosa y dos o más hermanos usando el comedor— y no define «numerosa». Se formalizó la parte que el texto sí cuantifica; tomar «numerosa» como sinónimo de «dos o más hermanos» es una lectura posible y no la única."
+  },
+  {
+   "clave": "MEDIA-BECA-POR-DISCAPACIDAD-O-TRATAMIENTO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "capitulo-VI/articulo-16/parrafo-42",
+   "texto_literal": "Alumnos discapacitados o bajo tratamiento médico prolongado. Alumnos hijos de personal docente o no docente de la Escuela.",
+   "descripcion": "Corresponde media beca al alumno con discapacidad o bajo tratamiento médico prolongado.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "any",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "alumno_con_discapacidad"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "alumno_bajo_tratamiento_medico_prolongado"
+     }
+    ]
+   }
+  },
+  {
+   "clave": "MEDIA-BECA-POR-HIJO-DE-PERSONAL-DE-LA-ESCUELA",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "capitulo-VI/articulo-16/parrafo-42",
+   "texto_literal": "Alumnos hijos de personal docente o no docente de la Escuela.",
+   "descripcion": "Corresponde media beca al alumno hijo de personal docente o no docente de la escuela.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "alumno_hijo_de_personal_de_la_escuela"
+   }
+  },
+  {
+   "clave": "SE-OTORGA-EL-MAYOR-BENEFICIO",
+   "categoria": "PRIORIDAD",
+   "ruta_evidencia": "capitulo-VI/articulo-17",
+   "texto_literal": "Art. 17. Cuando el solicitante estuviese incluido en más de una de las causales mencionadas en el artículo anterior se procederá simplemente otorgando el mayor beneficio.",
+   "descripcion": "Cuando el solicitante entra en más de una causal, se otorga el mayor beneficio.",
+   "requiere_revision": true,
+   "motivo_revision": "Es la regla que resuelve la concurrencia de causales y no se puede escribir como condición sobre la persona: no dice si alguien accede, dice cuál de dos resultados se elige. Formalizarla necesita que el modelo distinga beca total de media beca, que es la decisión de fondo que esta lectura deja abierta."
+  },
+  {
+   "clave": "DATOS-POR-DECLARACION-JURADA",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "capitulo-VI/articulo-16/parrafo-43",
+   "texto_literal": "Los datos del solicitante, en los que se constata la situación socioeconómica familiar o particular, que le permita acceder a la beca serán suministrados por simple �declaración Jurada�, pudiendo la Comisión de Becas solicitar otros datos en aquellos casos en que lo considere necesario.",
+   "descripcion": "La situación socioeconómica se acredita por simple declaración jurada, y la Comisión de Becas puede pedir otros datos si lo considera necesario.",
+   "requiere_revision": true,
+   "motivo_revision": "No es una condición de acceso sino la vía de acreditación de todas las demás, y una vía que baja la barrera en vez de subirla: la ordenanza no pide documentación probatoria. Formalizarla como requisito la convertiría en un trámite más. Queda declarada porque, omitida, alguien podría suponer que hay que probar los ingresos."
+  },
+  {
+   "clave": "CASOS-NO-PREVISTOS-CON-CONFORMIDAD-DEL-DICOES",
+   "categoria": "EXCEPCION",
+   "ruta_evidencia": "capitulo-VI/articulo-21",
+   "texto_literal": "Art. 21. La Comisión de Becas a pedido del solicitante podrá otorgar beca total o media beca en casos no incluidos el Art. 16. Para estos casos se requerirá, la conformidad del DICOES.",
+   "descripcion": "La Comisión de Becas puede otorgar beca total o media beca en casos no incluidos en el artículo 16, con la conformidad del DICOES.",
+   "requiere_revision": true,
+   "motivo_revision": "Es la válvula de la ordenanza: no cumplir ninguna causal del artículo 16 no cierra la puerta. No se formaliza porque depende de una decisión discrecional de la Comisión y de la conformidad de otro organismo, y un AST que devolviera verdadero haría creer que la beca está garantizada. Omitirla sería peor: la lectura diría que fuera del artículo 16 no hay nada, y el texto dice lo contrario.",
+   "excepcion_de": "BECA-TOTAL-POR-INGRESO-HASTA-DOS-SUELDOS"
+  },
+  {
+   "clave": "PEDIDO-DEL-DOCENTE-POR-RIESGO-SOCIAL",
+   "categoria": "SALVAGUARDA",
+   "ruta_evidencia": "capitulo-VI/articulo-22",
+   "texto_literal": "Art. 22. los docentes de grado podrán solicitar becas a la Comisión en aquellos casos de alumnos en situación de riesgo social y que por sí o por falta de responsable no la hayan solicitado.",
+   "descripcion": "Los docentes de grado pueden pedir la beca para alumnos en situación de riesgo social que no la solicitaron por sí o por falta de responsable.",
+   "requiere_revision": true,
+   "motivo_revision": "Es la salvaguarda que hace que la falta de solicitud no equivalga a la falta de necesidad: un chico sin adulto que le tramite la beca no queda afuera. No es una condición que cumpla el alumno sino una facultad del docente, así que no se formaliza; se conserva porque una lectura que la omita responde «hay que solicitarla» a quien no tiene quién la solicite."
+  },
+  {
+   "clave": "PRIORIDAD-POR-ZONA-DE-MAYOR-DEMANDA",
+   "categoria": "PRIORIDAD",
+   "ruta_evidencia": "capitulo-VI/articulo-13",
+   "texto_literal": "Art. 13. La Secretaría de Educación priorizará el otorgamiento de las bocas a las escuelas que se encuentren en zonas de mayor demanda por sus características socioeconómicas.",
+   "descripcion": "La autoridad prioriza el otorgamiento en escuelas de zonas de mayor demanda por sus características socioeconómicas.",
+   "requiere_revision": true,
+   "motivo_revision": "«Priorizará» es una preferencia en la distribución de cupos entre escuelas, no una condición del alumno. El texto se conserva como está publicado, con «las bocas» donde dice «becas»: corregir la errata haría que la cita dejara de coincidir con el texto capturado, que es lo único contra lo que se puede verificar."
+  },
+  {
+   "clave": "REVISION-POR-CAMBIO-DE-CIRCUNSTANCIAS",
+   "categoria": "REVOCACION",
+   "ruta_evidencia": "capitulo-VI/articulo-15/parrafo-36",
+   "texto_literal": "Dicha Comisión podrá reveer en cualquier momento el otorgamiento de la beca anual si se produjeran modificaciones en las circunstancias que motivaron el otorgamiento de la misma.",
+   "descripcion": "La Comisión puede revisar en cualquier momento el otorgamiento de la beca anual si cambian las circunstancias que lo motivaron.",
+   "requiere_revision": true,
+   "motivo_revision": "El texto habilita revisar y no dice qué resultado tiene la revisión: si la beca se reduce, se da de baja o se conserva hasta terminar el ciclo lectivo. Tampoco dice si el cambio de circunstancias tiene que ser informado por la familia. Clasificarla como revocación es la lectura más probable y por eso mismo hay que confirmarla: revisar y revocar no son lo mismo."
+  }
+ ],
+ "cuantia": {
+  "tipo": "ESPECIE",
+  "ruta_evidencia": "capitulo-VI/articulo-14",
+  "formula_version": "ordenanza-43478-art14@1",
+  "unidad_beneficiaria": "PERSONA",
+  "descripcion": "La prestación es el servicio de comedor, refrigerio o vianda: beca total lo cubre entero y media beca la mitad. La ordenanza no fija un importe; lo que fija es un tope relativo: el valor de la ración del alumno no becado no puede superar el del alumno becado.",
+  "requiere_revision": true,
+  "motivo_revision": "No hay monto que servir y tampoco sería lo que alguien pregunta: lo que recibe el alumno es el almuerzo. El artículo 14 fija una relación entre dos precios, no una cuantía del beneficio, y guardarla como si fuera el importe de la beca diría que la beca vale lo que cuesta una ración. El valor concreto de la ración sale de la licitación de cada distrito, que no está en el corpus."
+ },
+ "plazos": [
+  {
+   "clave": "SOLICITUD-EN-LA-INSCRIPCION",
+   "tipo": "CONVOCATORIA",
+   "ruta_evidencia": "capitulo-VI/articulo-18",
+   "texto_literal": "La solicitud de Beca se presentará en el momento de la inscripción, al finalizar el periodo escolar. La Comisión de Becas recibirá las solicitudes y elevará el pedido a !a DICOES.",
+   "cantidad": 0,
+   "unidad": "dias",
+   "tipo_dia": "NO_INFORMADO",
+   "evento_inicio": "inscripción escolar al finalizar el período escolar",
+   "requiere_revision": true,
+   "motivo_revision": "No es un plazo con duración: la ordenanza dice cuándo se presenta —en el momento de la inscripción— y no cuántos días dura la ventana. Se guarda con cantidad cero porque el modelo exige una cantidad, y eso es exactamente lo que hay que revisar: un cero acá significa «no hay duración declarada», no «vence el mismo día». El artículo 20 aclara que durante todo el ciclo lectivo se pueden pedir becas por circunstancias excepcionales, así que esta fecha no cierra la puerta."
+  },
+  {
+   "clave": "RESPUESTA-DE-LA-COMISION",
+   "tipo": "RESPUESTA_ORGANISMO",
+   "ruta_evidencia": "capitulo-VI/articulo-19",
+   "texto_literal": "La Comisión de Becas deberá expedirse en un plazo no mayor de siete (7) días corridos contados a partir del inicio del ciclo lectivo. Transcurrido el mismo, sin que mediara decisión, el solicitante podrá recurrir ante la Secretaría de Educación de la Municipalidad de la Ciudad de Buenos Aires.",
+   "cantidad": 7,
+   "unidad": "dias",
+   "tipo_dia": "CORRIDO",
+   "evento_inicio": "inicio del ciclo lectivo"
+  },
+  {
+   "clave": "RESPUESTA-A-UN-PEDIDO-EXCEPCIONAL",
+   "tipo": "RESPUESTA_ORGANISMO",
+   "ruta_evidencia": "capitulo-VI/articulo-20",
+   "texto_literal": "debiendo la Comisión expedirse, en el plazo de siete (7) días contados a partir de la presentación de la solicitud.",
+   "cantidad": 7,
+   "unidad": "dias",
+   "tipo_dia": "NO_INFORMADO",
+   "evento_inicio": "presentación de la solicitud excepcional",
+   "requiere_revision": true,
+   "motivo_revision": "Son los mismos siete días que el artículo 19 y este no dice «corridos». El artículo anterior sí lo dice, así que la omisión no parece un descuido de redacción: en una norma que distingue, suponer corridos acá acorta el plazo del organismo y suponer hábiles lo alarga. Queda no informado."
+  },
+  {
+   "clave": "APELACION-DE-LA-DENEGATORIA",
+   "tipo": "RECURSO",
+   "ruta_evidencia": "capitulo-VI/articulo-15/parrafo-35",
+   "texto_literal": "El dictamen que deniegue el pedido deberá ser fundado y notificado al interesado quien tendrá derecho a recurrir directamente por vía de apelación dentro de los diez (10) días de ser notificado ante la Secretaría de Educación de la Comuna.",
+   "cantidad": 10,
+   "unidad": "dias",
+   "tipo_dia": "NO_INFORMADO",
+   "evento_inicio": "notificación del dictamen que deniega la beca",
+   "requiere_revision": true,
+   "motivo_revision": "«Dentro de los diez (10) días de ser notificado» no dice si son corridos o hábiles, y la misma ordenanza sí lo aclara en el artículo 19. Es el plazo que corre contra quien acaba de recibir una negativa: elegir mal lo deja sin recurso. Queda no informado hasta que alguien lo decida."
+  }
+ ],
+ "campos_no_informados": [
+  {
+   "campo": "cuantias",
+   "motivo": "La ordenanza no fija el valor de la ración: sale de la licitación de cada distrito, que no está en el corpus. Lo único que fija el artículo 14 es que la ración del alumno no becado no puede costar más que la del becado, que es una relación entre precios y no una cuantía del beneficio."
+  },
+  {
+   "campo": "canales",
+   "motivo": "La solicitud se presenta ante la Comisión de Becas de cada escuela, que la ordenanza describe en su composición y no en su ubicación ni en su horario. Cuál es la escuela, dónde queda y cuándo atiende no está en esta norma."
+  }
+ ],
+ "dependencias": [
+  {
+   "referencia": "Sueldo mínimo municipal",
+   "motivo": "Es el umbral de cuatro de las causales del artículo 16 y la ordenanza no lo define. En 1989 la Municipalidad tenía su propio sueldo mínimo; hoy no existe con ese nombre y asimilarlo al salario mínimo, vital y móvil sería decidir el umbral por analogía. Mientras el parámetro no tenga valor aprobado, esas reglas devuelven desconocido."
+  },
+  {
+   "referencia": "Ley CABA 547",
+   "motivo": "Sustituye artículos de esta ordenanza. Está en el corpus y su relación con este texto consolidado —qué artículo de los citados acá quedó reemplazado por cuál— es lo que hay que resolver antes de aprobar cualquiera de estas reglas."
+  },
+  {
+   "referencia": "Pliegos y anexos de la licitación del servicio",
+   "motivo": "El artículo 4 delega en el Departamento Ejecutivo los anexos con menúes, especificaciones de alimentos y valores. De ahí sale el valor de la ración, que es lo que la beca cubre."
+  }
+ ]
+}

@@ -15,8 +15,8 @@ Generado por `scripts/corrida_limpia.sh`. La base se crea y se destruye en la
 misma corrida: si algo de acá se pudiera explicar por estado previo, no habría
 estado previo del que agarrarse.
 
-- Arranque: `2026-09-08T18:24:17+00:00`
-- Cierre: `2026-09-08T18:30:57+00:00`
+- Arranque: `2026-09-08T18:55:39+00:00`
+- Cierre: `2026-09-08T19:02:40+00:00`
 - Resultado: **completa**
 - Base: `backend_normativo_limpia`
 - Fuentes que el planificador deja pendientes al cerrar: `2`
@@ -29,7 +29,7 @@ corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
 | Paso | Duración | Última línea |
 | --- | ---: | --- |
 | migraciones | 1.3 s | INFO  [alembic.runtime.migration] Running upgrade 0006_indice_de_listado -> 0007_servibl… |
-| población completa | 397.4 s | Incidencias abiertas: 12 |
+| población completa | 418.8 s | Incidencias abiertas: 12 |
 | planificación al cierre (en seco) | 0.7 s | alguien corre el comando. |
 
 ## Con qué quedó la base
@@ -39,8 +39,8 @@ corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
 | Fuentes en el catálogo | 84 |
 | Capturas | 69 |
 | Unidades documentales | 992 |
-| Beneficios curados | 3 |
-| Incidencias abiertas | 4602 |
+| Beneficios curados | 5 |
+| Incidencias abiertas | 4610 |
 
 Las incidencias abiertas no son un fallo de la corrida: son lo que el sistema
 encontró y no resolvió solo. Una corrida limpia que no abriera ninguna estaría
@@ -137,8 +137,8 @@ convertir un acceso bloqueado en un dato inventado.
 | --- | ---: |
 | IDENTIDAD_AMBIGUA | 4492 |
 | COBERTURA_EXTRACCION | 43 |
+| DATO_FALTANTE_CRITICO | 25 |
 | VIGENCIA_INDETERMINADA | 24 |
 | ACCESO_BLOQUEADO | 17 |
-| DATO_FALTANTE_CRITICO | 17 |
 | DISCREPANCIA_NUMERACION | 5 |
 | CONFLICTO_DE_FUENTES | 4 |

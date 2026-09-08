@@ -547,33 +547,65 @@ class CuradorDeBeneficios:
         # no tiene piso: tiene una referencia a otra norma que se actualiza sola,
         # y perder ese rol al guardarla la dejaría indistinguible de un monto que
         # nadie actualiza.
+        tipo = datos["tipo"]
+        if tipo not in ("FORMULA", "ESPECIE", "NO_INFORMADO"):
+            raise LecturaInvalida(
+                f"La cuantía declara tipo {tipo!r} y el cargador sabe guardar FORMULA, ESPECIE "
+                "y NO_INFORMADO. Un tipo FIJO exige un valor y una moneda que ninguna lectura "
+                "curada trajo todavía: escribirlo sin un caso real sería adivinar cómo se "
+                "guarda un monto que después se sirve como «lo que vas a cobrar»."
+            )
+
         parametros = datos.get("parametros", ())
-        formula = {
-            "schema_version": "1.0",
-            "descripcion": datos["descripcion"],
-            "piso": [p["codigo"] for p in parametros if p.get("rol", "PISO") == "PISO"],
+        # Por cuántos se cobra no es un detalle de presentación: una asignación
+        # que se paga por cada hijo y una que se paga por hogar dan importes
+        # distintos con los mismos datos.
+        campos = {
+            "bv": version_id,
+            "e": self._evidencia(doc_version_id, unidades, datos["ruta_evidencia"]),
+            "t": tipo,
+            "ub": datos.get("unidad_beneficiaria", "HOGAR"),
+            "f": None,
+            "fv": None,
+            "esp": None,
         }
-        por_rol: dict[str, list[str]] = {}
-        for parametro in parametros:
-            por_rol.setdefault(parametro.get("rol", "PISO"), []).append(parametro["codigo"])
-        formula["parametros"] = por_rol
+        if tipo == "FORMULA":
+            # La ley describe la escala en palabras y remite el detalle a la
+            # Autoridad de Aplicación. La fórmula queda declarada con su versión
+            # y sin valor: servir el piso como «el monto» diría que todos cobran
+            # igual.
+            #
+            # Los parámetros entran con el rol que la lectura les da, no solo los
+            # de piso. Una asignación cuyo importe es «la mayor suma del inciso
+            # a) o b)» no tiene piso: tiene una referencia a otra norma que se
+            # actualiza sola, y perder ese rol al guardarla la dejaría
+            # indistinguible de un monto que nadie actualiza.
+            por_rol: dict[str, list[str]] = {}
+            for parametro in parametros:
+                por_rol.setdefault(parametro.get("rol", "PISO"), []).append(parametro["codigo"])
+            campos["f"] = json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "descripcion": datos["descripcion"],
+                    "piso": [p["codigo"] for p in parametros if p.get("rol", "PISO") == "PISO"],
+                    "parametros": por_rol,
+                },
+                ensure_ascii=False,
+            )
+            campos["fv"] = datos["formula_version"]
+        elif tipo == "ESPECIE":
+            # Lo que recibe la persona es una cosa, no un importe: un almuerzo,
+            # un pasaje, un remedio. Guardarlo como fórmula obligaría a inventar
+            # un número, y el número es justamente lo que la norma no da.
+            campos["esp"] = datos["descripcion"]
+
         cuantia_id = self.conexion.execute(
             text(
                 "INSERT INTO beneficio_cuantias (beneficio_version_id, evidencia_id, tipo, "
-                " formula_ast, formula_version, unidad_beneficiaria) "
-                "VALUES (:bv, :e, :t, CAST(:f AS jsonb), :fv, :ub) RETURNING id"
+                " formula_ast, formula_version, descripcion_especie, unidad_beneficiaria) "
+                "VALUES (:bv, :e, :t, CAST(:f AS jsonb), :fv, :esp, :ub) RETURNING id"
             ),
-            {
-                "bv": version_id,
-                "e": self._evidencia(doc_version_id, unidades, datos["ruta_evidencia"]),
-                "t": datos["tipo"],
-                "f": json.dumps(formula, ensure_ascii=False),
-                "fv": datos["formula_version"],
-                # Por cuántos se cobra no es un detalle de presentación: una
-                # asignación que se paga por cada hijo y una que se paga por
-                # hogar dan importes distintos con los mismos datos.
-                "ub": datos.get("unidad_beneficiaria", "HOGAR"),
-            },
+            campos,
         ).scalar_one()
         for parametro in datos.get("parametros", ()):
             self.conexion.execute(
