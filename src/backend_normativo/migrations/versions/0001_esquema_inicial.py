@@ -498,8 +498,11 @@ def upgrade() -> None:
         sa.Column("exclusion_reason", sa.Text(), nullable=True),
         sa.Column("responsable_rol", sa.Text(), nullable=True),
         sa.Column("alcance", sa.Text(), nullable=True),
+        sa.Column("politica_acceso", sa.String(length=64), nullable=False),
+        sa.Column("relacionadas", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column("origen", sa.Text(), nullable=True),
         sa.Column("manual_pagina", sa.Integer(), nullable=True),
+        sa.Column("origen_url_status", sa.Text(), nullable=True),
         sa.Column("tarea", sa.Text(), nullable=True),
         sa.Column("aceptacion_especifica", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column("tablas_destino", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
@@ -526,6 +529,10 @@ def upgrade() -> None:
         sa.CheckConstraint(
             "estado NOT IN ('DEGRADED','QUARANTINED','RETIRED') OR motivo_estado IS NOT NULL",
             name=op.f("ck_fuentes_estado_excepcional_con_motivo"),
+        ),
+        sa.CheckConstraint(
+            "politica_acceso IN ('PUBLIC_READ_ONLY_WITH_VALID_TLS_NO_THIRD_PARTY_KEYS', 'NO_AUTOMATION_UNTIL_IDENTIFIED_AND_PUBLIC', 'MANUAL_ONLY')",
+            name=op.f("ck_fuentes_politica_acceso_vocabulario"),
         ),
         sa.CheckConstraint(
             "prioridad IN ('P0', 'P1', 'P2', 'P3')", name=op.f("ck_fuentes_prioridad_vocabulario")

@@ -10,9 +10,25 @@ import uuid
 
 import pytest
 from sqlalchemy import Connection, text
-from sqlalchemy.exc import DBAPIError, IntegrityError
+from sqlalchemy.exc import IntegrityError
 
 pytestmark = pytest.mark.integracion
+
+POLITICA_PUBLICA = "PUBLIC_READ_ONLY_WITH_VALID_TLS_NO_THIRD_PARTY_KEYS"
+
+
+def _alta_de_fuente(conexion: Connection, source_id: str) -> str:
+    """Fuente mínima del catálogo para colgar capturas y documentos."""
+    conexion.execute(
+        text(
+            "INSERT INTO fuentes (source_id, nombre, clase, estado, access_status, "
+            "prioridad, politica_acceso) "
+            "VALUES (:sid, :nombre, 'PORTAL_NORMATIVO', 'ACTIVE', 'ACCESIBLE', 'P0', :politica) "
+            "ON CONFLICT (source_id) DO NOTHING"
+        ),
+        {"sid": source_id, "nombre": f"Fuente {source_id}", "politica": POLITICA_PUBLICA},
+    )
+    return source_id
 
 
 def _parametro(conexion: Connection, codigo: str = "SMVM") -> uuid.UUID:
@@ -28,13 +44,7 @@ def _parametro(conexion: Connection, codigo: str = "SMVM") -> uuid.UUID:
 def _evidencia(conexion: Connection, sufijo: str) -> uuid.UUID:
     """Cadena mínima fuente → captura → documento → versión → evidencia."""
     sid = f"FEV{sufijo}"
-    conexion.execute(
-        text(
-            "INSERT INTO fuentes (source_id, nombre, clase, estado, access_status, prioridad) "
-            "VALUES (:sid, :n, 'PORTAL_NORMATIVO', 'ACTIVE', 'ACCESIBLE', 'P0')"
-        ),
-        {"sid": sid, "n": f"Fuente {sid}"},
-    )
+    _alta_de_fuente(conexion, sid)
     url = conexion.execute(
         text(
             "INSERT INTO fuente_urls (source_id, url, rol, tipo_acceso) "
@@ -69,9 +79,7 @@ def _evidencia(conexion: Connection, sufijo: str) -> uuid.UUID:
         },
     ).scalar_one()
     doc = conexion.execute(
-        text(
-            "INSERT INTO documentos (source_id, tipo) VALUES (:sid, 'NORMA') RETURNING id"
-        ),
+        text("INSERT INTO documentos (source_id, tipo) VALUES (:sid, 'NORMA') RETURNING id"),
         {"sid": sid},
     ).scalar_one()
     dv = conexion.execute(
@@ -414,7 +422,7 @@ def test_informado_exige_valor_y_evidencia(conexion: Connection) -> None:
 def test_no_informado_exige_decir_que_fuentes_se_revisaron(
     conexion: Connection, viola_restriccion
 ) -> None:
-    """"No lo encontramos" solo es una afirmación si se dice dónde se buscó; no
+    """ "No lo encontramos" solo es una afirmación si se dice dónde se buscó; no
     es una prueba negativa inventada."""
     rv = conexion.execute(
         text(

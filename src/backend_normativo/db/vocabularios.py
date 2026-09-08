@@ -58,6 +58,17 @@ class ClaseFuente(StrEnum):
     OTRA = "OTRA"
 
 
+class PoliticaAcceso(StrEnum):
+    """Qué se permite hacer con una fuente. Es una política, no una capacidad
+    técnica: una fuente puede estar disponible y aun así no automatizarse."""
+
+    PUBLIC_READ_ONLY_WITH_VALID_TLS_NO_THIRD_PARTY_KEYS = (
+        "PUBLIC_READ_ONLY_WITH_VALID_TLS_NO_THIRD_PARTY_KEYS"
+    )
+    NO_AUTOMATION_UNTIL_IDENTIFIED_AND_PUBLIC = "NO_AUTOMATION_UNTIL_IDENTIFIED_AND_PUBLIC"
+    MANUAL_ONLY = "MANUAL_ONLY"
+
+
 class Prioridad(StrEnum):
     P0 = "P0"
     P1 = "P1"

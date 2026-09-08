@@ -128,3 +128,47 @@ def viola_restriccion(conexion: Connection):
                 punto.rollback()
 
     return _ctx
+
+
+POLITICA_PUBLICA = "PUBLIC_READ_ONLY_WITH_VALID_TLS_NO_THIRD_PARTY_KEYS"
+
+
+@pytest.fixture
+def crear_fuente(conexion: Connection):
+    """Alta de una fuente del catálogo con valores razonables por defecto.
+
+    `politica_acceso` no tiene valor por omisión en el esquema a propósito: una
+    fuente sin política declarada no debería existir. Acá se explicita una vez.
+    """
+
+    def _crear(
+        source_id: str,
+        *,
+        nombre: str | None = None,
+        clase: str = "PORTAL_NORMATIVO",
+        estado: str = "ACTIVE",
+        access_status: str = "ACCESIBLE",
+        prioridad: str = "P0",
+        politica_acceso: str = POLITICA_PUBLICA,
+        motivo_estado: str | None = None,
+    ) -> str:
+        conexion.execute(
+            text(
+                "INSERT INTO fuentes (source_id, nombre, clase, estado, access_status, "
+                "prioridad, politica_acceso, motivo_estado) "
+                "VALUES (:sid, :nombre, :clase, :estado, :acceso, :prioridad, :politica, :motivo)"
+            ),
+            {
+                "sid": source_id,
+                "nombre": nombre or f"Fuente {source_id}",
+                "clase": clase,
+                "estado": estado,
+                "acceso": access_status,
+                "prioridad": prioridad,
+                "politica": politica_acceso,
+                "motivo": motivo_estado,
+            },
+        )
+        return source_id
+
+    return _crear

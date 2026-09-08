@@ -26,15 +26,14 @@ INDICES_GESTIONADOS_POR_SQL = frozenset(
         "ix_unidades_documentales_fts",
         "ix_chunks_fts",
         "ix_normas_titulo_fts",
-        "ix_puntos_atencion_nombre_trgm",
     }
 )
 
 
-def include_object(objeto, nombre, tipo, reflejado, comparado_con):
-    if tipo == "index" and nombre in INDICES_GESTIONADOS_POR_SQL:
-        return False
-    return True
+def include_object(objeto, nombre, tipo, reflejado, comparado_con) -> bool:
+    """Los índices de búsqueda textual usan expresiones que el autogenerado no
+    reconstruye; sin esta exclusión propondría borrarlos en cada corrida."""
+    return not (tipo == "index" and nombre in INDICES_GESTIONADOS_POR_SQL)
 
 
 def run_migrations_offline() -> None:

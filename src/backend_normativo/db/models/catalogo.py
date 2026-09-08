@@ -97,9 +97,17 @@ class Fuente(Base):
     exclusion_reason: Mapped[str | None] = mapped_column(Text)
     responsable_rol: Mapped[str | None] = mapped_column(Text)
     alcance: Mapped[str | None] = mapped_column(Text)
-    # Procedencia documental: página del manual y fecha de observación.
+    # Política de acceso: qué se permite hacer con esta fuente. Es distinta de
+    # `access_status`, que describe qué se pudo hacer la última vez.
+    politica_acceso: Mapped[str] = mapped_column(String(64), nullable=False)
+    # Otros IDs del catálogo con los que hay que contrastar esta fuente. No son
+    # alias ni candidatas: son relaciones de revisión que el manual declara.
+    relacionadas: Mapped[list | None] = mapped_column(JSONB)
+    # Procedencia documental: página del manual, fecha de observación y el
+    # estado de URL que el propio manifiesto declaró.
     origen: Mapped[str | None] = mapped_column(Text)
     manual_pagina: Mapped[int | None] = mapped_column(Integer)
+    origen_url_status: Mapped[str | None] = mapped_column(Text)
     tarea: Mapped[str | None] = mapped_column(Text)
     aceptacion_especifica: Mapped[list | None] = mapped_column(JSONB)
     tablas_destino: Mapped[list | None] = mapped_column(JSONB)
@@ -115,6 +123,7 @@ class Fuente(Base):
         check_vocabulario("estado", voc.EstadoFuente),
         check_vocabulario("access_status", voc.AccessStatus),
         check_vocabulario("prioridad", voc.Prioridad),
+        check_vocabulario("politica_acceso", voc.PoliticaAcceso),
         CheckConstraint("alias_of IS NULL OR alias_of <> source_id", name="sin_autoalias"),
         # Un estado de excepción exige motivo: no se degrada ni se retira una
         # fuente sin dejar por qué.

@@ -14,6 +14,23 @@ from sqlalchemy import Connection, text
 
 pytestmark = pytest.mark.integracion
 
+POLITICA_PUBLICA = "PUBLIC_READ_ONLY_WITH_VALID_TLS_NO_THIRD_PARTY_KEYS"
+
+
+def _alta_de_fuente(conexion: Connection, source_id: str) -> str:
+    """Fuente mínima del catálogo para colgar capturas y documentos."""
+    conexion.execute(
+        text(
+            "INSERT INTO fuentes (source_id, nombre, clase, estado, access_status, "
+            "prioridad, politica_acceso) "
+            "VALUES (:sid, :nombre, 'PORTAL_NORMATIVO', 'ACTIVE', 'ACCESIBLE', 'P0', :politica) "
+            "ON CONFLICT (source_id) DO NOTHING"
+        ),
+        {"sid": source_id, "nombre": f"Fuente {source_id}", "politica": POLITICA_PUBLICA},
+    )
+    return source_id
+
+
 AHORA = dt.datetime(2026, 9, 8, 12, 0, tzinfo=dt.UTC)
 
 
@@ -71,10 +88,14 @@ def test_una_version_publicada_y_vigente_es_servible(conexion: Connection) -> No
     version = _version_publicada(conexion, release=release)
     assert _motivos(conexion, version, "2026-06-15", "IDENTIFICACION") == []
 
-    servibles = conexion.execute(
-        text("SELECT registro_version_id FROM v_hechos_servibles(:f, :k, 'IDENTIFICACION')"),
-        {"f": dt.date(2026, 6, 15), "k": AHORA},
-    ).scalars().all()
+    servibles = (
+        conexion.execute(
+            text("SELECT registro_version_id FROM v_hechos_servibles(:f, :k, 'IDENTIFICACION')"),
+            {"f": dt.date(2026, 6, 15), "k": AHORA},
+        )
+        .scalars()
+        .all()
+    )
     assert version in servibles
 
 
@@ -90,9 +111,7 @@ def test_vencer_la_frescura_no_deroga_pero_sí_impide_servir(conexion: Connectio
     """Un TTL vencido no cambia el derecho: cambia lo que podemos afirmar hoy
     sin volver a verificar."""
     release = _release_publicado(conexion)
-    version = _version_publicada(
-        conexion, release=release, reverificar="2026-08-01T00:00:00+00:00"
-    )
+    version = _version_publicada(conexion, release=release, reverificar="2026-08-01T00:00:00+00:00")
     motivos = _motivos(conexion, version, "2026-06-15", "IDENTIFICACION")
     assert any("STALE_DATA" in m and "frescura" in m for m in motivos)
     # La vigencia jurídica declarada sigue intacta.
@@ -185,12 +204,7 @@ def _norma_y_documento(conexion: Connection, jurisdiccion: str) -> tuple[uuid.UU
         ),
         {"j": jurisdiccion},
     ).scalar_one()
-    conexion.execute(
-        text(
-            "INSERT INTO fuentes (source_id, nombre, clase, estado, access_status, prioridad) "
-            "VALUES ('FSRV', 'Fuente', 'PORTAL_NORMATIVO', 'ACTIVE', 'ACCESIBLE', 'P0')"
-        )
-    )
+    _alta_de_fuente(conexion, "FSRV")
     url = conexion.execute(
         text(
             "INSERT INTO fuente_urls (source_id, url, rol, tipo_acceso) "

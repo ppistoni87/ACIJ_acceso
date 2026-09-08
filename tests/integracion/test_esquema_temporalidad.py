@@ -10,6 +10,22 @@ from sqlalchemy.exc import DBAPIError, IntegrityError
 
 pytestmark = pytest.mark.integracion
 
+POLITICA_PUBLICA = "PUBLIC_READ_ONLY_WITH_VALID_TLS_NO_THIRD_PARTY_KEYS"
+
+
+def _alta_de_fuente(conexion: Connection, source_id: str) -> str:
+    """Fuente mínima del catálogo para colgar capturas y documentos."""
+    conexion.execute(
+        text(
+            "INSERT INTO fuentes (source_id, nombre, clase, estado, access_status, "
+            "prioridad, politica_acceso) "
+            "VALUES (:sid, :nombre, 'PORTAL_NORMATIVO', 'ACTIVE', 'ACCESIBLE', 'P0', :politica) "
+            "ON CONFLICT (source_id) DO NOTHING"
+        ),
+        {"sid": source_id, "nombre": f"Fuente {source_id}", "politica": POLITICA_PUBLICA},
+    )
+    return source_id
+
 
 def _crear_version(
     conexion: Connection,
@@ -197,14 +213,7 @@ def test_subtipo_no_puede_versionar_otra_entidad(
 def _preparar_documento(conexion: Connection, *, sufijo: str = "") -> uuid.UUID:
     """Crea fuente, configuración, corrida, captura, documento y una versión."""
     sid = f"FTEST{sufijo or '0'}"
-    conexion.execute(
-        text(
-            "INSERT INTO fuentes (source_id, nombre, clase, estado, access_status, prioridad) "
-            "VALUES (:sid, :nombre, 'PORTAL_NORMATIVO', 'ACTIVE', 'ACCESIBLE', 'P0') "
-            "ON CONFLICT (source_id) DO NOTHING"
-        ),
-        {"sid": sid, "nombre": f"Fuente {sid}"},
-    )
+    _alta_de_fuente(conexion, sid)
     url_id = conexion.execute(
         text(
             "INSERT INTO fuente_urls (source_id, url, rol, tipo_acceso) "

@@ -6,8 +6,6 @@ las deja de aplicar, un dato incorrecto puede llegar a una respuesta.
 
 from __future__ import annotations
 
-import uuid
-
 import pytest
 from sqlalchemy import Connection, text
 from sqlalchemy.exc import DBAPIError, IntegrityError
@@ -75,9 +73,7 @@ def test_identidad_incierta_no_ocupa_la_clave_canonica(
         ),
         {"jur": jurisdiccion_nacion},
     )
-    total = conexion.execute(
-        text("SELECT count(*) FROM normas WHERE numero = '555'")
-    ).scalar_one()
+    total = conexion.execute(text("SELECT count(*) FROM normas WHERE numero = '555'")).scalar_one()
     assert total == 2
 
 
@@ -128,33 +124,22 @@ def test_jurisdicciones_no_admiten_ciclos(
     conexion: Connection, jurisdiccion_nacion: str, jurisdiccion_caba: str
 ) -> None:
     with pytest.raises(DBAPIError, match="ciclo"):
-        conexion.execute(
-            text("UPDATE jurisdicciones SET parent_id = 'AR-C' WHERE id = 'AR'")
-        )
+        conexion.execute(text("UPDATE jurisdicciones SET parent_id = 'AR-C' WHERE id = 'AR'"))
 
 
-def test_alias_de_fuente_no_admite_ciclos(conexion: Connection) -> None:
+def test_alias_de_fuente_no_admite_ciclos(conexion: Connection, crear_fuente) -> None:
     """F17/F65 son una fuente canónica y un alias: la cadena no puede cerrarse
     sobre sí misma ni dejar de tener contenido canónico."""
     for sid in ("F17", "F65"):
-        conexion.execute(
-            text(
-                "INSERT INTO fuentes (source_id, nombre, clase, estado, access_status, prioridad) "
-                "VALUES (:sid, :nombre, 'DOCUMENTO', 'DISCOVERY', 'NO_VERIFICADO', 'P2')"
-            ),
-            {"sid": sid, "nombre": f"Fuente {sid}"},
-        )
+        crear_fuente(sid, clase="DOCUMENTO", estado="DISCOVERY", access_status="NO_VERIFICADO")
     conexion.execute(text("UPDATE fuentes SET alias_of = 'F17' WHERE source_id = 'F65'"))
     with pytest.raises(DBAPIError, match="ciclo"):
         conexion.execute(text("UPDATE fuentes SET alias_of = 'F65' WHERE source_id = 'F17'"))
 
 
-def test_fuente_no_puede_ser_alias_de_si_misma(conexion: Connection) -> None:
-    conexion.execute(
-        text(
-            "INSERT INTO fuentes (source_id, nombre, clase, estado, access_status, prioridad) "
-            "VALUES ('F01', 'InfoLEG', 'DATASET', 'DISCOVERY', 'NO_VERIFICADO', 'P0')"
-        )
+def test_fuente_no_puede_ser_alias_de_si_misma(conexion: Connection, crear_fuente) -> None:
+    crear_fuente(
+        "F01", nombre="InfoLEG", clase="DATASET", estado="DISCOVERY", access_status="NO_VERIFICADO"
     )
     with pytest.raises(IntegrityError):
         conexion.execute(text("UPDATE fuentes SET alias_of = 'F01' WHERE source_id = 'F01'"))
@@ -163,13 +148,14 @@ def test_fuente_no_puede_ser_alias_de_si_misma(conexion: Connection) -> None:
 # --- URLs --------------------------------------------------------------------
 
 
-def test_url_debe_ser_concreta_y_sin_plantilla(conexion: Connection) -> None:
+def test_url_debe_ser_concreta_y_sin_plantilla(conexion: Connection, crear_fuente) -> None:
     """Una plantilla sin resolver no es una dirección descargable."""
-    conexion.execute(
-        text(
-            "INSERT INTO fuentes (source_id, nombre, clase, estado, access_status, prioridad) "
-            "VALUES ('F02', 'Fuente', 'FICHA_TRAMITE', 'DISCOVERY', 'NO_VERIFICADO', 'P1')"
-        )
+    crear_fuente(
+        "F02",
+        clase="FICHA_TRAMITE",
+        estado="DISCOVERY",
+        access_status="NO_VERIFICADO",
+        prioridad="P1",
     )
     with pytest.raises(IntegrityError):
         conexion.execute(
@@ -181,12 +167,25 @@ def test_url_debe_ser_concreta_y_sin_plantilla(conexion: Connection) -> None:
         )
 
 
-def test_fuente_degradada_exige_motivo(conexion: Connection) -> None:
+def test_fuente_degradada_exige_motivo(
+    conexion: Connection, crear_fuente, viola_restriccion
+) -> None:
     """Una fuente no se degrada ni se retira en silencio."""
-    with pytest.raises(IntegrityError):
-        conexion.execute(
-            text(
-                "INSERT INTO fuentes (source_id, nombre, clase, estado, access_status, prioridad) "
-                "VALUES ('F03', 'Fuente', 'DIRECTORIO', 'QUARANTINED', 'BLOQUEADA', 'P1')"
-            )
+    with viola_restriccion():
+        crear_fuente(
+            "F03",
+            clase="DIRECTORIO",
+            estado="QUARANTINED",
+            access_status="BLOQUEADA",
+            prioridad="P1",
         )
+
+    # Con motivo declarado, la misma alta es válida.
+    crear_fuente(
+        "F03",
+        clase="DIRECTORIO",
+        estado="QUARANTINED",
+        access_status="BLOQUEADA",
+        prioridad="P1",
+        motivo_estado="La fuente responde 403 desde el 2026-09-01",
+    )
