@@ -146,11 +146,16 @@
   },
   "AT-022": {
    "pruebas": [
+    "tests/unit/test_pasos_pdf.py::test_at022_los_pasos_se_ordenan_por_el_numero_que_declaran",
+    "tests/unit/test_pasos_pdf.py::test_at022_un_paso_que_cruza_de_pagina_no_se_parte_en_dos",
+    "tests/unit/test_pasos_pdf.py::test_at022_los_cinco_pasos_del_instructivo_se_leen_completos",
+    "tests/unit/test_pasos_pdf.py::test_at022_lo_anterior_al_primer_rotulo_no_es_el_paso_uno",
+    "tests/unit/test_pasos_pdf.py::test_un_numero_repetido_se_reporta_en_vez_de_renumerarse",
+    "tests/unit/test_pasos_pdf.py::test_un_salto_en_la_serie_se_reporta",
     "tests/unit/test_adaptador_tramite.py::test_at022_un_paso_con_aclaraciones_no_se_convierte_en_cuatro_pasos",
     "tests/unit/test_adaptador_tramite.py::test_at022_las_aclaraciones_no_se_pierden",
     "tests/integracion/test_tramites.py::test_el_tramite_se_carga_con_sus_pasos_en_orden"
-   ],
-   "falta": "Se prueba que los pasos no se aplanen ni se ordenen por posición en el documento. El caso concreto de F54 —rótulos «Paso 1/Paso 2» en un PDF cuyo orden de lectura los pone después del texto— necesita además asociar rótulo y contenido dentro del PDF."
+   ]
   },
   "AT-023": {
    "pruebas": [

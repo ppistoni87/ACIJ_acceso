@@ -291,3 +291,20 @@ lectura, no una deducción.
 
 Sobre el PDF real esto pasó de una tabla fechada a diez de once. La restante
 queda en revisión con el motivo puesto.
+
+## D-23 · El orden de los pasos lo declara el documento, no el extractor
+
+Un instructivo numera sus pasos. Ese número es la secuencia; la posición en la
+que el extractor devuelve el texto no lo es. Si un rótulo sale después de su
+contenido y se ordena por lectura, el trámite queda invertido y alguien hace el
+paso 4 antes que el 3.
+
+**Consecuencia:** los pasos se ordenan por el número que declaran. Un paso que
+cruza de página sigue siendo el mismo paso —en el instructivo de becas el 4
+empieza en una página y su documentación necesaria está en la siguiente, sin
+rótulo propio—, y el encabezado que se repite arriba de cada página se detecta
+por repetición en vez de configurarse.
+
+Un número repetido, un salto en la serie o un paso que sólo trae una captura de
+pantalla se cargan como están y se reportan. Renumerar por orden de aparición
+inventaría una secuencia que el documento no declara.

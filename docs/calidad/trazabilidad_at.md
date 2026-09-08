@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **73**
-- Cubiertos parcialmente: **7**
+- Cubiertos por pruebas que corren: **74**
+- Cubiertos parcialmente: **6**
 - No ejecutados: **0**
-- Pruebas citadas: **219** (ejecutadas)
+- Pruebas citadas: **225** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -32,7 +32,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-019 | Prefijo PDF conocido | HU-F40 | CUBIERTO | PASSED | `test_el_prefijo_real_del_boletin_de_caba_se_repara`<br>`test_un_prefijo_de_advertencia_se_recorta_y_queda_registrado`<br>`test_un_prefijo_desmedido_no_se_repara` |
 | AT-020 | PDF página gráfica | HU-007 | CUBIERTO | PASSED | `test_una_pagina_grafica_no_vacia_el_documento`<br>`test_un_documento_sin_texto_dice_que_no_sustenta_nada`<br>`test_el_umbral_de_pagina_distingue_texto_de_folio` |
 | AT-021 | Tabla PDF y caption posterior | HU-F62 | CUBIERTO | PASSED | `test_at021_el_periodo_que_la_tabla_declara_adentro_la_fecha`<br>`test_at021_una_nota_al_pie_que_la_tabla_llama_si_la_fecha`<br>`test_at056_tres_tablas_y_tres_periodos_en_la_misma_pagina_no_se_mezclan`<br>`test_at056_un_periodo_en_un_parrafo_lejano_no_fecha_la_tabla`<br>`test_una_tabla_sin_periodo_declarado_no_lo_hereda_del_archivo`<br>`test_dos_periodos_dentro_de_la_misma_tabla_la_dejan_en_revision`<br>`test_un_rango_de_meses_conserva_los_dos_extremos`<br>`test_una_nota_al_pie_sin_marca_en_la_tabla_no_la_fecha` |
-| AT-022 | Orden de pasos Canva | HU-F54 | CUBIERTO_PARCIAL | PASSED | `test_at022_un_paso_con_aclaraciones_no_se_convierte_en_cuatro_pasos`<br>`test_at022_las_aclaraciones_no_se_pierden`<br>`test_el_tramite_se_carga_con_sus_pasos_en_orden`<br>_Falta: Se prueba que los pasos no se aplanen ni se ordenen por posición en el documento. El caso concreto de F54 —rótulos «Paso 1/Paso 2» en un PDF cuyo orden de lectura los pone después del texto— necesita además asociar rótulo y contenido dentro del PDF._ |
+| AT-022 | Orden de pasos Canva | HU-F54 | CUBIERTO | PASSED | `test_at022_los_pasos_se_ordenan_por_el_numero_que_declaran`<br>`test_at022_un_paso_que_cruza_de_pagina_no_se_parte_en_dos`<br>`test_at022_los_cinco_pasos_del_instructivo_se_leen_completos`<br>`test_at022_lo_anterior_al_primer_rotulo_no_es_el_paso_uno`<br>`test_un_numero_repetido_se_reporta_en_vez_de_renumerarse`<br>`test_un_salto_en_la_serie_se_reporta`<br>`test_at022_un_paso_con_aclaraciones_no_se_convierte_en_cuatro_pasos`<br>`test_at022_las_aclaraciones_no_se_pierden`<br>`test_el_tramite_se_carga_con_sus_pasos_en_orden` |
 | AT-023 | Artículo con sufijo | HU-008 | CUBIERTO | PASSED | `test_conserva_el_sufijo_como_parte_de_la_identidad`<br>`test_el_sufijo_del_articulo_sobrevive_a_la_extraccion` |
 | AT-024 | Artículo citado dentro de sustitución | HU-008 | CUBIERTO | PASSED | `test_un_articulo_sustituido_no_es_una_raiz`<br>`test_normativaba_no_toma_el_articulo_sustituido_como_propio`<br>`test_articulo_citado_no_colisiona_con_el_articulo_raiz` |
 | AT-025 | Encabezado no soportado | HU-008 | CUBIERTO | PASSED | `test_el_texto_no_clasificado_queda_visible`<br>`test_un_numero_que_retrocede_sin_verbo_queda_marcado_como_ambiguo` |

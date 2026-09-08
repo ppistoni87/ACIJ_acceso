@@ -295,6 +295,28 @@ consumidores» no dice si el trámite es ciudadano o institucional. Y que la fic
 esté publicada no prueba que el trámite esté tomando solicitudes hoy, así que el
 estado operativo queda `NO_INFORMADO`.
 
+## Los pasos de un instructivo en PDF
+
+El instructivo de revisión de solicitudes (F54) numera sus pasos y trae cinco.
+Se leen los cinco, en el orden que el documento declara y no en el que el
+extractor devuelve el texto: si un rótulo sale después de su contenido, ordenar
+por lectura invierte el trámite.
+
+Dos cosas del documento real que obligan a algo más que buscar «Paso N»:
+
+- **El paso 4 cruza de página.** Empieza en la página 3 y su «Documentación
+  necesaria» —el DNI, la constancia de alumno regular, los comprobantes de
+  ingresos— está en la 4, sin rótulo propio. Es el mismo paso, no uno nuevo sin
+  número.
+- **Cada página repite «Becas alimentarias» arriba y el folio abajo.** El
+  encabezado se detecta por repetición en vez de configurarse: cada instructivo
+  tiene el suyo y una lista de encabezados conocidos envejece mal.
+
+Un número repetido, un salto en la serie o un paso que sólo muestra una captura
+de pantalla no se corrigen solos: se cargan los pasos que hay y se dice cuál es
+el problema. Renumerar por orden de aparición inventaría una secuencia que el
+documento no declara.
+
 ## Páginas institucionales
 
 31 páginas de portales oficiales extraídas: cronogramas, listados de sedes,

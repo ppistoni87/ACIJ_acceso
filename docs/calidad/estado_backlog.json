@@ -231,7 +231,9 @@
     "src/backend_normativo/ingesta/adaptadores/tramite_argentina.py",
     "src/backend_normativo/curacion/tramites.py",
     "tests/unit/test_adaptador_tramite.py",
-    "tests/integracion/test_tramites.py"
+    "tests/integracion/test_tramites.py",
+    "src/backend_normativo/ingesta/adaptadores/pasos_pdf.py",
+    "tests/unit/test_pasos_pdf.py"
    ],
    "comandos": [
     "bn ingesta extraer",

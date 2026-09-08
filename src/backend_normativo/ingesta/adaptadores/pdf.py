@@ -44,6 +44,8 @@ from backend_normativo.ingesta.adaptadores.base import (
     calcular_score,
 )
 from backend_normativo.ingesta.adaptadores.fecha_documento import leer as leer_fecha
+from backend_normativo.ingesta.adaptadores.pasos_pdf import LecturaDePasos
+from backend_normativo.ingesta.adaptadores.pasos_pdf import leer as leer_pasos
 
 MAGIC = b"%PDF-"
 
@@ -133,6 +135,7 @@ class LecturaPdf:
     parrafos: list[Parrafo] = field(default_factory=list)
     paginas: list[PaginaClasificada] = field(default_factory=list)
     tablas: list[TablaUbicada] = field(default_factory=list)
+    pasos: LecturaDePasos | None = None
     reparacion: Reparacion | None = None
     avisos: list[Aviso] = field(default_factory=list)
 
@@ -179,10 +182,12 @@ def leer(datos: bytes) -> LecturaPdf:
         )
 
     partes: list[str] = []
+    lineas_por_pagina: list[list[str]] = []
     with pdfplumber.open(io.BytesIO(utiles)) as documento:
         for numero, pagina in enumerate(documento.pages, start=1):
             texto = (pagina.extract_text() or "").strip()
             partes.append(texto)
+            lineas_por_pagina.append(_lineas_de(pagina))
             lectura.paginas.append(
                 PaginaClasificada(
                     numero=numero,
@@ -191,6 +196,15 @@ def leer(datos: bytes) -> LecturaPdf:
                 )
             )
             lectura.tablas.extend(_tablas_de(pagina, numero, texto))
+
+    # Un instructivo numera sus pasos. Si los tiene, el orden lo declara él.
+    pasos = leer_pasos(lineas_por_pagina)
+    if pasos.pasos:
+        lectura.pasos = pasos
+        lectura.avisos.extend(
+            Aviso(a, tipo=TipoIncidencia.COBERTURA_EXTRACCION, severidad=Severidad.MEDIUM)
+            for a in pasos.avisos
+        )
 
     # El párrafo conserva de qué página salió: una cita a un PDF sin número de
     # página no es localizable.
@@ -233,6 +247,13 @@ def leer(datos: bytes) -> LecturaPdf:
         )
     lectura.avisos.extend(_avisos_de_tablas(lectura.tablas))
     return lectura
+
+
+def _lineas_de(pagina) -> list[str]:
+    try:
+        return [linea["text"] for linea in (pagina.extract_text_lines() or [])]
+    except Exception:  # pragma: no cover - depende del PDF
+        return []
 
 
 def _tablas_de(pagina, numero: int, texto: str) -> list[TablaUbicada]:
