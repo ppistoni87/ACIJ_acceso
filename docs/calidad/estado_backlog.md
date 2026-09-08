@@ -8,11 +8,11 @@ si una historia declara evidencia en una ruta que ya no existe.
 
 | Estado | Transversales | Por fuente |
 | --- | --- | --- |
-| NO_INICIADA | 5 | 52 |
+| NO_INICIADA | 4 | 47 |
 | BLOQUEADA | 0 | 15 |
-| EN_CURSO | 9 | 11 |
+| EN_CURSO | 9 | 16 |
 | ALIAS_REGISTRADO | 0 | 4 |
-| CERRADA | 26 | 1 |
+| CERRADA | 27 | 1 |
 
 ## Historias transversales
 
@@ -24,7 +24,7 @@ si una historia declara evidencia en una ruta que ya no existe.
 | HU-004 | Capturar originales inmutables | ingesta | P0 | CERRADA | `src/backend_normativo/ingesta/capturador.py`<br>`src/backend_normativo/ingesta/almacen.py`<br>`src/backend_normativo/ingesta/cliente.py`<br>`tests/integracion/test_captura.py`<br>`bn ingesta capturar` |
 | HU-005 | Importar datasets públicos con conciliación | ingesta | P0 | CERRADA | `src/backend_normativo/ingesta/importadores/infoleg.py`<br>`tests/integracion/test_importador_infoleg.py`<br>`bn ingesta importar-infoleg` |
 | HU-006 | Extraer páginas HTML y endpoints públicos | ingesta | P0 | CERRADA | `src/backend_normativo/ingesta/adaptadores/html.py`<br>`src/backend_normativo/ingesta/adaptadores/normativa_nacional.py`<br>`src/backend_normativo/ingesta/adaptadores/normativa_ba.py`<br>`src/backend_normativo/ingesta/adaptadores/infoleg_legacy.py`<br>`tests/unit/test_adaptadores.py`<br>`bn ingesta extraer`<br>`bn ingesta descubrir` |
-| HU-007 | Extraer PDF y anexos con control de cobertura | ingesta | P0 | NO_INICIADA | <br>_Falta: El adaptador PDF no se construyó. Afecta a D07-D09, F38, F40, F54, F62, F63 y F67, y a los casos AT-018 a AT-021, AT-056 y AT-075._ |
+| HU-007 | Extraer PDF y anexos con control de cobertura | ingesta | P0 | CERRADA | `src/backend_normativo/ingesta/adaptadores/pdf.py`<br>`tests/unit/test_adaptador_pdf.py`<br>`tests/fixtures/prefijo_boletin_caba.json`<br>`bn ingesta capturar D07 D08 D09 F38 F40 F54 F62 F63`<br>`bn ingesta extraer` |
 | HU-008 | Segmentar normativa sin perder jerarquía | curacion_juridica | P0 | CERRADA | `src/backend_normativo/curacion/segmentacion.py`<br>`tests/unit/test_segmentacion.py`<br>`bn ingesta extraer` |
 | HU-009 | Resolver identidad y versiones de normas | curacion_juridica | P0 | CERRADA | `src/backend_normativo/curacion/identidad.py`<br>`tests/integracion/test_curacion.py`<br>`tests/aceptacion/test_casos_aceptacion.py`<br>`bn curacion identidad` |
 | HU-010 | Construir relaciones normativas y resolver dependencias | curacion_juridica | P0 | CERRADA | `src/backend_normativo/curacion/citas.py`<br>`src/backend_normativo/curacion/relaciones.py`<br>`tests/unit/test_citas.py`<br>`tests/integracion/test_curacion.py`<br>`bn curacion relaciones` |
@@ -102,9 +102,9 @@ Los números salen de la base, no de una declaración.
 | HU-F35 | F35 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
 | HU-F36 | F36 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
 | HU-F37 | F37 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
-| HU-F38 | F38 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
+| HU-F38 | F38 | EN_CURSO | 1 | 1 | 1 | 180 | 0 | 0 | 0 | — |
 | HU-F39 | F39 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
-| HU-F40 | F40 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
+| HU-F40 | F40 | EN_CURSO | 1 | 1 | 1 | 228 | 0 | 0 | 0 | — |
 | HU-F41 | F41 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
 | HU-F42 | F42 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
 | HU-F43 | F43 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
@@ -118,7 +118,7 @@ Los números salen de la base, no de una declaración.
 | HU-F51 | F51 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
 | HU-F52 | F52 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
 | HU-F53 | F53 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
-| HU-F54 | F54 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
+| HU-F54 | F54 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
 | HU-F55 | F55 | ALIAS_REGISTRADO | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Alias de F24: el contenido canónico vive allí y no se duplica. La identidad se conserva igual. |
 | HU-F56 | F56 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
 | HU-F57 | F57 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
@@ -126,8 +126,8 @@ Los números salen de la base, no de una declaración.
 | HU-F59 | F59 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
 | HU-F60 | F60 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
 | HU-F61 | F61 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
-| HU-F62 | F62 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
-| HU-F63 | F63 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
+| HU-F62 | F62 | EN_CURSO | 1 | 1 | 1 | 3 | 0 | 0 | 0 | — |
+| HU-F63 | F63 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | — |
 | HU-F64 | F64 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
 | HU-F65 | F65 | ALIAS_REGISTRADO | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Alias de F17: el contenido canónico vive allí y no se duplica. La identidad se conserva igual. |
 | HU-F66 | F66 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
@@ -138,9 +138,9 @@ Los números salen de la base, no de una declaración.
 | HU-D04 | D04 | EN_CURSO | 1 | 2 | 1 | 34 | 1 | 7 | 0 | — |
 | HU-D05 | D05 | EN_CURSO | 1 | 2 | 1 | 30 | 1 | 7 | 0 | — |
 | HU-D06 | D06 | CERRADA | 1 | 2 | 1 | 98 | 1 | 7 | 1 | — |
-| HU-D07 | D07 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
-| HU-D08 | D08 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
-| HU-D09 | D09 | EN_CURSO | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
+| HU-D07 | D07 | EN_CURSO | 1 | 2 | 1 | 3 | 0 | 0 | 0 | — |
+| HU-D08 | D08 | EN_CURSO | 1 | 2 | 1 | 187 | 0 | 0 | 0 | — |
+| HU-D09 | D09 | EN_CURSO | 1 | 2 | 1 | 111 | 0 | 0 | 0 | — |
 | HU-D10 | D10 | EN_CURSO | 1 | 2 | 1 | 89 | 1 | 7 | 0 | — |
 | HU-M01 | M01 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |
 | HU-M02 | M02 | NO_INICIADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | Sin capturas: la fuente está en el catálogo y todavía no se recorrió. |

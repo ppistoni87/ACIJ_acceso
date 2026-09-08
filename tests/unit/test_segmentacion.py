@@ -236,3 +236,19 @@ def test_varios_articulos_en_una_sola_sustitucion() -> None:
     )
     assert [a.numero for a in resultado.articulos_dispositivos] == ["1", "2"]
     assert not [u for u in resultado.unidades if u.ambigua]
+
+
+def test_dos_bloques_sin_numero_no_comparten_ruta() -> None:
+    """Un PDF que encabeza dos bloques con la palabra «ANEXO» a secas produce
+    dos unidades. Si la ruta no las separa, la segunda pisa a la primera y el
+    documento pierde la mitad de su contenido sin que nadie se entere."""
+    resultado = Segmentador().segmentar(
+        _parrafos(
+            "ANEXO",
+            "Se aprueban los formularios de inscripción.",
+            "ANEXO",
+            "Se aprueba el instructivo de revisión.",
+        )
+    )
+    rutas = [u.ruta for u in resultado.unidades if u.tipo is TipoUnidad.ANEXO]
+    assert len(rutas) == len(set(rutas)), f"Rutas repetidas: {rutas}"

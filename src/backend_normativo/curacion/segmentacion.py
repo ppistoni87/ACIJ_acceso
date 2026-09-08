@@ -422,7 +422,13 @@ class Segmentador:
                     # El rol entra en la ruta: sin esto, un artículo 10 citado
                     # dentro del artículo 10 colisionaría con la raíz.
                     etiqueta += f"[{actual.rol_contenido.value.lower()}:{actual.orden}]"
-                elif actual.tipo in (TipoUnidad.PARRAFO, TipoUnidad.INCISO):
+                elif actual.tipo in (TipoUnidad.PARRAFO, TipoUnidad.INCISO) or (
+                    not actual.numero_completo
+                ):
+                    # Sin número no hay con qué distinguir dos unidades del mismo
+                    # tipo. Un PDF que encabeza dos bloques con la palabra
+                    # "ANEXO" a secas produce dos unidades y la ruta tiene que
+                    # separarlas; si no, la segunda pisa a la primera.
                     etiqueta += f"-{actual.orden}"
                 componentes.append(etiqueta)
                 cursor = actual.padre_indice

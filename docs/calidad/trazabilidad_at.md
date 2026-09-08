@@ -1,10 +1,10 @@
 # Trazabilidad de los casos de aceptación
 
 - Casos del paquete: **80**
-- Cubiertos por pruebas que corren: **51**
-- Cubiertos parcialmente: **12**
-- No ejecutados: **17**
-- Pruebas citadas: **113** (ejecutadas)
+- Cubiertos por pruebas que corren: **54**
+- Cubiertos parcialmente: **14**
+- No ejecutados: **12**
+- Pruebas citadas: **126** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -28,10 +28,10 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-015 | ZIP malicioso o sobredimensionado | HU-005 | CUBIERTO | PASSED | `test_zip_con_ruta_fuera_del_arbol_se_rechaza`<br>`test_expansion_por_encima_del_presupuesto_se_rechaza` |
 | AT-016 | Contenedor vacío | HU-F52 | NO_EJECUTADO | — | _F52 (cronograma con contenedores field-item) no está capturada: su adaptador HTML específico no se construyó en este alcance._ |
 | AT-017 | Bloque escolar oculto | HU-F27 | NO_EJECUTADO | — | _F27 (inscripción escolar con bloques d-none) no está capturada; la regla de visibilidad CSS no está implementada en el adaptador HTML._ |
-| AT-018 | PDF sin magic | HU-F40 | NO_EJECUTADO | — | _El adaptador PDF no está construido: sin él no hay validación de magic bytes que probar._ |
-| AT-019 | Prefijo PDF conocido | HU-F40 | NO_EJECUTADO | — | _El adaptador PDF no está construido: la reparación trazada de un prefijo de warning no tiene implementación que ejercer._ |
-| AT-020 | PDF página gráfica | HU-007 | NO_EJECUTADO | — | _El adaptador PDF no está construido: no hay medición de cobertura por página ni decisión de OCR._ |
-| AT-021 | Tabla PDF y caption posterior | HU-F62 | NO_EJECUTADO | — | _El adaptador PDF no está construido: no hay extracción de tablas ni asociación con su caption._ |
+| AT-018 | PDF sin magic | HU-F40 | CUBIERTO | PASSED | `test_una_pagina_de_error_con_encabezado_de_pdf_no_es_un_documento` |
+| AT-019 | Prefijo PDF conocido | HU-F40 | CUBIERTO | PASSED | `test_el_prefijo_real_del_boletin_de_caba_se_repara`<br>`test_un_prefijo_de_advertencia_se_recorta_y_queda_registrado`<br>`test_un_prefijo_desmedido_no_se_repara` |
+| AT-020 | PDF página gráfica | HU-007 | CUBIERTO | PASSED | `test_una_pagina_grafica_no_vacia_el_documento`<br>`test_un_documento_sin_texto_dice_que_no_sustenta_nada`<br>`test_el_umbral_de_pagina_distingue_texto_de_folio` |
+| AT-021 | Tabla PDF y caption posterior | HU-F62 | CUBIERTO_PARCIAL | PASSED | `test_una_tabla_sin_periodo_declarado_no_lo_hereda_del_archivo`<br>`test_un_epigrafe_posterior_no_alcanza_para_fechar_dos_tablas`<br>`test_una_tabla_con_un_solo_periodo_declarado_lo_toma`<br>_Falta: La detección de tablas la hace pdfplumber; lo que estas pruebas fijan es la decisión propia —con qué período se asocia cada tabla—, con la página como doble. Sobre el PDF real de F62 el adaptador dejó 10 tablas en revisión._ |
 | AT-022 | Orden de pasos Canva | HU-F54 | NO_EJECUTADO | — | _F54 (instructivo con rótulos Paso 1/Paso 2 fuera del orden de lectura) no está capturada._ |
 | AT-023 | Artículo con sufijo | HU-008 | CUBIERTO | PASSED | `test_conserva_el_sufijo_como_parte_de_la_identidad`<br>`test_el_sufijo_del_articulo_sobrevive_a_la_extraccion` |
 | AT-024 | Artículo citado dentro de sustitución | HU-008 | CUBIERTO | PASSED | `test_un_articulo_sustituido_no_es_una_raiz`<br>`test_normativaba_no_toma_el_articulo_sustituido_como_propio`<br>`test_articulo_citado_no_colisiona_con_el_articulo_raiz` |
@@ -66,7 +66,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-053 | Rango sin año | HU-016 | NO_EJECUTADO | — | _No hay normalizador de rangos de fecha sin año: los plazos se cargan con las fechas que la fuente declara y un rango «del 20 de diciembre al 10 de enero» sin ciclo identificable no tiene todavía dónde quedar como pendiente de contexto._ |
 | AT-054 | Último tramo salarial | HU-F12 | CUBIERTO | PASSED | `test_un_valor_de_vigencia_desconocida_no_se_publica`<br>`test_abierto_fin_no_admite_fecha_de_cierre` |
 | AT-055 | SMVM versus comercio | HU-018 | CUBIERTO | PASSED | `test_sin_valor_vigente_del_parametro_la_condicion_es_desconocida`<br>`test_el_parametro_se_resuelve_a_la_fecha_consultada` |
-| AT-056 | Períodos mixtos en PDF | HU-F62 | NO_EJECUTADO | — | _El adaptador PDF no está construido: sin extracción de tablas no hay período por tabla que normalizar._ |
+| AT-056 | Períodos mixtos en PDF | HU-F62 | CUBIERTO_PARCIAL | PASSED | `test_dos_periodos_en_la_misma_pagina_dejan_la_asociacion_en_revision`<br>`test_el_ciclo_lectivo_se_reconoce_como_periodo`<br>_Falta: Igual que AT-021: la asociación de período se verifica con un doble de página. En F62, con tres períodos y tres tablas en la misma página, ninguna se resolvió por cercanía._ |
 | AT-057 | Monto versus tope | HU-018 | CUBIERTO | PASSED | `test_at057_un_tope_es_el_limite_de_una_condicion_no_una_cuantia`<br>`test_at057_estar_bajo_el_tope_no_dice_cuanto_se_cobra`<br>`test_cuantia_no_informada_no_necesita_inventar_un_monto` |
 | AT-058 | Cambio de parámetro | HU-028 | CUBIERTO | PASSED | `test_dos_valores_aprobados_no_pueden_regir_a_la_vez`<br>`test_aprobar_una_version_reevalua_el_solapamiento`<br>`test_propagar_dos_veces_no_duplica_el_evento` |
 | AT-059 | No informado operativo | HU-F60 | NO_EJECUTADO | — | _Los canales de atención (HU-019) no están poblados: no hay importador de directorios que pueda encontrarse un literal N/A._ |
@@ -85,7 +85,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-072 | Evento repetido | HU-028 | CUBIERTO | PASSED | `test_una_entrega_exitosa_lleva_la_clave_de_idempotencia`<br>`test_propagar_dos_veces_no_duplica_el_evento`<br>`test_una_entrega_fallida_no_marca_el_evento_como_entregado` |
 | AT-073 | No proveedor Web Push | HU-028 | CUBIERTO | PASSED | `test_sin_consumidor_configurado_no_se_declara_ninguna_entrega`<br>`test_un_evento_que_agoto_los_intentos_pasa_a_la_cola_de_fallos` |
 | AT-074 | Restauración | HU-037 | NO_EJECUTADO | — | _La prueba de restauración (HU-037) exige un procedimiento de backup y un entorno aislado que este alcance no construyó._ |
-| AT-075 | Fecha de carpeta PDF | HU-F67 | CUBIERTO_PARCIAL | PASSED | `test_la_ruta_de_infoleg_distingue_original_de_actualizado`<br>_Falta: El caso de F67 es un PDF alojado en una carpeta de año viejo: sin adaptador PDF, solo se prueba que la ruta no dicta la identidad de la versión._ |
+| AT-075 | Fecha de carpeta PDF | HU-F67 | CUBIERTO_PARCIAL | PASSED | `test_la_carpeta_del_archivo_no_fecha_el_documento`<br>`test_la_ruta_de_infoleg_distingue_original_de_actualizado`<br>_Falta: El adaptador deja la fecha pendiente y lo dice; leerla del propio documento o del acto que lo aprueba todavía no está implementado._ |
 | AT-076 | Costo ausente | HU-F45 | CUBIERTO_PARCIAL | PASSED | `test_cuantia_no_informada_no_necesita_inventar_un_monto`<br>_Falta: Los trámites (HU-019) no están poblados: la ficha sin costo ni duración no tiene datos reales donde darse._ |
 | AT-077 | Formulario público sin envío | HU-F04 | CUBIERTO | PASSED | `test_no_se_guardan_cookies_ni_credenciales`<br>`test_el_planificador_ignora_lo_que_no_se_puede_pedir` |
 | AT-078 | Sustituto de otra granularidad | HU-F09 | CUBIERTO_PARCIAL | PASSED | `test_una_fuente_retirada_explica_por_que`<br>`test_el_reporte_no_confunde_fuentes_con_leyes`<br>_Falta: El caso concreto de F09 (directorio municipal caído con lista provincial disponible) no tiene fixture: se prueba la regla de que una fuente retirada explica su motivo, no la sustitución por otra granularidad._ |

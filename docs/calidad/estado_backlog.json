@@ -78,9 +78,16 @@
       ]
     },
     "HU-007": {
-      "estado": "NO_INICIADA",
-      "evidencia": [],
-      "falta": "El adaptador PDF no se construyó. Afecta a D07-D09, F38, F40, F54, F62, F63 y F67, y a los casos AT-018 a AT-021, AT-056 y AT-075."
+      "estado": "CERRADA",
+      "evidencia": [
+        "src/backend_normativo/ingesta/adaptadores/pdf.py",
+        "tests/unit/test_adaptador_pdf.py",
+        "tests/fixtures/prefijo_boletin_caba.json"
+      ],
+      "comandos": [
+        "bn ingesta capturar D07 D08 D09 F38 F40 F54 F62 F63",
+        "bn ingesta extraer"
+      ]
     },
     "HU-008": {
       "estado": "CERRADA",

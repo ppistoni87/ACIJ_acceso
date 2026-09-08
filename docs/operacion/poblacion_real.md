@@ -81,11 +81,35 @@ Los tres casos difíciles que el paquete nombra están resueltos como pide:
   encabezado dice 1621. La discrepancia se detectó como transposición de
   dígitos y quedó registrada; no se creó una norma 1261.
 
+## Documentos PDF
+
+Ocho fuentes en PDF capturadas y extraídas: D07, D08, D09, F38, F40, F54, F62 y
+F63. 712 unidades nuevas y 22 incidencias abiertas.
+
+El caso que el manual describe como «prefijo PDF conocido» no era hipotético.
+El endpoint legacy del Boletín Oficial de CABA
+(`boletinoficialpdf.buenosaires.gob.ar/util/imagen.php`) antepone 231 bytes de
+una advertencia de PHP al archivo, con `Content-Type: application/pdf`. Aparece
+igual en D08, D09 y F40. Los bytes crudos quedan intactos en la captura; la
+reparación produce un derivado y registra el desplazamiento exacto y el prefijo
+descartado. Esos 231 bytes reales están guardados como fixture.
+
+El caso de los períodos mixtos tampoco. En F62 —el PDF de montos del ciclo
+lectivo 2026— la página 4 menciona septiembre, octubre y noviembre de 2025 y
+trae tres tablas. Ninguna se resolvió por cercanía: las diez tablas del
+documento quedaron en revisión con el motivo dicho. En F40, una página con tres
+años distintos dejó su tabla en el mismo estado.
+
+F54 tiene una página de cierre gráfica: se clasificó como tal y las otras seis
+se usaron igual, sin declarar vacío el documento y sin hacerle OCR a la
+carátula.
+
 ## Lo que falta y por qué
 
 | Falta | Depende de | Afecta |
 | --- | --- | --- |
-| Textos de anexos y reglamentos en PDF | Adaptador PDF (HU-007) | D07-D09, F38, F40, F54, F62, F63, F67 |
+| Vincular el anexo D07 con su resolución D04 | Curación de identidad sobre PDF | AT-029 |
+| Fechar los documentos PDF por su contenido | Lectura de fecha en el propio documento | AT-075 |
 | Trámites, pasos y canales | Importador de trámites (HU-019) | F03, F45, F60, F61 y los casos operativos |
 | Directorios y puntos de atención | Importador de directorios (HU-020) | F05, F07, F10, F14, F20, F44 |
 | Padrón RENABAP | Importador de padrón (HU-021) | F39, AT-064 |

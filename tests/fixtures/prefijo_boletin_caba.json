@@ -1,0 +1,13 @@
+{
+ "procedencia": {
+  "fuente": "D08",
+  "url": "https://boletinoficialpdf.buenosaires.gob.ar/util/imagen.php?idf=1&idn=38345",
+  "mime_declarado": "application/pdf",
+  "sha256_captura": "d03b8f16c981350c50b69c01cf7878553b1903fab14a0cc380ba0cf2a839a174",
+  "capturado_en": "2026-09-08T03:50:53.124410+00:00",
+  "nota": "Prefijo real que el endpoint legacy del Boletín Oficial de CABA antepone al PDF. No está construido para la prueba: son los bytes que devolvió la fuente, y aparecen igual en D09 y F40."
+ },
+ "desplazamiento": 231,
+ "prefijo": "<br />\n<b>Warning</b>:  Use of undefined constant POSTGRES_VERSION - assumed 'POSTGRES_VERSION' (this will throw an Error in a future version of PHP) in <b>/opt/app-root/src/libsdin/sdin_data_access.php</b> on line <b>53</b><br />\n",
+ "magic_siguiente": "%PDF-1.5"
+}
