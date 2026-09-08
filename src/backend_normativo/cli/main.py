@@ -113,6 +113,46 @@ def ingesta_capturar(
                 typer.echo(f"    incidencia: {incidencia}")
 
 
+@ingesta.command("importar-infoleg")
+def ingesta_importar_infoleg(
+    captura: str = typer.Argument(..., help="Id de la captura del dataset F01."),
+    limite: int | None = typer.Option(None, help="Importar solo las primeras N filas."),
+) -> None:
+    """Importa el catálogo nacional de InfoLEG como metadatos.
+
+    Trabaja sobre bytes ya capturados, nunca sobre la red: la captura entra por
+    `bn ingesta capturar F01` y esto la lee del almacén por su SHA-256.
+    """
+    import uuid as _uuid
+
+    from backend_normativo.ingesta.importadores.infoleg import (
+        FormaInesperada,
+        ImportadorInfoleg,
+    )
+
+    with engine_migrador().begin() as conexion:
+        try:
+            resultado = ImportadorInfoleg(conexion).importar_desde_captura(
+                _uuid.UUID(captura), limite=limite
+            )
+        except FormaInesperada as exc:
+            raise typer.Exit(1) from exc
+    typer.echo(
+        f"Filas leídas: {resultado.filas_leidas}\n"
+        f"Normas creadas: {resultado.normas_creadas} · "
+        f"ya presentes: {resultado.normas_existentes}\n"
+        f"Sin número (S/N): {resultado.sin_numero}\n"
+        f"Identidad incierta: {resultado.sin_clave_canonica} por tipo con numeración por "
+        f"organismo · {resultado.homonimas} por clave repetida\n"
+        f"Normas conjuntas (una fila por firmante): {resultado.coemitidas} fila(s) "
+        f"plegadas en su norma\n"
+        f"Metadata-only (sin URL de texto): {resultado.sin_texto}\n"
+        f"Con texto actualizado: {resultado.con_texto_actualizado}"
+    )
+    for aviso in resultado.avisos:
+        typer.echo(f"  aviso: {aviso}")
+
+
 @ingesta.command("extraer")
 def ingesta_extraer(
     fuente: str | None = typer.Option(None, help="Limitar a una fuente."),
@@ -253,6 +293,43 @@ def calidad_cobertura(
         typer.echo(f"Reporte escrito en {salida}")
     else:
         typer.echo(texto)
+
+
+@calidad.command("trazabilidad")
+def calidad_trazabilidad(
+    salida: Path | None = typer.Option(None, help="Archivo donde escribir el reporte."),
+    formato: str = typer.Option("markdown", help="markdown o json."),
+    ejecutar: bool = typer.Option(
+        False, help="Correr las pruebas citadas además de verificar que existan."
+    ),
+) -> None:
+    """Traza los 80 casos de aceptación contra las pruebas que los ejercen."""
+    from dataclasses import asdict
+
+    from backend_normativo.calidad.trazabilidad import MapaInconsistente, construir
+    from backend_normativo.calidad.trazabilidad import formatear as formatear_trazabilidad
+
+    try:
+        reporte = construir(ejecutar=ejecutar)
+    except MapaInconsistente as exc:
+        typer.echo(str(exc))
+        raise typer.Exit(1) from exc
+    texto = (
+        json.dumps(asdict(reporte), ensure_ascii=False, indent=2)
+        if formato == "json"
+        else formatear_trazabilidad(reporte)
+    )
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto + "\n", encoding="utf-8")
+        typer.echo(
+            f"Reporte escrito en {salida} · cubiertos {reporte.cubiertos} · "
+            f"parciales {reporte.parciales} · no ejecutados {reporte.no_ejecutados}"
+        )
+    else:
+        typer.echo(texto)
+    if reporte.fallidas:
+        raise typer.Exit(1)
 
 
 @curacion.command("vigencia")
