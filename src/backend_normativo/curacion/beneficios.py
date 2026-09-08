@@ -465,6 +465,11 @@ class CuradorDeBeneficios:
         )
         retiradas = 0
         for sobrante in sobrantes:
+            if sobrante["estado_revision"] == EstadoRevision.SUPERSEDED.value:
+                # Ya se retiró en una corrida anterior. Volver a avisarlo cada vez
+                # convierte el aviso en ruido, y el aviso que importa —una regla
+                # aprobada que la lectura dejó de tener— se pierde entre ellos.
+                continue
             if sobrante["estado_revision"] != EstadoRevision.CANDIDATE.value:
                 resultado.avisos.append(
                     f"La regla «{sobrante['texto_literal'][:60]}…» ya no está en la lectura y "

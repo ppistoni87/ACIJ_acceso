@@ -1,0 +1,203 @@
+{
+ "schema_version": "1.0",
+ "norma": {
+  "external_id": "infoleg:39880:actualizado",
+  "referencia": "Ley 24.714",
+  "rol": "CREA"
+ },
+ "nota": "Lectura curada de la Asignación por Cuidado de Salud Integral, incorporada por la Ley 27.611 en 2021. Es la única prestación de esta ley que exige haber tenido derecho a otra para acceder a ella: se cobra una vez al año por cada niño o niña menor de tres años, siempre que se haya tenido derecho al cobro de la Asignación Universal por Hijo dentro del año calendario. Un beneficio condicionado a otro beneficio es una forma que el modelo no tenía, y queda declarada como tal. Todo entra como candidato.",
+ "beneficio": {
+  "codigo": "AR.CUIDADO-DE-SALUD-INTEGRAL",
+  "nombre": "Asignación por Cuidado de Salud Integral",
+  "familia": "SEGURIDAD_SOCIAL",
+  "linea": "ASIGNACION_FAMILIAR",
+  "jurisdiccion": "AR",
+  "naturaleza": "PRESTACION_MONETARIA",
+  "descripcion": "Suma de dinero que se abona una vez al año por cada niño o niña menor de tres años a cargo, siempre que se haya tenido derecho al cobro de la Asignación Universal por Hijo dentro del año calendario y se acredite el cumplimiento del plan de vacunación y control sanitario.",
+  "unidad_beneficiaria": "PERSONA",
+  "modalidad": "TRANSFERENCIA",
+  "frecuencia": "ANUAL",
+  "requiere_solicitud": true,
+  "ruta_evidencia": "articulo-14-octies"
+ },
+ "poblaciones": [
+  {
+   "codigo": "AR.TITULAR-DEL-SUBSISTEMA-NO-CONTRIBUTIVO",
+   "nombre": "Titulares del subsistema no contributivo",
+   "definicion": "Personas titulares de la Asignación Universal por Hijo y de la Asignación por Embarazo para Protección Social.",
+   "rol_persona": "TITULAR",
+   "alcance": "El artículo dice «las personas titulares comprendidas en el artículo 1° de la presente ley», que es toda la ley y no sólo el subsistema no contributivo; el requisito de haber cobrado la Asignación Universal por Hijo lo acota de hecho a este grupo. Esa tensión entre lo que dice el encabezado y lo que exige el requisito es lo primero que hay que resolver.",
+   "ruta_evidencia": "articulo-1/inciso-c-4"
+  },
+  {
+   "codigo": "AR.NINO-MENOR-DE-TRES-ANIOS",
+   "nombre": "Niño o niña menor de tres años a cargo",
+   "definicion": "Niño o niña menor de tres años de edad a cargo de la persona titular, por quien se haya tenido derecho al cobro de la Asignación Universal por Hijo dentro del año calendario.",
+   "rol_persona": "CAUSANTE",
+   "alcance": "Da lugar a la asignación y no la cobra. Sobre él se miden la edad, la vacunación y el control sanitario.",
+   "ruta_evidencia": "articulo-14-octies"
+  }
+ ],
+ "reglas": [
+  {
+   "clave": "NINO-MENOR-DE-TRES-ANIOS-A-CARGO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-14-octies",
+   "texto_literal": "por cada niño o niña menor de tres (3) años de edad que se encuentre a su cargo",
+   "descripcion": "Tener a cargo un niño o niña menor de tres años.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "all",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "compare",
+      "field": "edad_del_causante",
+      "cmp": "<",
+      "value": 3,
+      "unit": "anios_cumplidos"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "causante_a_cargo_del_titular"
+     }
+    ]
+   }
+  },
+  {
+   "clave": "HABER-TENIDO-DERECHO-A-LA-AUH-EN-EL-ANIO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-14-octies",
+   "texto_literal": "siempre que hayan tenido derecho al cobro de la prestación establecida en el inciso i) del artículo 6º de la presente dentro del año calendario",
+   "descripcion": "Haber tenido derecho al cobro de la Asignación Universal por Hijo dentro del año calendario.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "tuvo_derecho_a_la_auh_en_el_ano_calendario"
+   },
+   "requiere_revision": true,
+   "motivo_revision": "Es la única condición de esta ley que exige otro beneficio, y el texto elige con cuidado las palabras: «hayan tenido derecho al cobro», no «hayan cobrado». Alguien a quien le correspondía la Asignación Universal por Hijo y no la percibió —porque no la tramitó, porque se la liquidaron mal— tuvo el derecho igual. Escribir el campo como «cobró» invertiría el sentido y dejaría afuera justo a quien ya quedó afuera una vez. El campo guarda el derecho y no el cobro, y de cómo se determine ese derecho depende todo lo demás."
+  },
+  {
+   "clave": "VACUNACION-Y-CONTROL-SANITARIO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-14-octies",
+   "texto_literal": "siempre que acrediten el cumplimiento del plan de vacunación y control sanitario, de conformidad con los requisitos que la Administración Nacional de la Seguridad Social (ANSES) establecerá a tales efectos.",
+   "descripcion": "Acreditar el cumplimiento del plan de vacunación y del control sanitario, según los requisitos que establezca ANSES.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "causante_acredita_vacunacion_y_control_sanitario"
+   },
+   "requiere_revision": true,
+   "motivo_revision": "Los requisitos concretos los fija ANSES y no están en el corpus. Es además la misma acreditación que la Asignación Universal por Hijo pide para liberar su veinte por ciento reservado hasta los cuatro años: si es el mismo trámite o son dos, no sale de esta ley, y de eso depende que a una persona se le pida dos veces lo mismo."
+  },
+  {
+   "clave": "EXCLUSION-INFORMAL-SOBRE-EL-SMVM",
+   "categoria": "EXCLUSION",
+   "ruta_evidencia": "articulo-3/parrafo-9",
+   "texto_literal": "Quedan excluidos del beneficio previsto en el artículo 1° inciso c) de la presente los trabajadores que se desempeñen en la economía informal, que perciban una remuneración superior al salario mínimo, vital y móvil.",
+   "descripcion": "Queda excluido quien se desempeñe en la economía informal y perciba una remuneración superior al salario mínimo, vital y móvil.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "not",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "all",
+      "args": [
+       {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "titular_se_desempena_en_la_economia_informal"
+       },
+       {
+        "schema_version": "1.0",
+        "op": "compare",
+        "field": "ingreso_mensual_del_titular",
+        "cmp": ">",
+        "parameter": "AR.SMVM",
+        "unit": "ARS"
+       }
+      ]
+     }
+    ]
+   },
+   "parametros": [
+    {
+     "codigo": "AR.SMVM",
+     "rol": "UMBRAL"
+    }
+   ],
+   "requiere_revision": true,
+   "motivo_revision": "La exclusión es del inciso c) del artículo 1, el subsistema no contributivo entero. Se guarda acá porque el requisito de haber tenido derecho a la Asignación Universal por Hijo ubica a esta prestación en ese subsistema; si la revisión decide que el encabezado del artículo 14 octies la extiende a todo el artículo 1, esta exclusión deja de aplicar a la parte contributiva y hay que revisarla."
+  },
+  {
+   "clave": "INEMBARGABLE-Y-NO-REMUNERATIVA",
+   "categoria": "SALVAGUARDA",
+   "ruta_evidencia": "articulo-23",
+   "texto_literal": "Las Asignaciones Familiares dispuestas en la presente ley son inembargables, no constituyen remuneración ni están sujetas a gravámenes, atento su naturaleza jurídica, tampoco serán tenidas en cuenta para la determinación del sueldo anual complementario, ni para el pago de las indemnizaciones por despido, enfermedad, accidente o para cualquier otro efecto. No pueden ser enajenadas ni afectadas a terceros por derecho alguno.",
+   "descripcion": "La asignación es inembargable, no constituye remuneración y no puede ser enajenada ni afectada a terceros.",
+   "requiere_revision": true,
+   "motivo_revision": "Es una protección sobre lo cobrado y no una condición de acceso, así que no tiene AST."
+  }
+ ],
+ "cuantia": {
+  "tipo": "FORMULA",
+  "ruta_evidencia": "articulo-18/inciso-m-102",
+  "formula_version": "ley-24714-art18-m@1",
+  "unidad_beneficiaria": "CAUSANTE",
+  "descripcion": "La mayor suma fijada en los incisos a) o b) del artículo 18, según corresponda a hijo o a hijo con discapacidad. Es la misma remisión que usa la Asignación Universal por Hijo.",
+  "parametros": [
+   {
+    "codigo": "AR.ASIGNACION-HIJO",
+    "rol": "REFERENCIA"
+   },
+   {
+    "codigo": "AR.ASIGNACION-HIJO-DISCAPACIDAD",
+    "rol": "REFERENCIA"
+   }
+  ],
+  "requiere_revision": true,
+  "motivo_revision": "Hereda los valores de 2007 de los incisos a) y b), que no rigen: los vigentes salen de resoluciones de ANSES que no están en el corpus. Y el inciso b) se aplica «según corresponda» a hijo con discapacidad, lo que en una prestación limitada a menores de tres años convive con que la asignación por hijo con discapacidad no tenga límite de edad: si un niño de dos años con discapacidad cobra por el inciso b), no sale de este texto."
+ },
+ "plazos": [
+  {
+   "clave": "UNA-VEZ-AL-ANIO",
+   "tipo": "FECHA_PAGO",
+   "ruta_evidencia": "articulo-14-octies",
+   "texto_literal": "consistirá en el pago de una suma de dinero que se abonará una (1) vez al año a las personas titulares comprendidas en el artículo 1° de la presente ley, por cada niño o niña menor de tres (3) años de edad que se encuentre a su cargo, siempre que hayan tenido derecho al cobro de la prestación establecida en el inciso i) del artículo 6º de la presente dentro del año calendario, y siempre que acrediten el cumplimiento del plan de vacunación y control sanitario, de conformidad con los requisitos que la Administración Nacional de la Seguridad Social (ANSES) establecerá a tales efectos.",
+   "cantidad": 1,
+   "unidad": "dias",
+   "tipo_dia": "NO_INFORMADO",
+   "evento_inicio": "año calendario en que se tuvo derecho a la Asignación Universal por Hijo",
+   "requiere_revision": true,
+   "motivo_revision": "«Una vez al año» dice la frecuencia y no la fecha: la ley no dice en qué mes se paga, a diferencia de la ayuda escolar, que sí dice marzo. El modelo guarda plazos que corren desde un evento y esto es una frecuencia, así que se carga aproximado y el motivo lo dice. El año calendario importa además porque es la unidad con la que se mide el requisito de haber tenido derecho a la Asignación Universal por Hijo."
+  }
+ ],
+ "campos_no_informados": [
+  {
+   "campo": "criterios_revocacion",
+   "motivo": "La ley no declara causales de baja ni qué pasa si la vacunación se acredita después del pago. Al ser anual y por un hecho ya ocurrido —haber tenido derecho a la Asignación Universal por Hijo dentro del año—, la pregunta no es si se da de baja sino si se puede reclamar hacia atrás, y eso tampoco lo dice."
+  },
+  {
+   "campo": "canales",
+   "motivo": "El artículo remite a ANSES para los requisitos de acreditación y no dice dónde se gestiona la prestación ni si hay que solicitarla o se liquida sola con los datos que el organismo ya tiene."
+  }
+ ],
+ "dependencias": [
+  {
+   "referencia": "Requisitos de acreditación que ANSES establezca para esta asignación",
+   "motivo": "El propio artículo 14 octies los delega. Sin ellos, se sabe que hay que acreditar vacunación y control sanitario y no con qué, ni si es el mismo trámite que ya se hace para liberar el veinte por ciento reservado de la Asignación Universal por Hijo."
+  },
+  {
+   "referencia": "Resoluciones de ANSES que fijan montos de la Ley 24.714",
+   "motivo": "El inciso m) remite a los incisos a) y b), cuyos valores son de 2007. Sin la resolución vigente, la cuantía queda declarada y sin monto."
+  },
+  {
+   "referencia": "Plan de vacunación obligatorio y esquema de control sanitario",
+   "motivo": "La ley los nombra y no los define: qué vacunas y qué controles corresponden a cada edad sale del calendario nacional de vacunación, que no está en el corpus."
+  }
+ ]
+}

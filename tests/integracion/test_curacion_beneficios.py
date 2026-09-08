@@ -497,3 +497,27 @@ def test_corregir_una_cita_no_deja_atras_la_regla_vieja(
     ).one()
     assert conservada.texto_literal == original
     assert "ya no contiene esta regla" in conservada.alcance
+
+
+def test_una_regla_ya_retirada_no_se_vuelve_a_avisar(conexion: Connection, norma, tmp_path) -> None:
+    """El aviso de retiro es para la corrida que retira, no para todas las que
+    siguen.
+
+    Repetirlo cada vez lo convierte en ruido, y el aviso que importa —una regla
+    aprobada que la lectura dejó de tener— se pierde entre ellos.
+    """
+    curador = CuradorDeBeneficios(conexion)
+    curador.cargar(LECTURA)
+
+    corregida = json.loads(LECTURA.read_text())
+    original = corregida["reglas"][0]["texto_literal"]
+    corregida["reglas"][0]["texto_literal"] = original[: len(original) // 2].strip()
+    ruta = tmp_path / "corregida.json"
+    ruta.write_text(json.dumps(corregida, ensure_ascii=False), encoding="utf-8")
+
+    primera = curador.cargar(ruta)
+    assert any("SUPERSEDED" in aviso for aviso in primera.avisos)
+
+    segunda = curador.cargar(ruta)
+    assert not any("SUPERSEDED" in aviso for aviso in segunda.avisos)
+    assert not any("no se retira sola" in aviso for aviso in segunda.avisos)

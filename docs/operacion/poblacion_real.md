@@ -375,7 +375,7 @@ que «la atención presencial de las sedes permanecerá cerrada hasta el comienz
 del nuevo periodo de inscripción». Eso es el dato de hoy. Rescatar el listado de
 una captura anterior lo presentaría como vigente.
 
-## Once beneficios curados
+## Doce beneficios curados
 
 La lectura jurídica vive en `docs/curaduria/`, un archivo por beneficio, y no en
 el código: se puede discutir contra la ley sin leer Python. Cada regla, cada
@@ -397,6 +397,7 @@ siempre—.
 | Ayuda escolar anual | Ley 24.714 | 7 | 3 | 1 | fórmula sin valor |
 | Asignación por maternidad | Ley 24.714 | 7 | 1 | 0 | el propio sueldo |
 | Asignación prenatal | Ley 24.714 | 8 | 1 | 1 | fórmula sin valor |
+| Cuidado de Salud Integral | Ley 24.714 | 5 | 2 | 1 | fórmula sin valor |
 
 **Ninguna cuantía tiene monto**, y una no lo tiene por otra razón: la de
 maternidad es el propio sueldo de la persona, no una escala que alguien
@@ -407,7 +408,7 @@ cincuenta pesos de 2006. Los montos vigentes salen de resoluciones que no están
 en el corpus. Servir esos números como «lo que vas a cobrar» sería peor que
 decir que no se sabe.
 
-**Siete prestaciones de la misma ley, curadas por separado.** La Ley 24.714
+**Ocho prestaciones de la misma ley, curadas por separado.** La Ley 24.714
 regula catorce; curarla entera como un beneficio haría que las condiciones de la
 asignación por matrimonio se le aplicaran a un chico de cuatro años. La
 diferencia no es teórica:
@@ -436,7 +437,7 @@ diferencia no es teórica:
   residencia legal y solicitud desde la semana doce. Y el artículo 3 exceptúa
   del tope de ingresos a la maternidad y no a la prenatal.
 
-**Lo que las normas no resuelven queda declarado.** De las 113 reglas vigentes,
+**Lo que las normas no resuelven queda declarado.** De las 118 reglas vigentes,
 poco más de la mitad tiene condición ejecutable escrita; el resto conserva su
 texto literal y el motivo por el que no se formalizó. Tres casos que muestran
 por qué:
