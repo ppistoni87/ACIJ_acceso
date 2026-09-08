@@ -57,6 +57,70 @@ def test_toda_historia_no_cerrada_dice_que_le_falta(conexion: Connection) -> Non
     assert sin_explicacion == []
 
 
+def _repo_espejo(destino: pathlib.Path, salvo: pathlib.Path) -> pathlib.Path:
+    """Un árbol enlazado al repositorio con un solo archivo propio.
+
+    Sirve para probar qué hace el reporte con un estado distinto del real sin
+    copiar el repositorio entero ni tocar el que está en disco.
+    """
+    destino.mkdir(parents=True, exist_ok=True)
+    reales = set(salvo.parts[:-1])
+    for hijo in RAIZ.iterdir():
+        if hijo.name.startswith("."):
+            continue
+        if hijo.name not in reales:
+            (destino / hijo.name).symlink_to(hijo)
+    rama = destino
+    origen = RAIZ
+    for parte in salvo.parts[:-1]:
+        rama = rama / parte
+        origen = origen / parte
+        rama.mkdir(exist_ok=True)
+        for hijo in origen.iterdir():
+            if hijo.name in salvo.parts or (rama / hijo.name).exists():
+                continue
+            (rama / hijo.name).symlink_to(hijo)
+    return destino
+
+
+def test_toda_historia_bloqueada_dice_quien_la_desbloquea(conexion: Connection) -> None:
+    """«Bloqueada» y «no la hicimos» se leen igual si no dice a quién esperar.
+
+    Un backlog que no marca la diferencia deja que «bloqueada» se use como
+    excusa: nadie puede reclamar el desbloqueo porque no dice a quién.
+    """
+    reporte = backlog.construir(conexion, raiz=RAIZ)
+    bloqueadas = [h for h in reporte.transversales if h.estado == "BLOQUEADA"]
+    assert bloqueadas, "se esperaba al menos una historia bloqueada declarada"
+    for historia in bloqueadas:
+        assert historia.bloqueador, historia.id
+        assert historia.responsable_rol, historia.id
+        assert historia.desbloquea_con, historia.id
+
+
+def test_una_historia_bloqueada_sin_responsable_rompe_el_reporte(
+    conexion: Connection, tmp_path
+) -> None:
+    """No alcanza con pedirlo en la revisión: el reporte tiene que negarse.
+
+    Si sólo lo comprueba una prueba sobre el archivo de hoy, mañana alguien
+    declara una historia bloqueada sin responsable y el reporte la publica igual.
+    """
+    declarado = json.loads((RAIZ / backlog.RUTA_ESTADO).read_text())
+    alguna = next(hu for hu, e in declarado["transversales"].items() if e["estado"] == "BLOQUEADA")
+    declarado["transversales"][alguna].pop("responsable_rol")
+
+    # La evidencia se verifica contra rutas que existan, así que el árbol real se
+    # enlaza y sólo se reemplaza el archivo de estado.
+    raiz = _repo_espejo(tmp_path / "repo", backlog.RUTA_ESTADO)
+    (raiz / backlog.RUTA_ESTADO).write_text(
+        json.dumps(declarado, ensure_ascii=False), encoding="utf-8"
+    )
+
+    with pytest.raises(backlog.EvidenciaInexistente, match="sin decir qué las bloquea"):
+        backlog.construir(conexion, raiz=raiz)
+
+
 def test_toda_fuente_detenida_dice_por_que(conexion: Connection) -> None:
     """Una fuente bloqueada sin motivo es indistinguible de una que nadie miró."""
     reporte = backlog.construir(conexion, raiz=RAIZ)

@@ -59,6 +59,12 @@ class HistoriaTransversal:
     evidencia: list[str] = field(default_factory=list)
     comandos: list[str] = field(default_factory=list)
     falta: str | None = None
+    # Una historia bloqueada tiene que decir quién la desbloquea y con qué. Sin
+    # eso, «bloqueada» es indistinguible de «no la hicimos»: las dos se leen como
+    # trabajo pendiente y sólo una está esperando a alguien.
+    bloqueador: str | None = None
+    responsable_rol: str | None = None
+    desbloquea_con: str | None = None
 
 
 @dataclass
@@ -136,9 +142,33 @@ def construir(conexion: Connection, *, raiz: pathlib.Path | None = None) -> Repo
                 evidencia=list(entrada.get("evidencia", ())),
                 comandos=list(entrada.get("comandos", ())),
                 falta=entrada.get("falta"),
+                bloqueador=entrada.get("bloqueador"),
+                responsable_rol=entrada.get("responsable_rol"),
+                desbloquea_con=entrada.get("desbloquea_con"),
             )
         )
+    _verificar_bloqueos(reporte.transversales)
     return reporte
+
+
+def _verificar_bloqueos(historias: list[HistoriaTransversal]) -> None:
+    """Una historia BLOQUEADA declara su bloqueador y su responsable.
+
+    Es la diferencia entre un impedimento y una tarea sin hacer. Un backlog que
+    no la marca deja que «bloqueada» se use como excusa: nadie puede reclamar el
+    desbloqueo porque no dice a quién.
+    """
+    incompletas = [
+        h.id
+        for h in historias
+        if h.estado == "BLOQUEADA" and not (h.bloqueador and h.responsable_rol)
+    ]
+    if incompletas:
+        raise EvidenciaInexistente(
+            f"Estas historias se declaran BLOQUEADA sin decir qué las bloquea y quién las "
+            f"desbloquea: {incompletas}. Una historia bloqueada sin responsable es una "
+            "historia sin hacer con mejor nombre."
+        )
 
 
 def _metricas_por_fuente(conexion: Connection) -> dict[str, dict]:
@@ -300,6 +330,12 @@ def formatear(reporte: ReporteBacklog) -> str:
             evidencia += "<br>" + "<br>".join(f"`{c}`" for c in h.comandos)
         if h.falta:
             evidencia += f"<br>_Falta: {h.falta}_"
+        if h.bloqueador:
+            evidencia += f"<br>**Bloqueador:** {h.bloqueador}"
+        if h.responsable_rol:
+            evidencia += f"<br>**Quién lo desbloquea:** {h.responsable_rol}"
+        if h.desbloquea_con:
+            evidencia += f"<br>**Con qué se desbloquea:** {h.desbloquea_con}"
         lineas.append(
             f"| {h.id} | {h.titulo} | {h.capacidad} | {h.prioridad} | {h.estado} | {evidencia} |"
         )
