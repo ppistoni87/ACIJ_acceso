@@ -82,6 +82,30 @@ que se cargue el año siguiente: extrapolar feriados es inventarlos.
 La fuente del calendario (`C01`) es operativa, no normativa: no integra el
 inventario de 83 fuentes del corpus.
 
+## 4ter. Fuentes que no se pueden recorrer
+
+```bash
+bn ingesta bloqueadas
+bn ingesta cargar-manual M05 archivo.pdf \
+    --actor "ingesta:persona" \
+    --procedencia "Copia entregada por Legales el 3 de marzo, expediente 123/26." \
+    --obtenido 2026-03-03
+```
+
+Diecisiete fuentes están bloqueadas: unas devuelven 403, otra tiene un
+certificado que no valida, la mayoría no tiene una URL inequívoca. Ninguna se
+resuelve rotando identidades ni desactivando TLS. Cuando alguien consigue el
+contenido por una vía legítima, entra por acá.
+
+La carga manual usa la misma cadena que una captura de red —corrida, captura
+inmutable direccionada por contenido, y de ahí documentos y evidencia— y exige
+declarar **quién** la cargó, **de dónde** la obtuvo y **cuándo**. Sin eso no
+carga: un archivo sin procedencia es indistinguible de uno inventado.
+
+La fuente queda en `MANUAL`, no en `ACTIVE`. Que alguien haya conseguido el
+archivo no significa que el sistema pueda recorrerla, y decir lo contrario haría
+que el monitor la dé por cubierta y deje de avisar que sigue bloqueada.
+
 ## 5. Revisar y publicar
 
 ```bash

@@ -517,9 +517,11 @@
   "AT-078": {
    "pruebas": [
     "tests/integracion/test_catalogo.py::test_una_fuente_retirada_explica_por_que",
-    "tests/integracion/test_catalogo.py::test_el_reporte_no_confunde_fuentes_con_leyes"
+    "tests/integracion/test_catalogo.py::test_el_reporte_no_confunde_fuentes_con_leyes",
+    "tests/integracion/test_carga_manual.py::test_el_listado_de_bloqueadas_dice_por_que_lo_estan",
+    "tests/integracion/test_carga_manual.py::test_la_fuente_queda_manual_y_no_activa"
    ],
-   "falta": "El caso concreto de F09 (directorio municipal caído con lista provincial disponible) no tiene fixture: se prueba la regla de que una fuente retirada explica su motivo, no la sustitución por otra granularidad."
+   "falta": "El caso concreto de F09 —directorio municipal caído con lista provincial disponible— no tiene fixture: se prueba que una fuente detenida conserve su motivo y que una carga manual no la declare recorrible, no la sustitución por otra granularidad."
   },
   "AT-079": {
    "pruebas": [

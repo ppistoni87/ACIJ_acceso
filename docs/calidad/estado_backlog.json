@@ -415,13 +415,17 @@
       "falta": "El respaldo y la restauración verificada están y se corrieron sobre la base real: 22 objetos, 1 release, 6.968 evidencias y 98 fragmentos restaurados e íntegros. Falta la medición de rendimiento bajo carga."
     },
     "HU-038": {
-      "estado": "EN_CURSO",
+      "estado": "CERRADA",
       "evidencia": [
-        "src/backend_normativo/ingesta/capturador.py",
-        "src/backend_normativo/catalogo/reconciliacion.py",
+        "src/backend_normativo/ingesta/manual.py",
+        "src/backend_normativo/migrations/versions/0003_carga_manual.py",
+        "tests/integracion/test_carga_manual.py",
         "tests/integracion/test_captura.py"
       ],
-      "falta": "Una fuente bloqueada se pausa, se registra con motivo y responsable y no se convierte en «sin datos». La vía de carga manual con la misma cadena de evidencia no está implementada."
+      "comandos": [
+        "bn ingesta bloqueadas",
+        "bn ingesta cargar-manual"
+      ]
     },
     "HU-039": {
       "estado": "EN_CURSO",

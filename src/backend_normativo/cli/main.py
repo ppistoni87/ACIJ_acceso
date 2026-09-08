@@ -229,6 +229,67 @@ def ingesta_importar_directorio(
         typer.echo(f"  aviso: {aviso}")
 
 
+@ingesta.command("cargar-manual")
+def ingesta_cargar_manual(
+    fuente: str = typer.Argument(..., help="Identificador de la fuente (F42, M05, ...)."),
+    archivo: Path = typer.Argument(..., help="Archivo obtenido por una vía legítima."),
+    actor: str = typer.Option(..., help="Quién carga, con rol. Ej: 'ingesta:persona'."),
+    procedencia: str = typer.Option(..., help="De dónde salió, con detalle para rebuscarlo."),
+    obtenido: str = typer.Option(..., help="Cuándo se obtuvo (AAAA-MM-DD), no cuándo se carga."),
+    mime: str | None = typer.Option(None, help="Tipo de contenido, si se conoce."),
+    url: str | None = typer.Option(None, help="URL de origen, si la hay."),
+) -> None:
+    """Incorpora un archivo a una fuente que no se puede recorrer.
+
+    Entra por la misma cadena que una captura de red —corrida, captura inmutable
+    y de ahí documentos y evidencia—: lo que cambia es que hay que declarar
+    quién lo consiguió, de dónde y cuándo. Sin eso no se carga.
+    """
+    import datetime as _dt
+
+    from backend_normativo.ingesta.manual import CargaManual, ProcedenciaInsuficiente
+
+    with engine_migrador().begin() as conexion:
+        try:
+            resultado = CargaManual(conexion).cargar(
+                fuente,
+                archivo,
+                actor=actor,
+                procedencia=procedencia,
+                obtenido_en=_dt.date.fromisoformat(obtenido),
+                mime=mime,
+                url_declarada=url,
+            )
+        except (ProcedenciaInsuficiente, LookupError) as exc:
+            typer.echo(str(exc))
+            raise typer.Exit(1) from exc
+    typer.echo(
+        f"Captura: {resultado.captura_id}\n"
+        f"SHA-256: {resultado.sha256}\n"
+        f"Bytes: {resultado.bytes}"
+        + (" (el contenido ya estaba en el almacén)" if resultado.ya_existia else "")
+        + f"\nLa fuente {resultado.source_id} queda en estado MANUAL: que alguien haya "
+        "conseguido el archivo no significa que el sistema pueda recorrerla."
+    )
+
+
+@ingesta.command("bloqueadas")
+def ingesta_bloqueadas() -> None:
+    """Las fuentes que hoy necesitan carga manual, con su motivo."""
+    from backend_normativo.ingesta.manual import fuentes_bloqueadas
+
+    with engine_migrador().connect() as conexion:
+        filas = fuentes_bloqueadas(conexion)
+    typer.echo(f"{len(filas)} fuente(s) bloqueada(s):")
+    for fila in filas:
+        typer.echo(
+            f"  {fila['source_id']} · {fila['access_status']} · "
+            f"responsable: {fila['responsable_rol'] or 'sin asignar'}"
+        )
+        if fila["motivo_estado"]:
+            typer.echo(f"      {fila['motivo_estado'][:160]}")
+
+
 @ingesta.command("extraer")
 def ingesta_extraer(
     fuente: str | None = typer.Option(None, help="Limitar a una fuente."),

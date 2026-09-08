@@ -91,7 +91,7 @@ El reporte dice qué parte del ensayo es real y cuál es controlada.
 pytest -q
 ```
 
-353 pruebas sobre PostgreSQL real, porque lo que se verifica son restricciones,
+367 pruebas sobre PostgreSQL real, porque lo que se verifica son restricciones,
 disparadores y funciones de la base, y un doble no las ejecuta.
 
 | Dimensión | Dónde |
@@ -141,7 +141,7 @@ aparte que nadie actualiza.
 
 ## Lo que no se construyó
 
-Está enumerado, con su motivo, en `docs/calidad/estado_backlog.md` (9 historias
+Está enumerado, con su motivo, en `docs/calidad/estado_backlog.md` (8 historias
 en curso) y en `docs/calidad/trazabilidad_at.md` (16 casos cubiertos parcialmente). En
 resumen:
 
@@ -160,5 +160,5 @@ resumen:
   verificada están y se corrieron sobre la base real.
 
 Ninguna de esas es una fuente inaccesible: son capacidades que este alcance no
-construyó. Las fuentes que sí están bloqueadas —18— figuran con su motivo, su
+construyó. Las fuentes que sí están bloqueadas —17— figuran con su motivo, su
 responsable y su capacidad afectada, y su ingesta está pausada.

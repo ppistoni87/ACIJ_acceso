@@ -50,8 +50,8 @@ hasta que alguien lo verifique.
 
 ## 3. Evento
 
-- Evento en el outbox: `dde49407-38d9-4c8e-b376-fb62bf326ec8`
-- Clave de idempotencia: `ensayo-actualizacion:caa095b8-0bf2-4362-b79f-d8a8aa109ff7`
+- Evento en el outbox: `493601c2-0b15-43a6-b157-6713dd072ce4`
+- Clave de idempotencia: `ensayo-actualizacion:0b8492e4-6b82-4800-9849-1827fc23ae8f`
 - Eventos tras repetir la misma propagación: **1**
 
 Propagar el mismo cambio dos veces deja un solo evento. El evento queda en el

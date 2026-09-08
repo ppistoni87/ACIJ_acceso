@@ -4,7 +4,7 @@
 - Cubiertos por pruebas que corren: **64**
 - Cubiertos parcialmente: **16**
 - No ejecutados: **0**
-- Pruebas citadas: **179** (ejecutadas)
+- Pruebas citadas: **181** (ejecutadas)
 
 Cada caso remite a los nodeids que lo ejercen. `bn calidad trazabilidad` verifica
 que existan antes de contarlos; con `--ejecutar` además los corre.
@@ -88,7 +88,7 @@ que existan antes de contarlos; con `--ejecutar` además los corre.
 | AT-075 | Fecha de carpeta PDF | HU-F67 | CUBIERTO_PARCIAL | PASSED | `test_la_carpeta_del_archivo_no_fecha_el_documento`<br>`test_la_ruta_de_infoleg_distingue_original_de_actualizado`<br>_Falta: El adaptador deja la fecha pendiente y lo dice; leerla del propio documento o del acto que lo aprueba todavía no está implementado._ |
 | AT-076 | Costo ausente | HU-F45 | CUBIERTO | PASSED | `test_at076_una_duracion_vacia_no_es_inmediato`<br>`test_at076_un_costo_declarado_si_se_toma`<br>`test_at076_una_ficha_sin_los_dos_campos_los_reporta_a_los_dos`<br>`test_una_duracion_ausente_queda_vacia_y_con_incidencia`<br>`test_cuantia_no_informada_no_necesita_inventar_un_monto` |
 | AT-077 | Formulario público sin envío | HU-F04 | CUBIERTO | PASSED | `test_no_se_guardan_cookies_ni_credenciales`<br>`test_el_planificador_ignora_lo_que_no_se_puede_pedir` |
-| AT-078 | Sustituto de otra granularidad | HU-F09 | CUBIERTO_PARCIAL | PASSED | `test_una_fuente_retirada_explica_por_que`<br>`test_el_reporte_no_confunde_fuentes_con_leyes`<br>_Falta: El caso concreto de F09 (directorio municipal caído con lista provincial disponible) no tiene fixture: se prueba la regla de que una fuente retirada explica su motivo, no la sustitución por otra granularidad._ |
+| AT-078 | Sustituto de otra granularidad | HU-F09 | CUBIERTO_PARCIAL | PASSED | `test_una_fuente_retirada_explica_por_que`<br>`test_el_reporte_no_confunde_fuentes_con_leyes`<br>`test_el_listado_de_bloqueadas_dice_por_que_lo_estan`<br>`test_la_fuente_queda_manual_y_no_activa`<br>_Falta: El caso concreto de F09 —directorio municipal caído con lista provincial disponible— no tiene fixture: se prueba que una fuente detenida conserve su motivo y que una carga manual no la declare recorrible, no la sustitución por otra granularidad._ |
 | AT-079 | Evaluación no administrativa | HU-030 | CUBIERTO | PASSED | `test_la_evaluacion_aclara_que_no_es_una_decision`<br>`test_el_cuerpo_de_una_evaluacion_no_se_persiste`<br>`test_todo_cumplido_da_un_resultado_preliminar_positivo` |
 | AT-080 | Historial bitemporal | HU-009 | CUBIERTO | PASSED | `test_at080_el_conocimiento_posterior_no_borra_la_respuesta_anterior`<br>`test_solo_un_intervalo_de_conocimiento_abierto_por_version` |
 

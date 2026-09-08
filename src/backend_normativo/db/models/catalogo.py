@@ -160,7 +160,10 @@ class FuenteUrl(Base):
         check_vocabulario("rol", voc.RolUrl),
         check_vocabulario("tipo_acceso", voc.TipoAcceso),
         UniqueConstraint("source_id", "url", name="uq_fuente_urls_source_url"),
-        CheckConstraint("url ~ '^https?://'", name="url_http_concreta"),
+        # `manual://` es para las fuentes que no se pueden recorrer: el archivo
+        # entró por una vía legítima fuera de la red y no hay una http que
+        # visitar. Inventarle una sería peor que decir que no la hay.
+        CheckConstraint("url ~ '^(https?|manual)://'", name="url_concreta"),
         # Una plantilla sin resolver no es una URL descargable.
         CheckConstraint("url !~ '[{}]'", name="url_sin_plantilla"),
         CheckConstraint("url_padre_id IS NULL OR url_padre_id <> id", name="sin_autopadre"),

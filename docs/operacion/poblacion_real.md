@@ -168,8 +168,13 @@ manual describe, y el sistema los trató como corresponde:
 | F04 (La Defe) | El certificado no valida contra las CA del sistema | Se registra como `ERROR_TLS`. **No se relaja la validación**: hay que buscar fuente oficial equivalente o carga manual trazada |
 | F06 (CDNNyA subsedes) | HTTP 404 | Se registra como `NO_ENCONTRADA` con la brecha de cobertura de subsedes |
 
-Los 15 bloqueos restantes son fuentes sin URL inequívoca: el manifiesto conserva
-su identificador y su brecha, y nadie inventó una dirección para taparla.
+Los bloqueos restantes son fuentes sin URL inequívoca: el manifiesto conserva su
+identificador y su brecha, y nadie inventó una dirección para taparla.
+
+Para todas ellas existe la vía de carga manual (`bn ingesta cargar-manual`),
+que exige declarar quién consiguió el archivo, de dónde y cuándo. La fuente
+queda en `MANUAL` y no en `ACTIVE`: haber conseguido un archivo una vez no la
+vuelve recorrible.
 
 Las páginas capturadas cuya extracción ninguna familia acepta quedan guardadas
 sin extraer, con el aviso que lo dice. Son portales que necesitan un adaptador
