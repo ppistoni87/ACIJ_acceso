@@ -318,9 +318,16 @@
    "estado": "EN_CURSO",
    "evidencia": [
     "src/backend_normativo/monitoreo/novedades.py",
-    "tests/integracion/test_monitoreo.py"
+    "tests/integracion/test_monitoreo.py",
+    "src/backend_normativo/monitoreo/ciclo.py",
+    "tests/integracion/test_ciclo_monitoreo.py",
+    "docs/reportes/ciclo_monitoreo.md"
    ],
-   "falta": "El monitor corre sobre las fuentes capturadas y el ensayo de actualización ejercita diff, impacto y evento de punta a punta. Los boletines oficiales (M01-M04) están capturados pero todavía no en un ciclo periódico: eso necesita un planificador corriendo, no más código."
+   "falta": "El ciclo está encadenado y corre entero con un comando: planifica según la frecuencia declarada de cada fuente, revalida a las vencidas, compara contra la versión anterior y propaga el impacto a la cola de eventos. Corrió sobre el corpus real y la evidencia está en docs/reportes/ciclo_monitoreo.md; los boletines M01-M04 tienen frecuencia diaria y vuelven a la cola a las veinticuatro horas, verificado en prueba. Lo único que falta es que algo lo dispare: un planificador del sistema o del orquestador llamando `bn monitoreo ciclo` cada hora. Es una decisión de despliegue, no código.",
+   "comandos": [
+    "bn monitoreo ciclo",
+    "bn monitoreo ciclo --en-seco"
+   ]
   },
   "HU-027": {
    "estado": "CERRADA",

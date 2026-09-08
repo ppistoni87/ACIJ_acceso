@@ -492,3 +492,24 @@ porque la diferencia es la que dice qué hacer. Agrandar el pool o agregar
 índices no mueve ese número; agregar procesos sí. Y el pool declarado se
 conserva —elegir el número es mejor que heredarlo— pero sin atribuirle una
 mejora que no produjo.
+
+## D-34 · Una corrida sin trabajo no es una corrida fallida
+
+El ciclo de monitoreo planifica según la frecuencia declarada de cada fuente y
+revalida sólo a las vencidas. Cuando no le toca a ninguna, la corrida termina
+sin hacer nada, y eso está bien: es la frecuencia haciendo lo suyo. Un reporte
+que no distinga ese caso del de un fallo hace que alguien reinicie un servicio
+que estaba funcionando, o peor, que deje de mirar los reportes.
+
+**Consecuencia:** el ciclo dice explícitamente cuándo no le tocaba a nadie, y el
+paso de planificación informa cuántas fuentes entraron aunque sean cero. Revisar
+de más también tiene costo: gasta la cuota de la fuente y no aporta nada.
+
+El ciclo planifica y delega en el monitor, que ya encadenaba captura, extracción
+y comparación. Repetir esos pasos desde el ciclo habría hecho el trabajo dos
+veces sobre las mismas capturas.
+
+Lo que el ciclo no hace es dispararse solo, y el reporte lo dice con esas
+palabras. Es una decisión de despliegue —un planificador del sistema llamando
+`bn monitoreo ciclo` cada hora— y no código que falte; dejarlo implícito haría
+creer que el corpus se actualiza sin que nadie lo pida.

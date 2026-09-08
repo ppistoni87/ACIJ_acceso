@@ -1334,6 +1334,59 @@ def monitoreo_correr(
         typer.echo(f"  aviso: {aviso}")
 
 
+@monitoreo.command("ciclo")
+def monitoreo_ciclo(
+    salida: Path | None = typer.Option(None, help="Archivo donde escribir la evidencia."),
+    limite: int | None = typer.Option(None, help="Máximo de fuentes por vuelta."),
+    en_seco: bool = typer.Option(
+        False, help="Sólo planificar: dice a quién le toca sin salir a la red."
+    ),
+) -> None:
+    """Una vuelta del ciclo: planificar y revalidar a quien le toca.
+
+    Está pensado para que un planificador del sistema lo llame cada hora. Una
+    corrida sin trabajo no es una corrida fallida: es la frecuencia haciendo lo
+    suyo.
+    """
+    from backend_normativo.ingesta.capturador import Capturador
+    from backend_normativo.ingesta.cliente import ClienteCaptura
+    from backend_normativo.ingesta.extraccion import Extractor
+    from backend_normativo.monitoreo.ciclo import correr as correr_ciclo
+    from backend_normativo.monitoreo.ciclo import formatear as formatear_ciclo
+    from backend_normativo.monitoreo.novedades import correr as correr_monitor
+
+    def _revalidar(fuentes: list[str]) -> dict[str, int]:
+        # `novedades.correr` ya encadena captura, extracción y comparación: el
+        # ciclo planifica y delega, no repite el trabajo.
+        del fuentes
+        with ClienteCaptura() as cliente, engine_migrador().begin() as conexion:
+            monitoreo = correr_monitor(
+                conexion,
+                capturador=Capturador(conexion, cliente=cliente),
+                extractor=Extractor(conexion),
+                limite=limite,
+            )
+        return {
+            "revisadas": monitoreo.fuentes_revisadas,
+            "con_cambios": monitoreo.con_cambios,
+            "versiones": monitoreo.versiones_nuevas,
+            "impactadas": monitoreo.normas_impactadas,
+            "eventos": monitoreo.eventos_emitidos,
+            "bloqueadas": monitoreo.bloqueadas,
+        }
+
+    with engine_migrador().connect() as conexion:
+        resultado = correr_ciclo(conexion, limite=limite, revalidar=None if en_seco else _revalidar)
+
+    texto = formatear_ciclo(resultado)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto + "\n", encoding="utf-8")
+        typer.echo(f"Evidencia escrita en {salida} · pendientes {len(resultado.pendientes)}")
+    else:
+        typer.echo(texto)
+
+
 @monitoreo.command("entregar")
 def monitoreo_entregar(
     limite: int = typer.Option(50, help="Máximo de eventos a entregar."),

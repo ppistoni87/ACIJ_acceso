@@ -9,8 +9,8 @@ si una historia declara evidencia en una ruta que ya no existe.
 | Estado | Transversales | Por fuente |
 | --- | --- | --- |
 | NO_INICIADA | 0 | 0 |
-| BLOQUEADA | 0 | 17 |
-| EN_CURSO | 5 | 61 |
+| BLOQUEADA | 0 | 16 |
+| EN_CURSO | 5 | 62 |
 | ALIAS_REGISTRADO | 0 | 4 |
 | CERRADA | 35 | 1 |
 
@@ -43,7 +43,7 @@ si una historia declara evidencia en una ruta que ya no existe.
 | HU-023 | Resolver vigencia y frescura por capacidad | curacion_juridica | P0 | CERRADA | `src/backend_normativo/politicas/vigencia.py`<br>`src/backend_normativo/curacion/vigencia.py`<br>`tests/integracion/test_publicacion.py`<br>`tests/integracion/test_hechos_servibles.py`<br>`bn curacion vigencia`<br>`bn revision resolver-vigencia` |
 | HU-024 | Detectar y resolver conflictos de fuentes | curacion_juridica | P0 | CERRADA | `src/backend_normativo/curacion/revision.py`<br>`tests/integracion/test_publicacion.py`<br>`tests/integracion/test_hechos_servibles.py`<br>`bn revision pendientes`<br>`bn revision resolver-vigencia` |
 | HU-025 | Publicar atómicamente y gestionar cuarentena | datos_sql | P0 | CERRADA | `src/backend_normativo/publicacion/release.py`<br>`src/backend_normativo/publicacion/gates.py`<br>`tests/integracion/test_publicacion.py`<br>`tests/aceptacion/test_casos_aceptacion.py`<br>`bn publicacion estado`<br>`bn publicacion publicar` |
-| HU-026 | Monitorear novedades normativas | monitoreo | P0 | EN_CURSO | `src/backend_normativo/monitoreo/novedades.py`<br>`tests/integracion/test_monitoreo.py`<br>_Falta: El monitor corre sobre las fuentes capturadas y el ensayo de actualización ejercita diff, impacto y evento de punta a punta. Los boletines oficiales (M01-M04) están capturados pero todavía no en un ciclo periódico: eso necesita un planificador corriendo, no más código._ |
+| HU-026 | Monitorear novedades normativas | monitoreo | P0 | EN_CURSO | `src/backend_normativo/monitoreo/novedades.py`<br>`tests/integracion/test_monitoreo.py`<br>`src/backend_normativo/monitoreo/ciclo.py`<br>`tests/integracion/test_ciclo_monitoreo.py`<br>`docs/reportes/ciclo_monitoreo.md`<br>`bn monitoreo ciclo`<br>`bn monitoreo ciclo --en-seco`<br>_Falta: El ciclo está encadenado y corre entero con un comando: planifica según la frecuencia declarada de cada fuente, revalida a las vencidas, compara contra la versión anterior y propaga el impacto a la cola de eventos. Corrió sobre el corpus real y la evidencia está en docs/reportes/ciclo_monitoreo.md; los boletines M01-M04 tienen frecuencia diaria y vuelven a la cola a las veinticuatro horas, verificado en prueba. Lo único que falta es que algo lo dispare: un planificador del sistema o del orquestador llamando `bn monitoreo ciclo` cada hora. Es una decisión de despliegue, no código._ |
 | HU-027 | Monitorear datos operativos y cambios semánticos | monitoreo | P0 | CERRADA | `src/backend_normativo/monitoreo/diff.py`<br>`tests/integracion/test_monitoreo.py`<br>`bn monitoreo correr` |
 | HU-028 | Propagar impacto y emitir eventos de cambio | monitoreo | P0 | CERRADA | `src/backend_normativo/monitoreo/impacto.py`<br>`src/backend_normativo/monitoreo/outbox.py`<br>`tests/integracion/test_monitoreo.py`<br>`bn monitoreo entregar` |
 | HU-029 | Exponer API de consulta estructurada | api_backend | P0 | CERRADA | `src/backend_normativo/api/app.py`<br>`src/backend_normativo/api/contratos.py`<br>`src/backend_normativo/api/routers`<br>`tests/integracion/test_api.py`<br>`bn api servir`<br>`bn api openapi` |
@@ -70,7 +70,7 @@ Los números salen de la base, no de una declaración.
 | HU-F03 | F03 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
 | HU-F04 | F04 | BLOQUEADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1016). No se relaja la validación de TLS; hay que buscar una fuente oficial equivalente o hacer carga manual trazada. Responsable: ingesta. |
 | HU-F05 | F05 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
-| HU-F06 | F06 | BLOQUEADA | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | https://buenosaires.gob.ar/gcaba_historico/node/86736: HTTP 404. El recurso ya no está en esa dirección; hay que recuperar la identidad de la fuente o registrarla como retirada. Responsable: ingesta. |
+| HU-F06 | F06 | EN_CURSO | 1 | 3 | 0 | 0 | 0 | 0 | 0 | 0 | — |
 | HU-F07 | F07 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
 | HU-F08 | F08 | BLOQUEADA | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Sin URL inequívoca conocida. Responsable: ingesta. |
 | HU-F09 | F09 | EN_CURSO | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | — |
