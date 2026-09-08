@@ -153,7 +153,7 @@ def test_una_estructura_desconocida_no_se_extrae_a_ciegas() -> None:
         )
     )
     assert resultado.documentos == []
-    assert any("no se encontró" in a.lower() for a in resultado.avisos)
+    assert any("no se encontró" in a.texto.lower() for a in resultado.avisos)
 
 
 # --- InfoLEG histórico -------------------------------------------------------
@@ -279,7 +279,7 @@ def test_normativaba_no_toma_el_articulo_sustituido_como_propio() -> None:
     ]
     assert dispositivos == ["1", "2"]
     assert sustitutivos == ["10"]
-    assert documento.avisos == [] or all("síntesis" not in a for a in documento.avisos)
+    assert all("síntesis" not in a.texto for a in documento.avisos)
 
 
 def test_normativaba_detecta_una_transposicion_de_digitos_en_la_sintesis() -> None:
@@ -292,7 +292,7 @@ def test_normativaba_detecta_una_transposicion_de_digitos_en_la_sintesis() -> No
     documento = resultado.documentos[0]
     assert documento.identidad["numero"] == "1621"
     assert documento.identidad["numeros_discrepantes_en_sintesis"] == ["1261"]
-    assert any("otro orden" in a for a in documento.avisos)
+    assert any("otro orden" in a.texto for a in documento.avisos)
 
 
 def test_una_cita_normal_a_otra_norma_no_se_reporta_como_discrepancia() -> None:

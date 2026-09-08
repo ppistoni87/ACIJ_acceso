@@ -21,12 +21,15 @@ from backend_normativo.db.vocabularios import (
     EstadoLegal,
     ModoExtraccion,
     RolUrl,
+    Severidad,
     TipoDocumento,
     TipoFecha,
+    TipoIncidencia,
     TipoNorma,
     TipoVersionDocumento,
 )
 from backend_normativo.ingesta.adaptadores.base import (
+    Aviso,
     CapturaMaterial,
     DocumentoExtraido,
     ResultadoExtraccion,
@@ -140,18 +143,29 @@ class AdaptadorNormativaBA:
         parrafos = parrafos_de_html(html)
         if not parrafos:
             return ResultadoExtraccion(
-                avisos=[f"{captura.url_final}: la ficha no tiene texto extraíble"]
+                avisos=[
+                    Aviso(
+                        f"{captura.url_final}: la ficha no tiene texto extraíble",
+                        tipo=TipoIncidencia.CAMBIO_DE_ESQUEMA,
+                        severidad=Severidad.HIGH,
+                    )
+                ]
             )
 
         identidad, tipo_version, indice_texto, avisos = self._encabezado(parrafos, norma_ba_id)
         cuerpo = self._reindexar(parrafos[indice_texto:])
         segmentacion = Segmentador().segmentar(cuerpo)
-        avisos.extend(segmentacion.avisos)
+        avisos.extend(
+            Aviso(a, tipo=TipoIncidencia.DISCREPANCIA_NUMERACION) for a in segmentacion.avisos
+        )
 
         if not segmentacion.articulos_dispositivos:
             avisos.append(
-                f"{captura.url_final}: no se reconoció ningún artículo dispositivo. "
-                "La publicación de esta versión queda bloqueada hasta revisarla."
+                Aviso(
+                    f"{captura.url_final}: no se reconoció ningún artículo dispositivo. "
+                    "La publicación de esta versión queda bloqueada hasta revisarla.",
+                    severidad=Severidad.HIGH,
+                )
             )
 
         texto = texto_plano(cuerpo)
@@ -186,14 +200,19 @@ class AdaptadorNormativaBA:
 
     def _encabezado(
         self, parrafos: list[Parrafo], norma_ba_id: str
-    ) -> tuple[dict[str, object], TipoVersionDocumento, int, list[str]]:
+    ) -> tuple[dict[str, object], TipoVersionDocumento, int, list[Aviso]]:
         """Lee los pares etiqueta/valor de la ficha y ubica dónde empieza el texto.
 
         Se emparejan por posición y no por selector CSS: el marcado del sitio
         cambia con los rediseños, pero el orden "etiqueta, valor" se mantiene.
         """
-        identidad: dict[str, object] = {"normativaba_id": norma_ba_id}
-        avisos: list[str] = []
+        # NormativaBA publica normativa de la Ciudad Autónoma de Buenos
+        # Aires: su id no se mezcla con el de InfoLEG.
+        identidad: dict[str, object] = {
+            "normativaba_id": norma_ba_id,
+            "jurisdiccion": "AR-C",
+        }
+        avisos: list[Aviso] = []
         fechas: dict[str, str] = {}
         tipo_version = TipoVersionDocumento.NO_DETERMINADO
         indice_texto = len(parrafos)
@@ -222,8 +241,12 @@ class AdaptadorNormativaBA:
                         )
                 else:
                     avisos.append(
-                        f"No se pudo separar tipo, número y año de {texto!r}: la identidad "
-                        "queda incierta."
+                        Aviso(
+                            f"No se pudo separar tipo, número y año de {texto!r}: la "
+                            "identidad queda incierta.",
+                            tipo=TipoIncidencia.IDENTIDAD_AMBIGUA,
+                            severidad=Severidad.HIGH,
+                        )
                     )
                 continue
 
@@ -247,13 +270,17 @@ class AdaptadorNormativaBA:
 
         if indice_texto == len(parrafos):
             avisos.append(
-                "No se encontró el rótulo que abre el articulado; no se extrae texto a ciegas."
+                Aviso(
+                    "No se encontró el rótulo que abre el articulado; no se extrae texto a ciegas.",
+                    tipo=TipoIncidencia.CAMBIO_DE_ESQUEMA,
+                    severidad=Severidad.HIGH,
+                )
             )
         self._controlar_sintesis(identidad, avisos)
         return identidad, tipo_version, indice_texto, avisos
 
     @staticmethod
-    def _controlar_sintesis(identidad: dict[str, object], avisos: list[str]) -> None:
+    def _controlar_sintesis(identidad: dict[str, object], avisos: list[Aviso]) -> None:
         """F19: la síntesis de una ficha puede nombrar un número distinto del
         título por un error de tipeo de la fuente.
 
@@ -270,9 +297,13 @@ class AdaptadorNormativaBA:
         parecidos = sorted(n for n in candidatos if _es_transposicion(n, numero))
         if parecidos:
             avisos.append(
-                f"La síntesis menciona {', '.join(parecidos)} y el encabezado declara "
-                f"{numero}: los dígitos coinciden pero en otro orden. Se registra la "
-                "discrepancia; no se duplica la identidad."
+                Aviso(
+                    f"La síntesis menciona {', '.join(parecidos)} y el encabezado declara "
+                    f"{numero}: los dígitos coinciden pero en otro orden. Se registra la "
+                    "discrepancia; no se duplica la identidad.",
+                    tipo=TipoIncidencia.IDENTIDAD_AMBIGUA,
+                    severidad=Severidad.HIGH,
+                )
             )
             identidad["numeros_discrepantes_en_sintesis"] = parecidos
 

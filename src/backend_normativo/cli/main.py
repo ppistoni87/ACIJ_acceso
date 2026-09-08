@@ -16,7 +16,9 @@ app = typer.Typer(help="Backend normativo de acceso a derechos.", no_args_is_hel
 catalogo = typer.Typer(help="Catálogo de fuentes.", no_args_is_help=True)
 ingesta = typer.Typer(help="Captura de fuentes.", no_args_is_help=True)
 app.add_typer(catalogo, name="catalogo")
+curacion = typer.Typer(help="Curación jurídica.", no_args_is_help=True)
 app.add_typer(ingesta, name="ingesta")
+app.add_typer(curacion, name="curacion")
 
 
 @catalogo.command("validar")
@@ -159,6 +161,46 @@ def ingesta_descubrir(
     typer.echo(f"{fuente}: {len(promovidas)} URLs promovidas")
     for url in promovidas:
         typer.echo(f"  {url}")
+
+
+@curacion.command("identidad")
+def curacion_identidad(
+    fuente: str | None = typer.Option(None, help="Limitar a una fuente."),
+) -> None:
+    """Resuelve la identidad de las normas extraídas y crea sus versiones."""
+    from backend_normativo.curacion.identidad import ResolutorIdentidad
+
+    with engine_migrador().begin() as conexion:
+        resultado = ResolutorIdentidad(conexion).resolver_pendientes(fuente)
+    typer.echo(
+        f"Normas creadas: {resultado.normas_creadas} · "
+        f"vinculadas a una existente: {resultado.normas_vinculadas}\n"
+        f"Identificadores oficiales nuevos: {resultado.identificadores_creados}\n"
+        f"Versiones normativas creadas: {resultado.versiones_creadas}\n"
+        f"En identidad incierta: {resultado.inciertas}\n"
+        f"Incidencias abiertas: {resultado.incidencias_creadas}"
+    )
+    for aviso in resultado.avisos[:20]:
+        typer.echo(f"  aviso: {aviso}")
+
+
+@curacion.command("relaciones")
+def curacion_relaciones(
+    fuente: str | None = typer.Option(None, help="Limitar a una fuente."),
+) -> None:
+    """Construye relaciones normativas candidatas y registra las pendientes."""
+    from backend_normativo.curacion.relaciones import ConstructorRelaciones
+
+    with engine_migrador().begin() as conexion:
+        resultado = ConstructorRelaciones(conexion).construir(fuente)
+    typer.echo(
+        f"Unidades analizadas: {resultado.unidades_analizadas}\n"
+        f"Citas detectadas: {resultado.citas_detectadas}\n"
+        f"Relaciones candidatas nuevas: {resultado.relaciones_creadas} · "
+        f"ya registradas: {resultado.relaciones_existentes}\n"
+        f"Referencias pendientes de resolver: {resultado.pendientes_creadas}\n"
+        f"Autorreferencias omitidas: {resultado.autorreferencias_omitidas}"
+    )
 
 
 if __name__ == "__main__":

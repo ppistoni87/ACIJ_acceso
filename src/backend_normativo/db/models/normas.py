@@ -312,6 +312,9 @@ class RelacionNormativa(Base):
             "efecto_hasta IS NULL OR efecto_desde IS NULL OR efecto_hasta >= efecto_desde",
             name="efecto_ordenado",
         ),
+        # `NULLS NOT DISTINCT` (PostgreSQL 15+): una relación cuyo alcance es la
+        # norma entera deja las unidades en nulo, y con la semántica por defecto
+        # cada reejecución de la curación crearía una arista nueva.
         UniqueConstraint(
             "norma_origen_id",
             "norma_destino_id",
@@ -319,6 +322,7 @@ class RelacionNormativa(Base):
             "unidad_origen_id",
             "unidad_destino_id",
             name="uq_relaciones_normativas_arista",
+            postgresql_nulls_not_distinct=True,
         ),
         # Índice inverso: navegar "qué modifica a esta norma" cuesta lo mismo
         # que "qué modifica esta norma".

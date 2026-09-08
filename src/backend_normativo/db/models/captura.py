@@ -180,6 +180,10 @@ class DocumentoVersion(Base):
     texto_extraido: Mapped[str | None] = mapped_column(Text)
     hash_texto: Mapped[str] = mapped_column(String(64), nullable=False)
     modo_extraccion: Mapped[str] = mapped_column(String(16), nullable=False)
+    # Con qué extractor se produjo esta versión. DQ16 pide que captura, versión
+    # de extractor, versión de reglas y fecha de corte permitan repetir la
+    # salida: sin este dato no se sabe si un texto conviene reprocesar.
+    extractor_version: Mapped[str] = mapped_column(Text, nullable=False)
     paginas: Mapped[int | None] = mapped_column(Integer)
     chars_por_pagina: Mapped[dict | None] = mapped_column(JSONB)
     # Señal técnica observable de la extracción. No es un juicio de vigencia ni

@@ -1157,6 +1157,7 @@ def upgrade() -> None:
         sa.Column("texto_extraido", sa.Text(), nullable=True),
         sa.Column("hash_texto", sa.String(length=64), nullable=False),
         sa.Column("modo_extraccion", sa.String(length=16), nullable=False),
+        sa.Column("extractor_version", sa.Text(), nullable=False),
         sa.Column("paginas", sa.Integer(), nullable=True),
         sa.Column("chars_por_pagina", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column("extraccion_score", sa.Numeric(precision=5, scale=4), nullable=True),
@@ -2207,6 +2208,7 @@ def upgrade() -> None:
             "unidad_origen_id",
             "unidad_destino_id",
             name="uq_relaciones_normativas_arista",
+            postgresql_nulls_not_distinct=True,
         ),
     )
     op.create_index(

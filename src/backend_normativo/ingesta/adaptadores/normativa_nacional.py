@@ -26,12 +26,15 @@ from backend_normativo.curacion.segmentacion import Segmentador
 from backend_normativo.db.vocabularios import (
     ModoExtraccion,
     RolUrl,
+    Severidad,
     TipoDocumento,
     TipoFecha,
+    TipoIncidencia,
     TipoNorma,
     TipoVersionDocumento,
 )
 from backend_normativo.ingesta.adaptadores.base import (
+    Aviso,
     CapturaMaterial,
     DocumentoExtraido,
     ResultadoExtraccion,
@@ -141,8 +144,10 @@ class AdaptadorNormativaNacional:
         if ficha is None:
             return ResultadoExtraccion(avisos=["La ficha no tiene el bloque esperado"])
 
-        identidad: dict[str, object] = {"infoleg_id": infoleg_id}
-        avisos: list[str] = []
+        # El portal publica normativa nacional: la jurisdicción es parte de
+        # la identidad y sin ella dos leyes con el mismo número colisionan.
+        identidad: dict[str, object] = {"infoleg_id": infoleg_id, "jurisdiccion": "AR"}
+        avisos: list[Aviso] = []
 
         encabezado = ficha.css_first("h1")
         titulo_tematico = ficha.css_first("h2")
@@ -161,8 +166,12 @@ class AdaptadorNormativaNacional:
                     identidad["anio"] = int(grupos["anio"])
             else:
                 avisos.append(
-                    f"No se pudo separar tipo, número y año de {texto!r}: "
-                    "la identidad queda incierta."
+                    Aviso(
+                        f"No se pudo separar tipo, número y año de {texto!r}: "
+                        "la identidad queda incierta.",
+                        tipo=TipoIncidencia.IDENTIDAD_AMBIGUA,
+                        severidad=Severidad.HIGH,
+                    )
                 )
 
         if emisor is not None:
@@ -274,12 +283,16 @@ class AdaptadorNormativaNacional:
         html = captura.texto()
         arbol = HTMLParser(html)
         cuerpo = arbol.css_first(SELECTOR_CUERPO)
-        avisos: list[str] = []
+        avisos: list[Aviso] = []
         if cuerpo is None:
             return ResultadoExtraccion(
                 avisos=[
-                    f"{captura.url_final}: no se encontró {SELECTOR_CUERPO}. "
-                    "El sitio pudo cambiar de estructura; no se extrae a ciegas."
+                    Aviso(
+                        f"{captura.url_final}: no se encontró {SELECTOR_CUERPO}. "
+                        "El sitio pudo cambiar de estructura; no se extrae a ciegas.",
+                        tipo=TipoIncidencia.CAMBIO_DE_ESQUEMA,
+                        severidad=Severidad.HIGH,
+                    )
                 ]
             )
 
@@ -288,21 +301,32 @@ class AdaptadorNormativaNacional:
             # La URL dice una vista y el marcado dice otra: se registra en vez
             # de elegir una en silencio.
             avisos.append(
-                f"{captura.url_final} corresponde a {tipo_version.value} pero el cuerpo "
-                f"declara {clases!r}. Hay que confirmar qué versión es."
+                Aviso(
+                    f"{captura.url_final} corresponde a {tipo_version.value} pero el cuerpo "
+                    f"declara {clases!r}. Hay que confirmar qué versión es.",
+                    tipo=TipoIncidencia.CAMBIO_DE_ESQUEMA,
+                    severidad=Severidad.HIGH,
+                )
             )
 
         parrafos = parrafos_de_html(html, selector=SELECTOR_CUERPO)
         segmentacion = Segmentador().segmentar(parrafos)
-        avisos.extend(segmentacion.avisos)
+        avisos.extend(
+            Aviso(a, tipo=TipoIncidencia.DISCREPANCIA_NUMERACION, severidad=Severidad.MEDIUM)
+            for a in segmentacion.avisos
+        )
 
         texto = texto_plano(parrafos)
         clasificados = sum(len(u.texto) for u in segmentacion.unidades)
 
         if not segmentacion.articulos_dispositivos:
             avisos.append(
-                f"{captura.url_final}: no se reconoció ningún artículo dispositivo. "
-                "La publicación de esta versión queda bloqueada hasta revisarla."
+                Aviso(
+                    f"{captura.url_final}: no se reconoció ningún artículo dispositivo. "
+                    "La publicación de esta versión queda bloqueada hasta revisarla.",
+                    tipo=TipoIncidencia.COBERTURA_EXTRACCION,
+                    severidad=Severidad.HIGH,
+                )
             )
 
         documento = DocumentoExtraido(
@@ -313,7 +337,7 @@ class AdaptadorNormativaNacional:
             unidades=segmentacion.unidades,
             external_id=f"infoleg:{infoleg_id}:{tipo_version.value.lower()}",
             tipo_fecha=TipoFecha.DESCONOCIDA,
-            identidad={"infoleg_id": infoleg_id},
+            identidad={"infoleg_id": infoleg_id, "jurisdiccion": "AR"},
             extraccion_score=calcular_score(
                 caracteres_clasificados=clasificados,
                 caracteres_totales=len(texto),
@@ -324,8 +348,29 @@ class AdaptadorNormativaNacional:
 
         return ResultadoExtraccion(
             documentos=[documento],
-            urls_descubiertas=self._normas_citadas(html, captura.url_final),
+            urls_descubiertas=[
+                self._ficha_de(captura.url_final, infoleg_id),
+                *self._normas_citadas(html, captura.url_final),
+            ],
             avisos=avisos,
+        )
+
+    @staticmethod
+    def _ficha_de(url_texto: str, infoleg_id: str) -> UrlDescubierta:
+        """La ficha de la misma norma.
+
+        Una vista de texto no trae identidad: el tipo, el número, el año y las
+        fechas están solo en la ficha. Cuando una fuente entra al catálogo
+        apuntando directo al texto, la identidad es recuperable desde la misma
+        fuente y no hay razón para dejar la norma incierta.
+        """
+        base = url_texto.split("/normativa/")[0]
+        ambito = RE_URL_NORMA.search(url_texto).group("ambito")
+        return UrlDescubierta(
+            url=f"{base}/normativa/{ambito}/norma-{infoleg_id}",
+            rol=RolUrl.ENTRADA,
+            relacion="ficha de la misma norma (identidad y fechas)",
+            tipo_esperado="NORMA",
         )
 
     def _normas_citadas(self, html: str, base_url: str) -> list[UrlDescubierta]:

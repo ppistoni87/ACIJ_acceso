@@ -6,6 +6,7 @@ por fuente. No 67 scripts aislados con copias divergentes del mismo parser.
 
 from backend_normativo.ingesta.adaptadores.base import (
     Adaptador,
+    Aviso,
     CapturaMaterial,
     DocumentoExtraido,
     ResultadoExtraccion,
@@ -14,6 +15,7 @@ from backend_normativo.ingesta.adaptadores.base import (
 
 __all__ = [
     "Adaptador",
+    "Aviso",
     "CapturaMaterial",
     "DocumentoExtraido",
     "ResultadoExtraccion",

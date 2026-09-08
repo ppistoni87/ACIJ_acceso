@@ -16,12 +16,15 @@ from selectolax.parser import HTMLParser
 from backend_normativo.curacion.segmentacion import Segmentador
 from backend_normativo.db.vocabularios import (
     ModoExtraccion,
+    Severidad,
     TipoDocumento,
     TipoFecha,
+    TipoIncidencia,
     TipoNorma,
     TipoVersionDocumento,
 )
 from backend_normativo.ingesta.adaptadores.base import (
+    Aviso,
     CapturaMaterial,
     DocumentoExtraido,
     ResultadoExtraccion,
@@ -127,18 +130,29 @@ class AdaptadorInfolegLegacy:
         parrafos = parrafos_de_html(html)
         if not parrafos:
             return ResultadoExtraccion(
-                avisos=[f"{captura.url_final}: la página no tiene texto extraíble"]
+                avisos=[
+                    Aviso(
+                        f"{captura.url_final}: la página no tiene texto extraíble",
+                        tipo=TipoIncidencia.CAMBIO_DE_ESQUEMA,
+                        severidad=Severidad.HIGH,
+                    )
+                ]
             )
 
         segmentacion = Segmentador().segmentar(parrafos)
         texto = texto_plano(parrafos)
         identidad, avisos = self._identidad(html, parrafos, infoleg_id)
-        avisos.extend(segmentacion.avisos)
+        avisos.extend(
+            Aviso(a, tipo=TipoIncidencia.DISCREPANCIA_NUMERACION) for a in segmentacion.avisos
+        )
 
         if not segmentacion.articulos_dispositivos:
             avisos.append(
-                f"{captura.url_final}: no se reconoció ningún artículo dispositivo. "
-                "La publicación de esta versión queda bloqueada hasta revisarla."
+                Aviso(
+                    f"{captura.url_final}: no se reconoció ningún artículo dispositivo. "
+                    "La publicación de esta versión queda bloqueada hasta revisarla.",
+                    severidad=Severidad.HIGH,
+                )
             )
 
         clasificados = sum(len(u.texto) for u in segmentacion.unidades)
@@ -164,9 +178,9 @@ class AdaptadorInfolegLegacy:
 
     def _identidad(
         self, html: str, parrafos, infoleg_id: str
-    ) -> tuple[dict[str, object], list[str]]:
-        identidad: dict[str, object] = {"infoleg_id": infoleg_id}
-        avisos: list[str] = []
+    ) -> tuple[dict[str, object], list[Aviso]]:
+        identidad: dict[str, object] = {"infoleg_id": infoleg_id, "jurisdiccion": "AR"}
+        avisos: list[Aviso] = []
 
         arbol = HTMLParser(html)
         titulo = arbol.css_first("title")
@@ -203,8 +217,12 @@ class AdaptadorInfolegLegacy:
             identidad["anio_derivado_de"] = TipoFecha.SANCION.value
         if "numero" not in identidad:
             avisos.append(
-                "No se pudo leer tipo y número del encabezado: la identidad queda incierta "
-                "y no se puede fusionar con otra norma sin revisión."
+                Aviso(
+                    "No se pudo leer tipo y número del encabezado: la identidad queda "
+                    "incierta y no se puede fusionar con otra norma sin revisión.",
+                    tipo=TipoIncidencia.IDENTIDAD_AMBIGUA,
+                    severidad=Severidad.HIGH,
+                )
             )
 
         if fechas:

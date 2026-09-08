@@ -85,8 +85,8 @@ def _evidencia(conexion: Connection, sufijo: str) -> uuid.UUID:
     dv = conexion.execute(
         text(
             "INSERT INTO documento_versiones (documento_id, captura_id, version, tipo_version, "
-            "tipo_fecha, hash_texto, modo_extraccion) "
-            "VALUES (:d, :c, 1, 'ORIGINAL', 'PUBLICACION', :h, 'HTML') RETURNING id"
+            "tipo_fecha, hash_texto, modo_extraccion, extractor_version) "
+            "VALUES (:d, :c, 1, 'ORIGINAL', 'PUBLICACION', :h, 'HTML', 'prueba') RETURNING id"
         ),
         {"d": doc, "c": captura, "h": uuid.uuid4().hex + uuid.uuid4().hex},
     ).scalar_one()

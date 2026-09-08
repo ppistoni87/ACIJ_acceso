@@ -31,7 +31,7 @@ from backend_normativo.ingesta.adaptadores.normativa_ba import AdaptadorNormativ
 from backend_normativo.ingesta.adaptadores.normativa_nacional import AdaptadorNormativaNacional
 from backend_normativo.ingesta.almacen import AlmacenObjetos
 
-VERSION_EXTRACTOR = "extraccion@1"
+VERSION_EXTRACTOR = "extraccion@3"
 
 # Cobertura mínima para no marcar la extracción como sospechosa. Es una señal
 # técnica: por debajo de esto hay texto que no quedó en ninguna unidad, y
@@ -65,10 +65,12 @@ class Extractor:
         conexion: Connection,
         adaptadores: list[Adaptador] | None = None,
         almacen: AlmacenObjetos | None = None,
+        version_extractor: str = VERSION_EXTRACTOR,
     ) -> None:
         self.conexion = conexion
         self.adaptadores = adaptadores or adaptadores_por_defecto()
         self.almacen = almacen or AlmacenObjetos()
+        self.version_extractor = version_extractor
 
     # --- API ---------------------------------------------------------------
 
@@ -109,7 +111,7 @@ class Extractor:
         for documento in extraccion.documentos:
             self._persistir_documento(fila, documento, resultado)
         self._persistir_candidatas(fila["source_id"], extraccion, resultado)
-        resultado.avisos.extend(extraccion.avisos)
+        resultado.avisos.extend(a.texto for a in extraccion.avisos)
         return resultado
 
     def extraer_pendientes(self, source_id: str | None = None) -> ResultadoPersistencia:
@@ -153,18 +155,27 @@ class Extractor:
         resultado.documentos_creados += int(creado)
 
         hash_texto = hashlib.sha256(documento.texto.encode("utf-8")).hexdigest()
-        existente = self.conexion.execute(
-            text(
-                "SELECT id FROM documento_versiones "
-                "WHERE documento_id = :d AND hash_texto = :h AND tipo_version = :t"
-            ),
-            {"d": documento_id, "h": hash_texto, "t": documento.tipo_version.value},
-        ).scalar_one_or_none()
+        existente = (
+            self.conexion.execute(
+                text(
+                    "SELECT id, extractor_version FROM documento_versiones "
+                    "WHERE documento_id = :d AND hash_texto = :h AND tipo_version = :t"
+                ),
+                {"d": documento_id, "h": hash_texto, "t": documento.tipo_version.value},
+            )
+            .mappings()
+            .first()
+        )
         if existente is not None:
-            # El texto no cambió: la captura queda como constancia de que se
-            # verificó, y no se duplican unidades.
-            resultado.versiones_repetidas += 1
-            resultado.version_ids.append(existente)
+            resultado.version_ids.append(existente["id"])
+            if existente["extractor_version"] == self.version_extractor:
+                # El texto no cambió y el extractor es el mismo: la captura
+                # queda como constancia de que se verificó, sin duplicar nada.
+                resultado.versiones_repetidas += 1
+                return
+            # Mismo texto, extractor distinto: la segmentación pudo mejorar, así
+            # que se rehace sobre la misma versión en vez de dejarla vieja.
+            self._reprocesar_version(existente["id"], documento, resultado)
             return
 
         proxima = self.conexion.execute(
@@ -180,9 +191,9 @@ class Extractor:
                 "INSERT INTO documento_versiones ("
                 "  documento_id, captura_id, version, tipo_version, fecha_documento, "
                 "  tipo_fecha, texto_extraido, hash_texto, modo_extraccion, paginas, "
-                "  chars_por_pagina, extraccion_score, identidad_candidata"
+                "  chars_por_pagina, extraccion_score, identidad_candidata, extractor_version"
                 ") VALUES (:d, :c, :v, :tv, :fecha, :tf, :texto, :hash, :modo, :pag, "
-                "          :chars, :score, :identidad) RETURNING id"
+                "          :chars, :score, :identidad, :extractor) RETURNING id"
             ),
             {
                 "d": documento_id,
@@ -202,6 +213,7 @@ class Extractor:
                 "identidad": json.dumps(documento.identidad, ensure_ascii=False)
                 if documento.identidad
                 else None,
+                "extractor": self.version_extractor,
             },
         ).scalar_one()
         resultado.versiones_creadas += 1
@@ -209,6 +221,52 @@ class Extractor:
 
         resultado.unidades_creadas += self._persistir_unidades(version_id, documento)
         self._controlar_cobertura(captura, documento, version_id, resultado)
+
+    def _reprocesar_version(
+        self, version_id: uuid.UUID, documento: DocumentoExtraido, resultado: ResultadoPersistencia
+    ) -> None:
+        """Rehace las unidades de una versión ya publicada por otro extractor.
+
+        Solo se permite mientras la versión no está aprobada: una versión
+        publicada se corrige creando otra, no editando la que ya se sirvió.
+        """
+        aprobada = self.conexion.execute(
+            text(
+                "SELECT count(*) FROM norma_versiones nv "
+                "JOIN registro_versiones rv ON rv.id = nv.registro_version_id "
+                "WHERE nv.doc_version_id = :dv "
+                "  AND rv.estado_revision IN ('APPROVED', 'PUBLISHED')"
+            ),
+            {"dv": version_id},
+        ).scalar_one()
+        if aprobada:
+            resultado.avisos.append(
+                f"La versión {version_id} ya fue aprobada con otro extractor: no se "
+                "reprocesa. Corregirla exige una versión nueva."
+            )
+            resultado.versiones_repetidas += 1
+            return
+
+        self.conexion.execute(
+            text("DELETE FROM unidades_documentales WHERE doc_version_id = :dv"),
+            {"dv": version_id},
+        )
+        self.conexion.execute(
+            text(
+                "UPDATE documento_versiones SET extractor_version = :v, "
+                "  extraccion_score = :s, identidad_candidata = :i WHERE id = :dv"
+            ),
+            {
+                "v": self.version_extractor,
+                "s": documento.extraccion_score,
+                "i": json.dumps(documento.identidad, ensure_ascii=False)
+                if documento.identidad
+                else None,
+                "dv": version_id,
+            },
+        )
+        resultado.unidades_creadas += self._persistir_unidades(version_id, documento)
+        resultado.versiones_creadas += 1
 
     def _documento_id(self, source_id: str, documento: DocumentoExtraido) -> tuple[uuid.UUID, bool]:
         if documento.external_id:
@@ -310,15 +368,10 @@ class Extractor:
                 "publicar sobre un texto incompleto.",
                 resultado,
             )
-        if documento.avisos:
-            for aviso in documento.avisos:
-                self._abrir_incidencia(
-                    captura["source_id"],
-                    TipoIncidencia.COBERTURA_EXTRACCION,
-                    Severidad.MEDIUM,
-                    aviso,
-                    resultado,
-                )
+        for aviso in documento.avisos:
+            self._abrir_incidencia(
+                captura["source_id"], aviso.tipo, aviso.severidad, aviso.texto, resultado
+            )
 
     def _persistir_candidatas(
         self, source_id: str, extraccion: ResultadoExtraccion, resultado: ResultadoPersistencia

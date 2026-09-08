@@ -16,10 +16,29 @@ from backend_normativo.curacion.segmentacion import UnidadSegmentada
 from backend_normativo.db.vocabularios import (
     ModoExtraccion,
     RolUrl,
+    Severidad,
     TipoDocumento,
     TipoFecha,
+    TipoIncidencia,
     TipoVersionDocumento,
 )
+
+
+@dataclass(frozen=True)
+class Aviso:
+    """Algo que la extracción encontró y que necesita decisión humana.
+
+    Lleva tipo y severidad porque termina siendo una incidencia: sin eso, todo
+    lo que el extractor observa se archiva bajo la misma etiqueta y la cola de
+    revisión deja de poder priorizarse.
+    """
+
+    texto: str
+    tipo: TipoIncidencia = TipoIncidencia.COBERTURA_EXTRACCION
+    severidad: Severidad = Severidad.MEDIUM
+
+    def __str__(self) -> str:
+        return self.texto
 
 
 @dataclass(frozen=True)
@@ -86,14 +105,14 @@ class DocumentoExtraido:
     # Identidad normativa candidata. Son candidatos: la resolución de identidad
     # es otra capa y puede rechazarlos.
     identidad: dict[str, object] = field(default_factory=dict)
-    avisos: list[str] = field(default_factory=list)
+    avisos: list[Aviso] = field(default_factory=list)
 
 
 @dataclass
 class ResultadoExtraccion:
     documentos: list[DocumentoExtraido] = field(default_factory=list)
     urls_descubiertas: list[UrlDescubierta] = field(default_factory=list)
-    avisos: list[str] = field(default_factory=list)
+    avisos: list[Aviso] = field(default_factory=list)
 
 
 class Adaptador(Protocol):

@@ -10,11 +10,11 @@ ninguna, o ser un alias de otra.
 | Fuentes en el catálogo | 83 |
 | Fuentes canónicas (sin alias) | 79 |
 | Alias | 4 |
-| URLs registradas | 70 |
-| Documentos capturados | 0 |
-| Normas identificadas | 0 |
+| URLs registradas | 73 |
+| Documentos capturados | 11 |
+| Normas identificadas | 8 |
 | Beneficios registrados | 0 |
-| Dependencias normativas pendientes | 0 |
+| Dependencias normativas pendientes | 145 |
 
 Identificadores originales F01–F67 presentes: 67 de 67.
 Incorporaciones al inventario: 16 (D01, D02, D03, D04, D05, D06, D07, D08, D09, D10, M01, M02, M03, M04, M05, M06).
@@ -23,7 +23,8 @@ Incorporaciones al inventario: 16 (D01, D02, D03, D04, D05, D06, D07, D08, D09, 
 
 | Valor | Fuentes |
 |---|---:|
-| DISCOVERY | 61 |
+| ACTIVE | 8 |
+| DISCOVERY | 53 |
 | MANUAL | 7 |
 | REFERENCE_ONLY | 13 |
 | RETIRED | 2 |
@@ -32,7 +33,8 @@ Incorporaciones al inventario: 16 (D01, D02, D03, D04, D05, D06, D07, D08, D09, 
 
 | Valor | Fuentes |
 |---|---:|
-| NO_VERIFICADO | 68 |
+| ACCESIBLE | 8 |
+| NO_VERIFICADO | 60 |
 | SIN_URL_CONOCIDA | 15 |
 
 ## Prioridad
