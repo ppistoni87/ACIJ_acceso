@@ -375,7 +375,60 @@ que «la atención presencial de las sedes permanecerá cerrada hasta el comienz
 del nuevo periodo de inscripción». Eso es el dato de hoy. Rescatar el listado de
 una captura anterior lo presentaría como vigente.
 
-## Primer beneficio curado
+## Siete beneficios curados
+
+La lectura jurídica vive en `docs/curaduria/`, un archivo por beneficio, y no en
+el código: se puede discutir contra la ley sin leer Python. Cada regla, cada
+plazo y cada cuantía apunta a la unidad documental que la sostiene, y el cargador
+verifica que el texto citado esté adentro de esa unidad —es lo único que una
+máquina puede verificar sola de una lectura jurídica, y por eso se verifica
+siempre—.
+
+| Beneficio | Norma | Reglas | Poblaciones | Plazos | Cuantía |
+| --- | --- | ---: | ---: | ---: | --- |
+| Apoyo habitacional | Ley CABA 6935/2025 | 9 | 3 | 1 | fórmula sin valor |
+| Régimen de Becas Estudiantiles | Ley CABA 2917/2008 | 9 | 3 | 4 | fórmula sin valor |
+| Subsidio para familias en situación de calle | Decreto CABA 690/2006 | 14 | 2 | 2 | fórmula sin valor |
+| Beca de comedor, refrigerio y vianda | Ordenanza CABA 43.478 | 16 | 2 | 4 | en especie |
+| Asignación Universal por Hijo | Ley 24.714 | 16 | 2 | 0 | fórmula sin valor |
+| Asignación por Embarazo | Ley 24.714 | 9 | 1 | 2 | fórmula sin valor |
+| Asignación por hijo (contributivo) | Ley 24.714 | 10 | 2 | 0 | fórmula sin valor |
+
+**Ninguna cuantía tiene monto.** No es una omisión: es lo que las normas dicen.
+El artículo 18 de la Ley 24.714 sigue fijando cien pesos por hijo —valor nominal
+de 2007— y el artículo 5 del Decreto 690/06 fija cuotas de cuatrocientos
+cincuenta pesos de 2006. Los montos vigentes salen de resoluciones que no están
+en el corpus. Servir esos números como «lo que vas a cobrar» sería peor que
+decir que no se sabe.
+
+**Tres prestaciones de la misma ley, curadas por separado.** La Ley 24.714
+regula catorce; curarla entera como un beneficio haría que las condiciones de la
+asignación por matrimonio se le aplicaran a un chico de cuatro años. La
+diferencia no es teórica: la Asignación por Embarazo pide tres años de
+residencia legal y la Asignación Universal por Hijo pide dos, en la misma ley.
+
+**Lo que las normas no resuelven queda declarado.** De las 83 reglas vigentes,
+poco más de la mitad tiene condición ejecutable escrita; el resto conserva su
+texto literal y el motivo por el que no se formalizó. Tres casos que muestran
+por qué:
+
+- El artículo 14 del Decreto 690/06 da de baja el subsidio por incumplir «el
+  artículo precedente», que no tiene requisitos: los requisitos están dos
+  artículos antes. Por una lectura, un certificado escolar entregado tarde da de
+  baja a una familia en la calle.
+- La Ley 6935 dice regirse exclusivamente por sí misma y su cláusula transitoria
+  dice que hasta reglamentarse rige el Decreto 690/06. Cuál rige hoy depende de
+  un hecho que el corpus no tiene.
+- El artículo 20 de la Ley 24.714 dice que cuando ambos progenitores están
+  comprendidos cobra uno solo, y no dice cuál.
+
+**Nada entra aprobado.** Todo queda candidato, porque la evaluación de un
+beneficio decide si alguien puede pedir algo y que lo haya escrito una curaduría
+no lo vuelve derecho aplicable. El esquema lo impone: una regla con AST solo
+puede quedar sin revisión si ya está aprobada.
+
+## Cómo se leyó el primero
+
 
 La Ley CABA 6935 publicada dejó de ser solo texto: es un beneficio con 3
 poblaciones, 9 reglas y una cuantía, cada pieza atada al artículo que la

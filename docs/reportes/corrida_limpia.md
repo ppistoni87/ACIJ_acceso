@@ -15,11 +15,11 @@ Generado por `scripts/corrida_limpia.sh`. La base se crea y se destruye en la
 misma corrida: si algo de acá se pudiera explicar por estado previo, no habría
 estado previo del que agarrarse.
 
-- Arranque: `2026-09-08T18:55:39+00:00`
-- Cierre: `2026-09-08T19:02:40+00:00`
+- Arranque: `2026-09-08T20:06:44+00:00`
+- Cierre: `2026-09-08T20:13:08+00:00`
 - Resultado: **completa**
 - Base: `backend_normativo_limpia`
-- Fuentes que el planificador deja pendientes al cerrar: `2`
+- Fuentes que el planificador deja pendientes al cerrar: `3`
 
 ## Pasos
 
@@ -28,19 +28,19 @@ corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
 
 | Paso | Duración | Última línea |
 | --- | ---: | --- |
-| migraciones | 1.3 s | INFO  [alembic.runtime.migration] Running upgrade 0006_indice_de_listado -> 0007_servibl… |
-| población completa | 418.8 s | Incidencias abiertas: 12 |
-| planificación al cierre (en seco) | 0.7 s | alguien corre el comando. |
+| migraciones | 1.8 s | INFO  [alembic.runtime.migration] Running upgrade 0006_indice_de_listado -> 0007_servibl… |
+| población completa | 380.3 s | Incidencias abiertas: 12 |
+| planificación al cierre (en seco) | 0.6 s | alguien corre el comando. |
 
 ## Con qué quedó la base
 
 | Qué | Cuántos |
 | --- | ---: |
 | Fuentes en el catálogo | 84 |
-| Capturas | 69 |
-| Unidades documentales | 992 |
-| Beneficios curados | 5 |
-| Incidencias abiertas | 4610 |
+| Capturas | 68 |
+| Unidades documentales | 989 |
+| Beneficios curados | 7 |
+| Incidencias abiertas | 4617 |
 
 Las incidencias abiertas no son un fallo de la corrida: son lo que el sistema
 encontró y no resolvió solo. Una corrida limpia que no abriera ninguna estaría
@@ -57,6 +57,7 @@ algo distinto de los datos.
 
 | Fuente | Estado | Solicitadas | Descargadas | Rechazadas | Detalle |
 | --- | --- | ---: | ---: | ---: | --- |
+| D07 | FALLIDA | 1 | 0 | 1 | https://documentosboletinoficial.buenosaires.gob.ar/publico/PE-RES-MEDGC-MEDGC-1621-25-ANX.pdf: RemoteProtocol |
 | F04 | FALLIDA | 1 | 0 | 1 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL |
 | M05 | FALLIDA | 1 | 0 | 1 | https://www.anses.gob.ar/: HTTP 403. La fuente queda pausada; no se rotan identidades ni se evaden controles d |
 | C01 | COMPLETA | 1 | 1 | 0 |  |
@@ -72,7 +73,6 @@ algo distinto de los datos.
 | D05 | COMPLETA | 1 | 1 | 0 |  |
 | D06 | COMPLETA | 1 | 1 | 0 |  |
 | D06 | COMPLETA | 1 | 1 | 0 |  |
-| D07 | COMPLETA | 1 | 1 | 0 |  |
 | D08 | COMPLETA | 1 | 1 | 0 |  |
 | D09 | COMPLETA | 1 | 1 | 0 |  |
 | D10 | COMPLETA | 1 | 1 | 0 |  |
@@ -123,7 +123,14 @@ algo distinto de los datos.
 | M04 | COMPLETA | 1 | 1 | 0 |  |
 | M06 | COMPLETA | 1 | 1 | 0 |  |
 
-Las corridas en `FALLIDA` de esta lista no son un error del sistema: son el
+No todas las corridas en `FALLIDA` son iguales. Un tiempo de espera agotado o una
+conexión cortada es el portal de turno teniendo un mal momento: el cliente reintenta
+tres veces y a veces no alcanza, así que el número de capturas varía de una corrida a
+la siguiente. Eso no cambia lo que el sistema afirma —una fuente que no entregó no
+aporta nada, y se nota— pero explica por qué dos corridas del mismo día no dan
+exactamente el mismo total.
+
+Las otras dos no son un error del sistema: son el
 sistema haciendo lo que tiene que hacer cuando el otro lado no deja pasar. Un
 certificado que no valida no se acepta igual, y un 403 no se contesta rotando
 identidad: la fuente queda pausada, con el motivo escrito en la fila de su
@@ -131,14 +138,22 @@ corrida, y su cobertura se resuelve por fuente equivalente o carga manual
 trazada. Volverlas verdes relajando TLS o cambiando de identidad sería
 convertir un acceso bloqueado en un dato inventado.
 
+## Lecturas curadas que no se pudieron cargar
+
+Una lectura curada se apoya en el texto capturado de su norma: sin ese texto no
+hay nada que citar y el beneficio no entra. Que falte no es un error de la
+lectura, es que la fuente no entregó en esta corrida.
+
+Ninguna: las 7 lecturas curadas encontraron su norma en el corpus.
+
 ## Incidencias que abrió la corrida
 
 | Tipo | Cuántas |
 | --- | ---: |
 | IDENTIDAD_AMBIGUA | 4492 |
-| COBERTURA_EXTRACCION | 43 |
-| DATO_FALTANTE_CRITICO | 25 |
-| VIGENCIA_INDETERMINADA | 24 |
-| ACCESO_BLOQUEADO | 17 |
+| COBERTURA_EXTRACCION | 42 |
+| DATO_FALTANTE_CRITICO | 33 |
+| VIGENCIA_INDETERMINADA | 23 |
+| ACCESO_BLOQUEADO | 18 |
 | DISCREPANCIA_NUMERACION | 5 |
 | CONFLICTO_DE_FUENTES | 4 |

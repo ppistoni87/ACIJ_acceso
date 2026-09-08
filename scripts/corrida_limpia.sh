@@ -135,7 +135,14 @@ escribir_reporte() {
            CASE ci.estado WHEN 'FALLIDA' THEN 0 WHEN 'PARCIAL' THEN 1 ELSE 2 END, ci.source_id" \
       2>/dev/null | awk -F'|' '{printf "| %s | %s | %s | %s | %s | %s |\n",$1,$2,$3,$4,$5,$6}'
     echo
-    echo "Las corridas en \`FALLIDA\` de esta lista no son un error del sistema: son el"
+    echo "No todas las corridas en \`FALLIDA\` son iguales. Un tiempo de espera agotado o una"
+    echo "conexión cortada es el portal de turno teniendo un mal momento: el cliente reintenta"
+    echo "tres veces y a veces no alcanza, así que el número de capturas varía de una corrida a"
+    echo "la siguiente. Eso no cambia lo que el sistema afirma —una fuente que no entregó no"
+    echo "aporta nada, y se nota— pero explica por qué dos corridas del mismo día no dan"
+    echo "exactamente el mismo total."
+    echo
+    echo "Las otras dos no son un error del sistema: son el"
     echo "sistema haciendo lo que tiene que hacer cuando el otro lado no deja pasar. Un"
     echo "certificado que no valida no se acepta igual, y un 403 no se contesta rotando"
     echo "identidad: la fuente queda pausada, con el motivo escrito en la fila de su"
@@ -143,6 +150,39 @@ escribir_reporte() {
     echo "trazada. Volverlas verdes relajando TLS o cambiando de identidad sería"
     echo "convertir un acceso bloqueado en un dato inventado."
     echo
+    echo "## Lecturas curadas que no se pudieron cargar"
+    echo
+    echo "Una lectura curada se apoya en el texto capturado de su norma: sin ese texto no"
+    echo "hay nada que citar y el beneficio no entra. Que falte no es un error de la"
+    echo "lectura, es que la fuente no entregó en esta corrida."
+    echo
+    faltantes=0
+    for archivo in docs/curaduria/*.json; do
+      [ -e "${archivo}" ] || continue
+      externo=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['norma']['external_id'])" "${archivo}")
+      existe=$(sql "SELECT count(*) FROM documentos WHERE external_id = '${externo}'")
+      if [ "${existe}" = "0" ]; then
+        faltantes=$((faltantes + 1))
+        [ "${faltantes}" = 1 ] && { echo "| Lectura | Norma que le falta |"; echo "| --- | --- |"; }
+        echo "| \`$(basename "${archivo}")\` | \`${externo}\` |"
+      fi
+    done
+    lecturas=$(ls docs/curaduria/*.json 2>/dev/null | wc -l)
+    if [ "${faltantes}" = 0 ]; then
+      echo "Ninguna: las ${lecturas} lecturas curadas encontraron su norma en el corpus."
+    fi
+    echo
+    # Cada lectura declara un beneficio y ningún código se repite, así que las
+    # que cargaron más las que faltan tienen que dar el total. Si no da, el
+    # reporte se está contradiciendo y lo dice: un informe que se desmiente a sí
+    # mismo sin avisar es peor que no tenerlo.
+    if [ "$((beneficios + faltantes))" != "${lecturas}" ]; then
+      echo "> **El reporte no cierra:** ${lecturas} lecturas curadas, ${beneficios} beneficios"
+      echo "> cargados y ${faltantes} sin su norma. Los tres números tienen que sumar. Hay un"
+      echo "> error en este informe o una lectura que cargó a medias; no se puede leer como"
+      echo "> evidencia hasta resolverlo."
+      echo
+    fi
     echo "## Incidencias que abrió la corrida"
     echo
     echo "| Tipo | Cuántas |"
