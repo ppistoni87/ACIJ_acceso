@@ -173,9 +173,17 @@ lista escrita a mano—, cura encima de lo capturado y escribe
 fuente por fuente. Al cerrar destruye la base: si algo del reporte se pudiera
 explicar por estado previo, no hay estado previo del que agarrarse.
 
-Sirve para dos cosas: verificar que un entorno nuevo levanta entero, y medir
-cuánto tarda. Si un paso falla, la base **queda en pie** para inspeccionarla y el
-reporte se escribe igual, con el paso que falló marcado.
+Corre la población **dos veces** sobre la misma base y compara: el procedimiento
+dice de sí mismo que es idempotente y eso hay que ejercitarlo. Una primera pasada
+no prueba la segunda, y la segunda es la que corre todos los días. Si aparecen
+versiones de documento nuevas, el reporte lo dice: volver a pedir lo mismo no lo
+cambia, así que una versión más es una versión duplicada. Por eso tarda alrededor
+del doble que una pasada sola.
+
+Sirve para tres cosas: verificar que un entorno nuevo levanta entero, verificar
+que reejecutarlo no agrega nada, y medir cuánto tarda. Si un paso falla, la base
+**queda en pie** para inspeccionarla y el reporte se escribe igual, con el paso
+que falló marcado.
 
 Lo que no prueba es que corra igual desde otra red. Para eso hay que correrlo
 allá y comparar los dos reportes.

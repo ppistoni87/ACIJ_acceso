@@ -35,6 +35,8 @@ TABLA=$(mktemp)
 BITACORA=$(mktemp)
 ARRANQUE=$(date -Iseconds)
 ESTADO_FINAL="completa"
+ANTES=""
+DESPUES=""
 PENDIENTES_AL_CIERRE=""
 
 cronometrar() {
@@ -156,6 +158,31 @@ escribir_reporte() {
     echo "trazada. Volverlas verdes relajando TLS o cambiando de identidad sería"
     echo "convertir un acceso bloqueado en un dato inventado."
     echo
+    echo "## La segunda pasada no agrega nada"
+    echo
+    echo "El procedimiento se documenta como idempotente: reejecutarlo revalida las"
+    echo "capturas, no duplica versiones y solo reprocesa lo que cambió. Acá se corre"
+    echo "dos veces seguidas sobre la misma base y se cuenta lo que hay antes y después."
+    echo "Una primera pasada nunca prueba la segunda, y la segunda es la que corre en"
+    echo "producción todos los días."
+    echo
+    if [ -n "${ANTES}" ] && [ -n "${DESPUES}" ]; then
+      echo "| Momento | Versiones de documento |"
+      echo "| --- | ---: |"
+      echo "| Después de la primera pasada | ${ANTES} |"
+      echo "| Después de la segunda | ${DESPUES} |"
+      echo
+      if [ "${ANTES}" != "${DESPUES}" ]; then
+        echo "> **La segunda pasada agregó versiones:** de ${ANTES} a ${DESPUES}. Volver a"
+        echo "> pedir lo mismo no lo cambia, así que una versión nueva es una versión"
+        echo "> duplicada: el procedimiento no es idempotente y lo que dice de sí mismo es"
+        echo "> falso."
+        echo
+      fi
+    else
+      echo "La segunda pasada no llegó a correr: la corrida se interrumpió antes."
+      echo
+    fi
     echo "## Lecturas curadas que no se pudieron cargar"
     echo
     echo "Una lectura curada se apoya en el texto capturado de su norma: sin ese texto no"
@@ -250,6 +277,19 @@ cronometrar "migraciones" ${VENV}/alembic upgrade head
 # todos los días.
 # shellcheck disable=SC2086
 cronometrar "población completa" bash scripts/poblar_corpus.sh --sin-informes ${EXTRA}
+
+# Y otra vez, sobre la base que acaba de quedar poblada. El procedimiento dice
+# de sí mismo que es idempotente y eso hay que ejercitarlo, no declararlo: la
+# primera pasada nunca prueba la segunda. Cuatro importadores creaban una
+# versión de documento por captura y la segunda pasada chocaba contra la
+# restricción que impide duplicar una versión con el mismo contenido; no se veía
+# porque la corrida limpia empieza de cero y la base de desarrollo nunca empieza
+# de cero.
+ANTES=$(sql "SELECT count(*) FROM documento_versiones" 2>/dev/null || echo "")
+# shellcheck disable=SC2086
+cronometrar "segunda pasada (idempotencia)" bash scripts/poblar_corpus.sh --sin-informes ${EXTRA}
+DESPUES=$(sql "SELECT count(*) FROM documento_versiones" 2>/dev/null || echo "")
+
 # Al cerrar, el planificador se vuelve a preguntar a quién le toca. Si el
 # recorrido hizo lo que dice, ya no le toca a nadie: eso es lo que se mira.
 cronometrar "planificación al cierre (en seco)" ${VENV}/bn monitoreo ciclo --en-seco
