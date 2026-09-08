@@ -469,3 +469,26 @@ hay una condición ejecutable donde no la hay.
 
 Y que a una lectura le falte la norma que cita ya no aborta el lote: se reporta
 con su motivo y las demás entran. Es la misma regla que rige para las fuentes.
+
+## D-33 · Medir antes de optimizar, y corregir lo que la medición desmiente
+
+La medición de concurrencia mostró que entre cuatro y dieciséis consultas
+simultáneas la latencia se multiplicaba por seis mientras el caudal se quedaba
+quieto en unas setenta consultas por segundo. La explicación obvia era el pool
+de conexiones, que estaba en el default de SQLAlchemy —cinco más diez de
+desborde— y que nadie había elegido.
+
+Se declaró el pool y **el caudal no cambió**. Así que la explicación obvia era
+falsa, y el comentario que la afirmaba en el código tuvo que corregirse antes de
+quedar como documentación de algo que no pasa.
+
+Corriendo el mismo trabajo contra el motor, sin la API en el medio, el resultado
+fue claro: **1.270 consultas por segundo contra 76**. El límite no está en la
+base ni en las conexiones sino en el proceso que arma y serializa cada
+respuesta.
+
+**Consecuencia:** el reporte de rendimiento incluye las dos cifras juntas,
+porque la diferencia es la que dice qué hacer. Agrandar el pool o agregar
+índices no mueve ese número; agregar procesos sí. Y el pool declarado se
+conserva —elegir el número es mejor que heredarlo— pero sin atribuirle una
+mejora que no produjo.

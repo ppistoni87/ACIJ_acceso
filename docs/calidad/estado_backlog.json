@@ -407,9 +407,12 @@
     "scripts/poblar_corpus.sh",
     "src/backend_normativo/ingesta/importadores/infoleg.py",
     "docs/operacion/poblacion_real.md",
-    "docs/reportes/actualizacion_controlada.md"
+    "docs/reportes/actualizacion_controlada.md",
+    "docs/curaduria/ley-caba-6935.json",
+    "docs/curaduria/ley-caba-2917.json",
+    "src/backend_normativo/curacion/beneficios.py"
    ],
-   "falta": "El catálogo nacional está importado entero (423.718 normas), el padrón RENABAP y dos directorios abiertos están cargados, las 83 fuentes fueron recorridas y 31 páginas institucionales, 8 PDF y 2 fichas de trámite están extraídos. Falta que las fuentes capturadas y extraídas se conviertan en beneficios con reglas: eso depende de curación jurídica, no de más ingesta.",
+   "falta": "El catálogo nacional está importado entero (423.718 normas), el padrón RENABAP y tres directorios están cargados, las 83 fuentes fueron recorridas y 31 páginas institucionales, 8 PDF y 2 fichas de trámite están extraídos. Dos beneficios están curados desde el texto capturado —el apoyo habitacional de la Ley 6935 y el Régimen de Becas de la Ley 2917—, con 18 reglas, 6 poblaciones, 5 plazos y 2 cuantías, cada pieza atada a su artículo. Falta curar el resto del corpus con texto: el trabajo es de lectura jurídica sobre cada norma, no de más ingesta.",
    "comandos": [
     "bn ingesta importar-infoleg",
     "bn calidad ensayo-actualizacion"
@@ -447,7 +450,7 @@
     "bn operacion restaurar",
     "bn calidad rendimiento"
    ],
-   "falta": "El respaldo y la restauración están probados de punta a punta: pg_dump de una base con datos confirmados y pg_restore en otra que empieza vacía, verificando sobre la restaurada las 83 fuentes, el hash de la captura, la integridad y que los triggers de inmutabilidad sigan ahí. La latencia está medida sobre el corpus real de 423.718 normas y ninguna consulta pasa de 30 ms en el percentil 95. Falta la prueba de concurrencia: cuántas consultas por segundo resiste el despliegue real, que necesita el entorno de producción y generadores de carga, no la máquina de desarrollo."
+   "falta": "El respaldo y la restauración están probados de punta a punta con pg_dump y pg_restore sobre bases propias. La latencia está medida sobre el corpus real de 423.718 normas: ninguna consulta pasa de 33 ms en el percentil 95, y la concurrencia se mide con hilos reales disputándose el pool. La medición mostró dónde está el techo: el motor sostiene 1.270 consultas por segundo con dieciséis hilos y la API se queda en 76, así que el límite es el proceso que serializa las respuestas y escalar es agregar procesos. Falta la prueba con el despliegue real —varias instancias, balanceador, red y un generador de carga externo—, que confirma si ese techo por proceso se multiplica como corresponde."
   },
   "HU-038": {
    "estado": "CERRADA",

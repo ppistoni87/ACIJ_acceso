@@ -46,6 +46,17 @@ class Settings(BaseSettings):
     # Rol `ingestor`: escribe capturas y candidatos, no publica.
     database_url_ingesta: PostgresDsn | None = None
     sql_echo: bool = False
+    # El pool se declara en vez de quedar en el default de SQLAlchemy —cinco
+    # conexiones más diez de desborde—, que nadie había elegido. Subirlo no
+    # aumentó el caudal de la API: la medición mostró que el cuello está en el
+    # proceso y no en las conexiones. Lo que sí mejoró es la latencia de la
+    # primera consulta, y sobre todo que el número esté puesto a propósito.
+    # El tope de arriba es `max_connections` de PostgreSQL dividido por la
+    # cantidad de instancias: pedir más conexiones de las que el motor acepta
+    # cambia una espera por un error.
+    pool_size: int = 10
+    pool_max_overflow: int = 20
+    pool_timeout_s: int = 30
 
     # --- Almacenamiento de objetos (capturas inmutables) ----------------
     # La base guarda `objeto_uri` y hashes; nunca una ruta que solo exista en

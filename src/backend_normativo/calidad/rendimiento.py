@@ -13,6 +13,7 @@ consulta se informa aparte justamente porque es la única que se parece a eso.
 
 from __future__ import annotations
 
+import concurrent.futures
 import statistics
 import time
 from dataclasses import dataclass, field
@@ -63,11 +64,30 @@ class Medicion:
 
 
 @dataclass
+class Concurrencia:
+    """Qué pasa cuando varias personas preguntan a la vez."""
+
+    hilos: int = 0
+    consultas: int = 0
+    duracion_s: float = 0.0
+    p50_ms: float = 0.0
+    p95_ms: float = 0.0
+    max_ms: float = 0.0
+    errores: int = 0
+
+    @property
+    def por_segundo(self) -> float:
+        return round(self.consultas / self.duracion_s, 1) if self.duracion_s else 0.0
+
+
+@dataclass
 class ReporteRendimiento:
     corpus: dict[str, int] = field(default_factory=dict)
     tamano_base: str = ""
     repeticiones: int = 0
     mediciones: list[Medicion] = field(default_factory=list)
+    concurrencia: list[Concurrencia] = field(default_factory=list)
+    motor_por_segundo: float = 0.0
 
     @property
     def peor(self) -> Medicion | None:
@@ -99,7 +119,13 @@ def medir_corpus(conexion: Connection) -> tuple[dict[str, int], str]:
     return corpus, tamano
 
 
-def correr(conexion: Connection, cliente, *, repeticiones: int = 12) -> ReporteRendimiento:
+def correr(
+    conexion: Connection,
+    cliente,
+    *,
+    repeticiones: int = 12,
+    hilos: tuple[int, ...] = (1, 4, 16),
+) -> ReporteRendimiento:
     """Mide cada consulta `repeticiones` veces sobre la base ya conectada."""
     corpus, tamano = medir_corpus(conexion)
     reporte = ReporteRendimiento(corpus=corpus, tamano_base=tamano, repeticiones=repeticiones)
@@ -129,7 +155,65 @@ def correr(conexion: Connection, cliente, *, repeticiones: int = 12) -> ReporteR
                 estado=estado,
             )
         )
+
+    for cuantos in hilos:
+        reporte.concurrencia.append(medir_concurrencia(cliente, hilos=cuantos))
+    # El mismo trabajo contra el motor, sin la API en el medio: dice si el techo
+    # de arriba es de la base o del proceso.
+    reporte.motor_por_segundo = _caudal_del_motor(conexion, hilos=max(hilos))
     return reporte
+
+
+def _caudal_del_motor(conexion: Connection, *, hilos: int, por_hilo: int = 10) -> float:
+    """Cuántas consultas por segundo sostiene el motor con la misma concurrencia."""
+    motor = conexion.engine
+    consulta = text("SELECT count(*) FROM normas WHERE anio = 2020")
+
+    def ronda(_: int) -> None:
+        with motor.connect() as propia:
+            for _ in range(por_hilo):
+                propia.execute(consulta).scalar_one()
+
+    arranque = time.perf_counter()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=hilos) as pool:
+        list(pool.map(ronda, range(hilos)))
+    duracion = time.perf_counter() - arranque
+    return round(hilos * por_hilo / duracion, 1) if duracion else 0.0
+
+
+def medir_concurrencia(cliente, *, hilos: int, por_hilo: int = 10) -> Concurrencia:
+    """Golpea la API desde varios hilos a la vez y mide qué pasa.
+
+    Cada petición toma su propia conexión del pool, así que la contención de
+    conexiones y la del motor son reales. Lo que sigue sin ser real es la red y
+    el despliegue: esto corre en proceso y contra la misma base.
+    """
+    resultado = Concurrencia(hilos=hilos)
+    tiempos: list[float] = []
+
+    def una_ronda() -> list[tuple[float, int]]:
+        medidos: list[tuple[float, int]] = []
+        for indice in range(por_hilo):
+            nombre, ruta, params = CONSULTAS[indice % len(CONSULTAS)]
+            del nombre
+            arranque = time.perf_counter()
+            respuesta = cliente.get(ruta, params=params)
+            medidos.append(((time.perf_counter() - arranque) * 1000, respuesta.status_code))
+        return medidos
+
+    arranque = time.perf_counter()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=hilos) as pool:
+        for medidos in pool.map(lambda _: una_ronda(), range(hilos)):
+            for demora, estado in medidos:
+                tiempos.append(demora)
+                resultado.errores += int(not 200 <= estado < 300)
+    resultado.duracion_s = round(time.perf_counter() - arranque, 3)
+    resultado.consultas = len(tiempos)
+    if tiempos:
+        resultado.p50_ms = round(statistics.median(tiempos), 2)
+        resultado.p95_ms = _percentil(tiempos, 0.95)
+        resultado.max_ms = round(max(tiempos), 2)
+    return resultado
 
 
 def _cuantas(cuerpo: dict) -> int | None:
@@ -168,6 +252,24 @@ def formatear(reporte: ReporteRendimiento) -> str:
             f"| {m.primera_ms} | {m.p50_ms} | {m.p95_ms} | {m.max_ms} | {m.estado} |"
         )
 
+    if reporte.concurrencia:
+        lineas += [
+            "",
+            "## Con varias consultas a la vez",
+            "",
+            "Cada petición toma su propia conexión del pool, así que la contención de",
+            "conexiones y la del motor son reales.",
+            "",
+            "| Hilos | Consultas | Duración (s) | Consultas/s | p50 (ms) | p95 (ms) | máx (ms) "
+            "| Errores |",
+            "| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        ]
+        for c in reporte.concurrencia:
+            lineas.append(
+                f"| {c.hilos} | {c.consultas} | {c.duracion_s} | {c.por_segundo} | {c.p50_ms} "
+                f"| {c.p95_ms} | {c.max_ms} | {c.errores} |"
+            )
+
     peor = reporte.peor
     lineas += [
         "",
@@ -183,12 +285,25 @@ def formatear(reporte: ReporteRendimiento) -> str:
         )
     lineas += [
         "",
-        "**Esto no es una prueba de carga.** Las consultas se ejecutan una después de otra,",
-        "sobre la misma conexión y sin latencia de red. No dice cuántas consultas por segundo",
-        "resiste el sistema ni qué pasa cuando varias personas preguntan a la vez: eso necesita",
-        "un entorno con el despliegue real y generadores de carga, y hasta tenerlo lo honesto",
-        "es no afirmar un número de concurrencia.",
+        "**Esto sigue sin ser una prueba de carga de producción.** Corre en proceso, sin red,",
+        "sin balanceador y contra una sola instancia. El número de consultas por segundo es un",
+        "techo optimista, no una capacidad comprometida.",
     ]
+    if reporte.motor_por_segundo:
+        techo = max((c.por_segundo for c in reporte.concurrencia), default=0.0)
+        lineas += [
+            "",
+            "### Dónde está el techo",
+            "",
+            f"Con la misma concurrencia, el motor sostiene **{reporte.motor_por_segundo} "
+            f"consultas por segundo** y la API se queda en **{techo}**. La diferencia dice "
+            "dónde está el límite: no en la base ni en las conexiones, sino en el proceso que "
+            "arma y serializa cada respuesta.",
+            "",
+            "Es un dato que cambia qué hacer para escalar. Agrandar el pool o agregar índices "
+            "no mueve este número; agregar procesos sí. Medirlo antes de optimizar evita "
+            "gastar el trabajo en el lado que no era.",
+        ]
     if reporte.fallidas:
         lineas += [
             "",
