@@ -1,0 +1,199 @@
+{
+ "schema_version": "1.0",
+ "norma": {
+  "external_id": "infoleg:39880:actualizado",
+  "referencia": "Ley 24.714",
+  "rol": "CREA"
+ },
+ "nota": "Lectura curada de la asignación por hijo con discapacidad. Es la cuarta prestación de la Ley 24.714 que se cura por separado, y la que más se parece a la asignación por hijo común: comparte titular, subsistema y reglas de concurrencia. Lo que la distingue es justamente lo que hay que no perder —no tiene límite de edad y el artículo 3 la exceptúa expresamente del tope de ingresos que excluye a las demás—, y por eso se cura aparte en vez de agregarle una condición a la otra. Todo entra como candidato.",
+ "beneficio": {
+  "codigo": "AR.ASIGNACION-HIJO-CON-DISCAPACIDAD",
+  "nombre": "Asignación por hijo con discapacidad",
+  "familia": "SEGURIDAD_SOCIAL",
+  "linea": "ASIGNACION_FAMILIAR",
+  "jurisdiccion": "AR",
+  "naturaleza": "PRESTACION_MONETARIA",
+  "descripcion": "Suma mensual que se paga por cada hijo con discapacidad a cargo, sin límite de edad, a partir del mes en que se acredita esa condición. La discapacidad es la definida en el artículo 2 de la Ley 22.431.",
+  "unidad_beneficiaria": "PERSONA",
+  "modalidad": "TRANSFERENCIA",
+  "frecuencia": "MENSUAL",
+  "requiere_solicitud": true,
+  "ruta_evidencia": "articulo-8"
+ },
+ "poblaciones": [
+  {
+   "codigo": "AR.TRABAJADOR-EN-RELACION-DE-DEPENDENCIA",
+   "nombre": "Personas del subsistema contributivo",
+   "definicion": "Trabajadores que prestan servicios remunerados en relación de dependencia en la actividad privada, beneficiarios de la Ley sobre Riesgos del Trabajo y del Seguro de Desempleo, e inscriptos y aportantes al Régimen Simplificado para Pequeños Contribuyentes.",
+   "rol_persona": "TITULAR",
+   "alcance": "Es la misma población que la de la asignación por hijo: el mismo código, para que quede claro que no son dos grupos distintos de personas sino dos prestaciones para el mismo.",
+   "ruta_evidencia": "articulo-1/inciso-a-3"
+  },
+  {
+   "codigo": "AR.HIJO-CON-DISCAPACIDAD",
+   "nombre": "Hijo con discapacidad a cargo",
+   "definicion": "Hijo a cargo del trabajador en condición de discapacidad según el artículo 2 de la Ley 22.431, sin límite de edad.",
+   "rol_persona": "CAUSANTE",
+   "alcance": "Da lugar a la asignación y no la cobra. A diferencia del hijo sin discapacidad, su edad no lo excluye nunca: un hijo de cuarenta años con discapacidad a cargo sigue dando derecho a la asignación.",
+   "ruta_evidencia": "articulo-8"
+  }
+ ],
+ "reglas": [
+  {
+   "clave": "COMPRENDIDO-EN-EL-SUBSISTEMA-CONTRIBUTIVO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-1/inciso-a-3",
+   "texto_literal": "a) Un subsistema contributivo fundado en los principios de reparto de aplicación a los trabajadores que presten servicios remunerados en relación de dependencia en la actividad privada, cualquiera sea la modalidad de contratación laboral, beneficiarios de la Ley sobre Riesgos de Trabajo y beneficiarios del Seguro de Desempleo, el que se financiará con los recursos previstos en el artículo 5° de la presente ley.",
+   "descripcion": "Estar comprendido en el subsistema contributivo.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "in",
+    "field": "situacion_laboral_del_titular",
+    "values": [
+     "RELACION_DE_DEPENDENCIA_PRIVADA",
+     "BENEFICIARIO_RIESGOS_DEL_TRABAJO",
+     "BENEFICIARIO_SEGURO_DE_DESEMPLEO",
+     "MONOTRIBUTISTA",
+     "SECTOR_PUBLICO",
+     "PENSION_NO_CONTRIBUTIVA"
+    ]
+   },
+   "requiere_revision": true,
+   "motivo_revision": "La lista junta cuatro situaciones del inciso a) y a’) con dos que entran por el artículo 24, que se rigen por este régimen «en cuanto a las prestaciones monto y topes» y no necesariamente en todo lo demás. Es la misma decisión pendiente que en la asignación por hijo: si se resuelve, se resuelve en las dos."
+  },
+  {
+   "clave": "HIJO-CON-DISCAPACIDAD-A-CARGO-SIN-LIMITE-DE-EDAD",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-8",
+   "texto_literal": "La asignación por hijo con discapacidad consistirá en el pago de una suma mensual que se abonara al trabajador por cada hijo que se encuentre a su cargo en esa condición, sin limite de edad, a partir del mes en que se acredite tal condición ante el empleador.",
+   "descripcion": "Tener a cargo un hijo con discapacidad, sin límite de edad, desde el mes en que se acredita esa condición ante el empleador.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "all",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "hijo_a_cargo_del_titular"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "hijo_con_discapacidad_acreditada"
+     }
+    ]
+   },
+   "requiere_revision": true,
+   "motivo_revision": "El derecho corre «a partir del mes en que se acredite tal condición ante el empleador», y eso no es una condición sobre la persona sino el momento desde el que se paga: una discapacidad certificada en marzo no habilita el pago de enero aunque existiera antes. El árbol guarda si la condición está acreditada y no desde cuándo; de esa fecha depende cuántos meses se cobran."
+  },
+  {
+   "clave": "DISCAPACIDAD-SEGUN-LA-LEY-22431",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-8",
+   "texto_literal": "A los efectos de esta ley se entiende por discapacidad la definida en la Ley N° 22.431, artículo 2°.",
+   "descripcion": "La discapacidad es la definida en el artículo 2 de la Ley 22.431.",
+   "requiere_revision": true,
+   "motivo_revision": "La definición vive en otra norma que no está en el corpus. Escribir acá qué cuenta como discapacidad sería sustituir esa definición por una propia, y de esa definición depende el acceso: el campo guarda si la condición está acreditada por autoridad competente y no reconstruye el criterio."
+  },
+  {
+   "clave": "EXCEPTUADA-DEL-TOPE-DE-INGRESOS",
+   "categoria": "EXCEPCION",
+   "ruta_evidencia": "articulo-3",
+   "texto_literal": "Quedan excluidos de las prestaciones de esta ley, con excepción de las asignaciones familiares por maternidad y por hijos con discapacidad, los trabajadores que perciban una remuneración inferior a PESOS CIEN ($ 100) o igual o superior a PESOS CUATRO MIL CON UN CENTAVO ($ 4.000,01). (Tope máximo de remuneración sustituido por art. 1° del Decreto N° 1345/2007 B.O. 5/10/2007. Vigencia: a partir del 1º de julio de 2007).",
+   "descripcion": "La exclusión por remuneración fuera del piso y el techo no alcanza a esta asignación: el artículo 3 la exceptúa expresamente junto con la de maternidad.",
+   "requiere_revision": true,
+   "motivo_revision": "Es la diferencia más importante con la asignación por hijo común y la más fácil de perder: superar el tope de ingresos no saca a nadie de esta prestación. No se formaliza como condición porque no lo es —es una excepción a otra regla, y por eso se guarda como tal—, y escribirla como AST que devuelve verdadero haría creer que hay algo que cumplir. Lo que hay que confirmar es si la excepción alcanza también al piso mínimo o sólo al techo: el texto excluye por los dos extremos en la misma oración y exceptúa sin distinguir."
+  },
+  {
+   "clave": "UN-SOLO-PROGENITOR-PERCIBE",
+   "categoria": "PRIORIDAD",
+   "ruta_evidencia": "articulo-20",
+   "texto_literal": "ARTICULO 20.- Cuando ambos progenitores estén comprendidos en el presente régimen, las prestaciones enumeradas en los artículos 6º y 15 serán percibidas por uno solo de ellos.",
+   "descripcion": "Cuando ambos progenitores están comprendidos en el régimen, la prestación la percibe uno solo de ellos.",
+   "requiere_revision": true,
+   "motivo_revision": "La ley dice que cobra uno solo y no dice cuál. Elegir un criterio sería inventar la parte que el legislador no escribió, y esa elección decide quién cobra."
+  },
+  {
+   "clave": "EMPLEO-CON-MAYOR-ANTIGUEDAD",
+   "categoria": "PRIORIDAD",
+   "ruta_evidencia": "articulo-21",
+   "texto_literal": "ARTICULO 21.- Cuando el trabajador se desempeñare en más de un empleo tendrá derecho a la percepción de las prestaciones de la presente ley en el que acredite mayor antigüedad, a excepción de la asignación por maternidad, que será percibida en cada uno de ellos.",
+   "descripcion": "Con más de un empleo, la prestación se percibe en el que acredite mayor antigüedad.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "empleo_con_mayor_antiguedad"
+   },
+   "requiere_revision": true,
+   "motivo_revision": "Es una regla de dónde se cobra, no de si se cobra. Acá pesa menos que en la asignación por hijo común, porque el tope de ingresos no aplica: la elección del empleo no puede dejar a nadie afuera, sólo cambia quién liquida."
+  },
+  {
+   "clave": "GUARDA-TENENCIA-O-TUTELA-CUENTA-COMO-HIJO",
+   "categoria": "EXCEPCION",
+   "ruta_evidencia": "articulo-22",
+   "texto_literal": "serán considerados como hijos los menores o personas con discapacidad cuya guarda, tenencia o tutela haya sido acordada al trabajador por autoridad judicial o administrativa competente. En tales supuestos, los respectivos padres no tendrán, por ese hijo, derecho al cobro de las mencionadas asignaciones.",
+   "descripcion": "Cuentan como hijos las personas con discapacidad cuya guarda, tenencia o tutela fue acordada al trabajador por autoridad competente; en ese caso los padres no cobran por ese hijo.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "hijo_a_cargo_del_titular"
+   },
+   "requiere_revision": true,
+   "motivo_revision": "El artículo nombra expresamente a la asignación por hijo con discapacidad. Y dice «los menores o personas con discapacidad», que acá importa: como esta prestación no tiene límite de edad, la guarda o curatela de una persona adulta con discapacidad entra por esta puerta. Amplía qué cuenta como hijo y a la vez saca el derecho a los padres: son dos efectos y el árbol alcanza el primero.",
+   "excepcion_de": "HIJO-CON-DISCAPACIDAD-A-CARGO-SIN-LIMITE-DE-EDAD"
+  },
+  {
+   "clave": "INEMBARGABLE-Y-NO-REMUNERATIVA",
+   "categoria": "SALVAGUARDA",
+   "ruta_evidencia": "articulo-23",
+   "texto_literal": "Las Asignaciones Familiares dispuestas en la presente ley son inembargables, no constituyen remuneración ni están sujetas a gravámenes, atento su naturaleza jurídica, tampoco serán tenidas en cuenta para la determinación del sueldo anual complementario, ni para el pago de las indemnizaciones por despido, enfermedad, accidente o para cualquier otro efecto. No pueden ser enajenadas ni afectadas a terceros por derecho alguno.",
+   "descripcion": "La asignación es inembargable, no constituye remuneración y no puede ser enajenada ni afectada a terceros.",
+   "requiere_revision": true,
+   "motivo_revision": "Es una protección sobre lo cobrado y no una condición de acceso, así que no tiene AST. Se conserva porque es lo que hay que poder responder cuando alguien pregunta si le pueden descontar la asignación por una deuda."
+  }
+ ],
+ "cuantia": {
+  "tipo": "FORMULA",
+  "ruta_evidencia": "articulo-18/inciso-b-77",
+  "formula_version": "ley-24714-art18-b@1",
+  "unidad_beneficiaria": "CAUSANTE",
+  "descripcion": "Una suma mensual por cada hijo con discapacidad, en una escala decreciente por tramos de remuneración. Es mayor que la asignación por hijo sin discapacidad en todos los tramos, y su último tramo no tiene techo declarado.",
+  "parametros": [
+   {
+    "codigo": "AR.ASIGNACION-HIJO-DISCAPACIDAD",
+    "rol": "REFERENCIA"
+   }
+  ],
+  "requiere_revision": true,
+  "motivo_revision": "La escala del artículo 18 inciso b) va de cuatrocientos a doscientos pesos: son valores de 2007 y los vigentes salen de resoluciones de ANSES que no están en el corpus. Hay además una diferencia de redacción con el inciso a) que conviene mirar: el último tramo del inciso a) declara un techo y el del inciso b) dice sólo «desde tres mil pesos», sin límite superior, lo que es coherente con que el artículo 3 exceptúe a esta asignación del tope. Coherente no es lo mismo que dicho, y por eso queda a revisión."
+ },
+ "plazos": [],
+ "campos_no_informados": [
+  {
+   "campo": "plazos",
+   "motivo": "La ley no fija plazo para solicitarla ni para acreditar la discapacidad: lo que fija es desde cuándo se paga —el mes de la acreditación—, que es otra cosa. Guardarlo como plazo haría creer que hay una fecha límite para acreditar, y no la hay: acreditar tarde no hace perder el derecho, corre el inicio del pago."
+  },
+  {
+   "campo": "criterios_revocacion",
+   "motivo": "La ley no declara causales de baja. Se deja de percibir si el hijo deja de estar a cargo o si termina la relación laboral, que no es una revocación; y la condición de discapacidad puede tener vencimiento en el certificado, algo que esta norma no menciona y que decide si el pago se interrumpe."
+  },
+  {
+   "campo": "canales",
+   "motivo": "El artículo 8 dice que la condición se acredita «ante el empleador» y nada más sobre dónde se gestiona la prestación. Cuál es hoy el canal —y si sigue siendo el empleador— no sale de esta norma."
+  }
+ ],
+ "dependencias": [
+  {
+   "referencia": "Ley 22.431, artículo 2",
+   "motivo": "El artículo 8 remite a ella para definir qué es discapacidad, que es la condición central de esta prestación. Sin la norma en el corpus, el criterio queda como un hecho acreditado por certificación y no como una definición citable."
+  },
+  {
+   "referencia": "Resoluciones de ANSES que fijan montos y topes de la Ley 24.714",
+   "motivo": "El artículo 19 delega la cuantía en el Poder Ejecutivo. Sin la resolución vigente, la escala del inciso b) queda declarada y sin monto."
+  },
+  {
+   "referencia": "Certificado Único de Discapacidad",
+   "motivo": "El artículo 8 pide acreditar la condición y no dice con qué instrumento ni por cuánto tiempo vale. De su vigencia depende si el pago se interrumpe, y eso no sale de esta ley."
+  }
+ ]
+}

@@ -375,7 +375,7 @@ que «la atención presencial de las sedes permanecerá cerrada hasta el comienz
 del nuevo periodo de inscripción». Eso es el dato de hoy. Rescatar el listado de
 una captura anterior lo presentaría como vigente.
 
-## Siete beneficios curados
+## Ocho beneficios curados
 
 La lectura jurídica vive en `docs/curaduria/`, un archivo por beneficio, y no en
 el código: se puede discutir contra la ley sin leer Python. Cada regla, cada
@@ -393,6 +393,7 @@ siempre—.
 | Asignación Universal por Hijo | Ley 24.714 | 16 | 2 | 0 | fórmula sin valor |
 | Asignación por Embarazo | Ley 24.714 | 9 | 1 | 2 | fórmula sin valor |
 | Asignación por hijo (contributivo) | Ley 24.714 | 10 | 2 | 0 | fórmula sin valor |
+| Asignación por hijo con discapacidad | Ley 24.714 | 8 | 2 | 0 | fórmula sin valor |
 
 **Ninguna cuantía tiene monto.** No es una omisión: es lo que las normas dicen.
 El artículo 18 de la Ley 24.714 sigue fijando cien pesos por hijo —valor nominal
@@ -401,13 +402,23 @@ cincuenta pesos de 2006. Los montos vigentes salen de resoluciones que no están
 en el corpus. Servir esos números como «lo que vas a cobrar» sería peor que
 decir que no se sabe.
 
-**Tres prestaciones de la misma ley, curadas por separado.** La Ley 24.714
+**Cuatro prestaciones de la misma ley, curadas por separado.** La Ley 24.714
 regula catorce; curarla entera como un beneficio haría que las condiciones de la
 asignación por matrimonio se le aplicaran a un chico de cuatro años. La
-diferencia no es teórica: la Asignación por Embarazo pide tres años de
-residencia legal y la Asignación Universal por Hijo pide dos, en la misma ley.
+diferencia no es teórica:
 
-**Lo que las normas no resuelven queda declarado.** De las 83 reglas vigentes,
+- La Asignación por Embarazo pide tres años de residencia legal y la Asignación
+  Universal por Hijo pide dos, en la misma ley.
+- La asignación por hijo con discapacidad no tiene límite de edad, y el artículo
+  3 la exceptúa expresamente del tope de ingresos que excluye a las demás.
+  Agregarla como una condición más de la asignación por hijo habría heredado el
+  «menor de 18» y el tope, que es el error que más gente dejaría afuera.
+- El artículo 22 hace contar como hijos a los menores bajo guarda o tutela y
+  nombra a la asignación por hijo, a la de hijo con discapacidad y a la ayuda
+  escolar. No nombra a la Asignación Universal por Hijo, que se incorporó trece
+  años después.
+
+**Lo que las normas no resuelven queda declarado.** De las 91 reglas vigentes,
 poco más de la mitad tiene condición ejecutable escrita; el resto conserva su
 texto literal y el motivo por el que no se formalizó. Tres casos que muestran
 por qué:
