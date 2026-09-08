@@ -18,7 +18,9 @@ ingesta = typer.Typer(help="Captura de fuentes.", no_args_is_help=True)
 app.add_typer(catalogo, name="catalogo")
 curacion = typer.Typer(help="Curación jurídica.", no_args_is_help=True)
 app.add_typer(ingesta, name="ingesta")
+calidad = typer.Typer(help="Calidad y cobertura.", no_args_is_help=True)
 app.add_typer(curacion, name="curacion")
+app.add_typer(calidad, name="calidad")
 
 
 @catalogo.command("validar")
@@ -201,6 +203,48 @@ def curacion_relaciones(
         f"Referencias pendientes de resolver: {resultado.pendientes_creadas}\n"
         f"Autorreferencias omitidas: {resultado.autorreferencias_omitidas}"
     )
+
+
+@curacion.command("campos")
+def curacion_campos(
+    fuente: str | None = typer.Option(None, help="Limitar a una fuente."),
+) -> None:
+    """Evalúa los siete campos pedidos y propone candidatos con evidencia."""
+    from backend_normativo.curacion.campos import EvaluadorDeCampos
+
+    with engine_migrador().begin() as conexion:
+        resultado = EvaluadorDeCampos(conexion).evaluar(fuente)
+    typer.echo(
+        f"Versiones evaluadas: {resultado.versiones_evaluadas}\n"
+        f"Filas de evaluación: {resultado.evaluaciones_creadas}\n"
+        f"Afirmaciones candidatas: {resultado.afirmaciones_creadas}"
+    )
+    for estado, cantidad in sorted(resultado.por_estado.items()):
+        typer.echo(f"  {estado}: {cantidad}")
+
+
+@calidad.command("cobertura")
+def calidad_cobertura(
+    salida: Path | None = typer.Option(None, help="Archivo donde escribir el reporte."),
+    formato: str = typer.Option("markdown", help="markdown o json."),
+) -> None:
+    """Mide cobertura y calidad, con las métricas separadas."""
+    from backend_normativo.calidad.cobertura import formatear as formatear_cobertura
+    from backend_normativo.calidad.cobertura import medir
+
+    with engine_migrador().connect() as conexion:
+        metricas = medir(conexion)
+    texto = (
+        json.dumps(metricas.a_dict(), ensure_ascii=False, indent=2)
+        if formato == "json"
+        else formatear_cobertura(metricas)
+    )
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto + "\n", encoding="utf-8")
+        typer.echo(f"Reporte escrito en {salida}")
+    else:
+        typer.echo(texto)
 
 
 if __name__ == "__main__":

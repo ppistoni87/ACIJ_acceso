@@ -46,3 +46,11 @@ $BN curacion relaciones
 echo
 echo "== Conciliación =="
 $BN catalogo conciliar --salida docs/reportes/conciliacion_inventario.md
+
+echo
+echo "== Siete campos =="
+$BN curacion campos
+
+echo
+echo "== Cobertura =="
+$BN calidad cobertura --salida docs/reportes/cobertura.md
