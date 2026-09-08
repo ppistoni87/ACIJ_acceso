@@ -20,7 +20,11 @@ curacion = typer.Typer(help="Curación jurídica.", no_args_is_help=True)
 app.add_typer(ingesta, name="ingesta")
 calidad = typer.Typer(help="Calidad y cobertura.", no_args_is_help=True)
 app.add_typer(curacion, name="curacion")
+revision = typer.Typer(help="Revisión de dominio.", no_args_is_help=True)
+publicacion = typer.Typer(help="Publicación de releases.", no_args_is_help=True)
 app.add_typer(calidad, name="calidad")
+app.add_typer(revision, name="revision")
+app.add_typer(publicacion, name="publicacion")
 
 
 @catalogo.command("validar")
@@ -245,6 +249,183 @@ def calidad_cobertura(
         typer.echo(f"Reporte escrito en {salida}")
     else:
         typer.echo(texto)
+
+
+@curacion.command("vigencia")
+def curacion_vigencia(
+    fuente: str | None = typer.Option(None, help="Limitar a una fuente."),
+) -> None:
+    """Resuelve la vigencia por política versionada y deriva el resto a revisión."""
+    from backend_normativo.curacion.vigencia import ResolutorVigencia
+    from backend_normativo.politicas import vigencia as politica
+
+    with engine_migrador().begin() as conexion:
+        resultado = ResolutorVigencia(conexion).resolver(source_id=fuente)
+    typer.echo(
+        f"Política aplicada: {politica.VERSION}\n"
+        f"Versiones consideradas: {resultado.versiones}\n"
+        f"Resueltas por política: {resultado.resueltas_por_politica}\n"
+        f"Derivadas a revisión de dominio: {resultado.derivadas_a_revision}\n"
+        f"Incidencias abiertas: {resultado.incidencias_creadas}"
+    )
+
+
+@revision.command("pendientes")
+def revision_pendientes(
+    tipo: str | None = typer.Option(None, help="Filtrar por tipo de incidencia."),
+    limite: int = typer.Option(20, help="Máximo de incidencias a listar."),
+) -> None:
+    """Lista las incidencias abiertas que esperan decisión."""
+    from sqlalchemy import text as sql
+
+    with engine_migrador().connect() as conexion:
+        filas = (
+            conexion.execute(
+                sql(
+                    "SELECT i.id, i.tipo, i.severidad, i.source_id, "
+                    "       coalesce(n.tipo || ' ' || n.numero || '/' || n.anio, '-') AS norma, "
+                    "       left(i.descripcion, 110) AS descripcion "
+                    "  FROM incidencias_revision i "
+                    "  LEFT JOIN registro_versiones rv ON rv.id = i.registro_version_id "
+                    "  LEFT JOIN normas n ON n.id = rv.entidad_id "
+                    " WHERE i.estado = 'ABIERTA' "
+                    "   AND (CAST(:t AS text) IS NULL OR i.tipo = :t) "
+                    " ORDER BY i.severidad, i.creado_en LIMIT :lim"
+                ),
+                {"t": tipo, "lim": limite},
+            )
+            .mappings()
+            .all()
+        )
+    if not filas:
+        typer.echo("No hay incidencias abiertas con ese filtro.")
+        return
+    for fila in filas:
+        typer.echo(
+            f"{fila['id']}  [{fila['severidad']}] {fila['tipo']}  "
+            f"{fila['source_id'] or '-'}  {fila['norma']}\n    {fila['descripcion']}"
+        )
+
+
+@revision.command("resolver-vigencia")
+def revision_resolver_vigencia(
+    incidencia: str = typer.Argument(..., help="Identificador de la incidencia."),
+    actor: str = typer.Option(..., help="Quién decide. Queda en la bitácora."),
+    decision: str = typer.Option(..., help="Qué se decidió y con qué fundamento."),
+    valid_tipo: str = typer.Option(..., help="CERRADO, ABIERTO_FIN, PUNTUAL, ..."),
+    desde: str | None = typer.Option(None, help="Fecha de inicio (AAAA-MM-DD)."),
+    hasta: str | None = typer.Option(None, help="Fecha de fin (AAAA-MM-DD)."),
+    estado_legal: str = typer.Option("VIGENTE", help="Estado legal validado."),
+    evidencia: str | None = typer.Option(
+        None, help="Evidencia que fundamenta el estado. Si se omite, se usa la de la ficha."
+    ),
+) -> None:
+    """Registra una decisión de vigencia con su actor y su fundamento."""
+    import uuid as _uuid
+
+    from sqlalchemy import text as sql
+
+    from backend_normativo.curacion.revision import Revisor
+
+    with engine_migrador().begin() as conexion:
+        evidencia_id = _uuid.UUID(evidencia) if evidencia else None
+        if evidencia_id is None:
+            evidencia_id = conexion.execute(
+                sql(
+                    "SELECT e.id FROM evidencias e "
+                    "  JOIN documento_versiones dv ON dv.id = e.doc_version_id "
+                    "  JOIN norma_versiones nv ON nv.doc_version_id = dv.id "
+                    "  JOIN incidencias_revision i "
+                    "    ON i.registro_version_id = nv.registro_version_id "
+                    " WHERE i.id = :i ORDER BY e.creado_en LIMIT 1"
+                ),
+                {"i": incidencia},
+            ).scalar_one_or_none()
+        resultado = Revisor(conexion).resolver(
+            _uuid.UUID(incidencia),
+            decision=decision,
+            actor=actor,
+            fundamento_evidencia_id=evidencia_id,
+            vigencia={
+                "valid_tipo": valid_tipo,
+                "valid_desde": desde,
+                "valid_hasta": hasta,
+                "estado_legal": estado_legal,
+            },
+        )
+    typer.echo(
+        f"Incidencia {resultado.incidencia_id} resuelta por {actor}. "
+        f"Vigencia aplicada: {resultado.aplico_vigencia}"
+    )
+
+
+@revision.command("aprobar-campos")
+def revision_aprobar_campos(
+    version: str = typer.Argument(..., help="Identificador de la versión."),
+    actor: str = typer.Option(..., help="Quién aprueba."),
+    campos: list[str] = typer.Option(None, help="Campos a aprobar. Por omisión, todos."),
+) -> None:
+    """Aprueba las afirmaciones candidatas de una versión."""
+    import uuid as _uuid
+
+    from backend_normativo.curacion.campos import EvaluadorDeCampos
+    from backend_normativo.curacion.revision import Revisor
+    from backend_normativo.db.vocabularios import CAMPOS_SOLICITADOS
+
+    objetivo = list(campos) if campos else list(CAMPOS_SOLICITADOS)
+    with engine_migrador().begin() as conexion:
+        revisor = Revisor(conexion)
+        total = sum(
+            revisor.aprobar_afirmaciones(_uuid.UUID(version), campo, actor=actor)
+            for campo in objetivo
+        )
+        EvaluadorDeCampos(conexion).evaluar()
+    typer.echo(f"{total} afirmación(es) aprobadas por {actor}.")
+
+
+@publicacion.command("estado")
+def publicacion_estado() -> None:
+    """Muestra qué se puede publicar y qué queda en cuarentena, con motivos."""
+    from backend_normativo.publicacion.gates import evaluar_gates
+    from backend_normativo.publicacion.release import Publicador
+
+    with engine_migrador().connect() as conexion:
+        publicador = Publicador(conexion)
+        candidatos = publicador.candidatos()
+        gates = evaluar_gates(conexion, candidatos)
+        cuarentena = publicador.cuarentena()
+    typer.echo(f"Candidatos a publicar: {len(candidatos)}")
+    for gate in gates.gates:
+        marca = "ok " if gate.pasa else "FALLA"
+        typer.echo(f"  [{marca}] {gate.id}: {gate.descripcion} · {gate.observado}")
+    typer.echo(f"En cuarentena: {len(cuarentena)}")
+    for fila in cuarentena[:15]:
+        typer.echo(
+            f"  {fila['entidad_tipo']} {fila['registro_version_id']}: {', '.join(fila['motivos'])}"
+        )
+
+
+@publicacion.command("publicar")
+def publicacion_publicar(
+    actor: str = typer.Option(..., help="Quién aprueba la publicación."),
+    motivo: str = typer.Option(..., help="Por qué se publica este corte."),
+) -> None:
+    """Publica un release con todo lo que está en condiciones."""
+    from backend_normativo.publicacion.release import PublicacionRechazada, Publicador
+
+    try:
+        with engine_migrador().begin() as conexion:
+            resultado = Publicador(conexion).publicar(actor=actor, motivo=motivo)
+    except PublicacionRechazada as exc:
+        typer.echo(str(exc))
+        raise typer.Exit(code=1) from exc
+    typer.echo(
+        f"Release {resultado.release_id}\n"
+        f"Versiones publicadas: {resultado.versiones_publicadas}\n"
+        f"Fragmentos citables: {resultado.chunks_creados}\n"
+        f"Eventos en outbox: {resultado.eventos_emitidos}\n"
+        f"En cuarentena: {len(resultado.en_cuarentena)}"
+    )
 
 
 if __name__ == "__main__":
