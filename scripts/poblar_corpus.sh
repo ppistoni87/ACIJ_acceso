@@ -29,19 +29,34 @@ done
 # La última captura de una fuente, que es sobre la que trabajan los importadores.
 # Trabajan sobre bytes ya guardados, nunca sobre la red: leen el objeto por su
 # SHA-256, así que correrlos de nuevo no vuelve a pedirle nada a nadie.
-ultima_captura() {
-  psql -h 127.0.0.1 -U postgres -d "${1}" -tAc \
-    "SELECT c.id FROM capturas c JOIN fuente_urls fu ON fu.id = c.source_url_id
-      WHERE fu.source_id = '${2}' ORDER BY c.capturado_en DESC LIMIT 1"
+# La conexión sale de BN_DATABASE_URL y de ningún otro lado. Estaba escrita como
+# `psql -h 127.0.0.1 -U postgres` en seis lugares, y con eso el bootstrap solo
+# podía correr contra la base local de un contenedor: apuntarlo a una base
+# gestionada exigía editar el script. Ahora la URL manda, y psql la entiende
+# entera —usuario, host, base y modo TLS— sin que haga falta PGPASSWORD.
+PSQL_URL=$(python3 - <<'PY'
+import os
+import sys
+
+url = os.environ.get("BN_DATABASE_URL", "").strip()
+if not url:
+    sys.exit(
+        "Falta BN_DATABASE_URL. El bootstrap no trae credenciales propias: "
+        "la conexion se declara en el entorno."
+    )
+# psql no conoce el dialecto de SQLAlchemy.
+print(url.replace("postgresql+psycopg://", "postgresql://"))
+PY
+) || exit 2
+
+consulta() {
+  psql "${PSQL_URL}" -tAc "${1}"
 }
 
-BASE=$(python3 - <<'PY'
-import os, urllib.parse
-url = os.environ.get("BN_DATABASE_URL", "")
-print(urllib.parse.urlparse(url).path.lstrip("/") or "backend_normativo")
-PY
-)
-export PGPASSWORD="${PGPASSWORD:-postgres}"
+ultima_captura() {
+  consulta "SELECT c.id FROM capturas c JOIN fuente_urls fu ON fu.id = c.source_url_id
+      WHERE fu.source_id = '${1}' ORDER BY c.capturado_en DESC LIMIT 1"
+}
 
 # Normas del alcance inicial: las seis relacionadas del anexo, la ficha HTML del
 # decreto CABA 690/2006 y la Ley de Asignaciones Familiares.
@@ -103,14 +118,14 @@ $BN curacion tramites
 # fija se queda corta en cuanto entra una norma nueva al corpus.
 echo
 echo "== Anexos y equivalencias =="
-NORMAS_CON_TEXTO=$(psql -h 127.0.0.1 -U postgres -d "${BASE}" -tAc \
+NORMAS_CON_TEXTO=$(consulta \
   "SELECT DISTINCT n.id FROM normas n JOIN norma_versiones nv ON nv.norma_id = n.id")
 for norma in ${NORMAS_CON_TEXTO}; do
   # Solo se informa la norma que remite a un anexo: una línea «0 remisiones» por
   # cada norma del corpus tapa la única que sí importa.
   $BN curacion anexos "${norma}" 2>/dev/null | grep -E 'Remisiones a anexo: [1-9]' || true
 done
-NORMAS_CON_DOS_VERSIONES=$(psql -h 127.0.0.1 -U postgres -d "${BASE}" -tAc \
+NORMAS_CON_DOS_VERSIONES=$(consulta \
   "SELECT n.id FROM normas n JOIN norma_versiones nv ON nv.norma_id = n.id
     GROUP BY n.id HAVING count(DISTINCT nv.registro_version_id) > 1")
 for norma in ${NORMAS_CON_DOS_VERSIONES}; do
@@ -120,13 +135,13 @@ done
 echo
 echo "== Directorios de atención =="
 for fuente in F20 F60; do
-  captura=$(ultima_captura "${BASE}" "${fuente}")
+  captura=$(ultima_captura "${fuente}")
   if [ -n "${captura}" ]; then
     echo "-- ${fuente}"
     $BN ingesta importar-directorio "${captura}" | tail -3
   fi
 done
-captura=$(ultima_captura "${BASE}" F44)
+captura=$(ultima_captura F44)
 if [ -n "${captura}" ]; then
   echo "-- F44 (Defensoría del Pueblo de la Nación)"
   $BN ingesta importar-dpn "${captura}" | tail -3
@@ -135,12 +150,12 @@ fi
 # cuyo identificador declara el script de la propia página. Descubrirla, pedirla
 # y recién después importarla. El importador trabaja sobre la planilla, no sobre
 # la página, así que se elige la captura por su tipo y no por ser la más nueva.
-captura=$(ultima_captura "${BASE}" F39)
+captura=$(ultima_captura F39)
 if [ -n "${captura}" ]; then
   echo "-- F39 (RENABAP)"
   $BN ingesta descubrir-renabap "${captura}" | tail -2 || true
   $BN ingesta capturar F39 | tail -1
-  planilla=$(psql -h 127.0.0.1 -U postgres -d "${BASE}" -tAc \
+  planilla=$(consulta \
     "SELECT c.id FROM capturas c JOIN fuente_urls fu ON fu.id = c.source_url_id
       WHERE fu.source_id = 'F39' AND fu.url LIKE '%out:csv%'
       ORDER BY c.capturado_en DESC LIMIT 1")
@@ -154,7 +169,7 @@ fi
 if [ "${CATALOGO_NACIONAL}" = 1 ]; then
   echo
   echo "== Catálogo nacional (F01), como metadatos =="
-  captura=$(ultima_captura "${BASE}" F01)
+  captura=$(ultima_captura F01)
   if [ -n "${captura}" ]; then
     $BN ingesta importar-infoleg "${captura}" | tail -4
   else
@@ -192,8 +207,7 @@ if [ "${AMPLIAR}" = 1 ]; then
 else
   # Sin ampliar, pero sí revalidando lo que ya está registrado: capturar de nuevo
   # las URLs conocidas es parte de la rutina y no hace crecer nada.
-  if psql -h 127.0.0.1 -U postgres -d "${BASE}" -tAc \
-       "SELECT 1 FROM fuentes WHERE source_id = 'N01'" | grep -q 1; then
+  if consulta "SELECT 1 FROM fuentes WHERE source_id = 'N01'" | grep -q 1; then
     echo
     echo "== Normas citadas por el corpus (revalidación) =="
     $BN ingesta capturar N01 | tail -1
@@ -228,4 +242,8 @@ if [ "${INFORMES}" = 1 ]; then
   echo "== Informes =="
   $BN catalogo conciliar --salida docs/reportes/conciliacion_inventario.md
   $BN calidad cobertura --salida docs/reportes/cobertura.md
+  # Cierra la carga: cada fila que un importador leyó tiene que haber terminado
+  # en algún lado, y ninguna corrida puede quedar a medias. Sale distinto de
+  # cero si algo de eso no se cumple, y el script termina con `set -e`.
+  $BN ingesta conciliar --salida docs/reportes/conciliacion_ingesta.md
 fi

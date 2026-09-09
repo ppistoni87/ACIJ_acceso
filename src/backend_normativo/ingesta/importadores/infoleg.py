@@ -37,6 +37,7 @@ from backend_normativo.db.vocabularios import (
     TipoOrganismo,
 )
 from backend_normativo.ingesta.almacen import AlmacenObjetos
+from backend_normativo.ingesta.conciliacion import Conciliacion, registrar
 
 # Contrato de forma del dataset. Si cambia, la importación se detiene: cargar a
 # ciegas un CSV con otras columnas produce datos silenciosamente equivocados.
@@ -225,7 +226,35 @@ class ImportadorInfoleg:
         sha = self.conexion.execute(
             text("SELECT sha256_raw FROM capturas WHERE id = :c"), {"c": captura_id}
         ).scalar_one()
-        return self.importar(self.almacen.leer(sha), limite=limite)
+        resultado = self.importar(self.almacen.leer(sha), limite=limite)
+        registrar(self.conexion, captura_id, self._conciliacion(resultado))
+        return resultado
+
+    @staticmethod
+    def _conciliacion(resultado: ResultadoImportacion) -> Conciliacion:
+        """Cómo se reparten las filas del catálogo nacional.
+
+        `sin_numero` y `sin_clave_canonica` no son rechazos: esas normas se
+        cargan con identidad incierta, y contarlas como caídas daba una
+        conciliación negativa sobre un importador que funcionaba bien.
+        `con_texto_actualizado` es el subconjunto de las existentes cuyo texto
+        cambió, así que no suma aparte.
+        """
+        return Conciliacion(
+            importador="catalogo_infoleg",
+            source_id="F01",
+            leidas=resultado.filas_leidas,
+            nuevas=resultado.normas_creadas,
+            repetidas=resultado.normas_existentes,
+            actualizadas=resultado.con_texto_actualizado,
+            observaciones={
+                "sin_numero": resultado.sin_numero,
+                "identidad_incierta": resultado.sin_clave_canonica,
+                "homonimas": resultado.homonimas,
+                "sin_texto": resultado.sin_texto,
+            },
+            avisos=resultado.avisos,
+        )
 
     def importar(self, contenido: bytes, *, limite: int | None = None) -> ResultadoImportacion:
         resultado = ResultadoImportacion()

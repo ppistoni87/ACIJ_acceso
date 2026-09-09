@@ -503,3 +503,128 @@ def test_at007_la_corrida_no_figura_completa_para_contenido(
     assert fila["estado"] != "COMPLETA"
     assert fila["rechazadas"] == 1
     assert fila["descargadas"] == 0
+
+
+# --- P-005: reanudar sin volver a pedir ni duplicar ----------------------------
+
+
+class ClienteQueSeCorta(ClienteDePrueba):
+    """Simula el corte: contesta bien hasta que le toca la URL que falla."""
+
+    def __init__(self, respuestas: dict[str, list[Descarga]], falla_en: str) -> None:
+        super().__init__(respuestas)
+        self.falla_en = falla_en
+
+    def descargar(self, url: str, **kwargs) -> Descarga:
+        if url == self.falla_en:
+            raise ConnectionError("se cortó la corrida")
+        return super().descargar(url, **kwargs)
+
+
+def _urls_de(conexion: Connection, source_id: str) -> list[str]:
+    return [
+        fila[0]
+        for fila in conexion.execute(
+            text(
+                "SELECT url FROM fuente_urls WHERE source_id = :s "
+                "ORDER BY es_canonica DESC, descubierta_en"
+            ),
+            {"s": source_id},
+        )
+    ]
+
+
+def _segunda_url(conexion: Connection, source_id: str) -> None:
+    """El catálogo trae una sola URL para D01; el corte necesita al menos dos."""
+    conexion.execute(
+        text(
+            "INSERT INTO fuente_urls (source_id, url, rol, tipo_acceso, es_canonica) "
+            "VALUES (:s, :u, 'DETALLE', 'HTTP_GET_PUBLICO', false)"
+        ),
+        {"s": source_id, "u": f"https://ejemplo.gob.ar/{source_id}/segunda"},
+    )
+
+
+def _checkpoint(conexion: Connection, corrida_id) -> dict | None:
+    return conexion.execute(
+        text("SELECT checkpoint FROM corridas_ingesta WHERE id = :id"), {"id": corrida_id}
+    ).scalar_one()
+
+
+def test_una_corrida_que_cierra_no_queda_reanudable(
+    conexion: Connection, catalogo, almacen: AlmacenObjetos
+) -> None:
+    """El checkpoint sirve para volver de un corte, no para quedar puesto: una
+    corrida cerrada que lo conservara se reanudaría en vez de correr de nuevo."""
+    urls = _urls_de(conexion, "D01")
+    cliente = ClienteDePrueba({url: [_descarga(url)] for url in urls})
+
+    resultado = Capturador(conexion, cliente=cliente, almacen=almacen).capturar_fuente("D01")
+
+    assert resultado.reanudada is False
+    assert resultado.reanudadas == 0
+    assert _checkpoint(conexion, resultado.corrida_id) is None
+
+
+def test_una_corrida_cortada_deja_checkpoint_y_se_reanuda_sin_volver_a_pedir(
+    conexion: Connection, catalogo, almacen: AlmacenObjetos
+) -> None:
+    """P-005: reanudar conserva el checkpoint y no vuelve a pedir lo hecho."""
+    _segunda_url(conexion, "D01")
+    urls = _urls_de(conexion, "D01")
+    assert len(urls) >= 2, "la prueba necesita una fuente con más de una URL"
+    respuestas = {url: [_descarga(url)] for url in urls}
+
+    corta = ClienteQueSeCorta(respuestas, falla_en=urls[1])
+    capturador = Capturador(conexion, cliente=corta, almacen=almacen)
+    with pytest.raises(ConnectionError):
+        capturador.capturar_fuente("D01")
+
+    corrida = conexion.execute(
+        text("SELECT id, estado FROM corridas_ingesta WHERE source_id = 'D01'")
+    ).one()
+    assert corrida.estado == "EN_CURSO", "una corrida cortada no cierra sola"
+    checkpoint = _checkpoint(conexion, corrida.id)
+    assert checkpoint is not None
+    assert len(checkpoint["urls_hechas"]) == 1, "quedó anotada la URL que sí se hizo"
+
+    # Segunda corrida: el cliente que ahora contesta todo no recibe la primera URL.
+    entero = ClienteDePrueba(respuestas)
+    segundo = Capturador(conexion, cliente=entero, almacen=almacen).capturar_fuente("D01")
+
+    assert segundo.corrida_id == corrida.id, "continúa la corrida, no abre otra"
+    assert segundo.reanudada is True
+    assert segundo.reanudadas == 1
+    pedidas = {pedido[0] for pedido in entero.pedidos}
+    assert urls[0] not in pedidas, "no se le vuelve a pedir a la fuente lo ya capturado"
+    assert urls[1] in pedidas
+    assert _checkpoint(conexion, segundo.corrida_id) is None, "al cerrar deja de ser reanudable"
+
+
+def test_reanudar_no_duplica_capturas(
+    conexion: Connection, catalogo, almacen: AlmacenObjetos
+) -> None:
+    _segunda_url(conexion, "D01")
+    urls = _urls_de(conexion, "D01")
+    respuestas = {url: [_descarga(url)] for url in urls}
+
+    with pytest.raises(ConnectionError):
+        Capturador(
+            conexion, cliente=ClienteQueSeCorta(respuestas, falla_en=urls[1]), almacen=almacen
+        ).capturar_fuente("D01")
+    Capturador(conexion, cliente=ClienteDePrueba(respuestas), almacen=almacen).capturar_fuente(
+        "D01"
+    )
+
+    por_url = conexion.execute(
+        text(
+            "SELECT count(*) FROM capturas c JOIN fuente_urls fu ON fu.id = c.source_url_id "
+            " WHERE fu.source_id = 'D01' AND fu.url = :u"
+        ),
+        {"u": urls[0]},
+    ).scalar_one()
+    assert por_url == 1, "la URL ya capturada no se capturó dos veces"
+    corridas = conexion.execute(
+        text("SELECT count(*) FROM corridas_ingesta WHERE source_id = 'D01'")
+    ).scalar_one()
+    assert corridas == 1, "reanudar continúa la corrida en vez de abrir una nueva"

@@ -147,17 +147,24 @@ def ingesta_capturar(
 
     with ClienteCaptura() as cliente:
         for source_id in fuentes:
-            with engine_migrador().begin() as conexion:
-                capturador = Capturador(conexion, cliente=cliente)
+            # Confirmando URL por URL, y no al final de la fuente: si toda la
+            # fuente fuera una transacción, un corte la revertiría entera y el
+            # checkpoint se iría con ella, que es justo lo que no puede pasar.
+            with engine_migrador().connect() as conexion:
+                capturador = Capturador(conexion, cliente=cliente, confirmar=conexion.commit)
                 try:
                     resultado = capturador.capturar_fuente(source_id)
                 except (PermisoDePoliticaDenegado, LookupError) as exc:
+                    conexion.rollback()
                     typer.echo(f"{source_id}: {exc}")
                     continue
+                conexion.commit()
+            reanudacion = f" · reanudadas {resultado.reanudadas}" if resultado.reanudada else ""
             typer.echo(
                 f"{source_id}: {resultado.estado.value} · "
                 f"solicitadas {resultado.solicitadas} · descargadas {resultado.descargadas} · "
-                f"sin cambios {resultado.no_modificadas} · rechazadas {resultado.rechazadas}"
+                f"sin cambios {resultado.no_modificadas} · "
+                f"rechazadas {resultado.rechazadas}{reanudacion}"
             )
             for incidencia in resultado.incidencias:
                 typer.echo(f"    incidencia: {incidencia}")
@@ -660,6 +667,35 @@ def operacion_restaurar(
     else:
         typer.echo(texto)
     if not verificacion.integra:
+        raise typer.Exit(1)
+
+
+@ingesta.command("conciliar")
+def ingesta_conciliar(
+    salida: Path | None = typer.Option(None, "--salida", help="Archivo donde escribir."),
+) -> None:
+    """Comprueba que cada fila que un importador leyó haya terminado en algún lado.
+
+    Falla si alguna conciliación no cierra, si hay rechazos sin motivo o si
+    quedó una corrida a medias: dar por cerrada una carga que tiene una corrida
+    interrumpida la deja incompleta sin decirlo.
+    """
+    from backend_normativo.ingesta.conciliacion import conciliar, formatear
+
+    with engine_migrador().connect() as conexion:
+        reporte = conciliar(conexion)
+    texto = formatear(reporte)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto, encoding="utf-8")
+        typer.echo(
+            f"Conciliación escrita en {salida} · "
+            f"{len(reporte.filas)} importación(es), "
+            f"{'todo cierra' if reporte.todo_cierra else 'CON PENDIENTES'}"
+        )
+    else:
+        typer.echo(texto)
+    if not reporte.todo_cierra:
         raise typer.Exit(1)
 
 

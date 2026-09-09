@@ -46,6 +46,7 @@ from backend_normativo.db.vocabularios import (
     ValidTipo,
 )
 from backend_normativo.ingesta.almacen import AlmacenObjetos
+from backend_normativo.ingesta.conciliacion import Conciliacion, registrar
 
 SOURCE_ID = "F39"
 
@@ -181,10 +182,29 @@ class ImportadorRenabap:
             .mappings()
             .one()
         )
-        return self.importar(
+        resultado = self.importar(
             self.almacen.leer(fila["sha256_raw"]),
             captura_id=captura_id,
             capturado_en=fila["capturado_en"],
+        )
+        registrar(self.conexion, captura_id, self._conciliacion(resultado))
+        return resultado
+
+    @staticmethod
+    def _conciliacion(resultado: ResultadoPadron) -> Conciliacion:
+        """Una fila sin identificador no se puede seguir entre padrones: no entra.
+
+        `sin_familias` no es un rechazo: el barrio se carga igual, sin ese dato.
+        """
+        return Conciliacion(
+            importador="padron_renabap",
+            source_id="F39",
+            leidas=resultado.filas_leidas,
+            nuevas=resultado.barrios_nuevos,
+            repetidas=resultado.barrios_conocidos,
+            motivos={"sin_id": resultado.sin_id},
+            observaciones={"sin_familias": resultado.sin_familias},
+            avisos=resultado.avisos,
         )
 
     def importar(

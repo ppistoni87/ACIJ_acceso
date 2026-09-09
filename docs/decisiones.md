@@ -990,3 +990,30 @@ corpus real —qué guarda efectivamente cada una de las 242 capturas— apareci
 tamaño de la captura previa, pero no el tipo, así que cada revalidación borraba
 un dato que la primera captura sí había sabido. Contar lo que hay es lo que
 encuentra estas cosas; leer el código que las escribe, no.
+
+## D-56 · Los rechazos no se declaran: se derivan
+
+Cada importador contaba lo suyo y lo imprimía en pantalla. Guardar esa cuenta
+—como control `DQ11` sobre la corrida— era el trabajo obvio de P-005. Lo que no
+era obvio es que la aritmética iba a encontrar algo.
+
+El primer intento pedía a cada importador declarar sus rechazos, y tres de los
+cinco dieron negativo: −322.473 en el catálogo nacional, −153 en un directorio,
+−2 en la Defensoría. Los contadores que parecían rechazos no lo eran.
+`literales_sin_dato` cuenta campos vacíos de filas que sí entraron;
+`sin_clave_canonica` cuenta normas que se cargan con identidad incierta;
+`sin_direccion` cuenta oficinas que entran igual. Cada uno describía algo de lo
+que estaba adentro, y restarlo de la suma sacaba dos veces lo mismo.
+
+**Consecuencia:** `rechazadas` se deriva de `leidas − nuevas − repetidas`. Así
+la identidad no puede mentir, y la comprobación pasa a ser la que importa: que
+ninguna fila caída quede sin motivo declarado. Los contadores de calidad viven
+en `observaciones`, se informan y no restan.
+
+Vale la pena decir por qué el error era fácil. Los nombres de esos contadores
+—`sin_algo`— suenan a fallo, y leyendo el código de a un importador por vez
+todos parecían encajar. Lo que no encajaba era la suma, y la suma solo aparece
+cuando se los pone a los cinco en la misma tabla contra datos reales.
+
+De paso quedó mostrado el control DQ10 del paquete sobre datos y no sobre una
+prueba: reejecutar los cinco importadores creó cero filas nuevas.

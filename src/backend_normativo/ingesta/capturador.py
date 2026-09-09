@@ -17,6 +17,7 @@ Lo que esta capa garantiza:
 from __future__ import annotations
 
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
@@ -39,6 +40,10 @@ class ResultadoCaptura:
     procesadas: int = 0
     rechazadas: int = 0
     no_modificadas: int = 0
+    # URLs que esta corrida no volvió a pedir porque una corrida anterior ya
+    # las había hecho y dejó constancia en el checkpoint.
+    reanudadas: int = 0
+    reanudada: bool = False
     capturas: list[uuid.UUID] = field(default_factory=list)
     incidencias: list[str] = field(default_factory=list)
     estado: voc.EstadoCorrida = voc.EstadoCorrida.EN_CURSO
@@ -50,10 +55,17 @@ class Capturador:
         conexion: Connection,
         cliente: ClienteCaptura | None = None,
         almacen: AlmacenObjetos | None = None,
+        confirmar: Callable[[], None] | None = None,
     ) -> None:
         self.conexion = conexion
         self.cliente = cliente or ClienteCaptura()
         self.almacen = almacen or AlmacenObjetos()
+        # Un checkpoint que nadie confirma no sobrevive a la interrupción que
+        # tiene que sobrevivir: si toda la corrida va en una transacción, el
+        # corte la revierte entera y el checkpoint se va con ella. Quien
+        # orquesta decide cuándo confirmar; las pruebas no confirman nunca,
+        # porque su aislamiento depende de revertir al final.
+        self.confirmar = confirmar
 
     # --- API principal ----------------------------------------------------
 
@@ -75,12 +87,27 @@ class Capturador:
         presupuesto = Presupuesto.desde_config(config["presupuesto"])
         urls = self._urls(source_id)
 
-        corrida_id = self._abrir_corrida(source_id, config["id"])
+        corrida_id, hechas = self._corrida_reanudable(source_id, config["id"])
         resultado = ResultadoCaptura(
-            corrida_id=corrida_id, source_id=source_id, solicitadas=len(urls)
+            corrida_id=corrida_id,
+            source_id=source_id,
+            solicitadas=len(urls),
+            reanudada=bool(hechas),
         )
 
+        if hechas:
+            # Los contadores de lo hecho antes del corte no se pueden inventar:
+            # se recuentan de las capturas que la corrida ya tiene. Lo que quedó
+            # anotado como hecho y no dejó captura fue un rechazo, y así
+            # reconcilia: reanudadas = descargadas previas + rechazadas previas.
+            self._recontar_lo_ya_hecho(resultado, hechas)
+
         for url in urls:
+            if str(url["id"]) in hechas:
+                # Ya se pidió y se guardó en una corrida que se cortó. Volver a
+                # pedirla no agregaría nada y le costaría una solicitud más a la
+                # fuente, que es justo lo que el presupuesto trata de cuidar.
+                continue
             previa = self._captura_previa(url["id"])
             descarga = self.cliente.descargar(
                 url["url"],
@@ -89,8 +116,14 @@ class Capturador:
                 presupuesto=presupuesto,
             )
             self._procesar(resultado, url, descarga, previa)
+            hechas.add(str(url["id"]))
+            self._guardar_checkpoint(corrida_id, hechas)
+            if self.confirmar is not None:
+                self.confirmar()
 
         self._cerrar_corrida(resultado)
+        if self.confirmar is not None:
+            self.confirmar()
         return resultado
 
     # --- Procesamiento de una descarga ------------------------------------
@@ -276,8 +309,34 @@ class Capturador:
         )
         return dict(fila) if fila else None
 
-    def _abrir_corrida(self, source_id: str, config_id: uuid.UUID) -> uuid.UUID:
-        return self.conexion.execute(
+    def _corrida_reanudable(
+        self, source_id: str, config_id: uuid.UUID
+    ) -> tuple[uuid.UUID, set[str]]:
+        """La corrida que quedó abierta con checkpoint, o una nueva.
+
+        Una corrida EN_CURSO con checkpoint es una que se cortó: nadie la
+        cerró. Continuarla en vez de abrir otra es lo que hace que reanudar no
+        vuelva a pedir lo que ya se pidió, y que la reconciliación de la fuente
+        siga siendo una sola fila y no dos mitades.
+        """
+        fila = (
+            self.conexion.execute(
+                text(
+                    "SELECT id, checkpoint FROM corridas_ingesta "
+                    " WHERE source_id = :sid AND estado = 'EN_CURSO' "
+                    "   AND checkpoint IS NOT NULL "
+                    " ORDER BY inicio DESC LIMIT 1"
+                ),
+                {"sid": source_id},
+            )
+            .mappings()
+            .first()
+        )
+        if fila is not None:
+            hechas = set((fila["checkpoint"] or {}).get("urls_hechas", []))
+            return fila["id"], hechas
+
+        corrida_id = self.conexion.execute(
             text(
                 "INSERT INTO corridas_ingesta "
                 "(source_id, config_version_id, estado, extractor_version) "
@@ -285,6 +344,38 @@ class Capturador:
             ),
             {"sid": source_id, "cfg": config_id, "ver": VERSION_EXTRACTOR},
         ).scalar_one()
+        return corrida_id, set()
+
+    def _recontar_lo_ya_hecho(self, resultado: ResultadoCaptura, hechas: set[str]) -> None:
+        fila = self.conexion.execute(
+            text(
+                "SELECT count(*) AS capturas, "
+                "       count(*) FILTER (WHERE http_status = 304) AS no_modificadas "
+                "  FROM capturas WHERE corrida_id = :id"
+            ),
+            {"id": resultado.corrida_id},
+        ).one()
+        resultado.reanudadas = len(hechas)
+        resultado.descargadas = fila.capturas
+        resultado.procesadas = fila.capturas
+        resultado.no_modificadas = fila.no_modificadas
+        resultado.rechazadas = max(0, len(hechas) - fila.capturas)
+
+    def _guardar_checkpoint(self, corrida_id: uuid.UUID, hechas: set[str]) -> None:
+        import json
+
+        self.conexion.execute(
+            text("UPDATE corridas_ingesta SET checkpoint = CAST(:c AS jsonb) WHERE id = :id"),
+            {
+                "c": json.dumps(
+                    {
+                        "urls_hechas": sorted(hechas),
+                        "actualizado_en": datetime.now(UTC).isoformat(),
+                    }
+                ),
+                "id": corrida_id,
+            },
+        )
 
     def _insertar_captura(
         self,
@@ -353,7 +444,7 @@ class Capturador:
             text(
                 "UPDATE corridas_ingesta SET estado = :estado, fin = :fin, "
                 "  solicitadas = :sol, descargadas = :desc, procesadas = :proc, "
-                "  rechazadas = :rech, detalle_error = :detalle "
+                "  rechazadas = :rech, detalle_error = :detalle, checkpoint = NULL "
                 "WHERE id = :id"
             ),
             {

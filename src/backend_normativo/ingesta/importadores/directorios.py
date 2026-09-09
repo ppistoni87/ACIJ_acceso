@@ -50,6 +50,7 @@ from backend_normativo.db.vocabularios import (
     ValidTipo,
 )
 from backend_normativo.ingesta.almacen import AlmacenObjetos
+from backend_normativo.ingesta.conciliacion import Conciliacion, registrar
 from backend_normativo.ingesta.versiones import (
     proxima_version,
     sha_de_la_captura,
@@ -159,11 +160,30 @@ class ImportadorDirectorios:
                 f"No hay contrato declarado para {fila['source_id']}. Importar un directorio "
                 "sin saber qué significa cada columna es cargar datos a ciegas."
             )
-        return self.importar(
+        resultado = self.importar(
             self.almacen.leer(fila["sha256_raw"]),
             dataset=dataset,
             captura_id=captura_id,
             capturado_en=fila["capturado_en"],
+        )
+        registrar(self.conexion, captura_id, self._conciliacion(resultado))
+        return resultado
+
+    @staticmethod
+    def _conciliacion(resultado: ResultadoDirectorio) -> Conciliacion:
+        """`literales_sin_dato` no es un rechazo: cuenta campos vacíos de filas
+        que sí entraron como punto de atención."""
+        return Conciliacion(
+            importador="directorio",
+            source_id=resultado.source_id,
+            leidas=resultado.filas_leidas,
+            nuevas=resultado.puntos_creados,
+            repetidas=resultado.puntos_conocidos,
+            observaciones={
+                "literales_sin_dato": resultado.literales_sin_dato,
+                "coordenadas_sin_crs": resultado.coordenadas_sin_crs,
+            },
+            avisos=resultado.avisos,
         )
 
     def importar(

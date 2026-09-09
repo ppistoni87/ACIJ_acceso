@@ -52,6 +52,7 @@ from backend_normativo.db.vocabularios import (
 )
 from backend_normativo.ingesta.adaptadores.html import decodificar_html
 from backend_normativo.ingesta.almacen import AlmacenObjetos
+from backend_normativo.ingesta.conciliacion import Conciliacion, registrar
 from backend_normativo.ingesta.versiones import (
     proxima_version,
     sha_de_la_captura,
@@ -321,11 +322,32 @@ class ImportadorDpn:
             .one()
         )
         html = decodificar_html(self.almacen.leer(fila["sha256_raw"]), charset_declarado=None)
-        return self.importar(
+        resultado = self.importar(
             html,
             captura_id=captura_id,
             url=fila["url_final"],
             capturado_en=fila["capturado_en"],
+        )
+        registrar(self.conexion, captura_id, self._conciliacion(resultado))
+        return resultado
+
+    @staticmethod
+    def _conciliacion(resultado: ResultadoDpn) -> Conciliacion:
+        """Una oficina sin dirección entra igual como punto: lo que le falta es
+        la dirección, no la existencia."""
+        return Conciliacion(
+            importador="dpn",
+            source_id="F44",
+            leidas=resultado.oficinas,
+            nuevas=resultado.puntos_creados,
+            repetidas=resultado.puntos_conocidos,
+            motivos={"sin_direccion": resultado.sin_direccion},
+            observaciones={
+                "correos_no_tomados": resultado.correos_no_tomados,
+                "jurisdicciones_sin_mapear": resultado.jurisdicciones_sin_mapear,
+                "alcance_sin_declarar": resultado.alcance_sin_declarar,
+            },
+            avisos=resultado.avisos,
         )
 
     def importar(
