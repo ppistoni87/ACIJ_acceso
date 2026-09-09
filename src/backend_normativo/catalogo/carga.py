@@ -155,10 +155,17 @@ def cargar_catalogo(conexion: Connection, manifiesto: Manifiesto | None = None) 
             text(
                 "INSERT INTO fuente_config_versiones ("
                 "  source_id, version, adaptador, frecuencia, ttl_defecto, presupuesto, "
-                "  politica_version"
-                ") VALUES (:sid, 1, :adaptador, :frecuencia, :ttl, :presupuesto, :politica) "
-                "ON CONFLICT (source_id, version) DO NOTHING "
-                "RETURNING id"
+                "  politica_version, selector_config"
+                ") VALUES (:sid, 1, :adaptador, :frecuencia, :ttl, :presupuesto, :politica, "
+                "          :selector) "
+                # La configuración se refresca: si la derivación mejora, las
+                # fuentes ya cargadas tienen que recibirla sin borrar la base.
+                "ON CONFLICT (source_id, version) DO UPDATE SET "
+                "  selector_config = EXCLUDED.selector_config "
+                # `xmax = 0` distingue la fila recién insertada de la
+                # actualizada: sin eso, refrescar la configuración de una fuente
+                # ya cargada se contaría como una configuración nueva.
+                "RETURNING (xmax = 0) AS creada"
             ),
             {
                 "sid": fuente.source_id,
@@ -167,9 +174,10 @@ def cargar_catalogo(conexion: Connection, manifiesto: Manifiesto | None = None) 
                 "ttl": der.ttl_de(fuente),
                 "presupuesto": _json(der.presupuesto_de(fuente)),
                 "politica": "acceso-fuentes-publicas@1",
+                "selector": _json(der.selector_config_de(fuente)),
             },
         ).scalar_one_or_none()
-        resultado.configuraciones_creadas += int(insertada is not None)
+        resultado.configuraciones_creadas += int(bool(insertada))
 
     resultado.incidencias_creadas = _registrar_brechas(conexion, manifiesto)
     return resultado

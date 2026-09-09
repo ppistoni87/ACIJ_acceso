@@ -89,7 +89,9 @@ class ResolutorIdentidad:
 
         norma_id = self._por_identificador(identificadores)
         if norma_id is None:
-            norma_id = self._por_clave_canonica(candidata)
+            norma_id = self._por_clave_canonica(candidata) or self._por_numero_sin_anio(
+                candidata, fila, resultado
+            )
             if norma_id is not None:
                 resultado.normas_vinculadas += 1
         else:
@@ -146,6 +148,49 @@ class ResolutorIdentidad:
             ),
             {"j": jurisdiccion, "t": tipo, "n": str(numero), "a": int(anio)},
         ).scalar_one_or_none()
+
+    def _por_numero_sin_anio(
+        self, candidata: dict, fila: dict, resultado: ResultadoIdentidad
+    ) -> uuid.UUID | None:
+        """Sin año, solo si la jurisdicción tiene una sola norma con ese número.
+
+        Un texto consolidado del Digesto porteño se presenta como «ORDENANZA F –
+        N° 43.478», sin fecha: no la lleva porque el consolidado no es el acto
+        original. Descartarlo por eso dejaría afuera justamente la versión más
+        actual de la norma.
+
+        Con más de una candidata no se elige: dos normas del mismo tipo y número
+        en una jurisdicción son años distintos, y quedarse con una sería inventar
+        cuál. Eso va a la cola de revisión.
+        """
+        jurisdiccion = candidata.get("jurisdiccion")
+        tipo = candidata.get("tipo")
+        numero = candidata.get("numero")
+        if not (jurisdiccion and tipo and numero) or candidata.get("anio"):
+            return None
+        filas = self.conexion.execute(
+            text(
+                "SELECT id, anio FROM normas "
+                " WHERE jurisdiccion_id = :j AND tipo = :t AND numero = :n "
+                "   AND identidad_incierta = false "
+                " ORDER BY anio"
+            ),
+            {"j": jurisdiccion, "t": tipo, "n": str(numero)},
+        ).all()
+        if len(filas) == 1:
+            return filas[0].id
+        if len(filas) > 1:
+            anios = ", ".join(str(f.anio) for f in filas)
+            self._abrir_incidencia(
+                fila["source_id"],
+                TipoIncidencia.IDENTIDAD_AMBIGUA,
+                Severidad.MEDIUM,
+                f"El documento se presenta como {tipo} N° {numero} de {jurisdiccion} sin "
+                f"año, y en el corpus hay {len(filas)} normas con ese número ({anios}). "
+                "No se elige ninguna.",
+                resultado,
+            )
+        return None
 
     def _crear_norma(
         self, candidata: dict, fila: dict, resultado: ResultadoIdentidad

@@ -461,3 +461,93 @@ def test_construir_relaciones_dos_veces_no_duplica(conexion: Connection, corpus_
         conexion.execute(text("SELECT count(*) FROM referencias_pendientes")).scalar_one()
         == pendientes_antes
     )
+
+
+# --- P-007: un consolidado sin año sigue siendo la misma norma -----------------
+
+# La carga del catálogo siembra las jurisdicciones; pedir además la fixture
+# `jurisdiccion_caba` volvería a insertarlas.
+CABA = "AR-C"
+
+
+def test_sin_anio_se_resuelve_si_la_jurisdiccion_tiene_una_sola_con_ese_numero(
+    conexion: Connection, catalogo
+) -> None:
+    """Un texto consolidado del Digesto porteño se presenta como
+    «ORDENANZA F – N° 43.478», sin fecha: no la lleva porque el consolidado no
+    es el acto original. Descartarlo por eso dejaría afuera justamente la
+    versión más actual de la norma."""
+    _documento_norma(
+        conexion,
+        source_id="F23",
+        external_id="ficha-con-anio",
+        tipo_version="ACTUALIZADO",
+        identidad={
+            "jurisdiccion": CABA,
+            "tipo": "ORDENANZA",
+            "numero": "43478",
+            "anio": 1989,
+        },
+        unidades=[("ARTICULO", "1", "El objeto de la presente ordenanza.", "DISPOSITIVO")],
+    )
+    ResolutorIdentidad(conexion).resolver_pendientes()
+
+    _documento_norma(
+        conexion,
+        source_id="D08",
+        external_id="pdf-sin-anio",
+        tipo_version="ACTUALIZADO",
+        identidad={"jurisdiccion": CABA, "tipo": "ORDENANZA", "numero": "43478"},
+        unidades=[("ARTICULO", "1", "El objeto de la presente ordenanza.", "DISPOSITIVO")],
+    )
+    resultado = ResolutorIdentidad(conexion).resolver_pendientes()
+
+    assert resultado.normas_creadas == 0, "no se crea una norma nueva por no traer el año"
+    assert resultado.normas_vinculadas == 1
+    versiones = conexion.execute(
+        text(
+            "SELECT count(*) FROM norma_versiones nv JOIN normas n ON n.id = nv.norma_id "
+            " WHERE n.tipo = 'ORDENANZA' AND n.numero = '43478'"
+        )
+    ).scalar_one()
+    assert versiones == 2, "las dos representaciones son versiones de la misma norma"
+
+
+def test_sin_anio_y_con_dos_candidatas_no_se_elige_ninguna(conexion: Connection, catalogo) -> None:
+    """Dos normas del mismo tipo y número en una jurisdicción son años distintos:
+    quedarse con una sería inventar cuál."""
+    for anio in (1989, 2001):
+        _documento_norma(
+            conexion,
+            source_id="F23",
+            external_id=f"ficha-{anio}",
+            tipo_version="ACTUALIZADO",
+            identidad={
+                "jurisdiccion": CABA,
+                "tipo": "ORDENANZA",
+                "numero": "43478",
+                "anio": anio,
+            },
+            unidades=[("ARTICULO", "1", f"Texto de {anio}.", "DISPOSITIVO")],
+        )
+    ResolutorIdentidad(conexion).resolver_pendientes()
+
+    _documento_norma(
+        conexion,
+        source_id="D08",
+        external_id="pdf-ambiguo",
+        tipo_version="ACTUALIZADO",
+        identidad={"jurisdiccion": CABA, "tipo": "ORDENANZA", "numero": "43478"},
+        unidades=[("ARTICULO", "1", "Texto sin fecha.", "DISPOSITIVO")],
+    )
+    resultado = ResolutorIdentidad(conexion).resolver_pendientes()
+
+    assert resultado.incidencias_creadas >= 1
+    abierta = conexion.execute(
+        text(
+            "SELECT descripcion FROM incidencias_revision "
+            " WHERE tipo = 'IDENTIDAD_AMBIGUA' AND estado = 'ABIERTA' "
+            "   AND descripcion LIKE '%sin%año%' ORDER BY creado_en DESC LIMIT 1"
+        )
+    ).scalar_one_or_none()
+    assert abierta is not None and "1989, 2001" in abierta

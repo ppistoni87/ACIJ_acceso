@@ -1017,3 +1017,36 @@ cuando se los pone a los cinco en la misma tabla contra datos reales.
 
 De paso quedó mostrado el control DQ10 del paquete sobre datos y no sobre una
 prueba: reejecutar los cinco importadores creó cero filas nuevas.
+
+## D-57 · Un adaptador que no sabe qué está leyendo lo dice
+
+El adaptador de PDF leía `tipo_documento` de la configuración de la fuente y,
+si no la encontraba, elegía `OTRO`. Parecía prudente. No lo era: `OTRO` deja el
+documento fuera de la resolución de identidad, así que el texto de un decreto se
+extraía entero —132 unidades— y no llegaba a ninguna norma. El sistema no
+fallaba; simplemente no tenía ese decreto, y no lo decía.
+
+Peor: la configuración que leía nunca existió. `CapturaMaterial.config` viajaba
+siempre vacía porque la extracción no se la pasaba, y la carga del catálogo
+nunca llenaba `selector_config`. Tres eslabones cortados, y cada uno bastaba
+solo para romper la cadena. Ninguno de los tres era visible leyendo su propio
+archivo: el adaptador leía un diccionario, la extracción construía un objeto, la
+carga insertaba una fila. Lo que faltaba estaba entre los tres.
+
+**Consecuencia:** cuando la declaración falta, se avisa. Y lo que se declara se
+deriva de lo que el manifiesto ya sabe —la clase de la fuente dice qué clase de
+documento produce, el host dice de qué jurisdicción es— en vez de escribirse
+fuente por fuente: una fuente normativa nueva lo recibe sola, y una que no dice
+qué trae no recibe nada, que es lo correcto.
+
+Lo que el documento sí declara se lee del documento. La identidad sale del
+encabezado —«DECRETO Nº 690/2006»—, y si el encabezado no está, la versión queda
+sin identidad candidata y la resolución no la inventa. La letra del Digesto
+porteño —«ORDENANZA F – N° 43.478»— se reconoce como clasificación del Digesto y
+no se confunde con el número de la norma.
+
+El esquema puso el último límite. Declarar esos textos como `CONSOLIDADO` lo
+rechazó una restricción: un consolidado exige la fecha hasta la que consolida, y
+esos PDF no la traen. Quedan como `ACTUALIZADO` con un aviso que dice justamente
+eso. La restricción evitó afirmar una cobertura temporal que nadie podía
+sostener.

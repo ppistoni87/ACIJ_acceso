@@ -13,10 +13,15 @@ import zlib
 
 import pytest
 
-from backend_normativo.db.vocabularios import TipoFecha
+from backend_normativo.db.vocabularios import (
+    TipoDocumento,
+    TipoFecha,
+    TipoVersionDocumento,
+)
 from backend_normativo.ingesta.adaptadores.base import CapturaMaterial
 from backend_normativo.ingesta.adaptadores.pdf import (
     MINIMO_CHARS_PAGINA,
+    RE_ENCABEZADO_NORMA,
     AdaptadorPdf,
     PdfInvalido,
     _avisos_de_tablas,
@@ -484,3 +489,101 @@ def test_el_prefijo_real_del_boletin_de_caba_se_repara() -> None:
     assert reparacion.desplazamiento == datos["desplazamiento"] == 231
     assert "POSTGRES_VERSION" in reparacion.descripcion
     assert datos["magic_siguiente"].startswith("%PDF-")
+
+
+# --- P-007: un PDF normativo tiene que llegar al grafo de normas --------------
+#
+# El adaptador producía documentos de tipo OTRO y versión NO_DETERMINADO para
+# todo. Ninguna de las dos cosas es un detalle de catalogación: OTRO deja el
+# documento fuera de la resolución de identidad, y NO_DETERMINADO impide crear
+# su versión normativa. Con las dos juntas, el texto de un decreto se extraía
+# entero —132 unidades en el caso real— y no llegaba a ninguna norma.
+
+# Sin acentos ni ordinales: la fuente Helvetica de la fixture no los mapea y
+# saldrían como `(cid:176)`. Que el encabezado real —«DECRETO Nº 690/2006»— se
+# lea bien lo prueba `test_el_encabezado_real_se_lee_con_sus_ordinales`, que
+# trabaja sobre el texto y no sobre un PDF.
+DECRETO = """DECRETO N 690/2006
+Buenos Aires, 8 de junio de 2006.
+Articulo 1. Derogase el Decreto N 895/02.
+Articulo 2. Crear el Programa de Apoyo Habitacional en el ambito de la Ciudad."""
+
+DIGESTO = """ORDENANZA F - N 43.478
+CAPITULO I
+Articulo 1. Los servicios de comedores escolares se regiran por la presente."""
+
+
+def _material_normativo(texto: str, config: dict) -> CapturaMaterial:
+    return CapturaMaterial(
+        source_id="F40",
+        url_final="https://boletinoficialpdf.buenosaires.gob.ar/util/imagen.php?idn=1",
+        contenido=_pdf([texto]),
+        mime="application/pdf",
+        sha256="0" * 64,
+        config=config,
+    )
+
+
+NORMATIVO = {"tipo_documento": "NORMA", "jurisdiccion": "AR-C"}
+
+
+def test_el_pdf_declara_su_identidad_en_el_encabezado() -> None:
+    documento = AdaptadorPdf().extraer(_material_normativo(DECRETO, NORMATIVO)).documentos[0]
+
+    assert documento.tipo is TipoDocumento.NORMA
+    assert documento.identidad["tipo"] == "DECRETO"
+    assert documento.identidad["numero"] == "690"
+    assert documento.identidad["anio"] == 2006
+    # La jurisdicción no sale del texto: la declara la fuente que lo publica.
+    assert documento.identidad["jurisdiccion"] == "AR-C"
+
+
+def test_un_pdf_con_articulado_es_una_version_del_texto() -> None:
+    documento = AdaptadorPdf().extraer(_material_normativo(DECRETO, NORMATIVO)).documentos[0]
+    assert documento.tipo_version is not TipoVersionDocumento.NO_DETERMINADO
+
+
+def test_sin_declaracion_el_pdf_avisa_en_vez_de_elegir_en_silencio() -> None:
+    documento = AdaptadorPdf().extraer(_material_normativo(DECRETO, {})).documentos[0]
+
+    assert documento.tipo is TipoDocumento.OTRO
+    assert any("no declara `tipo_documento`" in a.texto for a in documento.avisos)
+
+
+def test_la_letra_del_digesto_no_es_el_numero_de_la_norma() -> None:
+    documento = AdaptadorPdf().extraer(_material_normativo(DIGESTO, NORMATIVO)).documentos[0]
+
+    assert documento.identidad["tipo"] == "ORDENANZA"
+    assert documento.identidad["numero"] == "43478"
+
+
+def test_el_texto_del_digesto_no_se_declara_consolidado_sin_fecha() -> None:
+    """El esquema exige fecha de consolidación, y con razón: un consolidado sin
+    ella no dice hasta cuándo incorpora cambios."""
+    documento = AdaptadorPdf().extraer(_material_normativo(DIGESTO, NORMATIVO)).documentos[0]
+
+    assert documento.tipo_version is TipoVersionDocumento.ACTUALIZADO
+    assert any("no declara hasta qué fecha consolida" in a.texto for a in documento.avisos)
+
+
+@pytest.mark.parametrize(
+    ("linea", "esperado"),
+    [
+        ("DECRETO Nº 690/2006", ("DECRETO", "690", "2006")),
+        ("ORDENANZA F – N° 43.478", ("ORDENANZA", "43.478", None)),
+        ("LEY F - N° 2.917", ("LEY", "2.917", None)),
+        ("LEY N° 2917", ("LEY", "2917", None)),
+        ("RESOLUCIÓN N° 1621/25", ("RESOLUCIÓN", "1621", "25")),
+    ],
+)
+def test_el_encabezado_real_se_lee_con_sus_ordinales(linea, esperado) -> None:
+    """Los encabezados vienen con `Nº`, `N°` y guiones largos, y la letra del
+    Digesto se intercala entre el tipo y el número. Se prueba sobre el texto
+    porque la fixture de PDF no mapea esos caracteres."""
+    coincidencia = RE_ENCABEZADO_NORMA.match(linea)
+    assert coincidencia is not None
+    assert (
+        coincidencia.group("tipo"),
+        coincidencia.group("numero"),
+        coincidencia.group("anio"),
+    ) == esperado

@@ -34,6 +34,8 @@ from backend_normativo.db.vocabularios import (
     TipoDocumento,
     TipoFecha,
     TipoIncidencia,
+    TipoNorma,
+    TipoUnidad,
     TipoVersionDocumento,
 )
 from backend_normativo.ingesta.adaptadores.base import (
@@ -80,6 +82,44 @@ RE_RANGO_DE_MESES = re.compile(
 # la tabla y encabeza una línea de abajo, esa línea es su nota, no un párrafo
 # suelto que quedó cerca.
 RE_MARCA_AL_PIE = re.compile(r"^(?P<marca>\*{1,3}|\(\d{1,2}\)|\(\w\))\s*(?P<resto>\S.*)$")
+
+# El encabezado con que un acto se presenta: «DECRETO Nº 690/2006»,
+# «LEY N° 2917», «ORDENANZA Nº 43.478». Es la propia declaración del documento,
+# no una inferencia sobre su contenido.
+RE_ENCABEZADO_NORMA = re.compile(
+    r"^\s*(?P<tipo>LEY|DECRETO[\s\-]?LEY|DECRETO|RESOLUCI[OÓ]N|DISPOSICI[OÓ]N|ORDENANZA)"
+    # El Digesto porteño intercala su letra temática: «ORDENANZA F – N° 43.478».
+    # Es una clasificación del Digesto, no parte del número de la norma.
+    r"(?:\s+(?P<categoria>[A-Z])\s*[-–—])?"
+    r"\s*(?:N[º°ro\.]*\s*)?"
+    r"(?P<numero>[\d][\d\.]*)"
+    r"(?:\s*/\s*(?P<anio>\d{2,4}))?",
+    re.IGNORECASE,
+)
+
+TIPO_NORMA_POR_PALABRA = {
+    "LEY": TipoNorma.LEY,
+    "DECRETO": TipoNorma.DECRETO,
+    "DECRETOLEY": TipoNorma.DECRETO_LEY,
+    "RESOLUCION": TipoNorma.RESOLUCION,
+    "DISPOSICION": TipoNorma.DISPOSICION,
+    "ORDENANZA": TipoNorma.ORDENANZA,
+}
+
+# Cuántas líneas del principio se miran. El encabezado va arriba; buscarlo en
+# todo el texto encontraría la primera norma *citada* en el Visto y la haría
+# pasar por la norma que se está leyendo.
+LINEAS_DE_ENCABEZADO = 4
+
+# Marcas de que el texto no es el que se sancionó sino uno rearmado después.
+# El Digesto porteño las pone al pie de cada artículo tocado; InfoLEG y los
+# boletines usan giros equivalentes.
+RE_TEXTO_REARMADO = re.compile(
+    r"(sustitu[ií]d[oa]\s+(?:por|del)|incorporad[oa]\s+por|derogad[oa]\s+por|"
+    r"modificad[oa]\s+por|texto\s+(?:actualizado|consolidado)|"
+    r"norma\s+consolidada\s+por)",
+    re.IGNORECASE,
+)
 
 
 class PdfInvalido(Exception):
@@ -441,8 +481,9 @@ class AdaptadorPdf:
         # frase, y una evidencia que cita media frase no sostiene lo que afirma.
         segmentacion = Segmentador().segmentar(unir_renglones(lectura.parrafos))
         clasificados = sum(len(u.texto) for u in segmentacion.unidades)
+        tipo = self._tipo(captura)
         documento = DocumentoExtraido(
-            tipo=self._tipo(captura),
+            tipo=tipo,
             tipo_version=TipoVersionDocumento.NO_DETERMINADO,
             modo_extraccion=ModoExtraccion.PDF_TEXTO,
             texto=lectura.texto,
@@ -482,6 +523,32 @@ class AdaptadorPdf:
                     severidad=Severidad.MEDIUM,
                 )
             )
+        # La identidad y el tipo de versión se deciden después de leer la fecha
+        # porque los dos la necesitan: un encabezado como «LEY N° 2917» no trae
+        # año, y un consolidado sin fecha no puede declararse consolidado.
+        if tipo is TipoDocumento.NORMA:
+            documento.tipo_version = self._tipo_version(lectura.texto, segmentacion.unidades, fecha)
+            if documento.tipo_version is TipoVersionDocumento.ACTUALIZADO and not fecha.determinada:
+                documento.avisos.append(
+                    Aviso(
+                        "El texto viene del Digesto pero no declara hasta qué fecha "
+                        "consolida. Queda como ACTUALIZADO: está rearmado, y hasta "
+                        "dónde no se sabe.",
+                        tipo=TipoIncidencia.VIGENCIA_INDETERMINADA,
+                        severidad=Severidad.MEDIUM,
+                    )
+                )
+            documento.identidad = self._identidad(lectura.texto, captura, fecha)
+            if not documento.identidad.get("tipo"):
+                documento.avisos.append(
+                    Aviso(
+                        "El PDF no declara en su encabezado qué acto es. Queda sin "
+                        "identidad candidata: la resolución no la va a inventar.",
+                        tipo=TipoIncidencia.IDENTIDAD_AMBIGUA,
+                        severidad=Severidad.MEDIUM,
+                    )
+                )
+
         if fecha.actos_citados:
             # Las notas de consolidación no fechan este documento, pero sí
             # identifican los actos que lo modificaron. Eso se conserva.
@@ -494,16 +561,111 @@ class AdaptadorPdf:
                     severidad=Severidad.INFO,
                 )
             )
+        if tipo is TipoDocumento.OTRO:
+            # No es un detalle de catalogación: `OTRO` deja el documento fuera
+            # de la resolución de identidad, y con eso fuera del grafo de
+            # normas. Si la fuente es normativa, ese silencio equivale a no
+            # haberla ingerido.
+            documento.avisos.append(
+                Aviso(
+                    f"{captura.source_id} no declara `tipo_documento` en su configuración, "
+                    "así que este PDF queda como OTRO y no entra a la resolución de "
+                    "identidad. Si la fuente es normativa, su texto no llega al grafo.",
+                    tipo=TipoIncidencia.COBERTURA_EXTRACCION,
+                    severidad=Severidad.MEDIUM,
+                )
+            )
         resultado.documentos.append(documento)
         return resultado
 
     @staticmethod
     def _tipo(captura: CapturaMaterial) -> TipoDocumento:
+        """Qué clase de documento es este PDF, según lo declare la fuente.
+
+        No se deduce del contenido: un decreto y una guía son las dos texto. Y
+        la diferencia no es cosmética —`OTRO` deja el documento afuera de la
+        resolución de identidad, y con eso afuera del grafo de normas—, así que
+        cuando no hay declaración se avisa en vez de elegir en silencio.
+        """
         declarado = str(captura.config.get("tipo_documento", "")).upper()
         try:
             return TipoDocumento(declarado)
         except ValueError:
             return TipoDocumento.OTRO
+
+    @staticmethod
+    def _tipo_version(texto: str, unidades, fecha) -> TipoVersionDocumento:
+        """Si el PDF trae el articulado, es una versión del texto de la norma.
+
+        La ficha de una norma la describe y no la contiene; un PDF con
+        artículos sí la contiene, y quedaba igual como NO_DETERMINADO, que es
+        lo que impedía crear su versión normativa. Con lo cual el texto se
+        extraía entero —132 unidades en un caso— y no llegaba a ninguna norma.
+
+        Original o rearmado no se supone: lo dicen las notas al pie que el
+        propio texto trae cuando un artículo fue sustituido o incorporado.
+        """
+        if not any(u.tipo is TipoUnidad.ARTICULO for u in unidades):
+            return TipoVersionDocumento.NO_DETERMINADO
+        # La letra temática del Digesto porteño —«ORDENANZA F – N° 43.478»— no
+        # es decoración: solo la lleva el texto consolidado del Digesto. El
+        # acto original nunca se publicó con ella.
+        for linea in texto.splitlines()[:LINEAS_DE_ENCABEZADO]:
+            coincidencia = RE_ENCABEZADO_NORMA.match(linea.strip())
+            if coincidencia is not None:
+                if coincidencia.group("categoria"):
+                    # Consolidado sin fecha de consolidación no dice hasta
+                    # cuándo incorpora cambios, y el esquema lo rechaza con
+                    # razón. Sin esa fecha se declara ACTUALIZADO: el texto
+                    # está rearmado y hasta dónde, no se sabe.
+                    if getattr(fecha, "determinada", False):
+                        return TipoVersionDocumento.CONSOLIDADO
+                    return TipoVersionDocumento.ACTUALIZADO
+                break
+        if RE_TEXTO_REARMADO.search(texto):
+            return TipoVersionDocumento.ACTUALIZADO
+        return TipoVersionDocumento.ORIGINAL
+
+    @staticmethod
+    def _identidad(texto: str, captura: CapturaMaterial, fecha) -> dict[str, object]:
+        """La identidad que el propio documento declara en su encabezado.
+
+        Un PDF no trae portal que lo identifique: los adaptadores de HTML saben
+        de qué sitio leen y de ahí sacan el id oficial y la jurisdicción. Acá lo
+        que hay es el texto, y el texto lo dice en su primera línea. La
+        jurisdicción no se adivina del contenido: la declara la configuración de
+        la fuente, derivada del host que la publica.
+
+        Es candidata, no resuelta. Si la clave queda incompleta, se devuelve lo
+        que se pudo leer y la resolución de identidad decide; incompleta no se
+        completa a ojo.
+        """
+        identidad: dict[str, object] = {}
+        jurisdiccion = captura.config.get("jurisdiccion")
+        if jurisdiccion:
+            identidad["jurisdiccion"] = jurisdiccion
+
+        for linea in texto.splitlines()[:LINEAS_DE_ENCABEZADO]:
+            coincidencia = RE_ENCABEZADO_NORMA.match(linea.strip())
+            if coincidencia is None:
+                continue
+            palabra = re.sub(r"[^A-Z]", "", coincidencia.group("tipo").upper())
+            palabra = palabra.replace("Ó", "O")
+            tipo = TIPO_NORMA_POR_PALABRA.get(palabra)
+            if tipo is None:
+                continue
+            identidad["tipo"] = tipo.value
+            identidad["numero"] = coincidencia.group("numero").replace(".", "")
+            anio = coincidencia.group("anio")
+            if anio:
+                identidad["anio"] = int(anio) if len(anio) == 4 else 1900 + int(anio) % 100
+            break
+
+        # El año del encabezado puede faltar —«LEY N° 2917» no lo trae— y
+        # entonces lo pone la fecha del documento, que es la del acto.
+        if "anio" not in identidad and getattr(fecha, "fecha", None) is not None:
+            identidad["anio"] = fecha.fecha.year
+        return identidad
 
     @staticmethod
     def _titulo(texto: str) -> str | None:

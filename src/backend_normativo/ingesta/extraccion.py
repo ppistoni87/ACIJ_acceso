@@ -19,7 +19,12 @@ from dataclasses import dataclass, field
 
 from sqlalchemy import Connection, text
 
-from backend_normativo.db.vocabularios import EstadoFuenteCandidata, Severidad, TipoIncidencia
+from backend_normativo.db.vocabularios import (
+    EstadoFuenteCandidata,
+    Severidad,
+    TipoDocumento,
+    TipoIncidencia,
+)
 from backend_normativo.ingesta.adaptadores.base import (
     Adaptador,
     CapturaMaterial,
@@ -38,7 +43,12 @@ from backend_normativo.ingesta.adaptadores.tramite_argentina import (
 )
 from backend_normativo.ingesta.almacen import AlmacenObjetos
 
-VERSION_EXTRACTOR = "extraccion@5"
+# @6: la configuración versionada de la fuente ahora llega al adaptador. Antes
+# `CapturaMaterial.config` viajaba siempre vacía, así que el adaptador de PDF
+# leía `tipo_documento` de un diccionario que nadie llenaba y caía en OTRO
+# —dejando cada PDF normativo fuera de la resolución de identidad—. Cambió lo
+# que la extracción produce con las mismas capturas, y por eso cambia el número.
+VERSION_EXTRACTOR = "extraccion@6"
 
 # Cobertura mínima para no marcar la extracción como sospechosa. Es una señal
 # técnica: por debajo de esto hay texto que no quedó en ninguna unidad, y
@@ -93,8 +103,12 @@ class Extractor:
         fila = (
             self.conexion.execute(
                 text(
-                    "SELECT c.id, c.sha256_raw, c.mime, c.url_final, u.source_id "
-                    "FROM capturas c JOIN fuente_urls u ON u.id = c.source_url_id "
+                    "SELECT c.id, c.sha256_raw, c.mime, c.url_final, u.source_id, "
+                    "       cfg.selector_config "
+                    "FROM capturas c "
+                    "JOIN fuente_urls u ON u.id = c.source_url_id "
+                    "LEFT JOIN corridas_ingesta ci ON ci.id = c.corrida_id "
+                    "LEFT JOIN fuente_config_versiones cfg ON cfg.id = ci.config_version_id "
                     "WHERE c.id = :id"
                 ),
                 {"id": captura_id},
@@ -112,6 +126,11 @@ class Extractor:
             contenido=self.almacen.leer(fila["sha256_raw"]),
             mime=fila["mime"],
             sha256=fila["sha256_raw"],
+            # La configuración versionada de la fuente, la misma con la que se
+            # capturó. `CapturaMaterial` la aceptaba desde el principio y nadie
+            # se la pasaba, así que el adaptador de PDF decidía siempre a
+            # ciegas: la leía vacía y caía en OTRO.
+            config=dict(fila["selector_config"] or {}),
         )
 
         adaptador = next((a for a in self.adaptadores if a.acepta(material)), None)
@@ -180,7 +199,7 @@ class Extractor:
     def _persistir_documento(
         self, captura: dict, documento: DocumentoExtraido, resultado: ResultadoPersistencia
     ) -> None:
-        documento_id, creado = self._documento_id(captura["source_id"], documento)
+        documento_id, creado = self._documento_id(captura["source_id"], documento, resultado)
         resultado.documentos_creados += int(creado)
 
         hash_texto = hashlib.sha256(documento.texto.encode("utf-8")).hexdigest()
@@ -326,14 +345,26 @@ class Extractor:
         resultado.unidades_creadas += self._persistir_unidades(version_id, documento)
         resultado.versiones_creadas += 1
 
-    def _documento_id(self, source_id: str, documento: DocumentoExtraido) -> tuple[uuid.UUID, bool]:
+    def _documento_id(
+        self,
+        source_id: str,
+        documento: DocumentoExtraido,
+        resultado: ResultadoPersistencia | None = None,
+    ) -> tuple[uuid.UUID, bool]:
         if documento.external_id:
-            existente = self.conexion.execute(
-                text("SELECT id FROM documentos WHERE source_id = :s AND external_id = :e"),
-                {"s": source_id, "e": documento.external_id},
-            ).scalar_one_or_none()
-            if existente is not None:
-                return existente, False
+            fila = (
+                self.conexion.execute(
+                    text(
+                        "SELECT id, tipo FROM documentos  WHERE source_id = :s AND external_id = :e"
+                    ),
+                    {"s": source_id, "e": documento.external_id},
+                )
+                .mappings()
+                .first()
+            )
+            if fila is not None:
+                self._corregir_tipo(fila, documento, source_id, resultado)
+                return fila["id"], False
         nuevo = self.conexion.execute(
             text(
                 "INSERT INTO documentos (source_id, tipo, titulo, external_id) "
@@ -347,6 +378,35 @@ class Extractor:
             },
         ).scalar_one()
         return nuevo, True
+
+    def _corregir_tipo(
+        self,
+        fila: dict,
+        documento: DocumentoExtraido,
+        source_id: str,
+        resultado: ResultadoPersistencia | None,
+    ) -> None:
+        """Un documento que quedó como OTRO por falta de declaración se corrige.
+
+        Solo en ese sentido. Pasar de OTRO a algo concreto es reparar una
+        clasificación que nunca se hizo; reclasificar un documento que ya tenía
+        tipo es una decisión, y una decisión no se toma en silencio dentro de
+        una reextracción.
+        """
+        if fila["tipo"] != TipoDocumento.OTRO.value:
+            return
+        if documento.tipo is TipoDocumento.OTRO:
+            return
+        self.conexion.execute(
+            text("UPDATE documentos SET tipo = :t WHERE id = :id"),
+            {"t": documento.tipo.value, "id": fila["id"]},
+        )
+        if resultado is not None:
+            resultado.avisos.append(
+                f"{source_id}: el documento estaba como OTRO y la fuente ahora declara "
+                f"{documento.tipo.value}. Con OTRO quedaba fuera de la resolución de "
+                "identidad; se corrige."
+            )
 
     def _persistir_unidades(self, version_id: uuid.UUID, documento: DocumentoExtraido) -> int:
         ids: dict[int, uuid.UUID] = {}

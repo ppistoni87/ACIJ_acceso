@@ -231,3 +231,63 @@ def test_el_reporte_no_confunde_fuentes_con_leyes(conexion: Connection, catalogo
 
     texto = formatear(reporte)
     assert "no acredita ingesta" in texto.replace("\n", " ")
+
+
+# --- P-007: la configuración que el adaptador necesita para no adivinar --------
+
+
+def test_la_jurisdiccion_sale_del_host_que_publica() -> None:
+    """Un PDF no trae portal que lo identifique.
+
+    Los adaptadores de HTML saben de qué sitio leen y de ahí sacan la
+    jurisdicción; el de PDF ve solo texto, y sin jurisdicción no hay identidad
+    posible: dos leyes con el mismo número y año son de jurisdicciones
+    distintas. El sufijo más específico gana, para que `boletinoficial.gba.gob.ar`
+    no se lea como nacional por terminar en `.gob.ar`.
+    """
+    manifiesto = cargar_manifiesto()
+    por_id = {f.source_id: f for f in manifiesto.sources}
+
+    assert der.jurisdiccion_de(por_id["F40"]) == "AR-C"
+    assert der.jurisdiccion_de(por_id["D08"]) == "AR-C"
+    assert der.jurisdiccion_de(por_id["F01"]) == "AR"
+
+
+def test_una_fuente_normativa_declara_que_sus_documentos_son_normas() -> None:
+    """Sin esta declaración el PDF quedaba como OTRO, y OTRO lo deja fuera de la
+    resolución de identidad: el texto se extraía entero y no llegaba a ninguna
+    norma."""
+    manifiesto = cargar_manifiesto()
+    por_id = {f.source_id: f for f in manifiesto.sources}
+
+    assert der.selector_config_de(por_id["F40"]) == {
+        "tipo_documento": "NORMA",
+        "jurisdiccion": "AR-C",
+    }
+    # Una ficha de trámite no produce normas, y no se le hace decir que sí.
+    assert der.selector_config_de(por_id["D07"])["tipo_documento"] == "PROCEDIMIENTO"
+
+
+def test_la_configuracion_de_la_fuente_llega_al_adaptador(conexion: Connection) -> None:
+    """El eslabón que faltaba: `CapturaMaterial.config` viajaba siempre vacía, así
+    que declarar la configuración no habría servido de nada."""
+    cargar_catalogo(conexion)
+    guardada = conexion.execute(
+        text(
+            "SELECT selector_config FROM fuente_config_versiones "
+            " WHERE source_id = 'F40' AND version = 1"
+        )
+    ).scalar_one()
+    assert guardada == {"tipo_documento": "NORMA", "jurisdiccion": "AR-C"}
+
+
+def test_recargar_el_catalogo_refresca_la_configuracion_sin_contarla_de_nuevo(
+    conexion: Connection,
+) -> None:
+    """La derivación va a seguir mejorando; las fuentes ya cargadas tienen que
+    recibirla sin borrar la base y sin que el contador mienta."""
+    primera = cargar_catalogo(conexion)
+    segunda = cargar_catalogo(conexion)
+
+    assert primera.configuraciones_creadas > 0
+    assert segunda.configuraciones_creadas == 0, "refrescar no es crear"

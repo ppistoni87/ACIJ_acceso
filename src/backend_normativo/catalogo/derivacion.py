@@ -14,6 +14,7 @@ resultado es el valor menos comprometido (`OTRA`, `SIN_ADAPTADOR`,
 from __future__ import annotations
 
 import datetime as dt
+from urllib.parse import urlparse
 
 from backend_normativo.catalogo.manifiesto import FuenteManifiesto
 from backend_normativo.db import vocabularios as voc
@@ -92,6 +93,66 @@ def clase_de(fuente: FuenteManifiesto) -> voc.ClaseFuente:
 
 def adaptador_de(fuente: FuenteManifiesto) -> voc.Adaptador:
     return ADAPTADOR_POR_PISTA.get(fuente.adapter_hint, voc.Adaptador.SIN_ADAPTADOR)
+
+
+# Qué clase de documento produce cada clase de fuente. El adaptador de PDF no
+# puede deducirlo del contenido —un decreto y una guía son las dos texto— y sin
+# esta declaración cae en OTRO, que lo deja fuera de la resolución de identidad
+# y por lo tanto fuera del grafo de normas. Se deriva de la clase declarada en
+# el manifiesto y no se escribe fuente por fuente: una fuente normativa nueva lo
+# recibe sola.
+TIPO_DOCUMENTO_POR_CLASE: dict[voc.ClaseFuente, voc.TipoDocumento] = {
+    voc.ClaseFuente.PORTAL_NORMATIVO: voc.TipoDocumento.NORMA,
+    voc.ClaseFuente.BOLETIN: voc.TipoDocumento.NORMA,
+    voc.ClaseFuente.FICHA_TRAMITE: voc.TipoDocumento.PROCEDIMIENTO,
+    voc.ClaseFuente.DIRECTORIO: voc.TipoDocumento.DIRECTORIO,
+    voc.ClaseFuente.PADRON: voc.TipoDocumento.PADRON,
+    voc.ClaseFuente.DATASET: voc.TipoDocumento.DATASET,
+}
+
+
+# De qué jurisdicción es lo que publica cada host. Un PDF no trae portal que lo
+# diga —los adaptadores de HTML sí lo saben, porque conocen el sitio del que
+# leen— y sin jurisdicción no hay identidad posible: dos leyes con el mismo
+# número y año pertenecen a jurisdicciones distintas. El orden importa: el
+# sufijo más específico gana, para que `boletinoficial.gba.gob.ar` no se lea
+# como nacional por terminar en `.gob.ar`.
+JURISDICCION_POR_SUFIJO: tuple[tuple[str, str], ...] = (
+    ("buenosaires.gob.ar", "AR-C"),
+    ("buenosaires.edu.ar", "AR-C"),
+    ("gba.gob.ar", "AR-B"),
+    ("gob.ar", "AR"),
+    ("gov.ar", "AR"),
+)
+
+
+def jurisdiccion_de(fuente: FuenteManifiesto) -> str | None:
+    """La jurisdicción que se deduce del host de la URL canónica."""
+    if not fuente.urls:
+        return None
+    host = urlparse(fuente.urls[0]).hostname or ""
+    for sufijo, jurisdiccion in JURISDICCION_POR_SUFIJO:
+        if host == sufijo or host.endswith("." + sufijo):
+            return jurisdiccion
+    return None
+
+
+def selector_config_de(fuente: FuenteManifiesto) -> dict[str, object] | None:
+    """Configuración por fuente que los adaptadores leen.
+
+    Hoy declara una sola cosa, y hace falta: qué clase de documento produce.
+    Las clases que no están en el mapa —DOCUMENTO, CANAL_ATENCION, OTRA— no
+    declaran nada a propósito: no se sabe qué traen, y adivinarlo sería peor
+    que dejar que el adaptador lo diga.
+    """
+    config: dict[str, object] = {}
+    tipo = TIPO_DOCUMENTO_POR_CLASE.get(clase_de(fuente))
+    if tipo is not None:
+        config["tipo_documento"] = tipo.value
+    jurisdiccion = jurisdiccion_de(fuente)
+    if jurisdiccion is not None:
+        config["jurisdiccion"] = jurisdiccion
+    return config or None
 
 
 def estado_de(fuente: FuenteManifiesto) -> voc.EstadoFuente:
