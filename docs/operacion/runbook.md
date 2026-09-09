@@ -270,11 +270,20 @@ de ellas, así que ampliar es capturar lo que el corpus ya identificó como
 necesario. Solo entra lo que resuelve a una y una sola norma sin identidad
 incierta y con texto: lo demás se informa con su motivo.
 
-**No va dentro de `poblar_corpus.sh`, a propósito.** Cada pasada descubre citas
+**Va dentro de `poblar_corpus.sh`, pero solo en la primera pasada** (`--sin-ampliar` la
+saca), y después del catálogo nacional: `ampliar` resuelve las citas contra ese
+catálogo y antes de importarlo no encuentra nada.
+
+El motivo de la primera pasada sola: Cada pasada descubre citas
 nuevas en las normas que trajo la anterior, así que ampliar en cada población
-hace crecer el corpus un anillo por corrida y el procedimiento deja de ser
-idempotente. Es una decisión de crecimiento, no un paso de rutina: se corre
-aparte y después se vuelve a poblar.
+hace crecer el corpus un anillo por pasada y el procedimiento deja de ser
+idempotente. La primera trae el anillo; la segunda tiene que no agregar nada, y
+eso es lo que el reporte de la corrida limpia mide.
+
+`bn ingesta ampliar --informe docs/operacion/normas_citadas.md` deja escrito qué
+normas se trajeron y cuáles tienen lectura curada: traer una norma no es leerla, y
+sin esa cuenta un corpus que crece se lee como si todo lo que entró pudiera
+contestar algo.
 
 Traer un anillo nuevo puede cambiar la segmentación de normas ya curadas —una
 captura nueva es una versión nueva, y las rutas de las unidades se corren—, así

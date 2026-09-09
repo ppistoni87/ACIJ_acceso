@@ -13,18 +13,18 @@ bitácora.
 
 | Estado | Reglas |
 | --- | ---: |
-| CANDIDATE | 154 |
+| CANDIDATE | 166 |
 | SUPERSEDED | 10 |
 
-En este expediente: **154** regla(s), de las cuales **59** no tienen condición ejecutable. Esas dos pilas no se revisan igual: una condición escrita se confirma contra el texto, y una regla sin condición hay que decidir si se puede escribir o si es informativa.
+En este expediente: **166** regla(s), de las cuales **67** no tienen condición ejecutable. Esas dos pilas no se revisan igual: una condición escrita se confirma contra el texto, y una regla sin condición hay que decidir si se puede escribir o si es informativa.
 
 | Categoría | Reglas |
 | --- | ---: |
-| APLICABILIDAD | 78 |
+| APLICABILIDAD | 89 |
 | CESE | 4 |
 | COMPATIBILIDAD | 6 |
 | EXCEPCION | 14 |
-| EXCLUSION | 15 |
+| EXCLUSION | 16 |
 | PRIORIDAD | 13 |
 | REHABILITACION | 1 |
 | REVOCACION | 3 |
@@ -44,17 +44,17 @@ Esto es una **propuesta**, no una aprobación. Aprobar es afirmar que lo que el
 backend contesta es lo que dice el derecho, y eso lo firma una persona con
 competencia jurídica, con su nombre y su fundamento en la bitácora.
 
-### CONDICION_EJECUTABLE · 69 regla(s)
+### CONDICION_EJECUTABLE · 72 regla(s)
 
 **Propuesta: Aprobar tras confirmar la condición contra el texto.** Tienen su condición escrita y validada, y su umbral tiene valor. Lo que queda es lo único que una máquina no puede hacer: leer el artículo citado y confirmar que la condición dice lo mismo. Es la pila donde aprobar habilita respuestas afirmativas, así que es la que hay que leer con más cuidado y la que más devuelve.
 
 Beneficios alcanzados: AR.ASIGNACION-HIJO-CON-DISCAPACIDAD, AR.ASIGNACION-POR-ADOPCION, AR.ASIGNACION-POR-CONYUGE-SIJP, AR.ASIGNACION-POR-EMBARAZO, AR.ASIGNACION-POR-HIJO, AR.ASIGNACION-POR-MATERNIDAD, AR.ASIGNACION-POR-MATRIMONIO, AR.ASIGNACION-POR-NACIMIENTO, AR.ASIGNACION-PRENATAL, AR.AUH, AR.AYUDA-ESCOLAR-ANUAL, AR.CUIDADO-DE-SALUD-INTEGRAL, CABA.APOYO-VULNERABILIDAD-HABITACIONAL, CABA.BECA-COMEDOR-ESCOLAR, CABA.BECAS-ESTUDIANTILES, CABA.SUBSIDIO-SITUACION-DE-CALLE.
 
-### SIN_CONDICION_EJECUTABLE · 34 regla(s)
+### SIN_CONDICION_EJECUTABLE · 42 regla(s)
 
 **Propuesta: No aprobar todavía: primero decidir si la condición se puede escribir.** No tienen condición ejecutable porque la norma remite a una reglamentación que no está en el corpus, porque el dato que harían falta no existe en el modelo, o porque lo que dicen no se puede reducir a verdadero o falso. Aprobarlas no habilita nada —no hay qué evaluar— y sí las presenta como revisadas. Cada una necesita una de tres decisiones: se puede escribir la condición, hay que traer la norma que falta, o la regla es informativa y se conserva sin condición.
 
-Beneficios alcanzados: AR.ASIGNACION-HIJO-CON-DISCAPACIDAD, AR.ASIGNACION-POR-EMBARAZO, AR.ASIGNACION-POR-HIJO, AR.ASIGNACION-POR-MATERNIDAD, AR.ASIGNACION-POR-MATRIMONIO, AR.AYUDA-ESCOLAR-ANUAL, CABA.APOYO-VULNERABILIDAD-HABITACIONAL, CABA.BECA-COMEDOR-ESCOLAR, CABA.BECAS-ESTUDIANTILES, CABA.SUBSIDIO-SITUACION-DE-CALLE.
+Beneficios alcanzados: AR.ASIGNACION-HIJO-CON-DISCAPACIDAD, AR.ASIGNACION-POR-EMBARAZO, AR.ASIGNACION-POR-HIJO, AR.ASIGNACION-POR-MATERNIDAD, AR.ASIGNACION-POR-MATRIMONIO, AR.AUH, AR.AYUDA-ESCOLAR-ANUAL, CABA.APOYO-VULNERABILIDAD-HABITACIONAL, CABA.BECA-COMEDOR-ESCOLAR, CABA.BECAS-ESTUDIANTILES, CABA.SUBSIDIO-SITUACION-DE-CALLE.
 
 ### NO_ES_CONDICION_SOBRE_LA_PERSONA · 25 regla(s)
 
@@ -62,7 +62,7 @@ Beneficios alcanzados: AR.ASIGNACION-HIJO-CON-DISCAPACIDAD, AR.ASIGNACION-POR-EM
 
 Beneficios alcanzados: AR.ASIGNACION-HIJO-CON-DISCAPACIDAD, AR.ASIGNACION-POR-ADOPCION, AR.ASIGNACION-POR-CONYUGE-SIJP, AR.ASIGNACION-POR-EMBARAZO, AR.ASIGNACION-POR-HIJO, AR.ASIGNACION-POR-MATERNIDAD, AR.ASIGNACION-POR-MATRIMONIO, AR.ASIGNACION-POR-NACIMIENTO, AR.ASIGNACION-PRENATAL, AR.AUH, AR.AYUDA-ESCOLAR-ANUAL, AR.CUIDADO-DE-SALUD-INTEGRAL, CABA.APOYO-VULNERABILIDAD-HABITACIONAL, CABA.BECA-COMEDOR-ESCOLAR, CABA.BECAS-ESTUDIANTILES, CABA.SUBSIDIO-SITUACION-DE-CALLE.
 
-### CONDICION_CON_UMBRAL_SIN_VALOR · 19 regla(s)
+### CONDICION_CON_UMBRAL_SIN_VALOR · 20 regla(s)
 
 **Propuesta: Aprobar: mientras el parámetro no tenga valor, la regla contesta «no se sabe».** La condición está escrita y compara contra un parámetro que todavía no tiene valor aprobado —el salario mínimo del convenio de comercio, el sueldo mínimo municipal—. Aprobarlas es de bajo riesgo justamente por eso: sin valor, la evaluación devuelve desconocido, que es la respuesta correcta, y no «no calificás». Dejarlas candidatas no protege de nada y esconde condiciones que sí están bien leídas. Lo que hay que decidir aparte, y con evidencia, es el valor del parámetro.
 
@@ -724,6 +724,36 @@ Beneficios alcanzados: AR.ASIGNACION-HIJO-CON-DISCAPACIDAD, AR.ASIGNACION-POR-EM
 
 ## AR.AUH
 
+### `40301777-dee7-4b74-baee-20db1ff35daf` · APLICABILIDAD
+
+**Norma:** DECRETO 840/2020 · **Unidad:** `articulo-2/inciso-f-12` · **Estado:** CANDIDATE · **Condición ejecutable:** sí
+
+> Acreditar que el o la titular del beneficio y la niña, el niño, adolescente y/o persona con discapacidad residen en el país
+
+**La lectura afirma:** Titular y causante residen en el país.
+
+**Qué hay que decidir:** Residir en el país es distinto de la residencia legal del inciso a): esto se le pide a todos, argentinos incluidos, y aquello solo a los extranjeros. El decreto lo pide a las dos personas y así queda escrito. Lo que hay que confirmar es que se trate de una exigencia actual y continuada, y no de un requisito que se acredita una vez al solicitar: de eso depende qué pasa con quien viaja.
+
+### `5243f802-a7ef-40d2-9c21-50395b8b753c` · APLICABILIDAD
+
+**Norma:** DECRETO 840/2020 · **Unidad:** `articulo-2/inciso-c-9` · **Estado:** CANDIDATE · **Condición ejecutable:** sí
+
+> Acreditar que la persona que percibirá el beneficio tiene a su cargo a la niña, al niño, adolescente y/o persona con discapacidad, en función de las disposiciones del Código Civil y Comercial de la Nación y de conformidad con la documentación que la ADMINISTRACIÓN NACIONAL DE LA SEGURIDAD SOCIAL (ANSES) disponga a estos fines.
+
+**La lectura afirma:** Se acredita tener a cargo al causante según el Código Civil y Comercial y con la documentación que disponga ANSES.
+
+**Qué hay que decidir:** El texto de 2009 pedía acreditar el «vínculo» con partidas y testimonios judiciales; este pide acreditar que lo tiene «a cargo», que es otra cosa: se puede tener el vínculo sin tener a cargo, y a cargo sin ser el progenitor. El cambio amplía o restringe según el caso, y cuál de las dos cosas hace es una lectura jurídica. Además remite la documentación a lo que ANSES disponga, que no está en el corpus: la condición queda escrita y la prueba que la satisface, no.
+
+### `0ea77fca-2a6f-4f5d-97b9-efa1664838b9` · APLICABILIDAD
+
+**Norma:** DECRETO 840/2020 · **Unidad:** `articulo-2/inciso-a-7` · **Estado:** CANDIDATE · **Condición ejecutable:** sí
+
+> Cuando la niña, el niño, adolescente y/o la persona con discapacidad y sus progenitores o sus progenitoras o las personas que los o las tengan a cargo sean extranjeros o extranjeras, deberán acreditar tanto la niña, el niño, adolescente y/o la persona con discapacidad como el o la titular que percibirá la Asignación, DOS (2) años de residencia legal en el país.
+
+**La lectura afirma:** Cuando el causante y quien lo tiene a cargo son extranjeros, ambos acreditan dos años de residencia legal en el país.
+
+**Qué hay que decidir:** Es el cambio de fondo del decreto y hay que verlo entero: el texto de 2009 pedía tres años y se los pedía solo al menor; este pide dos y se los pide a los dos, al causante y a quien percibe. La condición está escrita con esa exigencia doble, igual que en la lectura de la ley, así que lo que queda por confirmar no es el árbol sino la lectura: que «cuando el causante y quienes lo tienen a cargo sean extranjeros» quiera decir que basta con que el causante sea argentino para no exigir residencia a nadie, que es como está escrito.
+
 ### `4b69cac3-d5b5-403e-9921-50397e7306fa` · APLICABILIDAD
 
 **Norma:** LEY 24714/1996 · **Unidad:** `articulo-14-ter` · **Estado:** CANDIDATE · **Condición ejecutable:** sí
@@ -733,6 +763,66 @@ Beneficios alcanzados: AR.ASIGNACION-HIJO-CON-DISCAPACIDAD, AR.ASIGNACION-POR-EM
 **La lectura afirma:** Desde los cinco y hasta los dieciocho años se acredita además la concurrencia obligatoria a establecimientos educativos públicos.
 
 **Qué hay que decidir:** El texto vigente dice «establecimientos educativos públicos», y el campo lo refleja tal cual. Si en la práctica la escolaridad en gestión privada también acredita, eso no surge de esta norma sino de la reglamentación, que no está en el corpus. Ampliarlo por cuenta propia sería servir como derecho algo que el texto no dice; restringirlo sin verificar dejaría afuera a quien sí cumple.
+
+### `245d8698-8799-411a-8485-f6224142668f` · APLICABILIDAD
+
+**Norma:** DECRETO 1602/2009 · **Unidad:** `articulo-2/parrafo-26` · **Estado:** CANDIDATE · **Condición ejecutable:** no
+
+> El OCHENTA POR CIENTO (80%) del monto previsto en el primer párrafo se abonará mensualmente a los titulares de las mismas a través del sistema de pagos de la ADMINISTRACION NACIONAL DE LA SEGURIDAD SOCIAL (ANSES).
+
+**La lectura afirma:** El ochenta por ciento del monto se abona mensualmente por el sistema de pagos de ANSES.
+
+**Qué hay que decidir:** Es el origen del esquema que hace que quien cobra la AUH reciba menos de lo que dice la escala, y sobrevive con otra redacción en el Decreto 840/2020. Se conserva acá porque es donde aparece por primera vez y porque explica el veinte por ciento reservado; no se formaliza porque no es una condición sobre la persona sino la mecánica del pago.
+
+### `2edd3ccd-a1d8-4053-a141-10ae4384836c` · APLICABILIDAD
+
+**Norma:** DECRETO 840/2020 · **Unidad:** `articulo-3/parrafo-16` · **Estado:** CANDIDATE · **Condición ejecutable:** no
+
+> El VEINTE POR CIENTO (20 %) reservado podrá cobrarse cuando el o la titular acredite, para los o las menores de hasta los CUATRO (4) años de edad -inclusive-, el cumplimiento de los controles sanitarios y el plan de vacunación obligatorio; y para los y las de edad escolar, la certificación que acredite, además, el cumplimiento del ciclo escolar lectivo correspondiente.
+
+**La lectura afirma:** El veinte por ciento reservado se cobra cuando se acreditan los controles sanitarios y de vacunación, o el ciclo lectivo cumplido según la edad.
+
+**Qué hay que decidir:** No es una condición sobre la persona sino la mecánica del pago, y es la que explica por qué quien cobra la AUH recibe menos de lo que dice la escala: el ochenta por ciento va todos los meses y el veinte queda reservado. Omitirla haría que la respuesta a «cuánto voy a cobrar por mes» fuera un veinte por ciento más alta de lo que se cobra. El modelo guarda cuantías, no calendarios de liberación, así que queda declarada.
+
+### `aeaff983-743e-4e09-bda7-02602e46bc4f` · APLICABILIDAD
+
+**Norma:** DECRETO 1667/2012 · **Unidad:** `articulo-4` · **Estado:** CANDIDATE · **Condición ejecutable:** no
+
+> El presente decreto comenzará a regir a partir de las asignaciones familiares devengadas por el mes de septiembre de 2012.
+
+**La lectura afirma:** La regla se aplica a las asignaciones devengadas desde septiembre de 2012.
+
+**Qué hay que decidir:** No es una condición sobre la persona sino la fecha desde la que rige esta forma de medir, y se conserva porque un reclamo por períodos anteriores no se resuelve con esta regla. El modelo guarda la vigencia de la norma, no la de cada regla, así que la fecha queda en el texto y no en un campo.
+
+### `0501f20c-1e79-4b2f-a03b-1134f57b3b83` · APLICABILIDAD
+
+**Norma:** DECRETO 840/2020 · **Unidad:** `articulo-2/inciso-e-11` · **Estado:** CANDIDATE · **Condición ejecutable:** no
+
+> Hasta los CUATRO (4) años de edad -inclusive-, deberá acreditarse el cumplimiento de los controles sanitarios y del plan de vacunación obligatorio. Desde los CINCO (5) años de edad y hasta los DIECIOCHO (18) años, deberá acreditarse además la concurrencia de las niñas, los niños y adolescentes obligatoriamente a establecimientos educativos públicos.
+
+**La lectura afirma:** Hasta los cuatro años se acreditan controles sanitarios y vacunación; desde los cinco y hasta los dieciocho, además, la concurrencia a establecimientos educativos públicos.
+
+**Qué hay que decidir:** No se formaliza y el motivo importa: acreditar o no acreditar no decide el acceso a la asignación sino el cobro del veinte por ciento reservado, según el artículo 3 de este mismo decreto. Escribirla como condición de aplicabilidad diría que un chico sin el certificado escolar no tiene derecho a la AUH, y lo que dice la norma es que no cobra todavía la parte reservada. La diferencia es la que separa «no te corresponde» de «te falta un papel».
+
+### `dd8e4b42-28e0-45e9-8f0f-9ef4981cbdec` · APLICABILIDAD
+
+**Norma:** DECRETO 1667/2012 · **Unidad:** `articulo-1` · **Estado:** CANDIDATE · **Condición ejecutable:** no
+
+> Los límites que condicionan el otorgamiento de las asignaciones familiares o la cuantía de las mismas, se calcularán en función de la totalidad de los ingresos correspondientes al grupo familiar.
+
+**La lectura afirma:** Los topes que condicionan el otorgamiento o la cuantía se calculan sobre la totalidad de los ingresos del grupo familiar, no sobre el de quien solicita.
+
+**Qué hay que decidir:** No es una condición sobre nadie: dice qué número se compara contra el tope, y por eso cambia el resultado de todas las reglas que comparan un ingreso. Formalizarla como condición diría que existe un requisito de «tener grupo familiar», que la norma no pone. Lo que hay que decidir es de fondo y es del modelo: si el campo que hoy usan esas reglas es el ingreso del titular o el del hogar. Si es el del titular, todas están midiendo lo que no corresponde, y una familia queda adentro del tope por un ingreso que el decreto manda sumar.
+
+### `c95bd4fb-4216-4e1d-a352-a88d4cbcc28a` · APLICABILIDAD
+
+**Norma:** DECRETO 1602/2009 · **Unidad:** `articulo-1/parrafo-4` · **Estado:** CANDIDATE · **Condición ejecutable:** no
+
+> Un subsistema no contributivo de Asignación Universal por Hijo para Protección Social, destinado a aquellos niños, niñas y adolescentes residentes en la República Argentina, que no tengan otra asignación familiar prevista por la presente ley y pertenezcan a grupos familiares que se encuentren desocupados o se desempeñen en la economía informal.
+
+**La lectura afirma:** La asignación se destina a niñas, niños y adolescentes residentes que no tengan otra asignación familiar de la ley y pertenezcan a grupos familiares desocupados o que se desempeñan en la economía informal.
+
+**Qué hay que decidir:** Este texto es el de 2009 y el Decreto 446/2011 lo sustituyó para incorporar la Asignación por Embarazo al mismo inciso. La descripción del destino —desocupados o economía informal— sobrevivió a esa sustitución, así que la regla sigue en pie; lo que cambió es el encabezado del inciso. Se conserva sin condición ejecutable porque «pertenecer a un grupo familiar desocupado o de la economía informal» no es un dato que alguien acredite: es la situación que el subsistema describe, y la ley la opera por la vía negativa del artículo 3.
 
 ### `243fe434-09db-439a-b56c-0760279b09b5` · APLICABILIDAD
 
@@ -774,6 +864,16 @@ Beneficios alcanzados: AR.ASIGNACION-HIJO-CON-DISCAPACIDAD, AR.ASIGNACION-POR-EM
 
 **Qué hay que decidir:** El requisito solo muerde cuando se invoca la discapacidad —para levantar el límite de edad o para acceder al monto del inciso b) del artículo 18—. Formalizarlo como condición general haría que un trámite sin discapacidad invocada fallara por no acreditar una discapacidad que nadie alegó. La condición «se invoca» no está en el texto de la ley: es la forma de acotar el alcance del requisito, y por eso queda a revisión.
 
+### `a6e4b189-5d09-43ee-b959-90c88b8dd69d` · APLICABILIDAD
+
+**Norma:** DECRETO 1667/2012 · **Unidad:** `articulo-2` · **Estado:** CANDIDATE · **Condición ejecutable:** no
+
+> deben considerarse como ingresos, las remuneraciones de los trabajadores en relación de dependencia registrados, las rentas de referencia para trabajadores autónomos y monotributistas, las sumas originadas en Prestaciones Contributivas y/o No Contributivas Nacionales, Provinciales, Municipales o de la Ciudad Autónoma de Buenos Aires
+
+**La lectura afirma:** Cuentan como ingreso las remuneraciones registradas, las rentas de referencia de autónomos y monotributistas, y las prestaciones contributivas y no contributivas de cualquier jurisdicción.
+
+**Qué hay que decidir:** Es la parte que más gente deja afuera sin que se note: una jubilación mínima, una pensión provincial o un plan municipal cuentan para el tope igual que un sueldo. Quien responda mirando solo el salario va a decir que el hogar entra cuando no entra. No se formaliza porque el modelo guarda un ingreso mensual y no su composición, así que no puede sumar lo que no tiene desagregado; lo que hay que decidir es si el campo de ingreso se define como esta suma, y decirlo donde se pregunta por él.
+
 ### `217eb176-be97-44e4-b32b-aa50977d36ec` · APLICABILIDAD
 
 **Norma:** LEY 24714/1996 · **Unidad:** `articulo-14-ter` · **Estado:** CANDIDATE · **Condición ejecutable:** sí
@@ -793,6 +893,16 @@ Beneficios alcanzados: AR.ASIGNACION-HIJO-CON-DISCAPACIDAD, AR.ASIGNACION-POR-EM
 **La lectura afirma:** Titular y causante residen en el país.
 
 **Qué hay que decidir:** Tiene condición ejecutable y la curaduría no dejó reparos. Aprobarla la habilita para la evaluación: hay que confirmar que la condición dice lo que dice la norma.
+
+### `a9de8026-c1ba-4e3d-a2ff-2d963932e8b3` · APLICABILIDAD
+
+**Norma:** DECRETO 1667/2012 · **Unidad:** `articulo-2` · **Estado:** CANDIDATE · **Condición ejecutable:** no
+
+> incluyendo las prestaciones previstas en las Leyes Nros. 24.013, 24.241, 24.557, Nº 24.714 artículo 11, 25.191 y sus respectivas modificatorias y complementarias.
+
+**La lectura afirma:** Entre los ingresos que cuentan están las prestaciones por desempleo, las previsionales, las de riesgos del trabajo, la asignación por maternidad y las del régimen del trabajador rural.
+
+**Qué hay que decidir:** La enumeración incluye la asignación por maternidad de la propia Ley 24.714 —su artículo 11—, que es una prestación de este mismo régimen contando como ingreso para el tope de otra. Eso no es obvio y conviene confirmarlo antes de servirlo: quien esté cobrando maternidad tiene ese importe adentro de la cuenta que decide si le corresponden las demás. Ninguna de las leyes enumeradas está en el corpus, así que qué prestación concreta es cada una queda declarado y no verificable.
 
 ### `64420946-3954-49ce-b349-8c756b188785` · APLICABILIDAD
 
@@ -853,6 +963,16 @@ Beneficios alcanzados: AR.ASIGNACION-HIJO-CON-DISCAPACIDAD, AR.ASIGNACION-POR-EM
 **La lectura afirma:** Queda excluido quien se desempeñe en la economía informal y perciba una remuneración superior al salario mínimo, vital y móvil.
 
 **Qué hay que decidir:** La exclusión pide dos cosas a la vez: informalidad y remuneración sobre el salario mínimo. Quien trabaja en la economía informal no tiene una remuneración registrada contra la cual medir, así que el dato con el que se evalúa es declarado y no verificable contra un recibo. Además el umbral es un parámetro que se actualiza fuera de esta ley: mientras no tenga valor aprobado para el período que se consulta, la regla devuelve desconocido en vez de excluir a alguien con un tope viejo.
+
+### `28c85657-90ae-4de0-b439-5d6cfaddda73` · EXCLUSION
+
+**Norma:** DECRETO 1602/2009 · **Unidad:** `articulo-2/parrafo-6` · **Estado:** CANDIDATE · **Condición ejecutable:** sí
+
+> Quedan excluidos del beneficio previsto en el artículo 1º inciso c) de la presente los trabajadores que se desempeñen en la economía informal, percibiendo una remuneración superior al salario mínimo, vital y móvil.
+
+**La lectura afirma:** Queda excluido quien se desempeña en la economía informal y percibe una remuneración superior al salario mínimo, vital y móvil.
+
+**Qué hay que decidir:** Es la única regla de este decreto que sigue vigente sin cambios: fue al artículo 3 de la ley y ahí está. La condición está escrita y el parámetro es el salario mínimo, vital y móvil, que el corpus tiene como fuente pero no con valor aprobado, así que hasta entonces devuelve desconocido. Lo que hay que confirmar es la lectura de la exclusión: se aplica a quien trabaja en la informalidad y cobra más que el mínimo, no a quien cobra más que el mínimo sin más, y escrita al revés dejaría afuera a todo el subsistema contributivo.
 
 ### `3fd738c8-674d-45da-a58e-d2d565763f5c` · EXCLUSION
 
