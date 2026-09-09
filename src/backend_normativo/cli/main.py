@@ -49,6 +49,8 @@ app.add_typer(api, name="api")
 app.add_typer(monitoreo, name="monitoreo")
 operacion = typer.Typer(help="Respaldo, restauración y operación.", no_args_is_help=True)
 app.add_typer(operacion, name="operacion")
+objetos = typer.Typer(help="Almacén de originales.", no_args_is_help=True)
+app.add_typer(objetos, name="objetos")
 plazos = typer.Typer(help="Calendarios y cómputo de plazos.", no_args_is_help=True)
 app.add_typer(plazos, name="plazos")
 
@@ -658,6 +660,84 @@ def operacion_restaurar(
     else:
         typer.echo(texto)
     if not verificacion.integra:
+        raise typer.Exit(1)
+
+
+@objetos.command("verificar")
+def objetos_verificar(
+    desde: Path | None = typer.Option(
+        None,
+        "--desde",
+        help=(
+            "Directorio de otro almacén. Sirve para ensayar la recuperación del "
+            "original desde una instancia distinta de la que lo capturó."
+        ),
+    ),
+    sin_incidencias: bool = typer.Option(
+        False,
+        "--sin-incidencias",
+        help="Informa sin abrir incidencias ni bloquear nada. Para inspeccionar.",
+    ),
+    salida: Path | None = typer.Option(None, "--salida", help="Archivo donde escribir."),
+) -> None:
+    """Comprueba que cada captura siga teniendo sus bytes detrás.
+
+    Si un objeto falta o su hash difiere, abre una incidencia CRITICAL sobre
+    cada versión que dependa de él: eso la deja fuera de lo servible hasta que
+    alguien recupere el original.
+    """
+    from backend_normativo.ingesta.almacen import AlmacenObjetos
+    from backend_normativo.operacion.objetos import formatear, verificar_almacen
+
+    almacen = (
+        AlmacenObjetos(base_uri=f"file://{desde}", directorio=desde) if desde else AlmacenObjetos()
+    )
+    with engine_migrador().begin() as conexion:
+        reporte = verificar_almacen(conexion, almacen, abrir_incidencias=not sin_incidencias)
+    texto = formatear(reporte)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto, encoding="utf-8")
+        typer.echo(
+            f"Verificación escrita en {salida} · "
+            f"{len(reporte.hallazgos)} objeto(s) con problema de {reporte.referencias}"
+        )
+    else:
+        typer.echo(texto)
+    if reporte.hay_problemas:
+        raise typer.Exit(1)
+
+
+@objetos.command("sincronizar")
+def objetos_sincronizar(
+    hacia: Path = typer.Argument(
+        ...,
+        help="Directorio del almacén que sobrevive al contenedor (volumen o bucket montado).",
+    ),
+    salida: Path | None = typer.Option(None, "--salida", help="Archivo donde escribir."),
+) -> None:
+    """Lleva los originales fuera del contenedor y los verifica en el destino.
+
+    Copia solo lo que la base referencia y relee cada objeto desde el destino:
+    una copia que nadie volvió a leer no es un respaldo.
+    """
+    from backend_normativo.ingesta.almacen import AlmacenObjetos
+    from backend_normativo.operacion.objetos import formatear_sincronizacion, sincronizar
+
+    destino = AlmacenObjetos(base_uri=f"file://{hacia}", directorio=hacia)
+    with engine_migrador().begin() as conexion:
+        reporte = sincronizar(conexion, destino)
+    texto = formatear_sincronizacion(reporte)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto, encoding="utf-8")
+        typer.echo(
+            f"Sincronización escrita en {salida} · "
+            f"{reporte.copiados} copiado(s), {'completa' if reporte.completa else 'INCOMPLETA'}"
+        )
+    else:
+        typer.echo(texto)
+    if not reporte.completa:
         raise typer.Exit(1)
 
 

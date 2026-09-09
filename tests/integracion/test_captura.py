@@ -157,7 +157,7 @@ def test_la_revalidacion_reutiliza_el_objeto_previo(
 
     revalidacion = conexion.execute(
         text(
-            "SELECT http_status, sha256_raw, objeto_uri, bytes, captura_previa_id "
+            "SELECT http_status, sha256_raw, objeto_uri, bytes, mime, captura_previa_id "
             "FROM capturas WHERE id = :id"
         ),
         {"id": segunda.capturas[0]},
@@ -165,6 +165,10 @@ def test_la_revalidacion_reutiliza_el_objeto_previo(
     assert revalidacion.http_status == 304
     assert revalidacion.sha256_raw == sha256_de(contenido)
     assert revalidacion.captura_previa_id == primera.capturas[0]
+    # Un 304 no trae Content-Type porque no trae cuerpo, y el tipo es uno de los
+    # datos que P-004 pide conservar por captura. Se hereda de la captura cuyos
+    # bytes se reutilizan: si no, revalidar borraría el tipo que ya se sabía.
+    assert revalidacion.mime == "text/html"
     # Un solo objeto en el almacén: la revalidación no transfirió nada.
     assert len(list(almacen.directorio.rglob("*"))) >= 1
 

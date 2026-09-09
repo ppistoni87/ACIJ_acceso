@@ -145,6 +145,10 @@ class Capturador:
                 sha256=previa["sha256_raw"],
                 objeto_uri=previa["objeto_uri"],
                 bytes_=previa["bytes"],
+                # Un 304 no trae `Content-Type` porque no trae cuerpo. El tipo
+                # se hereda de la captura cuyos bytes se reutilizan: si no, una
+                # revalidación borraría el tipo que la primera captura sí supo.
+                mime=previa["mime"],
                 captura_previa_id=previa["id"],
             )
             resultado.descargadas += 1
@@ -260,7 +264,7 @@ class Capturador:
         fila = (
             self.conexion.execute(
                 text(
-                    "SELECT id, sha256_raw, objeto_uri, bytes, etag, last_modified "
+                    "SELECT id, sha256_raw, objeto_uri, bytes, mime, etag, last_modified "
                     "FROM capturas "
                     "WHERE source_url_id = :u AND coalesce(http_status, 0) <> 304 "
                     "ORDER BY capturado_en DESC LIMIT 1"
@@ -292,6 +296,7 @@ class Capturador:
         objeto_uri: str,
         bytes_: int | None,
         captura_previa_id: uuid.UUID | None,
+        mime: str | None = None,
     ) -> uuid.UUID:
         import json
 
@@ -313,7 +318,7 @@ class Capturador:
                 "url_final": descarga.url_final,
                 "status": descarga.http_status,
                 "capturado": descarga.capturado_en,
-                "mime": descarga.mime,
+                "mime": mime or descarga.mime,
                 "bytes": bytes_,
                 "sha": sha256,
                 "objeto": objeto_uri,

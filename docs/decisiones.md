@@ -957,3 +957,36 @@ PostgreSQL local, tipo por tipo. La única diferencia —292 restricciones `NOT
 NULL` catalogadas— resultó ser que PostgreSQL 17 empezó a guardarlas como filas
 de `pg_constraint`. Sin esa comparación, «las migraciones corrieron» habría
 tapado tanto una coincidencia real como una diferencia de motor.
+
+## D-55 · Un original que falta tiene que sacar de circulación lo que sostiene
+
+El almacén guarda los bytes por su hash y la base guarda ese hash. Mientras las
+dos mitades coincidan, cualquiera puede volver al documento exacto que sostiene
+una regla. Cuando dejan de coincidir, lo que se pierde no es un archivo: es la
+posibilidad de comprobar lo que el sistema afirma. Y no se nota. La fila de la
+captura sigue ahí, con su hash y su URI, y todo lo que cuelga de ella se sigue
+sirviendo igual.
+
+Por eso `bn objetos verificar` no termina en un renglón de un reporte. Abre una
+incidencia CRITICAL sobre cada versión que dependa del objeto roto, y eso la
+saca de lo servible por el camino que ya existía —`bn_motivos_no_servible`
+devuelve CONFLICT ante una incidencia abierta de severidad alta—. No hizo falta
+inventar un mecanismo de bloqueo: hizo falta usarlo.
+
+El tipo `EVIDENCIA_NO_RECUPERABLE` es nuevo y podría haberse evitado metiendo
+esto en `COBERTURA_EXTRACCION` o `ACCESO_BLOQUEADO`. Habría ahorrado una
+migración y mezclado dos cosas que se atienden distinto: una se resuelve
+volviendo a extraer, la otra recuperando el objeto de un respaldo o
+recapturando la fuente.
+
+**Consecuencia:** copiar los originales afuera del contenedor tampoco alcanza
+con copiarlos. `bn objetos sincronizar` relee cada objeto desde el destino y
+compara el hash allá, porque una copia que nadie volvió a leer no es un
+respaldo: es la creencia de que el `cp` no mintió.
+
+Lo mismo que valió para los permisos vale acá. Al medir el criterio contra el
+corpus real —qué guarda efectivamente cada una de las 242 capturas— aparecieron
+70 sin tipo. Todas eran respuestas 304: el capturador reutilizaba hash, URI y
+tamaño de la captura previa, pero no el tipo, así que cada revalidación borraba
+un dato que la primera captura sí había sabido. Contar lo que hay es lo que
+encuentra estas cosas; leer el código que las escribe, no.

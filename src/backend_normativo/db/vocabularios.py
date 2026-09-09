@@ -505,6 +505,9 @@ class TipoIncidencia(StrEnum):
     ACCESO_BLOQUEADO = "ACCESO_BLOQUEADO"
     CAMBIO_DE_ESQUEMA = "CAMBIO_DE_ESQUEMA"
     DATO_FALTANTE_CRITICO = "DATO_FALTANTE_CRITICO"
+    # El original detrás de una afirmación ya no se puede recuperar: falta del
+    # almacén o sus bytes no hashean a lo que la captura declara.
+    EVIDENCIA_NO_RECUPERABLE = "EVIDENCIA_NO_RECUPERABLE"
 
 
 class EstadoIncidencia(StrEnum):
