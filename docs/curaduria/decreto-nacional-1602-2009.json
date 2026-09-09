@@ -1,0 +1,109 @@
+{
+ "schema_version": "1.0",
+ "norma": {
+  "external_id": "infoleg:159466:original",
+  "referencia": "Decreto nacional 1602/2009",
+  "rol": "MODIFICA"
+ },
+ "nota": "Lectura curada del decreto que en 2009 instituyó la Asignación Universal por Hijo, incorporándola a la Ley 24.714. Es el texto de origen y hay que leerlo sabiendo eso: el Decreto 840/2020 reescribió después los artículos 14 bis y 14 ter, así que buena parte de lo que este decreto dice ya no es lo que rige. Curarlo entero como reglas vigentes afirmaría requisitos derogados; no curarlo dejaría el texto suelto en el corpus, sin nada que avise que fue reemplazado, para que alguien lo lea y concluya mal. Así que entra lo que sigue en pie —la exclusión de quien trabaja en la economía informal por encima del salario mínimo, que fue al artículo 3 de la ley y ahí sigue— y lo que se cayó queda declarado como conflicto, con las dos citas localizadas. El tope de cinco menores acumulables, que es la otra cosa que este texto tiene y el vigente no, ya está declarado desde la lectura del Decreto 840/2020. Todo entra como candidato: nada de esto se sirve hasta que una persona con competencia jurídica lo apruebe.",
+ "beneficio": {
+  "codigo": "AR.AUH",
+  "nombre": "Asignación Universal por Hijo para Protección Social",
+  "familia": "INGRESOS",
+  "linea": "ASIGNACION_FAMILIAR",
+  "jurisdiccion": "AR",
+  "naturaleza": "PRESTACION_MONETARIA",
+  "descripcion": "Prestación monetaria no retributiva mensual por cada niña, niño o adolescente a cargo, destinada a grupos familiares desocupados o que se desempeñan en la economía informal.",
+  "unidad_beneficiaria": "PERSONA",
+  "modalidad": "TRANSFERENCIA",
+  "frecuencia": "MENSUAL",
+  "requiere_solicitud": true,
+  "ruta_evidencia": "articulo-1/parrafo-4"
+ },
+ "poblaciones": [
+  {
+   "codigo": "AR.TITULAR-AUH",
+   "nombre": "Quien percibe la asignación",
+   "definicion": "Uno solo de los padres, tutor, curador o pariente por consanguinidad hasta el tercer grado que tenga a cargo al causante, perteneciente a un grupo familiar desocupado o que se desempeña en la economía informal.",
+   "rol_persona": "TITULAR",
+   "alcance": "El decreto de origen define el destino de la asignación por la situación laboral del grupo familiar —desocupado o economía informal—, que es lo que la distingue del subsistema contributivo. No es un requisito que se acredite: es la descripción del subsistema al que la prestación pertenece.",
+   "ruta_evidencia": "articulo-1/parrafo-4"
+  }
+ ],
+ "reglas": [
+  {
+   "clave": "SUBSISTEMA-PARA-DESOCUPADOS-O-ECONOMIA-INFORMAL",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-1/parrafo-4",
+   "texto_literal": "Un subsistema no contributivo de Asignación Universal por Hijo para Protección Social, destinado a aquellos niños, niñas y adolescentes residentes en la República Argentina, que no tengan otra asignación familiar prevista por la presente ley y pertenezcan a grupos familiares que se encuentren desocupados o se desempeñen en la economía informal.",
+   "descripcion": "La asignación se destina a niñas, niños y adolescentes residentes que no tengan otra asignación familiar de la ley y pertenezcan a grupos familiares desocupados o que se desempeñan en la economía informal.",
+   "requiere_revision": true,
+   "motivo_revision": "Este texto es el de 2009 y el Decreto 446/2011 lo sustituyó para incorporar la Asignación por Embarazo al mismo inciso. La descripción del destino —desocupados o economía informal— sobrevivió a esa sustitución, así que la regla sigue en pie; lo que cambió es el encabezado del inciso. Se conserva sin condición ejecutable porque «pertenecer a un grupo familiar desocupado o de la economía informal» no es un dato que alguien acredite: es la situación que el subsistema describe, y la ley la opera por la vía negativa del artículo 3."
+  },
+  {
+   "clave": "EXCLUSION-DE-INFORMALES-POR-ENCIMA-DEL-SALARIO-MINIMO",
+   "categoria": "EXCLUSION",
+   "ruta_evidencia": "articulo-2/parrafo-6",
+   "texto_literal": "Quedan excluidos del beneficio previsto en el artículo 1º inciso c) de la presente los trabajadores que se desempeñen en la economía informal, percibiendo una remuneración superior al salario mínimo, vital y móvil.",
+   "descripcion": "Queda excluido quien se desempeña en la economía informal y percibe una remuneración superior al salario mínimo, vital y móvil.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "not",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "all",
+      "args": [
+       {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "titular_se_desempena_en_la_economia_informal"
+       },
+       {
+        "schema_version": "1.0",
+        "op": "compare",
+        "field": "ingreso_mensual_del_titular",
+        "cmp": ">",
+        "parameter": "AR.SALARIO-MINIMO-VITAL-Y-MOVIL",
+        "unit": "ARS"
+       }
+      ]
+     }
+    ]
+   },
+   "parametros": [
+    {
+     "codigo": "AR.SALARIO-MINIMO-VITAL-Y-MOVIL",
+     "rol": "TOPE"
+    }
+   ],
+   "requiere_revision": true,
+   "motivo_revision": "Es la única regla de este decreto que sigue vigente sin cambios: fue al artículo 3 de la ley y ahí está. La condición está escrita y el parámetro es el salario mínimo, vital y móvil, que el corpus tiene como fuente pero no con valor aprobado, así que hasta entonces devuelve desconocido. Lo que hay que confirmar es la lectura de la exclusión: se aplica a quien trabaja en la informalidad y cobra más que el mínimo, no a quien cobra más que el mínimo sin más, y escrita al revés dejaría afuera a todo el subsistema contributivo."
+  },
+  {
+   "clave": "PAGO-DEL-OCHENTA-Y-RESERVA-DEL-VEINTE",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-2/parrafo-26",
+   "texto_literal": "El OCHENTA POR CIENTO (80%) del monto previsto en el primer párrafo se abonará mensualmente a los titulares de las mismas a través del sistema de pagos de la ADMINISTRACION NACIONAL DE LA SEGURIDAD SOCIAL (ANSES).",
+   "descripcion": "El ochenta por ciento del monto se abona mensualmente por el sistema de pagos de ANSES.",
+   "requiere_revision": true,
+   "motivo_revision": "Es el origen del esquema que hace que quien cobra la AUH reciba menos de lo que dice la escala, y sobrevive con otra redacción en el Decreto 840/2020. Se conserva acá porque es donde aparece por primera vez y porque explica el veinte por ciento reservado; no se formaliza porque no es una condición sobre la persona sino la mecánica del pago."
+  }
+ ],
+ "conflictos": [
+  {
+   "clave": "LA-DECLARACION-JURADA-CON-PERDIDA-DEL-BENEFICIO-YA-NO-ESTA",
+   "ruta_evidencia": "articulo-2/inciso-f-23",
+   "texto_literal": "El titular del beneficio deberá presentar una declaración jurada relativa al cumplimiento de los requisitos exigidos por la presente y a las calidades invocadas, de comprobarse la falsedad de algunos de estos datos, se producirá la pérdida del beneficio, sin perjuicio de las sanciones que correspondan.",
+   "otra_norma": "Ley 24.714, texto consolidado (infoleg:39880:actualizado), artículo 14 ter según el Decreto 840/2020",
+   "otra_ruta": "articulo-14-ter",
+   "descripcion": "El texto de 2009 exigía como requisito de acceso una declaración jurada, y establecía que comprobada la falsedad se producía la pérdida del beneficio. La redacción que el Decreto 840/2020 puso en su lugar tiene seis incisos y ninguno es ese: el inciso f) pasó a ser residir en el país. Los dos textos están en el corpus y el de 2009 no dice en ninguna parte que fue reemplazado. Si la declaración jurada dejó de exigirse, si la pérdida del beneficio por falsedad sigue vigente por otra vía, o si la exigencia migró a las normas de ANSES, es una lectura jurídica: de ella depende qué se le pide a alguien al solicitar y qué le puede pasar después. La misma exigencia sí sigue en pie, con su mismo texto, para la Asignación por Embarazo en el artículo 14 quinquies inciso d), lo que hace más difícil leer la ausencia como un olvido de redacción."
+  }
+ ],
+ "dependencias": [
+  {
+   "referencia": "Salario mínimo, vital y móvil",
+   "motivo": "Es el tope de la exclusión del artículo 2. La fuente está en el corpus y el parámetro no tiene valor aprobado, así que la regla devuelve desconocido: no es que la persona no califique, es que no se sabe."
+  }
+ ]
+}

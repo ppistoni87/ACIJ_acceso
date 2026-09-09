@@ -9,17 +9,19 @@
 # reprocesa lo que cambió. Sirve tanto para poblar desde cero como para
 # actualizar.
 #
-# Uso: bash scripts/poblar_corpus.sh [--sin-catalogo-nacional] [--sin-informes]
+# Uso: bash scripts/poblar_corpus.sh [--sin-catalogo-nacional] [--sin-informes] [--sin-ampliar]
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 BN=.venv/bin/bn
 CATALOGO_NACIONAL=1
 INFORMES=1
+AMPLIAR=1
 for opcion in "$@"; do
   case "${opcion}" in
     --sin-catalogo-nacional) CATALOGO_NACIONAL=0 ;;
     --sin-informes) INFORMES=0 ;;
+    --sin-ampliar) AMPLIAR=0 ;;
     *) echo "Opción desconocida: ${opcion}" >&2; exit 2 ;;
   esac
 done
@@ -90,17 +92,6 @@ echo "== Relaciones normativas =="
 $BN curacion relaciones
 
 
-# La ampliación del corpus —`bn ingesta ampliar`, que trae el texto de las normas
-# que el corpus cita— NO va acá, y la corrida limpia mostró por qué. Cada pasada
-# descubre citas nuevas en las normas que trajo la pasada anterior, así que
-# ampliar en cada población hace que el corpus crezca un anillo por corrida: la
-# segunda pasada pasó de 53 a 85 versiones de documento y el procedimiento dejó
-# de ser idempotente, que es lo que este script promete de sí mismo.
-#
-# Ampliar es una decisión de crecimiento del corpus, no un paso de rutina. Se
-# corre aparte, cuando alguien quiere traer el anillo siguiente, y después se
-# vuelve a correr esta población. El runbook lo explica.
-
 echo
 echo "== Trámites =="
 $BN curacion tramites
@@ -168,6 +159,45 @@ if [ "${CATALOGO_NACIONAL}" = 1 ]; then
     $BN ingesta importar-infoleg "${captura}" | tail -4
   else
     echo "F01 no tiene captura: se omite." >&2
+  fi
+fi
+
+# Va después del catálogo nacional y no antes: `ampliar` resuelve las citas
+# contra ese catálogo, y en una base que empieza vacía el catálogo todavía no
+# está cuando corren las relaciones. Puesto antes, no encontraba nada y el
+# corpus quedaba sin las normas que sus propias lecturas citan, sin que nada
+# fallara.
+#
+# El corpus cita normas que no tiene, y el catálogo nacional sabe dónde está el
+# texto de buena parte de ellas. Traerlas es parte de poblar: sin ellas, las
+# lecturas curadas que las citan no tienen qué citar.
+#
+# Pero se hace una vez y no en cada pasada, y por eso está el `--sin-ampliar`.
+# Cada ampliación descubre citas nuevas en las normas que trajo la anterior, así
+# que ampliar en las dos pasadas hace crecer el corpus un anillo por pasada: la
+# corrida limpia lo mostró pasando de 53 a 85 versiones de documento, y con eso
+# el procedimiento deja de ser idempotente, que es lo que este script promete de
+# sí mismo. La primera pasada trae el anillo; la segunda tiene que no agregar
+# nada, y eso es lo que se mide.
+if [ "${AMPLIAR}" = 1 ]; then
+  echo
+  echo "== Normas citadas por el corpus =="
+  $BN ingesta ampliar | tail -2
+  $BN ingesta capturar N01 | tail -1
+  $BN ingesta extraer | tail -3
+  # Traen normas nuevas: hay que volver a resolver identidad y relaciones sobre
+  # ellas, o entran al corpus como texto sin norma.
+  $BN curacion identidad | tail -2
+  $BN curacion relaciones | tail -2
+else
+  # Sin ampliar, pero sí revalidando lo que ya está registrado: capturar de nuevo
+  # las URLs conocidas es parte de la rutina y no hace crecer nada.
+  if psql -h 127.0.0.1 -U postgres -d "${BASE}" -tAc \
+       "SELECT 1 FROM fuentes WHERE source_id = 'N01'" | grep -q 1; then
+    echo
+    echo "== Normas citadas por el corpus (revalidación) =="
+    $BN ingesta capturar N01 | tail -1
+    $BN ingesta extraer | tail -3
   fi
 fi
 

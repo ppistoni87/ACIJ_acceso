@@ -1,0 +1,87 @@
+{
+ "schema_version": "1.0",
+ "norma": {
+  "external_id": "infoleg:202004:original",
+  "referencia": "Decreto nacional 1667/2012",
+  "rol": "REGLAMENTA"
+ },
+ "nota": "Lectura curada del decreto que define sobre qué se miden los topes de ingreso de las asignaciones familiares. Es una pieza chica y transversal: no crea ni modifica ninguna prestación, decide qué número se compara contra el tope. Casi todas las lecturas curadas de la Ley 24.714 tienen alguna regla que compara un ingreso contra un límite, y hasta ahora ninguna podía decir de dónde sale ese ingreso. Ahora se sabe dos cosas y las dos cambian resultados: que el ingreso es el del grupo familiar entero y no el de quien solicita, y que cuenta también lo no remunerativo —jubilaciones, pensiones, desempleo, riesgos del trabajo, planes provinciales y municipales—. Se ata a la Asignación Universal por Hijo porque es donde el tope decide con más frecuencia, y la misma definición vale para el resto de las prestaciones de la ley. Todo entra como candidato: nada de esto se sirve hasta que una persona con competencia jurídica lo apruebe.",
+ "beneficio": {
+  "codigo": "AR.AUH",
+  "nombre": "Asignación Universal por Hijo para Protección Social",
+  "familia": "INGRESOS",
+  "linea": "ASIGNACION_FAMILIAR",
+  "jurisdiccion": "AR",
+  "naturaleza": "PRESTACION_MONETARIA",
+  "descripcion": "Prestación monetaria no retributiva mensual por cada niña, niño o adolescente a cargo, cuyos topes de ingreso se calculan sobre la totalidad de los ingresos del grupo familiar.",
+  "unidad_beneficiaria": "PERSONA",
+  "modalidad": "TRANSFERENCIA",
+  "frecuencia": "MENSUAL",
+  "requiere_solicitud": true,
+  "ruta_evidencia": "articulo-1"
+ },
+ "poblaciones": [
+  {
+   "codigo": "AR.GRUPO-FAMILIAR-ASIGNACIONES",
+   "nombre": "Grupo familiar cuyo ingreso se mide",
+   "definicion": "Conjunto cuyos ingresos se suman para comparar contra los límites que condicionan el otorgamiento de las asignaciones familiares o su cuantía.",
+   "rol_persona": "GRUPO_FAMILIAR",
+   "alcance": "No es beneficiario: es la unidad sobre la que se mide. Y el decreto no dice quién lo integra, solo que el ingreso es «la totalidad de los ingresos correspondientes al grupo familiar»: quién cuenta como parte del grupo queda librado a las normas de ANSES, y de eso depende si el sueldo de un conviviente entra o no en la cuenta.",
+   "ruta_evidencia": "articulo-1"
+  }
+ ],
+ "reglas": [
+  {
+   "clave": "EL-TOPE-SE-MIDE-SOBRE-EL-GRUPO-FAMILIAR-ENTERO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-1",
+   "texto_literal": "Los límites que condicionan el otorgamiento de las asignaciones familiares o la cuantía de las mismas, se calcularán en función de la totalidad de los ingresos correspondientes al grupo familiar.",
+   "descripcion": "Los topes que condicionan el otorgamiento o la cuantía se calculan sobre la totalidad de los ingresos del grupo familiar, no sobre el de quien solicita.",
+   "requiere_revision": true,
+   "motivo_revision": "No es una condición sobre nadie: dice qué número se compara contra el tope, y por eso cambia el resultado de todas las reglas que comparan un ingreso. Formalizarla como condición diría que existe un requisito de «tener grupo familiar», que la norma no pone. Lo que hay que decidir es de fondo y es del modelo: si el campo que hoy usan esas reglas es el ingreso del titular o el del hogar. Si es el del titular, todas están midiendo lo que no corresponde, y una familia queda adentro del tope por un ingreso que el decreto manda sumar."
+  },
+  {
+   "clave": "CUENTAN-LOS-INGRESOS-NO-REMUNERATIVOS",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-2",
+   "texto_literal": "deben considerarse como ingresos, las remuneraciones de los trabajadores en relación de dependencia registrados, las rentas de referencia para trabajadores autónomos y monotributistas, las sumas originadas en Prestaciones Contributivas y/o No Contributivas Nacionales, Provinciales, Municipales o de la Ciudad Autónoma de Buenos Aires",
+   "descripcion": "Cuentan como ingreso las remuneraciones registradas, las rentas de referencia de autónomos y monotributistas, y las prestaciones contributivas y no contributivas de cualquier jurisdicción.",
+   "requiere_revision": true,
+   "motivo_revision": "Es la parte que más gente deja afuera sin que se note: una jubilación mínima, una pensión provincial o un plan municipal cuentan para el tope igual que un sueldo. Quien responda mirando solo el salario va a decir que el hogar entra cuando no entra. No se formaliza porque el modelo guarda un ingreso mensual y no su composición, así que no puede sumar lo que no tiene desagregado; lo que hay que decidir es si el campo de ingreso se define como esta suma, y decirlo donde se pregunta por él."
+  },
+  {
+   "clave": "LAS-PRESTACIONES-DE-LAS-LEYES-QUE-ENUMERA-TAMBIEN-CUENTAN",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-2",
+   "texto_literal": "incluyendo las prestaciones previstas en las Leyes Nros. 24.013, 24.241, 24.557, Nº 24.714 artículo 11, 25.191 y sus respectivas modificatorias y complementarias.",
+   "descripcion": "Entre los ingresos que cuentan están las prestaciones por desempleo, las previsionales, las de riesgos del trabajo, la asignación por maternidad y las del régimen del trabajador rural.",
+   "requiere_revision": true,
+   "motivo_revision": "La enumeración incluye la asignación por maternidad de la propia Ley 24.714 —su artículo 11—, que es una prestación de este mismo régimen contando como ingreso para el tope de otra. Eso no es obvio y conviene confirmarlo antes de servirlo: quien esté cobrando maternidad tiene ese importe adentro de la cuenta que decide si le corresponden las demás. Ninguna de las leyes enumeradas está en el corpus, así que qué prestación concreta es cada una queda declarado y no verificable."
+  },
+  {
+   "clave": "RIGE-DESDE-LAS-ASIGNACIONES-DEVENGADAS-EN-SEPTIEMBRE-DE-2012",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-4",
+   "texto_literal": "El presente decreto comenzará a regir a partir de las asignaciones familiares devengadas por el mes de septiembre de 2012.",
+   "descripcion": "La regla se aplica a las asignaciones devengadas desde septiembre de 2012.",
+   "requiere_revision": true,
+   "motivo_revision": "No es una condición sobre la persona sino la fecha desde la que rige esta forma de medir, y se conserva porque un reclamo por períodos anteriores no se resuelve con esta regla. El modelo guarda la vigencia de la norma, no la de cada regla, así que la fecha queda en el texto y no en un campo."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "quiénes integran el grupo familiar",
+   "motivo": "El decreto manda sumar «la totalidad de los ingresos correspondientes al grupo familiar» y no dice quién lo integra. De eso depende si entra el ingreso de un conviviente, de un hijo que trabaja o de un abuelo que vive en el hogar, y es la diferencia entre estar adentro o afuera del tope. La definición la fija ANSES por normas que no están en el corpus."
+  }
+ ],
+ "dependencias": [
+  {
+   "referencia": "Normas aclaratorias y complementarias de ANSES para este decreto",
+   "motivo": "El artículo 3 faculta a ANSES a dictarlas, y son las que definen quién integra el grupo familiar y cómo se acredita cada ingreso. Sin ellas, la regla se sabe y no se puede aplicar a un caso."
+  },
+  {
+   "referencia": "Leyes 24.013, 24.241, 24.557 y 25.191",
+   "motivo": "El artículo 2 las enumera como fuentes de ingresos que cuentan para el tope. No están en el corpus, así que qué prestación concreta aporta cada una queda declarado y no verificable."
+  }
+ ]
+}

@@ -23,6 +23,7 @@ la referencia justamente dejó abierta.
 from __future__ import annotations
 
 import json
+import pathlib
 import uuid
 from dataclasses import dataclass, field
 
@@ -38,6 +39,7 @@ SOURCE_ID = "N01"
 NOMBRE_FUENTE = "Textos consolidados de normas citadas por el corpus (InfoLEG)"
 POLITICA = "PUBLIC_READ_ONLY_WITH_VALID_TLS_NO_THIRD_PARTY_KEYS"
 ORIGEN = "citada_por_el_corpus"
+RUTA_CURADURIA = pathlib.Path("docs/curaduria")
 
 # El catálogo publica dos formas de texto y las dos sirven, pero no dicen lo
 # mismo: `texact.htm` es el texto consolidado, con las modificaciones ya
@@ -296,3 +298,104 @@ def ampliar(conexion: Connection, limite: int | None = None) -> ResultadoAmpliac
         f"`bn ingesta capturar {SOURCE_ID}` las trae y `bn ingesta extraer` las segmenta."
     )
     return resultado
+
+
+def informe(conexion: Connection, raiz: pathlib.Path | None = None) -> str:
+    """Qué se trajo, qué se curó y qué no, con el motivo de cada cosa.
+
+    Traer una norma al corpus no es leerla. Sin este informe, veintiséis normas
+    nuevas con texto y sin lectura se ven igual que veintiséis normas leídas:
+    el corpus crece y nadie sabe qué parte de ese crecimiento se puede
+    responder.
+    """
+    base = (raiz or pathlib.Path.cwd()) / RUTA_CURADURIA
+    curadas = set()
+    if base.is_dir():
+        for archivo in sorted(base.glob("*.json")):
+            lectura = json.loads(archivo.read_text(encoding="utf-8"))
+            curadas.add(lectura["norma"]["external_id"])
+
+    filas = [
+        dict(f)
+        for f in conexion.execute(
+            text(
+                "SELECT d.external_id, n.tipo || ' ' || n.numero || '/' || n.anio::text AS norma, "
+                "       coalesce(n.titulo, '') AS titulo, count(u.id) AS unidades "
+                "  FROM documentos d "
+                "  JOIN documento_versiones dv ON dv.documento_id = d.id "
+                "  JOIN norma_versiones nv ON nv.doc_version_id = dv.id "
+                "  JOIN normas n ON n.id = nv.norma_id "
+                "  JOIN unidades_documentales u ON u.doc_version_id = dv.id "
+                " WHERE d.source_id = :s "
+                " GROUP BY 1, 2, 3 ORDER BY 2"
+            ),
+            {"s": SOURCE_ID},
+        ).mappings()
+    ]
+    lineas = [
+        "# Normas que el corpus citaba y ahora tiene",
+        "",
+        "Las normas del corpus citan otras. Cada cita que no resuelve queda como",
+        "referencia pendiente, y el catálogo nacional sabe dónde está el texto de buena",
+        "parte de ellas. Esta es la lista de las que se trajeron con `bn ingesta ampliar`.",
+        "",
+        "Traerlas no es leerlas, y la diferencia importa: una norma con texto y sin",
+        "lectura curada está en el corpus y no puede contestar nada. La columna dice",
+        "cuál es cuál.",
+        "",
+        "| Norma | Unidades | Lectura curada |",
+        "| --- | ---: | --- |",
+    ]
+    sin_curar = 0
+    for fila in filas:
+        tiene = fila["external_id"] in curadas
+        sin_curar += int(not tiene)
+        lineas.append(
+            f"| {fila['norma']} — {fila['titulo'][:44]} | {fila['unidades']} | "
+            f"{'sí' if tiene else '—'} |"
+        )
+    lineas += [
+        "",
+        f"**{len(filas)}** normas con texto, **{len(filas) - sin_curar}** con lectura curada y "
+        f"**{sin_curar}** sin curar.",
+        "",
+    ]
+
+    # La mayoría de lo que no está curado fija importes para un período, y esos
+    # períodos ya pasaron. Decirlo con el dato adelante evita las dos lecturas
+    # equivocadas: que falta curarlas por descuido, o que sirven para contestar
+    # cuánto se cobra.
+    montos = [f for f in filas if _fija_importes(f["titulo"]) and f["external_id"] not in curadas]
+    if montos:
+        ultimo = max(int(f["norma"].rsplit("/", 1)[1]) for f in montos)
+        lineas += [
+            "## Por qué la mayoría no está curada",
+            "",
+            f"De las {sin_curar} sin curar, **{len(montos)}** fijan rangos, topes y montos para un",
+            "período determinado. No se curan como cuantía y no es una omisión: son una cadena en",
+            "la que cada una reemplaza a la anterior, y la más nueva que el corpus tiene es de",
+            f"**{ultimo}**. Servir cualquiera de ellas como el monto de hoy sería dar por vigente",
+            "un importe de hace años, que es peor que decir que no se sabe. Los montos vigentes",
+            "salen de resoluciones de ANSES bajo la fórmula de movilidad, y esas no están en el",
+            "corpus: es la dependencia que las lecturas curadas ya declaran.",
+            "",
+            "Lo que sí aportan es la cadena: sirven para explicar desde cuándo rige cada escala y",
+            "para reconstruir un período pasado, que es una pregunta distinta de cuánto se cobra",
+            "este mes.",
+            "",
+            "Las demás sin curar modifican artículos cuyo texto vigente ya está curado desde el",
+            "texto consolidado de la Ley 24.714. Curarlas aparte repetiría las mismas reglas sin",
+            "agregar nada; lo que aportan es la trazabilidad, que ya da el grafo de relaciones.",
+            "",
+        ]
+    return "\n".join(lineas) + "\n"
+
+
+# Los títulos del catálogo nacional son escuetos y regulares: cuando una norma
+# fija importes, lo dice en el título. No es una clasificación jurídica, es una
+# forma de agrupar lo que no se curó para poder explicar por qué.
+PALABRAS_DE_IMPORTES = ("RANGOS", "TOPES", "MONTOS", "SUMA", "INCREMENT", "MOVILIDAD", "SUPLEMENTO")
+
+
+def _fija_importes(titulo: str) -> bool:
+    return any(palabra in titulo.upper() for palabra in PALABRAS_DE_IMPORTES)

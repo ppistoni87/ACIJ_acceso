@@ -287,7 +287,7 @@ cronometrar "población completa" bash scripts/poblar_corpus.sh --sin-informes $
 # de cero.
 ANTES=$(sql "SELECT count(*) FROM documento_versiones" 2>/dev/null || echo "")
 # shellcheck disable=SC2086
-cronometrar "segunda pasada (idempotencia)" bash scripts/poblar_corpus.sh --sin-informes ${EXTRA}
+cronometrar "segunda pasada (idempotencia)" bash scripts/poblar_corpus.sh --sin-informes --sin-ampliar ${EXTRA}
 DESPUES=$(sql "SELECT count(*) FROM documento_versiones" 2>/dev/null || echo "")
 
 # Al cerrar, el planificador se vuelve a preguntar a quién le toca. Si el

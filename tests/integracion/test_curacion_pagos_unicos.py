@@ -63,7 +63,7 @@ ARTICULOS = [
         "que se encuentren desocupados o se desempeñen en la economía informal. (Inciso "
         "sustituido por art. 1° del Decreto N° 446/2011 B.O. 19/4/2011)",
         "DISPOSITIVO",
-        "articulo-1/inciso-c-6",
+        "articulo-1/inciso-c-4",
     ),
     (
         "ARTICULO",

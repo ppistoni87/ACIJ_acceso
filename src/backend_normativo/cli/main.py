@@ -233,6 +233,9 @@ def ingesta_ampliar(
     limite: int = typer.Option(0, "--limite", help="Cuántas normas traer como máximo; 0, todas."),
     en_seco: bool = typer.Option(False, "--en-seco", help="Mostrar qué se traería, sin registrar."),
     detalle: bool = typer.Option(False, "--detalle", help="Listar también lo que se descarta."),
+    informe_salida: str | None = typer.Option(
+        None, "--informe", help="Escribir el informe de qué se trajo y qué se curó."
+    ),
 ) -> None:
     """Registra el texto de las normas que el corpus cita y no tiene.
 
@@ -244,7 +247,13 @@ def ingesta_ampliar(
     informa con su motivo: elegir una de tres por orden de aparición sería
     inventar la cita que la referencia dejó abierta.
     """
-    from backend_normativo.ingesta.ampliacion import SOURCE_ID, ampliar, candidatas
+    from backend_normativo.ingesta.ampliacion import SOURCE_ID, ampliar, candidatas, informe
+
+    if informe_salida:
+        with engine_migrador().connect() as conexion:
+            Path(informe_salida).write_text(informe(conexion), encoding="utf-8")
+        typer.echo(f"Informe escrito en {informe_salida}")
+        return
 
     tope = limite or None
     with engine_migrador().begin() as conexion:

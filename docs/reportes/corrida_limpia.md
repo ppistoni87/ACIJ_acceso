@@ -15,8 +15,8 @@ Generado por `scripts/corrida_limpia.sh`. La base se crea y se destruye en la
 misma corrida: si algo de acá se pudiera explicar por estado previo, no habría
 estado previo del que agarrarse.
 
-- Arranque: `2026-09-09T04:12:23+00:00`
-- Cierre: `2026-09-09T04:20:53+00:00`
+- Arranque: `2026-09-09T04:33:39+00:00`
+- Cierre: `2026-09-09T04:42:16+00:00`
 - Resultado: **completa**
 - Base: `backend_normativo_limpia`
 - Fuentes que el planificador deja pendientes al cerrar: `1`
@@ -28,9 +28,9 @@ corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
 
 | Paso | Duración | Última línea |
 | --- | ---: | --- |
-| migraciones | 1.3 s | INFO  [alembic.runtime.migration] Running upgrade 0006_indice_de_listado -> 0007_servibl… |
-| población completa | 360.0 s | Incidencias abiertas: 12 |
-| segunda pasada (idempotencia) | 148.0 s | Incidencias abiertas: 0 |
+| migraciones | 1.4 s | INFO  [alembic.runtime.migration] Running upgrade 0006_indice_de_listado -> 0007_servibl… |
+| población completa | 366.0 s | Incidencias abiertas: 12 |
+| segunda pasada (idempotencia) | 148.9 s | Incidencias abiertas: 0 |
 | planificación al cierre (en seco) | 0.6 s | alguien corre el comando. |
 
 ## Con qué quedó la base
@@ -40,8 +40,8 @@ corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
 | Fuentes en el catálogo | 84 |
 | Capturas | 95 |
 | Unidades documentales | 992 |
-| Beneficios curados | 13 |
-| Incidencias abiertas | 4661 |
+| Beneficios curados | 16 |
+| Incidencias abiertas | 4668 |
 
 Las incidencias abiertas no son un fallo de la corrida: son lo que el sistema
 encontró y no resolvió solo. Una corrida limpia que no abriera ninguna estaría
@@ -60,12 +60,13 @@ algo distinto de los datos.
 | --- | --- | ---: | ---: | ---: | --- |
 | F04 | FALLIDA | 1 | 0 | 1 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL |
 | F04 | FALLIDA | 1 | 0 | 1 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL |
+| M05 | FALLIDA | 1 | 0 | 1 | https://www.anses.gob.ar/: HTTP 403. La fuente queda pausada; no se rotan identidades ni se evaden controles d |
 | C01 | COMPLETA | 1 | 1 | 0 |  |
 | C01 | COMPLETA | 1 | 1 | 0 |  |
-| D01 | COMPLETA | 3 | 3 | 0 |  |
-| D01 | COMPLETA | 3 | 3 | 0 |  |
 | D01 | COMPLETA | 3 | 3 | 0 |  |
 | D01 | COMPLETA | 1 | 1 | 0 |  |
+| D01 | COMPLETA | 3 | 3 | 0 |  |
+| D01 | COMPLETA | 3 | 3 | 0 |  |
 | D02 | COMPLETA | 1 | 1 | 0 |  |
 | D02 | COMPLETA | 2 | 2 | 0 |  |
 | D02 | COMPLETA | 2 | 2 | 0 |  |
@@ -179,26 +180,18 @@ lectura, es que la fuente no entregó en esta corrida.
 
 | Lectura | Norma que le falta |
 | --- | --- |
+| `decreto-nacional-1602-2009.json` | `infoleg:159466:original` |
+| `decreto-nacional-1667-2012.json` | `infoleg:202004:original` |
 | `decreto-nacional-840-2020.json` | `infoleg:343905:original` |
-
-> **El reporte no cierra:** 20 lecturas curadas, 1 sin su norma
-> en el corpus y 16 código(s) de beneficio distinto(s) entre las que sí la
-> tienen, pero la base quedó con 13. Hay un error en este informe o una
-> lectura que cargó a medias; no se puede leer como evidencia hasta resolverlo.
-
-> **Faltan lecturas:** 20 lecturas curadas, 1 sin su norma en el
-> corpus, así que tendrían que haber entrado 19 y entraron
-> 16. Las que faltan no son fuentes que no entregaron: son lecturas que la
-> carga rechazó, y el motivo está en la salida de `bn curacion beneficios`.
 
 ## Incidencias que abrió la corrida
 
 | Tipo | Cuántas |
 | --- | ---: |
 | IDENTIDAD_AMBIGUA | 4492 |
-| DATO_FALTANTE_CRITICO | 69 |
+| DATO_FALTANTE_CRITICO | 75 |
 | COBERTURA_EXTRACCION | 43 |
 | VIGENCIA_INDETERMINADA | 24 |
-| ACCESO_BLOQUEADO | 17 |
+| ACCESO_BLOQUEADO | 18 |
 | CONFLICTO_DE_FUENTES | 11 |
 | DISCREPANCIA_NUMERACION | 5 |

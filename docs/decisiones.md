@@ -890,3 +890,42 @@ Lo que hay que retener no es el bug: es que el reporte de la corrida limpia
 encontró dos regresiones que ninguna prueba había encontrado, porque son
 regresiones de procedimiento y no de código. Un informe que se desmiente a sí
 mismo sirve exactamente para esto.
+
+## D-52 · Ampliar el corpus va después de tener contra qué resolver
+
+`bn ingesta ampliar` resuelve las citas pendientes contra el catálogo nacional.
+Puesto en el procedimiento de población antes de que ese catálogo se importe, no
+encontraba nada que resolver y no fallaba: la corrida limpia terminaba
+«completa», con el corpus sin las normas que sus propias lecturas curadas citan
+y tres lecturas informadas como «su norma no está».
+
+El síntoma parecía otra cosa —lecturas que no cargan— y la causa era el orden.
+En la base de desarrollo no se veía, porque ahí el catálogo estaba desde antes.
+
+**Consecuencia:** la ampliación corre después del catálogo nacional, y solo en la
+primera pasada. La segunda tiene que no agregar nada, y eso es lo que el reporte
+mide.
+
+## D-53 · Traer una norma no es leerla
+
+La ampliación metió veintiséis normas nacionales con texto en el corpus. Tres
+tienen lectura curada; veintitrés no. Sin decirlo, las dos cosas se ven igual
+desde afuera: el corpus creció y nadie sabe qué parte de ese crecimiento puede
+contestar algo.
+
+Trece de las veintitrés fijan rangos, topes y montos para un período, y no se
+curan como cuantía a propósito: son una cadena donde cada una reemplaza a la
+anterior, y la más nueva que el corpus tiene es de 2015. Servir cualquiera como
+el monto de hoy sería dar por vigente un importe de hace una década, que es peor
+que decir que no se sabe. Lo que sí aportan es la cadena, que sirve para
+reconstruir un período pasado —otra pregunta, y legítima—.
+
+Las demás modifican artículos cuyo texto vigente ya está curado desde el
+consolidado de la Ley 24.714: curarlas aparte repetiría las mismas reglas sin
+agregar nada, y la trazabilidad ya la da el grafo de relaciones. El Decreto
+446/2011 es el caso claro: se comparó su texto con el consolidado y son
+idénticos.
+
+**Consecuencia:** `bn ingesta ampliar --informe` deja escrito, norma por norma,
+qué se trajo y qué se leyó, con el motivo de lo que no. Un corpus que crece sin
+esa cuenta se lee como si todo lo que entró estuviera disponible para responder.
