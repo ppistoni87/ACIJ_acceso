@@ -818,3 +818,46 @@ a curar lo que la citaba. Cuando la fuente vuelve a entregar y el texto cambia,
 la versión nueva se segmenta con el extractor nuevo y la vieja queda intacta con
 sus citas —que fue lo que pasó con la Ley 24.714, cuyo inciso c) del artículo 1
 se movió de ruta y obligó a reanclar tres lecturas curadas—.
+
+## D-49 · Faltaba con qué aprobar, no a quién
+
+Las reglas curadas nacen candidatas y la evaluación no las usa «hasta que
+alguien con competencia jurídica las apruebe». Esa frase estaba en el código, en
+los avisos de la carga y en el backlog. Lo que no estaba era el comando: no
+había forma de aprobar una regla. `bn revision aprobar-campos` mueve
+afirmaciones, que son otra tabla.
+
+Así que las ciento cincuenta y cuatro reglas estaban en CANDIDATE por ausencia
+de una función y no por falta de revisión, y la historia figuraba bloqueada
+esperando a una persona que, aunque hubiera aparecido, no habría tenido con qué
+firmar.
+
+**Consecuencia:** el circuito existe —aprobar, rechazar, marcar en revisión, y
+aprobar por beneficio— y cada transición exige actor y fundamento y deja un
+evento por regla en la bitácora. Aprobar de a un beneficio no es un atajo: sus
+reglas se leen juntas porque se aplican juntas, y obligar a ciento cincuenta
+invocaciones no hace la revisión más cuidadosa, hace que se resuelva con un
+bucle que nadie mira.
+
+## D-50 · Una revisión que no tiene forma de tarea no se hace
+
+«Revisar 154 reglas» no es una tarea: es una intención. El expediente que genera
+`bn revision reglas` la convierte en una lista de preguntas concretas, cada una
+con el texto literal de la norma al lado, la unidad a la que mirar, lo que la
+lectura afirma y qué hay que decidir.
+
+Armarlo mostró que dos de cada tres reglas no decían a qué artículo mirar: la
+evidencia localiza una unidad, pero el `selector` lo escribe quien crea la
+evidencia, y una reusada por otro curador no lo traía. Quien revisara habría
+tenido que buscar el artículo a mano ciento seis veces.
+
+**Consecuencia:** el expediente localiza por unidad y no por selector, y separa
+las reglas en las dos pilas que no se revisan igual: las que tienen condición
+ejecutable, que se confirman contra el texto, y las que no, donde hay que
+decidir si la condición se puede escribir o si la regla es informativa.
+
+Lo que el expediente no hace es firmar. Esa parte no es una tarea pendiente de
+automatizar: aprobar una regla es afirmar que lo que el backend contesta es lo
+que dice el derecho, y ponerle a esa afirmación un actor que no revisó nada
+convertiría la bitácora —que existe para poder explicar cada respuesta— en el
+lugar donde se esconde que nadie la revisó.

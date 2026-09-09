@@ -1332,6 +1332,128 @@ def revision_aprobar_equivalencia(
     typer.echo(f"Equivalencia {equivalencia} aprobada por {actor}.")
 
 
+@revision.command("reglas")
+def revision_reglas(
+    salida: str | None = typer.Option(None, help="Archivo donde escribir el expediente."),
+    estado: str = typer.Option("CANDIDATE", help="Estado a listar; «todos» para no filtrar."),
+    beneficio: str | None = typer.Option(None, help="Limitar a un código de beneficio."),
+) -> None:
+    """Arma el expediente de revisión: qué hay que decidir, regla por regla.
+
+    Sin esto, «revisar 154 reglas» es una tarea sin forma. Con esto es una lista
+    de preguntas concretas, cada una con el texto de la norma al lado.
+    """
+    from backend_normativo.curacion.revision_reglas import expediente, formatear
+
+    with engine_migrador().connect() as conexion:
+        resultado = expediente(
+            conexion,
+            estado=None if estado.lower() == "todos" else estado,
+            beneficio=beneficio,
+        )
+    texto = formatear(resultado)
+    if salida:
+        Path(salida).write_text(texto, encoding="utf-8")
+        typer.echo(
+            f"Expediente escrito en {salida} · {len(resultado.reglas)} regla(s) · "
+            f"sin condición ejecutable {resultado.sin_condicion} · "
+            f"sin ubicar en el texto {resultado.sin_ubicar}"
+        )
+    else:
+        typer.echo(texto)
+
+
+@revision.command("aprobar-regla")
+def revision_aprobar_regla(
+    regla: str = typer.Argument(..., help="Id de la regla."),
+    actor: str = typer.Option(..., help="Quién aprueba. Queda en la bitácora."),
+    fundamento: str = typer.Option(..., help="Por qué. Queda en la bitácora."),
+) -> None:
+    """Habilita una regla para la evaluación.
+
+    Es la transición que convierte una lectura curada en derecho aplicable, y la
+    única que este sistema no hace solo: exige quién y por qué.
+    """
+    import uuid as _uuid
+
+    from backend_normativo.curacion.revision_reglas import RevisionInvalida, aprobar
+
+    try:
+        with engine_migrador().begin() as conexion:
+            aprobar(conexion, _uuid.UUID(regla), actor=actor, fundamento=fundamento)
+    except RevisionInvalida as error:
+        typer.echo(str(error))
+        raise typer.Exit(1) from error
+    typer.echo(f"Regla {regla} aprobada por {actor}.")
+
+
+@revision.command("aprobar-reglas")
+def revision_aprobar_reglas(
+    beneficio: str = typer.Argument(..., help="Código del beneficio cuyas reglas se aprueban."),
+    actor: str = typer.Option(..., help="Quién aprueba. Queda en la bitácora."),
+    fundamento: str = typer.Option(..., help="Por qué. Queda en la bitácora."),
+) -> None:
+    """Aprueba de una vez las reglas de un beneficio, tras revisarlo entero.
+
+    Las reglas de un beneficio se leen juntas porque se aplican juntas. Cada una
+    deja igual su propio evento: lo que se firma una vez tiene que poder
+    auditarse una por una.
+    """
+    from backend_normativo.curacion.revision_reglas import RevisionInvalida, aprobar_beneficio
+
+    try:
+        with engine_migrador().begin() as conexion:
+            aprobadas = aprobar_beneficio(conexion, beneficio, actor=actor, fundamento=fundamento)
+    except RevisionInvalida as error:
+        typer.echo(str(error))
+        raise typer.Exit(1) from error
+    typer.echo(f"{len(aprobadas)} regla(s) de {beneficio} aprobadas por {actor}.")
+
+
+@revision.command("rechazar-regla")
+def revision_rechazar_regla(
+    regla: str = typer.Argument(..., help="Id de la regla."),
+    actor: str = typer.Option(..., help="Quién rechaza. Queda en la bitácora."),
+    fundamento: str = typer.Option(..., help="Qué estaba mal. Queda en la bitácora."),
+) -> None:
+    """Descarta una regla: la lectura afirmaba algo que la norma no dice."""
+    import uuid as _uuid
+
+    from backend_normativo.curacion.revision_reglas import RevisionInvalida, rechazar
+
+    try:
+        with engine_migrador().begin() as conexion:
+            rechazar(conexion, _uuid.UUID(regla), actor=actor, fundamento=fundamento)
+    except RevisionInvalida as error:
+        typer.echo(str(error))
+        raise typer.Exit(1) from error
+    typer.echo(f"Regla {regla} rechazada por {actor}.")
+
+
+@revision.command("marcar-en-revision")
+def revision_marcar_en_revision(
+    regla: str = typer.Argument(..., help="Id de la regla."),
+    actor: str = typer.Option(..., help="Quién la miró. Queda en la bitácora."),
+    fundamento: str = typer.Option(..., help="Qué queda pendiente de decidir."),
+) -> None:
+    """Deja constancia de que la regla ya fue mirada y espera decisión.
+
+    No aprueba ni sirve nada: separa «candidata» de «analizada y a la espera»,
+    que es lo que hace que una revisión larga se pueda retomar.
+    """
+    import uuid as _uuid
+
+    from backend_normativo.curacion.revision_reglas import RevisionInvalida, marcar_en_revision
+
+    try:
+        with engine_migrador().begin() as conexion:
+            marcar_en_revision(conexion, _uuid.UUID(regla), actor=actor, fundamento=fundamento)
+    except RevisionInvalida as error:
+        typer.echo(str(error))
+        raise typer.Exit(1) from error
+    typer.echo(f"Regla {regla} en revisión, anotada por {actor}.")
+
+
 @revision.command("aprobar-campos")
 def revision_aprobar_campos(
     version: str = typer.Argument(..., help="Identificador de la versión."),

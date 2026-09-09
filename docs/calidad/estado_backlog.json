@@ -446,15 +446,23 @@
     "tests/aceptacion/test_casos_aceptacion.py",
     "tests/aceptacion/test_conversacional.py",
     "docs/calidad/trazabilidad_at.md",
-    "docs/calidad/consultas_conversacionales.md"
+    "docs/calidad/consultas_conversacionales.md",
+    "src/backend_normativo/curacion/revision_reglas.py",
+    "tests/integracion/test_revision_reglas.py",
+    "docs/calidad/revision_de_reglas.md"
    ],
    "comandos": [
+    "bn calidad consultas",
     "bn calidad trazabilidad --ejecutar",
-    "bn calidad consultas"
+    "bn revision aprobar-regla",
+    "bn revision aprobar-reglas",
+    "bn revision marcar-en-revision",
+    "bn revision rechazar-regla",
+    "bn revision reglas"
    ],
-   "falta": "El conjunto conversacional cumple la gate DQ18 —98 consultas, 59 críticas, todas pasan— y los 80 casos de aceptación se ejecutan con cero parciales y cero no ejecutados. Lo que queda no es código.",
-   "bloqueador": "La gate pide un «conjunto experto revisado» y lo que hay es un conjunto experto ejecutado. La diferencia es quién firma que la respuesta que da el backend es la respuesta correcta en derecho, y eso no lo puede firmar un automatismo: las 83 reglas curadas siguen en CANDIDATE justamente por esto, y la evaluación preliminar responde REQUIERE_REVISION mientras sigan así.",
-   "desbloquea_con": "Una persona con competencia jurídica revisa las 98 consultas de `docs/calidad/consultas_conversacionales.json` y las 83 reglas de `docs/curaduria/`, y aprueba las que correspondan con `bn revision aprobar-campos` y su equivalente para reglas. Cada aprobación queda con actor y fundamento en la bitacora.",
+   "falta": "El conjunto conversacional cumple la gate DQ18 —98 consultas, 59 críticas, todas pasan— y los 80 casos de aceptación se ejecutan con cero parciales y cero no ejecutados. Lo que queda no es código. Faltaba además la mitad del circuito y no se veía: las reglas nacían candidatas «hasta que alguien con competencia jurídica las apruebe» y no había con qué aprobarlas —`bn revision aprobar-campos` mueve afirmaciones, no reglas—, así que las 154 estaban condenadas a CANDIDATE por ausencia de un comando y no por falta de revisión. Ahora están `bn revision aprobar-regla`, `rechazar-regla`, `marcar-en-revision` y `aprobar-reglas` por beneficio, todas exigiendo actor y fundamento y dejando un evento por regla en la bitácora. Y está el expediente: `bn revision reglas` arma, regla por regla, el texto literal, qué afirma la lectura, a qué unidad del texto mirar y la pregunta concreta que hay que contestar. Las 154 quedan ubicadas en su artículo y clasificadas en dos pilas que no se revisan igual: 95 con condición ejecutable, que se confirman contra el texto, y 59 sin ella, donde hay que decidir si la condición se puede escribir o si la regla es informativa.",
+   "bloqueador": "Falta la firma, y es lo único que falta. Las 154 reglas siguen en CANDIDATE porque aprobarlas es afirmar que lo que el backend contesta es lo que dice el derecho, y eso lo firma una persona con competencia jurídica o no lo firma nadie. Aprobarlas desde acá pondría un actor en la bitácora que no revisó nada y haría que la API empiece a contestar «te corresponde» sobre esa base: es exactamente lo que el paquete prohíbe y lo que hace daño si está mal. El expediente y los comandos existen para que esa firma sea posible en una sesión de trabajo, no para reemplazarla.",
+   "desbloquea_con": "Leer `docs/calidad/revision_de_reglas.md` —154 reglas, cada una con su artículo y su pregunta— y correr `bn revision aprobar-reglas <codigo> --actor <quién> --fundamento <por qué>` por beneficio, o `aprobar-regla`/`rechazar-regla` una por una donde la lectura no cierre. Cada aprobación deja actor y fundamento en la bitácora. Hecho eso, la evaluación deja de contestar REQUIERE_REVISION y las 98 consultas del conjunto experto pasan a poder revisarse contra respuestas que el sistema ya puede dar.",
    "responsable_rol": "curacion_juridica"
   },
   "HU-037": {
