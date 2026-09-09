@@ -861,3 +861,32 @@ automatizar: aprobar una regla es afirmar que lo que el backend contesta es lo
 que dice el derecho, y ponerle a esa afirmación un actor que no revisó nada
 convertiría la bitácora —que existe para poder explicar cada respuesta— en el
 lugar donde se esconde que nadie la revisó.
+
+## D-51 · Ampliar el corpus no es un paso de rutina
+
+`bn ingesta ampliar` trae el texto de las normas que el corpus cita. Ponerlo
+dentro del procedimiento de población parecía natural —es ingesta, va con la
+ingesta— y la corrida limpia mostró que no.
+
+Cada pasada descubre citas nuevas en las normas que trajo la pasada anterior.
+Con la ampliación adentro, la segunda pasada pasó de 53 a 85 versiones de
+documento, y el propio reporte lo dijo con todas las letras: el procedimiento
+había dejado de ser idempotente, que es lo que promete de sí mismo. No era una
+duplicación, era crecimiento; pero un procedimiento que crece cada vez que se
+corre no se puede correr todos los días.
+
+Peor: traer un anillo nuevo puede resegmentar normas ya curadas, porque una
+captura nueva es una versión nueva y las rutas de las unidades se corren. En esa
+corrida, dieciséis de veinte lecturas curadas dejaron de cargar. El reporte lo
+detectó por dos caminos distintos —los beneficios cargados no daban, y las
+lecturas que entraron tampoco— y no se dejó leer como evidencia.
+
+**Consecuencia:** ampliar es una decisión de crecimiento del corpus y se corre
+aparte, no en cada población. Después de ampliar hay que volver a cargar las
+lecturas curadas y reanclar las citas que se hayan corrido; el cargador dice
+cuál y a qué ruta. El runbook lo explica en su propia sección.
+
+Lo que hay que retener no es el bug: es que el reporte de la corrida limpia
+encontró dos regresiones que ninguna prueba había encontrado, porque son
+regresiones de procedimiento y no de código. Un informe que se desmiente a sí
+mismo sirve exactamente para esto.

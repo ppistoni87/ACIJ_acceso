@@ -127,7 +127,16 @@ class AdaptadorInfolegLegacy:
         tipo_version = VISTAS[coincidencia.group("vista").lower()]
 
         html = captura.texto()
-        parrafos = unir_renglones(parrafos_de_html(html))
+        # El sitio publica dos maquetados. `texact.htm` y sus parientes traen un
+        # bloque por párrafo; `norma.htm`, que es el de las normas recientes,
+        # mete la norma entera en un solo `div` y separa los artículos con
+        # `<br>`. Sin partir por `<br>` esa página llega al segmentador como un
+        # párrafo de veinte mil caracteres y no se reconoce un solo artículo.
+        # Se pide solo para esa vista: partir en todas cambia las rutas de las
+        # unidades de todo el corpus, y las lecturas curadas están ancladas ahí.
+        parrafos = unir_renglones(
+            parrafos_de_html(html, partir_en_br=coincidencia.group("vista").lower() == "norma")
+        )
         if not parrafos:
             return ResultadoExtraccion(
                 avisos=[

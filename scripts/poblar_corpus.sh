@@ -90,15 +90,16 @@ echo "== Relaciones normativas =="
 $BN curacion relaciones
 
 
-echo
-echo "== Normas citadas por el corpus =="
-$BN ingesta ampliar | tail -3
-$BN ingesta capturar N01 | tail -1
-$BN ingesta extraer | tail -4
-# La ampliación trae normas nuevas: hay que volver a resolver identidad y
-# relaciones sobre ellas, o entran al corpus como texto sin norma.
-$BN curacion identidad | tail -2
-$BN curacion relaciones | tail -2
+# La ampliación del corpus —`bn ingesta ampliar`, que trae el texto de las normas
+# que el corpus cita— NO va acá, y la corrida limpia mostró por qué. Cada pasada
+# descubre citas nuevas en las normas que trajo la pasada anterior, así que
+# ampliar en cada población hace que el corpus crezca un anillo por corrida: la
+# segunda pasada pasó de 53 a 85 versiones de documento y el procedimiento dejó
+# de ser idempotente, que es lo que este script promete de sí mismo.
+#
+# Ampliar es una decisión de crecimiento del corpus, no un paso de rutina. Se
+# corre aparte, cuando alguien quiere traer el anillo siguiente, y después se
+# vuelve a correr esta población. El runbook lo explica.
 
 echo
 echo "== Trámites =="

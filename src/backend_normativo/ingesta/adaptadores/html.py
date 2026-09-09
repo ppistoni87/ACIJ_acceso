@@ -119,6 +119,12 @@ def _texto_de_bloque(nodo: Node) -> str:
     return RE_BLANCOS.sub(" ", unicodedata.normalize("NFC", nodo.text(separator=" "))).strip()
 
 
+def _una_linea(nodo: Node) -> list[str]:
+    """El bloque entero como un párrafo, que es el comportamiento de siempre."""
+    texto = _texto_de_bloque(nodo)
+    return [texto] if texto else []
+
+
 def _lineas_de_bloque(nodo: Node) -> list[str]:
     """El bloque partido donde el HTML declara un salto de línea.
 
@@ -131,6 +137,12 @@ def _lineas_de_bloque(nodo: Node) -> list[str]:
     Partir de más tampoco sirve —un renglón no es un párrafo—, y para eso está
     `unir_renglones`, que vuelve a juntar los que continúan la misma oración.
     Primero hay que tener los renglones.
+
+    No se aplica en todas partes, y eso no es timidez. Partir por `<br>` cambia
+    las rutas de las unidades de cualquier documento que use `<br>` para
+    maquetar, y las lecturas curadas están ancladas a esas rutas: aplicarlo a
+    todo el corpus rompió dieciséis de veinte lecturas en una corrida limpia. Lo
+    pide el adaptador que sabe que su página lo necesita.
     """
     lineas: list[str] = []
     actual: list[str] = []
@@ -223,7 +235,9 @@ def texto_oculto(html: str, *, selector: str | None = None) -> list[str]:
     return encontrados
 
 
-def parrafos_de_html(html: str, *, selector: str | None = None) -> list[Parrafo]:
+def parrafos_de_html(
+    html: str, *, selector: str | None = None, partir_en_br: bool = False
+) -> list[Parrafo]:
     """Convierte HTML en párrafos con su desplazamiento en el texto plano.
 
     Los desplazamientos son sobre el texto reconstruido, no sobre el HTML: son
@@ -253,7 +267,7 @@ def parrafos_de_html(html: str, *, selector: str | None = None) -> list[Parrafo]
         # párrafos, el texto va tres veces si no se filtra.
         if _tiene_bloques_adentro(nodo):
             continue
-        for texto in _lineas_de_bloque(nodo):
+        for texto in _lineas_de_bloque(nodo) if partir_en_br else _una_linea(nodo):
             parrafos.append(
                 Parrafo(
                     texto=texto,

@@ -255,3 +255,30 @@ sesenta y cuatro— en vez de rechazar. Un despliegue tiene que poner el límite
 antes de ese punto, porque una petición que expira consume igual y no devuelve
 nada.
 
+## 10. Ampliar el corpus con las normas que el corpus cita
+
+```bash
+bn ingesta ampliar --en-seco --detalle    # qué se traería y qué se descarta, con el motivo
+bn ingesta ampliar                        # registra las URLs
+bn ingesta capturar N01 && bn ingesta extraer
+bn curacion identidad && bn curacion relaciones
+```
+
+Las normas del corpus citan otras, y cada cita que no resuelve queda como
+referencia pendiente. El catálogo nacional sabe la URL del texto de buena parte
+de ellas, así que ampliar es capturar lo que el corpus ya identificó como
+necesario. Solo entra lo que resuelve a una y una sola norma sin identidad
+incierta y con texto: lo demás se informa con su motivo.
+
+**No va dentro de `poblar_corpus.sh`, a propósito.** Cada pasada descubre citas
+nuevas en las normas que trajo la anterior, así que ampliar en cada población
+hace crecer el corpus un anillo por corrida y el procedimiento deja de ser
+idempotente. Es una decisión de crecimiento, no un paso de rutina: se corre
+aparte y después se vuelve a poblar.
+
+Traer un anillo nuevo puede cambiar la segmentación de normas ya curadas —una
+captura nueva es una versión nueva, y las rutas de las unidades se corren—, así
+que después de ampliar hay que correr `bn curacion beneficios` y mirar si alguna
+lectura dejó de cargar. Si dejó, hay que reanclar sus citas: el cargador dice
+cuál y a qué ruta.
+

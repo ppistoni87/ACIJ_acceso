@@ -38,7 +38,7 @@ from backend_normativo.ingesta.adaptadores.tramite_argentina import (
 )
 from backend_normativo.ingesta.almacen import AlmacenObjetos
 
-VERSION_EXTRACTOR = "extraccion@4"
+VERSION_EXTRACTOR = "extraccion@5"
 
 # Cobertura mínima para no marcar la extracción como sospechosa. Es una señal
 # técnica: por debajo de esto hay texto que no quedó en ninguna unidad, y

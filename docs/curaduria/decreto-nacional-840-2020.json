@@ -1,0 +1,166 @@
+{
+ "schema_version": "1.0",
+ "norma": {
+  "external_id": "infoleg:343905:original",
+  "referencia": "Decreto nacional 840/2020",
+  "rol": "MODIFICA"
+ },
+ "nota": "Lectura curada del decreto que en noviembre de 2020 reescribió los artículos 14 bis y 14 ter de la Ley 24.714, que son los que definen la Asignación Universal por Hijo y sus requisitos. Se lee sobre el mismo beneficio que la ley: no crea una asignación nueva, cambia la que existe. Las reglas que entran acá son las mismas que hoy tiene el texto consolidado, y esa repetición es el punto: quien pregunte por qué el requisito de residencia es de dos años y no de tres tiene que poder llegar al decreto que lo cambió, y no solo al texto donde quedó. Lo que este decreto sacó —el tope de cinco menores acumulables que traía el texto de 2009— no entra como regla: se declara como conflicto contra el decreto que lo había puesto y que sigue en el corpus diciendo lo contrario. Todo entra como candidato: nada de esto se sirve hasta que una persona con competencia jurídica lo apruebe.",
+ "beneficio": {
+  "codigo": "AR.AUH",
+  "nombre": "Asignación Universal por Hijo para Protección Social",
+  "familia": "INGRESOS",
+  "linea": "ASIGNACION_FAMILIAR",
+  "jurisdiccion": "AR",
+  "naturaleza": "PRESTACION_MONETARIA",
+  "descripcion": "Prestación monetaria no retributiva mensual que se abona a uno solo de los padres, madres, tutores, curadores o parientes por consanguinidad hasta el tercer grado, por cada niña, niño o adolescente menor de dieciocho años a su cargo, o sin límite de edad cuando se trate de una persona con discapacidad.",
+  "unidad_beneficiaria": "PERSONA",
+  "modalidad": "TRANSFERENCIA",
+  "frecuencia": "MENSUAL",
+  "requiere_solicitud": true,
+  "ruta_evidencia": "articulo-1/parrafo-4"
+ },
+ "poblaciones": [
+  {
+   "codigo": "AR.NNA-A-CARGO",
+   "nombre": "Niñas, niños y adolescentes a cargo sin otra asignación",
+   "definicion": "Niñas, niños y adolescentes menores de dieciocho años a cargo de alguien, o personas con discapacidad sin límite de edad, que no estén empleadas, emancipadas ni percibiendo otra prestación de la Ley 24.714.",
+   "rol_persona": "CAUSANTE",
+   "alcance": "El decreto de 2020 reescribió esta definición en lenguaje no binario y cambió «un discapacitado» por «una persona con discapacidad». Que el cambio sea de redacción y no de alcance es una lectura, no un dato: se deja anotado porque una diferencia de palabras en la norma que define quién accede no se puede dar por equivalente sin decirlo.",
+   "ruta_evidencia": "articulo-1/parrafo-4"
+  }
+ ],
+ "reglas": [
+  {
+   "clave": "RESIDENCIA-LEGAL-DE-DOS-AÑOS-PARA-EXTRANJEROS",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-2/inciso-a-7",
+   "texto_literal": "Cuando la niña, el niño, adolescente y/o la persona con discapacidad y sus progenitores o sus progenitoras o las personas que los o las tengan a cargo sean extranjeros o extranjeras, deberán acreditar tanto la niña, el niño, adolescente y/o la persona con discapacidad como el o la titular que percibirá la Asignación, DOS (2) años de residencia legal en el país.",
+   "descripcion": "Cuando el causante y quien lo tiene a cargo son extranjeros, ambos acreditan dos años de residencia legal en el país.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "any",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "causante_argentino"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "all",
+      "args": [
+       {
+        "schema_version": "1.0",
+        "op": "compare",
+        "field": "residencia_legal_del_causante",
+        "cmp": ">=",
+        "value": 2,
+        "unit": "anios_cumplidos"
+       },
+       {
+        "schema_version": "1.0",
+        "op": "compare",
+        "field": "residencia_legal_del_titular",
+        "cmp": ">=",
+        "value": 2,
+        "unit": "anios_cumplidos"
+       }
+      ]
+     }
+    ]
+   },
+   "requiere_revision": true,
+   "motivo_revision": "Es el cambio de fondo del decreto y hay que verlo entero: el texto de 2009 pedía tres años y se los pedía solo al menor; este pide dos y se los pide a los dos, al causante y a quien percibe. La condición está escrita con esa exigencia doble, igual que en la lectura de la ley, así que lo que queda por confirmar no es el árbol sino la lectura: que «cuando el causante y quienes lo tienen a cargo sean extranjeros» quiera decir que basta con que el causante sea argentino para no exigir residencia a nadie, que es como está escrito."
+  },
+  {
+   "clave": "ACREDITAR-QUE-LO-TIENE-A-CARGO-Y-NO-EL-VINCULO",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-2/inciso-c-9",
+   "texto_literal": "Acreditar que la persona que percibirá el beneficio tiene a su cargo a la niña, al niño, adolescente y/o persona con discapacidad, en función de las disposiciones del Código Civil y Comercial de la Nación y de conformidad con la documentación que la ADMINISTRACIÓN NACIONAL DE LA SEGURIDAD SOCIAL (ANSES) disponga a estos fines.",
+   "descripcion": "Se acredita tener a cargo al causante según el Código Civil y Comercial y con la documentación que disponga ANSES.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "is_true",
+    "field": "causante_a_cargo_del_titular"
+   },
+   "requiere_revision": true,
+   "motivo_revision": "El texto de 2009 pedía acreditar el «vínculo» con partidas y testimonios judiciales; este pide acreditar que lo tiene «a cargo», que es otra cosa: se puede tener el vínculo sin tener a cargo, y a cargo sin ser el progenitor. El cambio amplía o restringe según el caso, y cuál de las dos cosas hace es una lectura jurídica. Además remite la documentación a lo que ANSES disponga, que no está en el corpus: la condición queda escrita y la prueba que la satisface, no."
+  },
+  {
+   "clave": "CONTROLES-DE-SALUD-Y-ESCOLARIDAD",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-2/inciso-e-11",
+   "texto_literal": "Hasta los CUATRO (4) años de edad -inclusive-, deberá acreditarse el cumplimiento de los controles sanitarios y del plan de vacunación obligatorio. Desde los CINCO (5) años de edad y hasta los DIECIOCHO (18) años, deberá acreditarse además la concurrencia de las niñas, los niños y adolescentes obligatoriamente a establecimientos educativos públicos.",
+   "descripcion": "Hasta los cuatro años se acreditan controles sanitarios y vacunación; desde los cinco y hasta los dieciocho, además, la concurrencia a establecimientos educativos públicos.",
+   "requiere_revision": true,
+   "motivo_revision": "No se formaliza y el motivo importa: acreditar o no acreditar no decide el acceso a la asignación sino el cobro del veinte por ciento reservado, según el artículo 3 de este mismo decreto. Escribirla como condición de aplicabilidad diría que un chico sin el certificado escolar no tiene derecho a la AUH, y lo que dice la norma es que no cobra todavía la parte reservada. La diferencia es la que separa «no te corresponde» de «te falta un papel»."
+  },
+  {
+   "clave": "RESIDIR-EN-EL-PAIS",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-2/inciso-f-12",
+   "texto_literal": "Acreditar que el o la titular del beneficio y la niña, el niño, adolescente y/o persona con discapacidad residen en el país",
+   "descripcion": "Titular y causante residen en el país.",
+   "ast": {
+    "schema_version": "1.0",
+    "op": "all",
+    "args": [
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "titular_reside_en_el_pais"
+     },
+     {
+      "schema_version": "1.0",
+      "op": "is_true",
+      "field": "causante_reside_en_el_pais"
+     }
+    ]
+   },
+   "requiere_revision": true,
+   "motivo_revision": "Residir en el país es distinto de la residencia legal del inciso a): esto se le pide a todos, argentinos incluidos, y aquello solo a los extranjeros. El decreto lo pide a las dos personas y así queda escrito. Lo que hay que confirmar es que se trate de una exigencia actual y continuada, y no de un requisito que se acredita una vez al solicitar: de eso depende qué pasa con quien viaja."
+  },
+  {
+   "clave": "EL-VEINTE-POR-CIENTO-SE-RESERVA-Y-SE-COBRA-CONTRA-ACREDITACION",
+   "categoria": "APLICABILIDAD",
+   "ruta_evidencia": "articulo-3/parrafo-16",
+   "texto_literal": "El VEINTE POR CIENTO (20 %) reservado podrá cobrarse cuando el o la titular acredite, para los o las menores de hasta los CUATRO (4) años de edad -inclusive-, el cumplimiento de los controles sanitarios y el plan de vacunación obligatorio; y para los y las de edad escolar, la certificación que acredite, además, el cumplimiento del ciclo escolar lectivo correspondiente.",
+   "descripcion": "El veinte por ciento reservado se cobra cuando se acreditan los controles sanitarios y de vacunación, o el ciclo lectivo cumplido según la edad.",
+   "requiere_revision": true,
+   "motivo_revision": "No es una condición sobre la persona sino la mecánica del pago, y es la que explica por qué quien cobra la AUH recibe menos de lo que dice la escala: el ochenta por ciento va todos los meses y el veinte queda reservado. Omitirla haría que la respuesta a «cuánto voy a cobrar por mes» fuera un veinte por ciento más alta de lo que se cobra. El modelo guarda cuantías, no calendarios de liberación, así que queda declarada."
+  }
+ ],
+ "conflictos": [
+  {
+   "clave": "EL-TOPE-DE-CINCO-MENORES-YA-NO-ESTA",
+   "ruta_evidencia": "articulo-1/parrafo-4",
+   "texto_literal": "ARTÍCULO 14 bis.- La Asignación Universal por Hijo para Protección Social consistirá en una prestación monetaria no retributiva de carácter mensual",
+   "otra_norma": "Decreto nacional 1602/2009 (infoleg:159466:original), que instituyó la Asignación Universal por Hijo",
+   "otra_ruta": "articulo-2/parrafo-15",
+   "descripcion": "El texto de 2009 decía que la prestación «se abonará por cada menor acreditado por el grupo familiar hasta un máximo acumulable al importe equivalente a CINCO (5) menores». La redacción que este decreto puso en su lugar no tiene ese tope. Los dos textos están en el corpus y el de 2009 no dice en ninguna parte que fue reemplazado, así que quien lo lea hoy concluiría que una familia con seis hijos cobra por cinco. Si el tope se eliminó o si sigue vigente por otra vía es una lectura jurídica, y de ella depende cuánto cobra una familia numerosa."
+  }
+ ],
+ "campos_no_informados": [
+  {
+   "campo": "plazos",
+   "motivo": "El decreto no fija plazos de solicitud ni de resolución: reescribe requisitos y la mecánica de pago. Los plazos, si existen, están en las normas operativas de ANSES."
+  }
+ ],
+ "vacios_declarados": [
+  {
+   "dato": "documentación que acredita tener a cargo",
+   "motivo": "El inciso c) remite a «la documentación que la ADMINISTRACIÓN NACIONAL DE LA SEGURIDAD SOCIAL (ANSES) disponga a estos fines», que no está en el corpus. La condición queda escrita y la prueba que la satisface no, así que no se puede responder con qué papeles se acredita."
+  }
+ ],
+ "dependencias": [
+  {
+   "referencia": "Código Civil y Comercial de la Nación, disposiciones sobre tener a cargo",
+   "motivo": "El inciso c) remite al Código para definir qué significa tener a cargo, y de esa definición depende quién puede percibir la asignación. No está en el corpus."
+  },
+  {
+   "referencia": "Ley 22.431, artículo 2",
+   "motivo": "Define la discapacidad que habilita la asignación sin límite de edad. El decreto remite y no reproduce."
+  }
+ ]
+}
