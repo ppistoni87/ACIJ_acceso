@@ -1,0 +1,98 @@
+# P-018: la integración continua que impide que el repositorio parezca sano por
+# controles corridos a mano.
+#
+# El servicio de PostgreSQL no es un adorno: sin base, casi la mitad de la suite
+# se saltea y pytest termina en cero. Por eso el contenedor de servicio está acá
+# y por eso `tests/conftest.py` falla —no saltea— cuando no puede conectarse.
+# Las dos cosas juntas hacen que un verde signifique lo que dice.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  # Un push nuevo sobre la misma rama vuelve obsoleto al anterior: cancelarlo
+  # libera ejecutores y evita que un resultado viejo llegue después del nuevo.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Las pruebas de integración crean y destruyen su propia base contra este
+  # servidor. La contraseña es del servicio efímero del ejecutor, no un secreto.
+  BN_TEST_ADMIN_URL: postgresql+psycopg://postgres:postgres@127.0.0.1:5432/postgres
+
+jobs:
+  verificacion:
+    name: Ruff, migraciones y pruebas sobre PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      db:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Instalar el proyecto
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Ruff
+        run: |
+          ruff check .
+          ruff format --check .
+
+      - name: Migraciones desde cero
+        # Una base vacía tiene que llegar al esquema completo, y `alembic check`
+        # tiene que no encontrar deriva entre los modelos y las migraciones. Es
+        # la prueba de que el esquema versionado es el que el código espera.
+        env:
+          BN_DATABASE_URL: postgresql+psycopg://postgres:postgres@127.0.0.1:5432/ci_migraciones
+          PGPASSWORD: postgres
+        run: |
+          psql "postgresql://postgres:postgres@127.0.0.1:5432/postgres" \
+            -c 'CREATE DATABASE ci_migraciones'
+          alembic upgrade head
+          alembic check
+
+      - name: Pruebas
+        # Sin `-p no:randomly` ni marcas excluidas: si algo no corre, tiene que
+        # verse en el conteo. `-rs` lista cada salteo con su motivo, que es lo
+        # que convierte una exclusión en una decisión con inventario.
+        run: pytest -q -rs --junitxml=resultados/pruebas.xml
+
+      - name: Ninguna prueba se saltea sin motivo declarado
+        # Un salteo se cuenta como éxito. Los únicos admitidos son los que el
+        # proyecto declara por marca —red externa, corridas largas—; cualquier
+        # otro es una prueba que dejó de correr sin que nadie lo decidiera.
+        run: python scripts/verificar_salteos.py resultados/pruebas.xml
+
+      - name: Construir la imagen
+        run: docker build -t acij-acceso:${{ github.sha }} .
+
+      - name: Guardar resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-${{ github.sha }}
+          path: resultados/
+          if-no-files-found: warn

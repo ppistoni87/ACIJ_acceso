@@ -20,6 +20,28 @@ URL_ADMIN = os.environ.get(
 )
 BASE_PRUEBAS = os.environ.get("BN_TEST_DB", "backend_normativo_test")
 
+# Sin base, casi la mitad de la suite se saltea y pytest termina en cero: «921
+# pruebas verdes» pasa a significar «479 corrieron y 442 no», sin que nada lo
+# diga. Una integración continua sin servicio de PostgreSQL daría verde sobre un
+# sistema mitad sin probar, que es peor que no tener pruebas: tener pruebas que
+# mienten.
+#
+# Así que la ausencia de base es un fallo, no un salteo. Quien quiera correr solo
+# las unitarias en una máquina sin PostgreSQL lo pide explícitamente con
+# `BN_PRUEBAS_SIN_BASE=1`, y entonces el salteo es una decisión con nombre y no
+# un accidente del entorno.
+SIN_BASE = os.environ.get("BN_PRUEBAS_SIN_BASE", "").strip().lower() in {"1", "true", "si", "sí"}
+
+MENSAJE_SIN_BASE = (
+    "PostgreSQL no está disponible y las pruebas de integración no pueden correr: {error}\n"
+    "\n"
+    "No se saltean en silencio porque un salteo se cuenta como éxito y estas pruebas son las "
+    "que verifican restricciones, disparadores y funciones de la base, que un doble no ejecuta.\n"
+    "\n"
+    "  Para correrlas:   docker compose up -d db\n"
+    "  Para omitirlas:   BN_PRUEBAS_SIN_BASE=1 pytest   (queda dicho que no corrieron)"
+)
+
 
 def _url_pruebas() -> str:
     return URL_ADMIN.rsplit("/", 1)[0] + "/" + BASE_PRUEBAS
@@ -33,7 +55,9 @@ def engine_pruebas() -> Iterator[Engine]:
             c.execute(text(f'DROP DATABASE IF EXISTS "{BASE_PRUEBAS}" WITH (FORCE)'))
             c.execute(text(f'CREATE DATABASE "{BASE_PRUEBAS}"'))
     except Exception as exc:  # pragma: no cover - entorno sin PostgreSQL
-        pytest.skip(f"PostgreSQL no disponible: {exc}")
+        if SIN_BASE:
+            pytest.skip(f"PostgreSQL no disponible y BN_PRUEBAS_SIN_BASE=1: {exc}")
+        pytest.fail(MENSAJE_SIN_BASE.format(error=exc), pytrace=False)
     finally:
         admin.dispose()
 
