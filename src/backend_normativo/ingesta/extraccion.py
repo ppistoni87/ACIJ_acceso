@@ -38,7 +38,7 @@ from backend_normativo.ingesta.adaptadores.tramite_argentina import (
 )
 from backend_normativo.ingesta.almacen import AlmacenObjetos
 
-VERSION_EXTRACTOR = "extraccion@3"
+VERSION_EXTRACTOR = "extraccion@4"
 
 # Cobertura mínima para no marcar la extracción como sospechosa. Es una señal
 # técnica: por debajo de esto hay texto que no quedó en ninguna unidad, y
@@ -130,7 +130,14 @@ class Extractor:
         return resultado
 
     def extraer_pendientes(self, source_id: str | None = None) -> ResultadoPersistencia:
-        """Capturas con cuerpo propio que todavía no produjeron una versión."""
+        """Capturas sin versión, y las que la tienen de un extractor viejo.
+
+        Lo segundo es lo que le da sentido a numerar el extractor. Antes solo
+        entraban las capturas sin versión, así que mejorar la segmentación no
+        alcanzaba a nada de lo ya extraído: había que volver a capturar para que
+        el reproceso se disparara de rebote. Una fuente que ya no responde
+        quedaba con la segmentación vieja para siempre, sin que nada lo dijera.
+        """
         filas = (
             self.conexion.execute(
                 text(
@@ -142,11 +149,14 @@ class Extractor:
                     # lo que devolvió esa URL— y no se extrae.
                     "WHERE coalesce(c.http_status, 200) BETWEEN 200 AND 299 "
                     "  AND (CAST(:sid AS text) IS NULL OR u.source_id = :sid) "
-                    "  AND NOT EXISTS (SELECT 1 FROM documento_versiones dv "
-                    "                  WHERE dv.captura_id = c.id) "
+                    "  AND (NOT EXISTS (SELECT 1 FROM documento_versiones dv "
+                    "                    WHERE dv.captura_id = c.id) "
+                    "       OR EXISTS (SELECT 1 FROM documento_versiones dv "
+                    "                  WHERE dv.captura_id = c.id "
+                    "                    AND dv.extractor_version <> :extractor)) "
                     "ORDER BY c.capturado_en"
                 ),
-                {"sid": source_id},
+                {"sid": source_id, "extractor": self.version_extractor},
             )
             .scalars()
             .all()
@@ -246,9 +256,38 @@ class Extractor:
     ) -> None:
         """Rehace las unidades de una versión ya publicada por otro extractor.
 
-        Solo se permite mientras la versión no está aprobada: una versión
-        publicada se corrige creando otra, no editando la que ya se sirvió.
+        Solo se permite mientras la versión no está aprobada —una versión
+        publicada se corrige creando otra, no editando la que ya se sirvió— y
+        mientras nadie haya citado sus unidades. Lo segundo es más fuerte que lo
+        primero y no depende de la revisión: una evidencia localiza una unidad,
+        y rehacer la segmentación la borra. La cita quedaría apuntando a algo
+        que ya no existe, que es exactamente lo que una evidencia está para
+        impedir.
+
+        Cuando eso pasa, mejorar la segmentación de esa versión deja de ser un
+        reproceso y pasa a ser una decisión: hay que volver a curar lo que la
+        citaba. Se avisa con el número de citas para que se vea el tamaño de esa
+        decisión, y no se toca nada.
         """
+        citas = self.conexion.execute(
+            text(
+                "SELECT count(*) FROM evidencias e "
+                "  JOIN unidades_documentales u ON u.id = e.unidad_id "
+                " WHERE u.doc_version_id = :dv"
+            ),
+            {"dv": version_id},
+        ).scalar_one()
+        if citas:
+            resultado.avisos.append(
+                f"La versión {version_id} tiene {citas} evidencia(s) sobre sus unidades: no se "
+                "reprocesa. Rehacer la segmentación borraría las unidades que esas citas "
+                "localizan, y una cita que apunta a una unidad que ya no existe no se puede "
+                "verificar. Para aplicarle el extractor nuevo hay que volver a curar lo que la "
+                "cita."
+            )
+            resultado.versiones_repetidas += 1
+            return
+
         aprobada = self.conexion.execute(
             text(
                 "SELECT count(*) FROM norma_versiones nv "

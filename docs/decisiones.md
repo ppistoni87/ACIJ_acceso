@@ -751,3 +751,70 @@ Vale la pena decir por qué no se había visto. La corrida limpia empieza de cer
 y por eso nunca ejercita la segunda pasada; la base de desarrollo se reejecuta y
 por eso nunca ejercita la primera. Las dos hacen falta, y ninguna de las dos
 sola alcanza.
+
+## D-46 · El corpus se amplía con lo que el corpus pide, no con lo que parece útil
+
+Las 83 fuentes del manual son el inventario y no se tocan. Pero las normas que
+sí están citan otras, y cada cita que no resuelve queda escrita como referencia
+pendiente: «esta norma dice que depende de aquella y aquella no está». Eran
+ciento sesenta y ocho preguntas escritas y sin contestar.
+
+El catálogo nacional que ya se había importado tenía la respuesta para buena
+parte: trae, por cada norma, la URL de su texto en InfoLEG. Así que ampliar no
+fue salir a buscar, fue capturar el texto que el propio corpus ya había
+identificado como necesario. Entraron veintiséis decretos nacionales, entre
+ellos el que crea la AUH y el que crea la Asignación por Embarazo.
+
+Lo que no se hace es adivinar. Una referencia se amplía solo si resuelve a una y
+una sola norma, esa norma no está marcada de identidad incierta, y hay texto. Lo
+demás se informa con su motivo, incluido el error más fácil de cometer y el más
+difícil de ver después: resolver contra el catálogo nacional una «Ley 3706» que
+citó una norma porteña traería un texto de otra jurisdicción, ya segmentado y
+curable, sin que nada dijera que es el equivocado.
+
+**Consecuencia:** la fuente derivada tiene `origen` propio y no entra al
+inventario de las 83; cada norma que llega es trazable a la cita que la pidió; y
+el criterio de corte está probado por su lado negativo —sin año, ambigua,
+incierta, de otra jurisdicción, sin texto—, que es donde una ampliación se
+vuelve una afirmación falsa.
+
+## D-47 · Un `<br>` es un salto de línea, y una norma no es un párrafo
+
+InfoLEG publica las normas recientes dentro de un solo `div`, con los artículos
+separados por `<br>`. El extractor tomaba el bloque entero como un párrafo, así
+que una norma de veintitrés mil caracteres llegaba al segmentador como una sola
+unidad y no se reconocía un artículo adentro. Nueve de las veintiséis normas
+nuevas entraron sin una sola unidad.
+
+Un salto en el código fuente es maquetación y no significa nada —eso sigue
+igual—, pero un `<br>` lo escribió alguien para cortar ahí. Partir por `<br>`
+puede partir de más, y para eso ya estaba `unir_renglones`, que vuelve a juntar
+los renglones que continúan la misma oración: primero hay que tener los
+renglones.
+
+**Consecuencia:** el extractor parte los bloques donde el HTML declara el salto.
+Es un cambio que alcanza a todo lo ya extraído, así que sube la versión del
+extractor, y eso destapó dos cosas más: que nada volvía a extraer lo ya
+extraído, y que rehacer la segmentación de una versión citada borra las unidades
+que esas citas localizan.
+
+## D-48 · Una versión que alguien citó ya no se resegmenta
+
+Numerar el extractor solo sirve si algo vuelve a pasar por lo ya extraído. No lo
+hacía: solo entraban las capturas sin versión, así que mejorar la segmentación
+no alcanzaba nada, y una fuente que ya no responde se quedaba con la
+segmentación vieja para siempre sin que nada lo dijera. Ahora también entran las
+versiones producidas por un extractor anterior.
+
+Eso destapó lo otro. Rehacer la segmentación borra las unidades de la versión, y
+una evidencia localiza una unidad: la cita quedaría apuntando a algo que ya no
+existe, que es exactamente lo que una evidencia está para impedir. La base lo
+rechazó por integridad referencial antes de que nadie lo notara.
+
+**Consecuencia:** una versión con evidencias sobre sus unidades no se
+resegmenta, y el aviso dice cuántas citas dependen de ella. Mejorarle la
+segmentación deja de ser un reproceso y pasa a ser una decisión: hay que volver
+a curar lo que la citaba. Cuando la fuente vuelve a entregar y el texto cambia,
+la versión nueva se segmenta con el extractor nuevo y la vieja queda intacta con
+sus citas —que fue lo que pasó con la Ley 24.714, cuyo inciso c) del artículo 1
+se movió de ruta y obligó a reanclar tres lecturas curadas—.

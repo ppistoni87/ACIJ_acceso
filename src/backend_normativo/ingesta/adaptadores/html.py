@@ -119,6 +119,34 @@ def _texto_de_bloque(nodo: Node) -> str:
     return RE_BLANCOS.sub(" ", unicodedata.normalize("NFC", nodo.text(separator=" "))).strip()
 
 
+def _lineas_de_bloque(nodo: Node) -> list[str]:
+    """El bloque partido donde el HTML declara un salto de línea.
+
+    Un salto en el código fuente es maquetación y no significa nada; un `<br>`
+    sí, porque alguien lo escribió para cortar ahí. La diferencia importa
+    cuando un portal publica una norma entera dentro de un solo `div` separando
+    sus artículos con `<br>`: sin partir, la norma es un párrafo de veinte mil
+    caracteres y el segmentador no encuentra un solo artículo adentro.
+
+    Partir de más tampoco sirve —un renglón no es un párrafo—, y para eso está
+    `unir_renglones`, que vuelve a juntar los que continúan la misma oración.
+    Primero hay que tener los renglones.
+    """
+    lineas: list[str] = []
+    actual: list[str] = []
+    for hijo in nodo.iter(include_text=True):
+        if hijo.tag == "br":
+            lineas.append(" ".join(actual))
+            actual = []
+            continue
+        texto = hijo.text(separator=" ") if hijo.tag != "-text" else (hijo.text_content or "")
+        if texto:
+            actual.append(texto)
+    lineas.append(" ".join(actual))
+    limpias = [RE_BLANCOS.sub(" ", unicodedata.normalize("NFC", linea)).strip() for linea in lineas]
+    return [linea for linea in limpias if linea]
+
+
 # `css` sobre un nodo devuelve también el nodo si coincide, así que un bloque
 # es hoja cuando su propia búsqueda no encuentra nada más que él mismo.
 SELECTOR_BLOQUES = ", ".join(sorted(ETIQUETAS_BLOQUE))
@@ -225,18 +253,16 @@ def parrafos_de_html(html: str, *, selector: str | None = None) -> list[Parrafo]
         # párrafos, el texto va tres veces si no se filtra.
         if _tiene_bloques_adentro(nodo):
             continue
-        texto = _texto_de_bloque(nodo)
-        if not texto:
-            continue
-        parrafos.append(
-            Parrafo(
-                texto=texto,
-                inicio=cursor,
-                fin=cursor + len(texto),
-                entrecomillado=_entrecomillado(nodo, texto),
+        for texto in _lineas_de_bloque(nodo):
+            parrafos.append(
+                Parrafo(
+                    texto=texto,
+                    inicio=cursor,
+                    fin=cursor + len(texto),
+                    entrecomillado=_entrecomillado(nodo, texto),
+                )
             )
-        )
-        cursor += len(texto) + 1
+            cursor += len(texto) + 1
 
     return parrafos
 

@@ -228,6 +228,50 @@ def ingesta_descubrir_renabap(
     )
 
 
+@ingesta.command("ampliar")
+def ingesta_ampliar(
+    limite: int = typer.Option(0, "--limite", help="Cuántas normas traer como máximo; 0, todas."),
+    en_seco: bool = typer.Option(False, "--en-seco", help="Mostrar qué se traería, sin registrar."),
+    detalle: bool = typer.Option(False, "--detalle", help="Listar también lo que se descarta."),
+) -> None:
+    """Registra el texto de las normas que el corpus cita y no tiene.
+
+    Una referencia pendiente es una pregunta escrita: esta norma dice que
+    depende de aquella y aquella no está. El catálogo nacional, que ya se
+    importó, sabe la URL del texto consolidado de buena parte de ellas.
+
+    Solo se amplía lo que resuelve a una y una sola norma con texto. Lo demás se
+    informa con su motivo: elegir una de tres por orden de aparición sería
+    inventar la cita que la referencia dejó abierta.
+    """
+    from backend_normativo.ingesta.ampliacion import SOURCE_ID, ampliar, candidatas
+
+    tope = limite or None
+    with engine_migrador().begin() as conexion:
+        resultado = candidatas(conexion, tope) if en_seco else ampliar(conexion, tope)
+
+    for candidata in resultado.agregadas:
+        typer.echo(
+            f"{candidata.tipo} {candidata.numero}/{candidata.anio} "
+            f"· la citan {candidata.citas} referencia(s) · {candidata.titulo[:50]}"
+        )
+    if resultado.ya_estaban:
+        typer.echo(f"Ya registradas: {len(resultado.ya_estaban)}")
+    if detalle:
+        for descartada in resultado.descartadas:
+            anio = descartada.anio or "sin año"
+            typer.echo(
+                f"  descartada: {descartada.tipo} {descartada.numero}/{anio} — {descartada.motivo}"
+            )
+    typer.echo(
+        f"Normas nuevas en {SOURCE_ID}: {len(resultado.agregadas)} · "
+        f"ya estaban: {len(resultado.ya_estaban)} · "
+        f"no se pueden traer sin adivinar: {len(resultado.descartadas)}"
+    )
+    for aviso in resultado.avisos:
+        typer.echo(f"  aviso: {aviso}")
+
+
 @ingesta.command("importar-renabap")
 def ingesta_importar_renabap(
     captura: str = typer.Argument(..., help="Id de la captura de la planilla de F39."),

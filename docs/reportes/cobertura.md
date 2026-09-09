@@ -7,9 +7,9 @@ Promediarlas produce un número que suena bien y no significa nada.
 
 | Concepto | Cantidad |
 |---|---:|
-| Fuentes en el catálogo | 84 |
-| Con al menos una captura | 55 |
-| Con documentos extraídos | 48 |
+| Fuentes en el catálogo | 85 |
+| Con al menos una captura | 56 |
+| Con documentos extraídos | 49 |
 | Sin URL conocida | 15 |
 | Con acceso bloqueado o limitado | 2 |
 | Pendientes de capturar | 29 |
@@ -20,16 +20,16 @@ Una fuente bloqueada no cuenta como poblada.
 
 | Concepto | Valor |
 |---|---:|
-| Versiones normativas | 12 |
-| Evaluaciones esperadas (siete campos por versión) | 84 |
-| Evaluaciones registradas | 84 (100.0%) |
-| Campos con valor sustantivo validado | 4 (4.76%) |
+| Versiones normativas | 54 |
+| Evaluaciones esperadas (siete campos por versión) | 378 |
+| Evaluaciones registradas | 378 (100.0%) |
+| Campos con valor sustantivo validado | 4 (1.06%) |
 
 | Estado del campo | Cantidad |
 |---|---:|
 | INFORMADO | 4 |
-| NO_INFORMADO_EN_FUENTES_REVISADAS | 36 |
-| PENDIENTE | 44 |
+| NO_INFORMADO_EN_FUENTES_REVISADAS | 239 |
+| PENDIENTE | 135 |
 
 Un campo evaluado sin información no cuenta como valor sustantivo. Cien por
 ciento de evaluación con cero valor sustantivo es un resultado posible y
@@ -40,14 +40,14 @@ aprobado para publicar.
 
 | Severidad | Abiertos |
 |---|---:|
-| HIGH | 104 |
+| HIGH | 174 |
 | INFO | 4490 |
-| LOW | 19 |
-| MEDIUM | 64 |
+| LOW | 31 |
+| MEDIUM | 121 |
 
 ## (f) Dependencias pendientes
 
-168 referencias normativas citadas que todavía no se resolvieron contra el corpus.
+203 referencias normativas citadas que todavía no se resolvieron contra el corpus.
 
 ## (g) Fidelidad de extracción
 
@@ -55,9 +55,9 @@ Señal técnica observable, separada del juicio sobre el contenido.
 
 | Métrica | Valor |
 |---|---:|
-| score promedio | 0.3221 |
+| score promedio | 0.3045 |
 | score minimo | 0.0 |
-| versiones bajo umbral | 32 |
+| versiones bajo umbral | 71 |
 
 ## (h) Capacidades publicables
 
@@ -80,15 +80,15 @@ de responder cuánto se cobra.
 
 | Tabla | Filas |
 |---|---:|
-| capturas | 211 |
-| documentos | 53 |
-| documento_versiones | 54 |
-| unidades_documentales | 992 |
-| evidencias | 8220 |
+| capturas | 242 |
+| documentos | 84 |
+| documento_versiones | 112 |
+| unidades_documentales | 1921 |
+| evidencias | 8930 |
 | normas | 423718 |
-| norma_versiones | 12 |
-| relaciones_normativas | 185 |
+| norma_versiones | 54 |
+| relaciones_normativas | 527 |
 | beneficios | 16 |
-| afirmaciones | 4889 |
+| afirmaciones | 5461 |
 | releases | 2 |
 

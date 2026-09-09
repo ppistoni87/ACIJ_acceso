@@ -76,6 +76,11 @@ echo
 echo "== Resto de las fuentes, por el planificador =="
 $BN monitoreo ciclo | sed -n '1,8p'
 
+# El corpus cita normas que no tiene, y el catálogo nacional ya sabe dónde está
+# el texto de buena parte de ellas. Va después de la identidad y las relaciones
+# de la primera vuelta —que son las que dejan escritas esas citas— y antes de
+# volver a resolverlas: en la primera pasada no hay referencias que ampliar
+# todavía, y en la segunda entra lo que la primera descubrió.
 echo
 echo "== Identidad normativa =="
 $BN curacion identidad
@@ -84,6 +89,16 @@ echo
 echo "== Relaciones normativas =="
 $BN curacion relaciones
 
+
+echo
+echo "== Normas citadas por el corpus =="
+$BN ingesta ampliar | tail -3
+$BN ingesta capturar N01 | tail -1
+$BN ingesta extraer | tail -4
+# La ampliación trae normas nuevas: hay que volver a resolver identidad y
+# relaciones sobre ellas, o entran al corpus como texto sin norma.
+$BN curacion identidad | tail -2
+$BN curacion relaciones | tail -2
 
 echo
 echo "== Trámites =="
