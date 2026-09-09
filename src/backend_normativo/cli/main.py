@@ -911,6 +911,46 @@ def calidad_ensayo_actualizacion(
         typer.echo(texto)
 
 
+@calidad.command("escalado")
+def calidad_escalado(
+    salida: str | None = typer.Option(None, help="Archivo donde escribir el reporte."),
+    procesos: str = typer.Option("1,2,4", help="Cuántos procesos probar, separados por coma."),
+    clientes: int = typer.Option(16, help="Clientes concurrentes del generador de carga."),
+    barrido: str = typer.Option(
+        "4,32,64", "--barrido", help="Concurrencias extra a probar con el mayor N de procesos."
+    ),
+    segundos: float = typer.Option(6.0, help="Cuánto dura cada medición."),
+) -> None:
+    """Mide si el caudal se multiplica al agregar procesos de API.
+
+    Levanta la API con N procesos de verdad, que comparten el socket de escucha,
+    y le tira carga desde otro proceso. Contesta la pregunta que la medición por
+    hilos no podía contestar: si el techo de un proceso es el techo del sistema.
+    """
+    from backend_normativo.calidad.escalado import formatear, medir
+
+    cuantos = tuple(int(p) for p in procesos.split(",") if p.strip())
+    # La conexión se usa solo para leer el techo de conexiones de la base: sin
+    # eso, un caudal que no sube se puede leer como «llegó al límite» cuando en
+    # realidad el despliegue está pidiendo más conexiones de las que hay.
+    with engine_migrador().connect() as conexion:
+        reporte = medir(
+            procesos=cuantos,
+            clientes=clientes,
+            segundos=segundos,
+            barrido_clientes=tuple(int(b) for b in barrido.split(",") if b.strip()),
+            conexion=conexion,
+        )
+    texto = formatear(reporte)
+    if salida:
+        Path(salida).write_text(texto, encoding="utf-8")
+        typer.echo(f"Reporte escrito en {salida}")
+    else:
+        typer.echo(texto)
+    for aviso in reporte.avisos:
+        typer.echo(f"  {aviso}")
+
+
 @calidad.command("rendimiento")
 def calidad_rendimiento(
     salida: Path | None = typer.Option(None, help="Archivo donde escribir el reporte."),

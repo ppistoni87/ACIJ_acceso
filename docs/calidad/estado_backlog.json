@@ -466,17 +466,21 @@
     "src/backend_normativo/calidad/rendimiento.py",
     "tests/aceptacion/test_restauracion_completa.py",
     "tests/integracion/test_servibles_prefiltro.py",
-    "docs/reportes/rendimiento.md"
+    "docs/reportes/rendimiento.md",
+    "src/backend_normativo/calidad/escalado.py",
+    "tests/unit/test_escalado.py",
+    "docs/reportes/escalado.md"
    ],
    "comandos": [
+    "bn calidad escalado",
+    "bn calidad rendimiento",
     "bn operacion respaldar",
-    "bn operacion restaurar",
-    "bn calidad rendimiento"
+    "bn operacion restaurar"
    ],
-   "falta": "El respaldo y la restauración están probados de punta a punta con pg_dump y pg_restore sobre bases propias, y la restauración verifica cada objeto contra su SHA-256. La latencia está medida sobre el corpus real de 423.718 normas: ninguna consulta pasa de 33 ms en el percentil 95. La concurrencia se midió con hilos reales y mostró dónde está el techo: el motor sostiene 1.270 consultas por segundo con dieciséis hilos y la API se queda en 76, así que el límite es el proceso que serializa las respuestas y escalar es agregar procesos.",
-   "bloqueador": "Falta la prueba con el despliegue real. Medir concurrencia con hilos dentro del mismo proceso de prueba dice dónde está el techo de un proceso y no si ese techo se multiplica al agregar instancias: eso depende del balanceador, de la red y del pool de la base, que en este entorno no existen. Ninguna medición local puede sustituirlo, y presentar la medición local como si lo hiciera sería afirmar una capacidad que no se probó.",
+   "falta": "El respaldo y la restauración están probados de punta a punta con pg_dump y pg_restore sobre bases propias, y la restauración verifica cada objeto contra su SHA-256. La latencia está medida sobre el corpus real de 423.718 normas: ninguna consulta pasa de 33 ms en el percentil 95. La concurrencia se midió con hilos reales y mostró dónde está el techo: el motor sostiene 1.270 consultas por segundo con dieciséis hilos y la API se queda en 76, así que el límite es el proceso que serializa las respuestas y escalar es agregar procesos. La medición dejó de ser por hilos dentro del proceso de prueba: `bn calidad escalado` levanta la API en varios procesos de verdad, que comparten el socket de escucha con el núcleo repartiendo, y genera la carga desde otro proceso. Con eso quedaron medidas tres cosas que antes no se sabían. El caudal máximo de esta máquina es unas 190 peticiones por segundo. Empujado más allá, el sistema encola en vez de rechazar: con 4 clientes el percentil 95 es 57 ms, con 64 es 810 ms y el caudal no sube. Y el pool de cada proceso —treinta conexiones— por cuatro procesos le pide a la base ciento veinte cuando admite cien: es una multiplicación que hay que hacer antes de agregar instancias, y que no falla al arrancar sino cuando llega el tráfico.",
+   "bloqueador": "Sigue faltando el despliegue con máquinas separadas, y ahora se sabe exactamente por qué: un solo proceso de API ya deja esta máquina de cuatro núcleos al 93% de CPU, porque la API, PostgreSQL y el generador de carga comparten los mismos núcleos. Que el caudal no se multiplique al pasar de uno a cuatro procesos no dice que el sistema no escale —dice que no queda máquina para repartir—, y confundir las dos cosas sería afirmar un límite arquitectónico que la medición no muestra.",
    "responsable_rol": "operaciones",
-   "desbloquea_con": "Un despliegue con varias instancias detrás de un balanceador y un generador de carga externo, corriendo el mismo conjunto de consultas que mide `bn calidad rendimiento`. Lo que hay que comparar es el caudal total contra el caudal por proceso ya medido: si no se multiplica, el cuello está en la base o en la red y no en el proceso."
+   "desbloquea_con": "Correr `bn calidad escalado` con las instancias en máquinas distintas de la base y del generador de carga, y comparar el caudal total contra el de una instancia sola. Con CPU libre, si el caudal se multiplica el límite de un proceso no es el del sistema; si no se multiplica teniendo CPU de sobra, el cuello está en la base y agregar instancias no alcanza. Antes de eso hay que resolver la cuenta del pool: bajar el de cada proceso o subir `max_connections`."
   },
   "HU-038": {
    "estado": "CERRADA",

@@ -230,3 +230,28 @@ Está acá para que nadie lo pida por error:
   La evaluación es preliminar y lo dice en cada respuesta.
 - No ejecuta instrucciones que aparezcan dentro de un documento, una página o
   una respuesta de modelo. El contenido de una fuente es dato.
+
+## 9. Antes de agregar instancias
+
+```bash
+bn calidad escalado --salida docs/reportes/escalado.md
+```
+
+Levanta la API en varios procesos de verdad, que comparten el socket de escucha,
+y le tira carga desde otro proceso. Mide el caudal por cantidad de procesos y
+por concurrencia de clientes, y anota cuánta CPU había libre en cada punto:
+sin ese dato, «el caudal no sube» se puede leer como un límite del sistema
+cuando es un límite de la máquina.
+
+Hay una cuenta que hacer **antes** y no después: `pool_size + max_overflow` de
+cada proceso, por la cantidad de procesos, tiene que entrar en el
+`max_connections` de la base. Con los valores de fábrica son 30 por proceso, así
+que cuatro instancias piden 120 contra un máximo de 100. No falla al arrancar:
+falla cuando llega el tráfico, y falla como petición caída, no como espera.
+
+El reporte también deja escrito qué pasa cuando se lo empuja más allá del techo:
+el sistema encola y la demora crece —57 ms con cuatro clientes, 810 ms con
+sesenta y cuatro— en vez de rechazar. Un despliegue tiene que poner el límite
+antes de ese punto, porque una petición que expira consume igual y no devuelve
+nada.
+
