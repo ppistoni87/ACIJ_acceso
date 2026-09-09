@@ -8,3 +8,7 @@ __pycache__
 .pytest_cache
 .ruff_cache
 resultados
+# Ningún secreto entra en la imagen: la configuración llega por entorno.
+.env
+.env.*
+!.env.example

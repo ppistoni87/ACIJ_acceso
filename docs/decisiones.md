@@ -929,3 +929,31 @@ idénticos.
 **Consecuencia:** `bn ingesta ampliar --informe` deja escrito, norma por norma,
 qué se trajo y qué se leyó, con el motivo de lo que no. Un corpus que crece sin
 esa cuenta se lee como si todo lo que entró estuviera disponible para responder.
+
+## D-54 · Un permiso declarado no es un permiso verificado
+
+La migración 0002 separa seis roles y explica cada GRANT en un comentario. Al
+llevar el esquema a la base gestionada se probó rol por rol contra el motor, y
+una de las dieciocho sondas no dio lo que el comentario decía: el ingestor podía
+marcar RESUELTA una incidencia. El comentario dice «no publica ni resuelve»; el
+GRANT otorgaba `INSERT, UPDATE` sobre `incidencias_revision`, y `incidencias_revision`
+era una de doce tablas en una lista, donde un UPDATE de más no se ve leyendo.
+
+Nada en el código usaba ese permiso: las dos sentencias que cierran una
+incidencia viven en `curacion/`. Pero un permiso que sobra no es inofensivo —es
+exactamente la clase de cosa que alguien usa sin darse cuenta seis meses después,
+y entonces el circuito de revisión pasa a tener dos puertas.
+
+**Consecuencia:** `scripts/verificar_permisos.py` deja el control como algo que
+se vuelve a correr, no como algo que se hizo una vez. Las sondas llevan
+`WHERE false` para que PostgreSQL verifique el permiso sin escribir nada, así
+correrlo contra producción es inocuo. Y el invariante que la 0008 corrige quedó
+además como prueba de aceptación contra la base: si un GRANT futuro lo vuelve a
+abrir, falla el CI y no un incidente.
+
+Vale para la otra mitad también. El esquema en la base gestionada no se dio por
+bueno porque las migraciones no dieran error: se contaron los objetos contra el
+PostgreSQL local, tipo por tipo. La única diferencia —292 restricciones `NOT
+NULL` catalogadas— resultó ser que PostgreSQL 17 empezó a guardarlas como filas
+de `pg_constraint`. Sin esa comparación, «las migraciones corrieron» habría
+tapado tanto una coincidencia real como una diferencia de motor.

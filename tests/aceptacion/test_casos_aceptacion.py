@@ -231,6 +231,40 @@ def test_at068_el_rol_ingestor_no_puede_crear_un_release(conexion: Connection) -
     otro.rollback()
 
 
+def test_el_rol_ingestor_no_puede_resolver_una_incidencia(conexion: Connection) -> None:
+    """El ingestor abre hallazgos; cerrarlos es del revisor.
+
+    La migración 0002 lo decía en un comentario pero otorgaba UPDATE sobre
+    `incidencias_revision`, con lo cual el ingestor podía marcar RESUELTA una
+    incidencia que él mismo había abierto. La 0008 revoca ese UPDATE. Se prueba
+    contra la base porque el permiso es de PostgreSQL, no del código.
+    """
+    punto = conexion.begin_nested()
+    conexion.execute(text("SET LOCAL ROLE bn_ingestor"))
+
+    # Abrir sí puede: es su trabajo.
+    conexion.execute(
+        text(
+            "INSERT INTO incidencias_revision (tipo, severidad, estado, descripcion) "
+            "VALUES ('CONFLICTO_DE_FUENTES', 'MEDIUM', 'ABIERTA', 'control de permisos')"
+        )
+    )
+    with pytest.raises(ProgrammingError) as error:
+        conexion.execute(
+            text("UPDATE incidencias_revision SET estado = 'RESUELTA' WHERE estado = 'ABIERTA'")
+        )
+    assert "permission denied" in str(error.value).lower()
+    punto.rollback()
+
+    # El revisor sí cierra: lo que frena no es la sentencia sino quién la ejecuta.
+    otro = conexion.begin_nested()
+    conexion.execute(text("SET LOCAL ROLE bn_revisor"))
+    conexion.execute(
+        text("UPDATE incidencias_revision SET estado = estado WHERE estado = 'ABIERTA'")
+    )
+    otro.rollback()
+
+
 # --- AT-069: un release a medias no existe ------------------------------------
 
 
