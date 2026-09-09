@@ -188,3 +188,86 @@ def test_el_expediente_dice_qué_hay_que_decidir_en_cada_una(conexion: Connectio
     assert "Qué hay que decidir" in texto
     for regla in expediente(conexion).reglas:
         assert len(regla.que_hay_que_decidir) > 40
+
+
+def test_las_reglas_se_agrupan_por_lo_que_hay_que_decidir(conexion: Connection, curado) -> None:
+    """Ciento cincuenta y cuatro reglas no plantean ciento cincuenta y cuatro preguntas.
+
+    Plantean unas pocas, repetidas. Sin agrupar, la revisión empieza de cero
+    cada vez y no termina nunca.
+    """
+    resultado = expediente(conexion)
+    clases = {r.clase for r in resultado.reglas}
+    assert clases
+    assert clases <= {
+        "CONDICION_EJECUTABLE",
+        "CONDICION_CON_UMBRAL_SIN_VALOR",
+        "SIN_CONDICION_EJECUTABLE",
+        "NO_ES_CONDICION_SOBRE_LA_PERSONA",
+        "CONDICION_EN_CATEGORIA_QUE_NO_DECIDE_ACCESO",
+    }
+
+
+def test_una_regla_sin_condicion_y_de_prioridad_no_va_a_la_pila_de_acceso(
+    conexion: Connection, curado
+) -> None:
+    """Una prioridad no dice si alguien accede: dice cómo se reparte un cupo.
+
+    Aprobarla como condición de aplicabilidad la convertiría en un requisito
+    que la norma no puso.
+    """
+    from backend_normativo.curacion.revision_reglas import ReglaEnRevision
+
+    regla = ReglaEnRevision(
+        id=next(r.id for r in expediente(conexion).reglas),
+        beneficio="X",
+        categoria="PRIORIDAD",
+        estado="CANDIDATE",
+        texto_literal="t",
+        descripcion="d",
+        tiene_condicion=False,
+        requiere_revision=True,
+        motivo_revision="m",
+        norma="n",
+        ruta="r",
+    )
+    assert regla.clase == "NO_ES_CONDICION_SOBRE_LA_PERSONA"
+
+
+def test_un_umbral_sin_valor_es_una_pila_aparte(conexion: Connection, curado) -> None:
+    """Es la pila de menor riesgo y conviene que se vea.
+
+    Sin valor aprobado la evaluación devuelve desconocido, que es la respuesta
+    correcta, y no «no calificás». Dejarlas candidatas no protege de nada.
+    """
+    from backend_normativo.curacion.revision_reglas import ReglaEnRevision
+
+    regla = ReglaEnRevision(
+        id=next(r.id for r in expediente(conexion).reglas),
+        beneficio="X",
+        categoria="APLICABILIDAD",
+        estado="CANDIDATE",
+        texto_literal="t",
+        descripcion="d",
+        tiene_condicion=True,
+        requiere_revision=True,
+        motivo_revision="m",
+        norma="n",
+        ruta="r",
+        parametro_sin_valor=True,
+    )
+    assert regla.clase == "CONDICION_CON_UMBRAL_SIN_VALOR"
+
+
+def test_el_expediente_dice_que_la_propuesta_no_es_una_aprobación(
+    conexion: Connection, curado
+) -> None:
+    """La distinción es el punto entero del documento.
+
+    Un expediente que se leyera como una aprobación haría exactamente el daño
+    que el circuito de revisión existe para impedir.
+    """
+    texto = formatear(expediente(conexion))
+    assert "Propuesta de disposición" in texto
+    assert "no una aprobación" in texto
+    assert "competencia jurídica" in texto

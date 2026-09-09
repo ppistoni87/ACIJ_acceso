@@ -34,6 +34,14 @@ class RevisionInvalida(Exception):
     """La transición pedida no corresponde al estado en que está la regla."""
 
 
+# Las categorías que no describen a una persona sino al reparto entre personas,
+# a una facultad de la autoridad o a la forma de la prestación. Aprobarlas como
+# condición de acceso las convierte en un requisito que la norma no puso.
+CATEGORIAS_QUE_NO_SON_CONDICION = frozenset(
+    {"PRIORIDAD", "SALVAGUARDA", "SUBSANACION", "REHABILITACION"}
+)
+
+
 @dataclass
 class ReglaEnRevision:
     id: uuid.UUID
@@ -47,6 +55,26 @@ class ReglaEnRevision:
     motivo_revision: str
     norma: str
     ruta: str
+    parametro_sin_valor: bool = False
+
+    @property
+    def clase(self) -> str:
+        """En qué pila cae, según hechos observables y no según el texto del motivo.
+
+        Clasificar por lo que se puede mirar —si tiene condición, si su umbral
+        tiene valor, de qué categoría es— y no por lo que dice el motivo evita
+        que la pila dependa de cómo se redactó el reparo. Y las pilas importan
+        porque el riesgo de aprobar no es el mismo en todas.
+        """
+        if not self.tiene_condicion:
+            if self.categoria in CATEGORIAS_QUE_NO_SON_CONDICION:
+                return "NO_ES_CONDICION_SOBRE_LA_PERSONA"
+            return "SIN_CONDICION_EJECUTABLE"
+        if self.parametro_sin_valor:
+            return "CONDICION_CON_UMBRAL_SIN_VALOR"
+        if self.categoria in CATEGORIAS_QUE_NO_SON_CONDICION:
+            return "CONDICION_EN_CATEGORIA_QUE_NO_DECIDE_ACCESO"
+        return "CONDICION_EJECUTABLE"
 
     @property
     def que_hay_que_decidir(self) -> str:
@@ -96,7 +124,13 @@ SELECT r.id, b.codigo AS beneficio, r.categoria, r.estado_revision AS estado,
        r.texto_literal, r.descripcion, (r.ast IS NOT NULL) AS tiene_condicion,
        r.requiere_revision, coalesce(r.alcance, '') AS motivo_revision,
        coalesce(n.tipo || ' ' || n.numero || '/' || n.anio::text, '—') AS norma,
-       coalesce(u.ruta, e.selector, '') AS ruta
+       coalesce(u.ruta, e.selector, '') AS ruta,
+       EXISTS (
+         SELECT 1 FROM regla_parametros rp
+          WHERE rp.regla_id = r.id
+            AND NOT EXISTS (SELECT 1 FROM parametro_valores pv
+                             WHERE pv.parametro_id = rp.parametro_id)
+       ) AS parametro_sin_valor
   FROM reglas r
   JOIN beneficio_versiones bv ON bv.registro_version_id = r.beneficio_version_id
   JOIN beneficios b ON b.id = bv.beneficio_id
@@ -139,6 +173,7 @@ def expediente(
                 motivo_revision=fila["motivo_revision"],
                 norma=fila["norma"],
                 ruta=fila["ruta"],
+                parametro_sin_valor=bool(fila["parametro_sin_valor"]),
             )
         )
     for fila in conexion.execute(text("SELECT estado_revision, count(*) FROM reglas GROUP BY 1")):
@@ -281,6 +316,53 @@ def aprobar_beneficio(
     return list(reglas)
 
 
+# La propuesta de cada pila. No es la firma: es el trabajo previo a la firma,
+# hecho para que revisar ciento cincuenta y cuatro reglas sea decidir ocho cosas
+# y repartir, en vez de empezar de cero ciento cincuenta y cuatro veces.
+PROPUESTAS: dict[str, tuple[str, str]] = {
+    "CONDICION_EJECUTABLE": (
+        "Aprobar tras confirmar la condición contra el texto",
+        "Tienen su condición escrita y validada, y su umbral tiene valor. Lo que queda es lo "
+        "único que una máquina no puede hacer: leer el artículo citado y confirmar que la "
+        "condición dice lo mismo. Es la pila donde aprobar habilita respuestas afirmativas, "
+        "así que es la que hay que leer con más cuidado y la que más devuelve.",
+    ),
+    "CONDICION_CON_UMBRAL_SIN_VALOR": (
+        "Aprobar: mientras el parámetro no tenga valor, la regla contesta «no se sabe»",
+        "La condición está escrita y compara contra un parámetro que todavía no tiene valor "
+        "aprobado —el salario mínimo del convenio de comercio, el sueldo mínimo municipal—. "
+        "Aprobarlas es de bajo riesgo justamente por eso: sin valor, la evaluación devuelve "
+        "desconocido, que es la respuesta correcta, y no «no calificás». Dejarlas candidatas "
+        "no protege de nada y esconde condiciones que sí están bien leídas. Lo que hay que "
+        "decidir aparte, y con evidencia, es el valor del parámetro.",
+    ),
+    "SIN_CONDICION_EJECUTABLE": (
+        "No aprobar todavía: primero decidir si la condición se puede escribir",
+        "No tienen condición ejecutable porque la norma remite a una reglamentación que no "
+        "está en el corpus, porque el dato que harían falta no existe en el modelo, o porque "
+        "lo que dicen no se puede reducir a verdadero o falso. Aprobarlas no habilita nada "
+        "—no hay qué evaluar— y sí las presenta como revisadas. Cada una necesita una de tres "
+        "decisiones: se puede escribir la condición, hay que traer la norma que falta, o la "
+        "regla es informativa y se conserva sin condición.",
+    ),
+    "NO_ES_CONDICION_SOBRE_LA_PERSONA": (
+        "No aprobar como condición de acceso: describen otra cosa",
+        "Prioridades, salvaguardas, subsanaciones y rehabilitaciones no dicen si alguien "
+        "accede: dicen cómo se reparte un cupo, qué pasa cuando nadie pidió el beneficio, o "
+        "cómo se recupera. Aprobarlas como condición de aplicabilidad las convertiría en un "
+        "requisito que la norma no puso, y son justamente las que evitan que la falta de "
+        "solicitud se lea como falta de derecho. Hay que decidir cómo las representa el "
+        "modelo, y esa es una decisión de diseño antes que jurídica.",
+    ),
+    "CONDICION_EN_CATEGORIA_QUE_NO_DECIDE_ACCESO": (
+        "Revisar la categoría antes que la condición",
+        "Tienen condición escrita pero están en una categoría que no decide acceso. O la "
+        "categoría está mal puesta y la condición sirve, o la categoría está bien y la "
+        "condición no debería evaluarse como aplicabilidad. Es un caso por caso corto.",
+    ),
+}
+
+
 def formatear(resultado: ResultadoRevision) -> str:
     """El expediente, para que revisar tenga forma de tarea y no de intención."""
     lineas = [
@@ -322,6 +404,35 @@ def formatear(resultado: ResultadoRevision) -> str:
             "que conviene resolverlo antes de empezar.",
         ]
     lineas.append("")
+
+    por_clase: dict[str, list[ReglaEnRevision]] = {}
+    for regla in resultado.reglas:
+        por_clase.setdefault(regla.clase, []).append(regla)
+    if por_clase:
+        lineas += [
+            "",
+            "## Propuesta de disposición, por pila",
+            "",
+            "Las ciento cincuenta y cuatro reglas no plantean ciento cincuenta y cuatro",
+            "preguntas distintas: plantean unas pocas, repetidas. Agruparlas por lo que hay",
+            "que decidir convierte la revisión en decidir esas pocas y repartir, que es como",
+            "se trabaja de verdad.",
+            "",
+            "Esto es una **propuesta**, no una aprobación. Aprobar es afirmar que lo que el",
+            "backend contesta es lo que dice el derecho, y eso lo firma una persona con",
+            "competencia jurídica, con su nombre y su fundamento en la bitácora.",
+            "",
+        ]
+        for clase, reglas in sorted(por_clase.items(), key=lambda x: -len(x[1])):
+            titulo, razon = PROPUESTAS.get(clase, (clase, ""))
+            lineas += [
+                f"### {clase} · {len(reglas)} regla(s)",
+                "",
+                f"**Propuesta: {titulo}.** {razon}",
+                "",
+                "Beneficios alcanzados: " + ", ".join(sorted({r.beneficio for r in reglas})) + ".",
+                "",
+            ]
 
     beneficio = None
     for regla in resultado.reglas:

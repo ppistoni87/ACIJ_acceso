@@ -33,6 +33,48 @@ En este expediente: **154** regla(s), de las cuales **59** no tienen condición 
 | SUSPENSION | 2 |
 
 
+## Propuesta de disposición, por pila
+
+Las ciento cincuenta y cuatro reglas no plantean ciento cincuenta y cuatro
+preguntas distintas: plantean unas pocas, repetidas. Agruparlas por lo que hay
+que decidir convierte la revisión en decidir esas pocas y repartir, que es como
+se trabaja de verdad.
+
+Esto es una **propuesta**, no una aprobación. Aprobar es afirmar que lo que el
+backend contesta es lo que dice el derecho, y eso lo firma una persona con
+competencia jurídica, con su nombre y su fundamento en la bitácora.
+
+### CONDICION_EJECUTABLE · 69 regla(s)
+
+**Propuesta: Aprobar tras confirmar la condición contra el texto.** Tienen su condición escrita y validada, y su umbral tiene valor. Lo que queda es lo único que una máquina no puede hacer: leer el artículo citado y confirmar que la condición dice lo mismo. Es la pila donde aprobar habilita respuestas afirmativas, así que es la que hay que leer con más cuidado y la que más devuelve.
+
+Beneficios alcanzados: AR.ASIGNACION-HIJO-CON-DISCAPACIDAD, AR.ASIGNACION-POR-ADOPCION, AR.ASIGNACION-POR-CONYUGE-SIJP, AR.ASIGNACION-POR-EMBARAZO, AR.ASIGNACION-POR-HIJO, AR.ASIGNACION-POR-MATERNIDAD, AR.ASIGNACION-POR-MATRIMONIO, AR.ASIGNACION-POR-NACIMIENTO, AR.ASIGNACION-PRENATAL, AR.AUH, AR.AYUDA-ESCOLAR-ANUAL, AR.CUIDADO-DE-SALUD-INTEGRAL, CABA.APOYO-VULNERABILIDAD-HABITACIONAL, CABA.BECA-COMEDOR-ESCOLAR, CABA.BECAS-ESTUDIANTILES, CABA.SUBSIDIO-SITUACION-DE-CALLE.
+
+### SIN_CONDICION_EJECUTABLE · 34 regla(s)
+
+**Propuesta: No aprobar todavía: primero decidir si la condición se puede escribir.** No tienen condición ejecutable porque la norma remite a una reglamentación que no está en el corpus, porque el dato que harían falta no existe en el modelo, o porque lo que dicen no se puede reducir a verdadero o falso. Aprobarlas no habilita nada —no hay qué evaluar— y sí las presenta como revisadas. Cada una necesita una de tres decisiones: se puede escribir la condición, hay que traer la norma que falta, o la regla es informativa y se conserva sin condición.
+
+Beneficios alcanzados: AR.ASIGNACION-HIJO-CON-DISCAPACIDAD, AR.ASIGNACION-POR-EMBARAZO, AR.ASIGNACION-POR-HIJO, AR.ASIGNACION-POR-MATERNIDAD, AR.ASIGNACION-POR-MATRIMONIO, AR.AYUDA-ESCOLAR-ANUAL, CABA.APOYO-VULNERABILIDAD-HABITACIONAL, CABA.BECA-COMEDOR-ESCOLAR, CABA.BECAS-ESTUDIANTILES, CABA.SUBSIDIO-SITUACION-DE-CALLE.
+
+### NO_ES_CONDICION_SOBRE_LA_PERSONA · 25 regla(s)
+
+**Propuesta: No aprobar como condición de acceso: describen otra cosa.** Prioridades, salvaguardas, subsanaciones y rehabilitaciones no dicen si alguien accede: dicen cómo se reparte un cupo, qué pasa cuando nadie pidió el beneficio, o cómo se recupera. Aprobarlas como condición de aplicabilidad las convertiría en un requisito que la norma no puso, y son justamente las que evitan que la falta de solicitud se lea como falta de derecho. Hay que decidir cómo las representa el modelo, y esa es una decisión de diseño antes que jurídica.
+
+Beneficios alcanzados: AR.ASIGNACION-HIJO-CON-DISCAPACIDAD, AR.ASIGNACION-POR-ADOPCION, AR.ASIGNACION-POR-CONYUGE-SIJP, AR.ASIGNACION-POR-EMBARAZO, AR.ASIGNACION-POR-HIJO, AR.ASIGNACION-POR-MATERNIDAD, AR.ASIGNACION-POR-MATRIMONIO, AR.ASIGNACION-POR-NACIMIENTO, AR.ASIGNACION-PRENATAL, AR.AUH, AR.AYUDA-ESCOLAR-ANUAL, AR.CUIDADO-DE-SALUD-INTEGRAL, CABA.APOYO-VULNERABILIDAD-HABITACIONAL, CABA.BECA-COMEDOR-ESCOLAR, CABA.BECAS-ESTUDIANTILES, CABA.SUBSIDIO-SITUACION-DE-CALLE.
+
+### CONDICION_CON_UMBRAL_SIN_VALOR · 19 regla(s)
+
+**Propuesta: Aprobar: mientras el parámetro no tenga valor, la regla contesta «no se sabe».** La condición está escrita y compara contra un parámetro que todavía no tiene valor aprobado —el salario mínimo del convenio de comercio, el sueldo mínimo municipal—. Aprobarlas es de bajo riesgo justamente por eso: sin valor, la evaluación devuelve desconocido, que es la respuesta correcta, y no «no calificás». Dejarlas candidatas no protege de nada y esconde condiciones que sí están bien leídas. Lo que hay que decidir aparte, y con evidencia, es el valor del parámetro.
+
+Beneficios alcanzados: AR.ASIGNACION-POR-ADOPCION, AR.ASIGNACION-POR-CONYUGE-SIJP, AR.ASIGNACION-POR-EMBARAZO, AR.ASIGNACION-POR-HIJO, AR.ASIGNACION-POR-MATRIMONIO, AR.ASIGNACION-POR-NACIMIENTO, AR.ASIGNACION-PRENATAL, AR.AUH, AR.CUIDADO-DE-SALUD-INTEGRAL, CABA.APOYO-VULNERABILIDAD-HABITACIONAL, CABA.BECA-COMEDOR-ESCOLAR, CABA.BECAS-ESTUDIANTILES, CABA.SUBSIDIO-SITUACION-DE-CALLE.
+
+### CONDICION_EN_CATEGORIA_QUE_NO_DECIDE_ACCESO · 7 regla(s)
+
+**Propuesta: Revisar la categoría antes que la condición.** Tienen condición escrita pero están en una categoría que no decide acceso. O la categoría está mal puesta y la condición sirve, o la categoría está bien y la condición no debería evaluarse como aplicabilidad. Es un caso por caso corto.
+
+Beneficios alcanzados: AR.ASIGNACION-HIJO-CON-DISCAPACIDAD, AR.ASIGNACION-POR-EMBARAZO, AR.ASIGNACION-POR-HIJO, AR.ASIGNACION-PRENATAL, CABA.APOYO-VULNERABILIDAD-HABITACIONAL, CABA.BECAS-ESTUDIANTILES.
+
+
 ## AR.ASIGNACION-HIJO-CON-DISCAPACIDAD
 
 ### `745a37fd-b9ad-4053-ba53-22a649d8003a` · APLICABILIDAD
