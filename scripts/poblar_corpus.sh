@@ -104,7 +104,10 @@ $BN monitoreo ciclo | sed -n '1,8p'
 echo
 echo "== Hojas de los índices =="
 for fuente in $(consulta "SELECT DISTINCT source_id_origen FROM fuentes_candidatas WHERE estado = 'NUEVA'"); do
-  $BN ingesta descubrir "$fuente" --limite 8 | head -1
+  # `sed -n 1p` y no `head -1`: head cierra la tubería al leer su línea, el
+  # comando recibe SIGPIPE, sale distinto de cero y `set -e` mata la corrida
+  # entera. sed lee hasta el final y solo imprime la primera.
+  $BN ingesta descubrir "$fuente" --limite 8 | sed -n '1p' 
 done
 institucionales=$(consulta "SELECT DISTINCT f.source_id FROM fuentes f
     JOIN fuente_urls u ON u.source_id = f.source_id
@@ -249,7 +252,7 @@ $BN curacion montos F12 F52 | grep -v '^$' || true
 # en vez de cargar un teléfono bajo el organismo equivocado.
 echo
 echo "== Canales de atención =="
-$BN curacion canales | grep -E "^- |^\| F" | head -12
+$BN curacion canales | sed -n '1,16p' | grep -E "^- |^\| F" || true
 
 echo
 echo "== Calendario de feriados =="

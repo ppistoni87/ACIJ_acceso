@@ -141,21 +141,22 @@ aparte que nadie actualiza.
 
 ## Lo que no se construyó
 
-Está enumerado, con su motivo, en `docs/calidad/estado_backlog.md` (5 historias
-en curso) y en `docs/calidad/trazabilidad_at.md` (16 casos cubiertos parcialmente). En
-resumen:
+El cierre completo —qué queda hecho, qué queda bloqueado, quién lo desbloquea y
+con qué comando— está en **`docs/operacion/traspaso.md`**. Empieza por lo único
+que bloquea al producto: las 166 reglas que esperan una firma jurídica que el
+plan prohíbe expresamente que dé un agente.
+
+El detalle por historia está en `docs/calidad/estado_backlog.md` y
+`docs/calidad/trazabilidad_at.md`. En resumen:
 
 - **Fichas de trámite fuera del portal nacional**: el adaptador cubre
   `argentina.gob.ar/servicio/`; las de CABA necesitan uno propio.
-- **Directorios en HTML** (F05, F07, F10, F44): capturados y extraídos como
-  texto, pero sus oficinas no se cargaron como puntos de atención: eso necesita
-  leer la estructura de cada portal.
+- **Directorios en HTML**: sus canales de atención sí se cargan —52 teléfonos,
+  correos y formularios con su cita—, pero cada oficina como punto de atención
+  con su dirección todavía no.
 - **Ferias administrativas y judiciales, y feriados provinciales**: el cómputo
   de días hábiles funciona contra el calendario nacional; los otros calendarios
   que un plazo judicial o provincial necesita no están cargados.
-- **Oficinas de los directorios en HTML** (F05, F07, F10, F44): sus páginas se
-  extraen como texto, pero cargar cada oficina como punto de atención necesita
-  leer la estructura de cada portal.
 - **Medición de rendimiento bajo carga** (HU-037): el respaldo y la restauración
   verificada están y se corrieron sobre la base real.
 
