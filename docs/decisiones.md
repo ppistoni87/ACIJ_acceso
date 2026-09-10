@@ -1516,3 +1516,26 @@ página y no el párrafo. Es una cita más gruesa de lo deseable y verificable, 
 es mejor que ninguna. Una página que solo tiene un rótulo suelto sigue sin
 producir unidad: el piso de longitud se mantiene.
 
+## D-79 · Trece fuentes «sin correr» que nadie iba a correr
+
+El recuento de fuentes listaba trece «sin correr», con este texto: «no están
+bloqueadas, simplemente no llegó su turno». Al mirarlas, ninguna estaba esperando
+turno. Siete las declara el catálogo `REFERENCE_ONLY` —cuatro de ellas son
+`ALIAS`, otro nombre de una fuente que ya está—, dos `RETIRED`, y cuatro
+`MANUAL`, cuyo contenido no se captura: se sube.
+
+El recuento las presentaba como trabajo pendiente. Trece tareas que nadie iba a
+hacer porque no había nada que hacer, y que de paso escondían el dato real: que
+no quedaba **ninguna** fuente activa sin capturar.
+
+**Consecuencia:** el veredicto pregunta primero si la fuente **tenía** que
+correr. Un alias, una retirada y una de referencia son «no se ingesta», con el
+motivo escrito al lado. Una de carga manual es «espera carga manual», que sí es
+pendiente pero de una persona subiendo un archivo. «Sin correr» queda para lo que
+el nombre dice: activa, sin impedimento y sin una sola captura. Hoy son cero.
+
+Y el reporte agrega el denominador que faltaba. HU-001 pide denominadores y pide
+no usarlos como sinónimos: «44 de 85» mete en el mismo saco nueve fuentes que
+nadie va a ingestar y diecisiete que la política de acceso no permite tocar.
+Sobre las que se pueden ingestar hoy, sirven **44 de 55**.
+

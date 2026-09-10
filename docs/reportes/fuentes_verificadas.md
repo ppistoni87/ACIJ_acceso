@@ -8,7 +8,11 @@ El manifiesto declara en qué tablas tiene que terminar lo que cada fuente aport
 - **Capturadas y nunca extraídas**: 2
 - Solo descubrimiento (su destino es el catálogo mismo): 2
 - Bloqueadas: 17
-- Sin correr: 13
+- No se ingestan (alias, retiradas o de referencia): 9
+- Esperan carga manual: 4
+- Sin correr: 0
+
+**Sobre las que se pueden ingestar hoy** —descontadas las 9 que no se ingestan, las 17 bloqueadas y las 4 de carga manual— sirven **44 de 55**.
 
 ## Capturadas y sin llegar a destino
 
@@ -57,11 +61,27 @@ El fallo se conserva y la capacidad queda pendiente. No se convierte en «sin da
 | F58 | SIN_URL_CONOCIDA | — | 1 |
 | F59 | SIN_URL_CONOCIDA | — | 1 |
 
-## Sin correr
+## No se ingestan, y está decidido
 
-Ninguna captura las tocó. No están bloqueadas —no hay impedimento registrado— simplemente no llegó su turno, y por eso su estado de acceso sigue sin verificar: verificarlo es intentarlo.
+Ninguna captura las tocó y ninguna debería: el catálogo ya declaró qué son. Contarlas como pendientes infla lo que falta con trabajo que nadie va a hacer, porque no hay nada que hacer.
 
-- F02, F06, F09, F10, F24, F28, F29, F38, F41, F55, F56, F63, F65
+| Fuente | Estado | Por qué |
+| --- | --- | --- |
+| F02 | REFERENCE_ONLY | el catálogo la declara solo de referencia |
+| F06 | RETIRED | el catálogo la declara retirada |
+| F09 | RETIRED | el catálogo la declara retirada |
+| F28 | REFERENCE_ONLY | es un alias de otra fuente; su aporte lo hace la canónica |
+| F29 | REFERENCE_ONLY | es un alias de otra fuente; su aporte lo hace la canónica |
+| F38 | REFERENCE_ONLY | el catálogo la declara solo de referencia |
+| F41 | REFERENCE_ONLY | el catálogo la declara solo de referencia |
+| F55 | REFERENCE_ONLY | es un alias de otra fuente; su aporte lo hace la canónica |
+| F65 | REFERENCE_ONLY | es un alias de otra fuente; su aporte lo hace la canónica |
+
+## Esperan una carga manual
+
+El catálogo las declara de carga manual: su contenido no se captura, se sube. Están pendientes, y lo que falta es que una persona cargue el archivo con `bn ingesta cargar-manual`, no que corra un capturador.
+
+- F10, F24, F56, F63
 
 ## Qué no dice
 

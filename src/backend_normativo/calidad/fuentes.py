@@ -117,12 +117,45 @@ SOLO_CATALOGO = frozenset({"fuentes", "fuente_urls", "fuentes_candidatas"})
 # tienen un impedimento real, y esconde a las dos entre las trece.
 NO_ES_BLOQUEO = frozenset({"ACCESIBLE", "NO_VERIFICADO"})
 
+
+def _ingestables(conteo: dict[str, int]) -> int:
+    """Las fuentes de las que tiene sentido esperar filas hoy.
+
+    No es el catálogo entero: descuenta las que el catálogo declaró que no se
+    ingestan, las que la política de acceso no permite tocar y las que esperan
+    que una persona suba un archivo. Contra ese denominador, «no sirve»
+    significa que algo falta hacer.
+    """
+    return (
+        conteo[SIRVE]
+        + conteo[SIN_DESTINO]
+        + conteo[SIN_EXTRAER]
+        + conteo[SOLO_DESCUBRIMIENTO]
+        + conteo[SIN_CORRER]
+    )
+
+
 SIRVE = "sirve"
 SIN_DESTINO = "sin destino"
 SIN_EXTRAER = "sin extraer"
 BLOQUEADA = "bloqueada"
 SIN_CORRER = "sin correr"
 SOLO_DESCUBRIMIENTO = "solo descubrimiento"
+NO_SE_INGESTA = "no se ingesta"
+ESPERA_CARGA_MANUAL = "espera carga manual"
+
+# Estados del catálogo que dicen que esta fuente no se captura, y por qué.
+# Contarlas como «sin correr» las presenta como trabajo pendiente cuando son
+# una decisión ya tomada, e infla el denominador de lo que falta.
+ESTADOS_SIN_INGESTA: dict[str, str] = {
+    "REFERENCE_ONLY": "el catálogo la declara solo de referencia",
+    "RETIRED": "el catálogo la declara retirada",
+}
+ESTADO_MANUAL = "MANUAL"
+
+# Un alias no es una fuente: es otro nombre de una que ya está. Su aporte lo
+# hace la canónica, y esperar filas suyas sería contar dos veces.
+CLASE_ALIAS = "ALIAS"
 
 
 @dataclass
@@ -154,9 +187,24 @@ class FuenteVerificada:
         return [t for t in self.declaradas if t not in SOLO_CATALOGO]
 
     @property
+    def por_que_no_se_ingesta(self) -> str | None:
+        """Por qué el catálogo decidió que esta fuente no se captura."""
+        if self.clase == CLASE_ALIAS:
+            return "es un alias de otra fuente; su aporte lo hace la canónica"
+        return ESTADOS_SIN_INGESTA.get(self.estado)
+
+    @property
     def veredicto(self) -> str:
         if self.access_status not in NO_ES_BLOQUEO:
             return BLOQUEADA
+        # Antes de preguntar si corrió, preguntar si tenía que correr. Una
+        # fuente retirada, un alias o una de referencia no están esperando
+        # turno: el catálogo ya decidió, y llamarlas «sin correr» convierte una
+        # decisión en trabajo pendiente.
+        if self.capturas == 0 and self.por_que_no_se_ingesta:
+            return NO_SE_INGESTA
+        if self.capturas == 0 and self.estado == ESTADO_MANUAL:
+            return ESPERA_CARGA_MANUAL
         if self.capturas == 0:
             return SIN_CORRER
         if not self.sustantivas:
@@ -288,7 +336,16 @@ def formatear(reporte: ReporteFuentes) -> str:
     total = len(reporte.fuentes)
     conteo = {
         v: len(reporte.por_veredicto(v))
-        for v in (SIRVE, SIN_DESTINO, SIN_EXTRAER, SOLO_DESCUBRIMIENTO, BLOQUEADA, SIN_CORRER)
+        for v in (
+            SIRVE,
+            SIN_DESTINO,
+            SIN_EXTRAER,
+            SOLO_DESCUBRIMIENTO,
+            BLOQUEADA,
+            NO_SE_INGESTA,
+            ESPERA_CARGA_MANUAL,
+            SIN_CORRER,
+        )
     }
     por_conciliacion = [f for f in reporte.fuentes if f.acreditada_por_conciliacion]
     lineas = [
@@ -310,7 +367,17 @@ def formatear(reporte: ReporteFuentes) -> str:
         f"- **Capturadas y nunca extraídas**: {conteo[SIN_EXTRAER]}",
         f"- Solo descubrimiento (su destino es el catálogo mismo): {conteo[SOLO_DESCUBRIMIENTO]}",
         f"- Bloqueadas: {conteo[BLOQUEADA]}",
+        f"- No se ingestan (alias, retiradas o de referencia): {conteo[NO_SE_INGESTA]}",
+        f"- Esperan carga manual: {conteo[ESPERA_CARGA_MANUAL]}",
         f"- Sin correr: {conteo[SIN_CORRER]}",
+        "",
+        # HU-001 criterio 4 pide denominadores y pide no usarlos como sinónimos.
+        # «44 de 85» mezcla en el mismo denominador nueve fuentes que nadie va a
+        # ingestar y diecisiete que la política de acceso no permite tocar.
+        f"**Sobre las que se pueden ingestar hoy** —descontadas las {conteo[NO_SE_INGESTA]} "
+        f"que no se ingestan, las {conteo[BLOQUEADA]} bloqueadas y las "
+        f"{conteo[ESPERA_CARGA_MANUAL]} de carga manual— sirven "
+        f"**{conteo[SIRVE]} de {_ingestables(conteo)}**.",
         "",
     ]
 
@@ -369,14 +436,45 @@ def formatear(reporte: ReporteFuentes) -> str:
             )
         lineas.append("")
 
+    no_se_ingestan = reporte.por_veredicto(NO_SE_INGESTA)
+    if no_se_ingestan:
+        lineas += [
+            "## No se ingestan, y está decidido",
+            "",
+            "Ninguna captura las tocó y ninguna debería: el catálogo ya declaró qué son. "
+            "Contarlas como pendientes infla lo que falta con trabajo que nadie va a "
+            "hacer, porque no hay nada que hacer.",
+            "",
+            "| Fuente | Estado | Por qué |",
+            "| --- | --- | --- |",
+        ]
+        lineas += [
+            f"| {f.source_id} | {f.estado} | {f.por_que_no_se_ingesta} |"
+            for f in sorted(no_se_ingestan, key=lambda f: f.source_id)
+        ]
+        lineas.append("")
+
+    manuales = reporte.por_veredicto(ESPERA_CARGA_MANUAL)
+    if manuales:
+        lineas += [
+            "## Esperan una carga manual",
+            "",
+            "El catálogo las declara de carga manual: su contenido no se captura, se "
+            "sube. Están pendientes, y lo que falta es que una persona cargue el "
+            "archivo con `bn ingesta cargar-manual`, no que corra un capturador.",
+            "",
+            "- " + ", ".join(sorted(f.source_id for f in manuales)),
+            "",
+        ]
+
     sin_correr = reporte.por_veredicto(SIN_CORRER)
     if sin_correr:
         lineas += [
             "## Sin correr",
             "",
-            "Ninguna captura las tocó. No están bloqueadas —no hay impedimento "
-            "registrado— simplemente no llegó su turno, y por eso su estado de acceso "
-            "sigue sin verificar: verificarlo es intentarlo.",
+            "Activas, sin impedimento registrado y sin una sola captura: acá sí "
+            "simplemente no llegó su turno, y por eso su estado de acceso sigue sin "
+            "verificar —verificarlo es intentarlo—.",
             "",
             "- " + ", ".join(f.source_id for f in sin_correr),
             "",
