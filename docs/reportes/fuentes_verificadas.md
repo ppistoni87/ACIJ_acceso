@@ -3,8 +3,8 @@
 El manifiesto declara en qué tablas tiene que terminar lo que cada fuente aporta. Esto compara lo declarado con lo que hay. Una fila se atribuye a una fuente cuando su evidencia lleva de vuelta a un documento de esa fuente.
 
 - Fuentes en el catálogo: 85
-- **Sirven** (dejaron filas donde su historia dice): 31, de las cuales 1 acreditadas por la conciliación del importador y no por evidencia por fila
-- **Capturadas, extraídas y sin destino** (200 y ninguna fila): 17
+- **Sirven** (dejaron filas donde su historia dice): 39, de las cuales 1 acreditadas por la conciliación del importador y no por evidencia por fila
+- **Capturadas, extraídas y sin destino** (200 y ninguna fila): 9
 - **Capturadas y nunca extraídas**: 5
 - Solo descubrimiento (su destino es el catálogo mismo): 2
 - Bloqueadas: 17
@@ -16,23 +16,15 @@ Estas respondieron, se extrajeron y no dejaron una sola fila donde su historia d
 
 | Fuente | Prioridad | Versiones | Unidades | Tablas declaradas y vacías |
 | --- | --- | ---: | ---: | --- |
-| F18 | P0 | 2 | 0 | canales |
-| F27 | P0 | 1 | 0 | tramites, plazos, canales |
-| F36 | P0 | 1 | 0 | tramites, tramite_pasos, parametro_valores |
-| F52 | P0 | 2 | 0 | parametro_valores, plazos |
-| F53 | P0 | 2 | 0 | tramites, plazos |
-| F66 | P0 | 2 | 0 | reglas, beneficio_versiones |
-| F03 | P1 | 2 | 0 | puntos_atencion, canales |
-| F05 | P1 | 2 | 0 | puntos_atencion, canales |
-| F07 | P1 | 1 | 0 | puntos_atencion, canales |
+| F18 | P0 | 2 | 3 | canales |
+| F52 | P0 | 2 | 1 | parametro_valores, plazos |
+| F53 | P0 | 9 | 21 | tramites, plazos |
+| F66 | P0 | 5 | 7 | reglas, beneficio_versiones |
 | F11 | P1 | 1 | 0 | puntos_atencion, canales |
-| F32 | P1 | 1 | 0 | canales |
-| F43 | P1 | 2 | 0 | tramites, canales |
-| F49 | P1 | 2 | 0 | tramites, canales |
+| F32 | P1 | 1 | 5 | canales |
+| F49 | P1 | 7 | 5 | tramites, canales |
 | F50 | P1 | 2 | 0 | tramites, canales |
-| F51 | P1 | 1 | 0 | puntos_atencion, canales |
-| F61 | P1 | 2 | 0 | canales |
-| F64 | P1 | 1 | 0 | puntos_atencion |
+| F64 | P1 | 1 | 1 | puntos_atencion |
 
 ## Capturadas y nunca extraídas
 
@@ -52,7 +44,7 @@ El fallo se conserva y la capacidad queda pendiente. No se convierte en «sin da
 
 | Fuente | Estado de acceso | Motivo | Incidencias abiertas |
 | --- | --- | --- | ---: |
-| M05 | ACCESO_LIMITADO | Contenido incorporado por carga manual (ingesta:equipo-de-datos): Marcador de vía manual creado durante la imp | 3 |
+| M05 | ACCESO_LIMITADO | Contenido incorporado por carga manual (ingesta:equipo-de-datos): Marcador de vía manual creado durante la imp | 8 |
 | F04 | ERROR_TLS | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL | 7 |
 | F08 | SIN_URL_CONOCIDA | — | 1 |
 | F13 | SIN_URL_CONOCIDA | — | 1 |

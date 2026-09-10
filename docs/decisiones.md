@@ -1443,3 +1443,39 @@ entre 8 y 12 dígitos o si son una tira de años, y devuelve `None` en vez de un
 valor a medias. Ensanchar el patrón para tomar un formato nuevo no arrastra
 basura a la base, porque la puerta de entrada no es el patrón.
 
+## D-75 · Un trámite vacío con cita es peor que ningún trámite
+
+Antes de escribir el curador de trámites se miraron las secciones que esas
+páginas habían dejado, y no eran trámites: F36 «Tramitar el DNI» es un menú de
+modalidades, F53 «Progresar» lista líneas de beca, F32 es el menú de un turnero.
+Ninguna trae requisitos, pasos ni costo.
+
+Un curador escrito igual habría producido un trámite «DNI al instante» con cero
+pasos y una evidencia que dice «Tramitá tu DNI en los Centros de Atención
+habilitados para esta modalidad», que no explica cómo. Eso no es un dato
+incompleto: es un dato falso con respaldo, porque la cita lo hace parecer
+verificado.
+
+**Consecuencia:** no se curó el índice. El adaptador descubre las hojas que
+enlaza y las deja como candidatas, y el contenido se busca donde está. El
+manifiesto ya lo decía —F66 es «hub /requisitos + 3 hojas», F53 es «mapa de
+subpaginas»—: el catálogo sabía que eran índices y la ingesta nunca los siguió.
+
+De ahí salieron cuatro trámites de DNI con once pasos, leídos de las fichas
+reales por el curador que ya existía.
+
+## D-76 · Un acuerdo por texto entre dos módulos se rompe en silencio
+
+`bn ingesta descubrir` promovía las candidatas cuya relación decía «de la misma
+norma». La frase la escribía el adaptador y la buscaba el comando, cada uno con
+su literal. Al agregar relaciones nuevas —«hoja del índice», «ficha de trámite»—
+el comando siguió promoviendo cero y no falló nada: simplemente no pasaba nada.
+
+**Consecuencia:** las relaciones promovibles viven en `adaptadores/base.py` y las
+importan los dos lados. Sigue siendo un acuerdo por texto —la columna guarda
+prosa— pero ahora hay un solo lugar donde cambiarla.
+
+Vale la generalización: cuando dos módulos se ponen de acuerdo por el contenido
+de un campo y no por su tipo, el desacuerdo no se ve como un error sino como
+ausencia de resultado, que es lo último que alguien va a mirar.
+

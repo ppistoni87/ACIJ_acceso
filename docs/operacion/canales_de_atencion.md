@@ -69,7 +69,7 @@ publicó.
 - **Que el canal corresponda al beneficio que quien consulta pregunta.** El canal
   cuelga del organismo, no del beneficio: decir que este teléfono es «el de la
   beca» exige una lectura que no se hizo.
-- **Las diez fuentes que siguen sin destino.** Declaran `tramites`,
-  `tramite_pasos`, `puntos_atencion` y `parametro_valores`, que necesitan sus
-  propios curadores. Las secciones informativas ya están: lo que falta es
-  leerlas.
+- **Las nueve fuentes que siguen sin destino.** Declaran `tramites`,
+  `tramite_pasos`, `puntos_atencion` y `parametro_valores`. Varias no necesitan
+  un curador nuevo sino que se capture la página que tiene el contenido: ver
+  `docs/operacion/indices_y_hojas.md`.

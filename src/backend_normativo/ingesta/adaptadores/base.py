@@ -73,6 +73,24 @@ class CapturaMaterial:
         return None
 
 
+# Relaciones que declaran que una URL descubierta es una vista de la **misma**
+# fuente, y no un recurso nuevo cuyo alcance haya que decidir. Solo estas las
+# promueve `bn ingesta descubrir` sin intervención.
+#
+# Viven acá y no escritas a mano en cada lado porque la promoción las busca por
+# texto: si el adaptador cambia la frase y el comando no, las candidatas dejan
+# de promoverse y nada falla —simplemente no pasa nada, que es la forma más
+# silenciosa de romperse—.
+RELACION_MISMA_NORMA = "de la misma norma"
+RELACION_HOJA_INDICE = "hoja del índice"
+RELACION_FICHA_TRAMITE = "ficha de trámite"
+RELACIONES_PROMOVIBLES: tuple[str, ...] = (
+    RELACION_MISMA_NORMA,
+    RELACION_HOJA_INDICE,
+    RELACION_FICHA_TRAMITE,
+)
+
+
 @dataclass
 class UrlDescubierta:
     """URL encontrada dentro de una captura.

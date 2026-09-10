@@ -336,3 +336,71 @@ def test_una_pagina_con_texto_y_sin_titulos_lo_declara() -> None:
     )
     assert not resultado.documentos[0].unidades
     assert any("ninguna sección" in a.texto for a in resultado.documentos[0].avisos)
+
+
+INDICE = """
+<html><body><main>
+<h1>Tramitar el DNI</h1>
+<p>El Documento Nacional de Identidad es el documento único de identificación.</p>
+<h2>DNI al instante</h2>
+<p>Tramitá tu DNI en los Centros de Atención habilitados.
+   <a href="/servicio/dni-al-instante">Ver cómo</a></p>
+<h2>DNI para argentinos en el país</h2>
+<p><a href="/interior/dni/argentinos-residentes-en-el-pais">Ver requisitos</a></p>
+<h2>Otros</h2>
+<p>
+  <a href="/interior/dni">Esta misma página</a>
+  <a href="https://otro-sitio.gob.ar/algo">Otro organismo</a>
+  <a href="/interior">La sección padre</a>
+  <a href="/interior/dni/foto.jpg">Una imagen</a>
+</p>
+</main></body></html>
+"""
+
+
+def _indice():
+    return AdaptadorPaginaInstitucional().extraer(
+        _captura(INDICE, "https://www.argentina.gob.ar/interior/dni")
+    )
+
+
+def test_un_indice_descubre_las_paginas_que_tienen_el_contenido() -> None:
+    """Curar el índice produciría un trámite sin un solo requisito ni paso.
+
+    El manifiesto lo dice con todas las letras —F66 es «hub /requisitos + 3
+    hojas»— y la ingesta nunca las seguía: el contenido vive un clic más allá.
+    """
+    urls = {u.url for u in _indice().urls_descubiertas}
+    assert "https://www.argentina.gob.ar/servicio/dni-al-instante" in urls
+    assert "https://www.argentina.gob.ar/interior/dni/argentinos-residentes-en-el-pais" in urls
+
+
+def test_el_descubrimiento_no_es_un_rastreador() -> None:
+    """Sin límites, una página de gobierno lleva a todo el gobierno."""
+    urls = {u.url for u in _indice().urls_descubiertas}
+    assert "https://otro-sitio.gob.ar/algo" not in urls, "otro host"
+    assert "https://www.argentina.gob.ar/interior" not in urls, "la sección padre no es una hoja"
+    assert "https://www.argentina.gob.ar/interior/dni" not in urls, "ella misma"
+    assert not any(u.endswith(".jpg") for u in urls), "una imagen no es una página"
+
+
+def test_cada_url_descubierta_dice_de_dónde_salió_y_por_qué() -> None:
+    """La relación no es prosa: la promoción la busca por texto."""
+    from backend_normativo.ingesta.adaptadores.base import (
+        RELACION_FICHA_TRAMITE,
+        RELACION_HOJA_INDICE,
+    )
+
+    descubiertas = _indice().urls_descubiertas
+    ficha = next(u for u in descubiertas if "/servicio/" in u.url)
+    hoja = next(u for u in descubiertas if "argentinos-residentes" in u.url)
+    assert RELACION_FICHA_TRAMITE in ficha.relacion
+    assert RELACION_HOJA_INDICE in hoja.relacion
+    assert "argentina.gob.ar/interior/dni" in ficha.relacion, "de dónde salió"
+
+
+def test_una_pagina_sin_hojas_no_descubre_nada() -> None:
+    resultado = AdaptadorPaginaInstitucional().extraer(
+        _captura(PAGINA_CON_CANALES, "https://www.argentina.gob.ar/obras-publicas/canales")
+    )
+    assert resultado.urls_descubiertas == []

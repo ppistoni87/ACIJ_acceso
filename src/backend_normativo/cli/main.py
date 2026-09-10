@@ -493,6 +493,8 @@ def ingesta_descubrir(
     """
     from sqlalchemy import text as sql
 
+    from backend_normativo.ingesta.adaptadores.base import RELACIONES_PROMOVIBLES
+
     with engine_migrador().begin() as conexion:
         promovidas = (
             conexion.execute(
@@ -500,7 +502,8 @@ def ingesta_descubrir(
                     "WITH elegibles AS ("
                     "  SELECT c.id, c.url FROM fuentes_candidatas c "
                     "   WHERE c.source_id_origen = :s AND c.estado = 'NUEVA' "
-                    "     AND c.relacion LIKE '%de la misma norma%' "
+                    "     AND EXISTS (SELECT 1 FROM unnest(CAST(:relaciones AS text[])) r "
+                    "                  WHERE c.relacion LIKE '%' || r || '%') "
                     "   ORDER BY c.descubierta_en LIMIT :lim"
                     "), insertadas AS ("
                     "  INSERT INTO fuente_urls (source_id, url, rol, tipo_acceso) "
@@ -509,7 +512,7 @@ def ingesta_descubrir(
                     ") UPDATE fuentes_candidatas SET estado = 'PROMOVIDA' "
                     "  WHERE id IN (SELECT id FROM elegibles) RETURNING url"
                 ),
-                {"s": fuente, "lim": limite},
+                {"s": fuente, "lim": limite, "relaciones": list(RELACIONES_PROMOVIBLES)},
             )
             .scalars()
             .all()

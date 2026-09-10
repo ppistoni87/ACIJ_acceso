@@ -29,6 +29,7 @@ from backend_normativo.curacion.segmentacion import UnidadSegmentada
 from backend_normativo.db.vocabularios import (
     ModoExtraccion,
     RolContenido,
+    RolUrl,
     Severidad,
     TipoDocumento,
     TipoIncidencia,
@@ -36,14 +37,19 @@ from backend_normativo.db.vocabularios import (
     TipoVersionDocumento,
 )
 from backend_normativo.ingesta.adaptadores.base import (
+    RELACION_FICHA_TRAMITE,
+    RELACION_HOJA_INDICE,
     Aviso,
     CapturaMaterial,
     DocumentoExtraido,
     ResultadoExtraccion,
+    UrlDescubierta,
     calcular_score,
 )
 from backend_normativo.ingesta.adaptadores.html import (
     decodificar_html,
+    enlaces_de,
+    normalizar_espacios,
     parrafos_de_html,
     texto_oculto,
     texto_plano,
@@ -180,6 +186,24 @@ def leer(html: str, *, url: str = "") -> LecturaPagina:
 # estructuralmente impedidas de llegar a ningún lado.
 SELECTOR_TITULOS = "h1, h2, h3, h4"
 
+# Varias de estas páginas son índices, no contenido: el manifiesto lo dice con
+# todas las letras —F66 es «hub /requisitos + 3 hojas», F53 es «mapa de
+# subpaginas»— y la ingesta nunca las siguió. Capturar el índice y curar sus
+# secciones produciría un trámite «DNI al instante» sin un solo requisito ni
+# paso, porque eso vive un clic más allá. Se descubren los hijos y se dejan como
+# candidatas: promoverlas sigue siendo una decisión de revisión, que un enlace
+# no prueba que sea una fuente del alcance.
+#
+# El descubrimiento es acotado a propósito y no es un rastreador: mismo host, y
+# solo lo que cuelga de la ruta de la propia fuente o una ficha de trámite. Sin
+# esos dos límites, una página de gobierno lleva a todo el gobierno.
+MARCA_FICHA_TRAMITE = "/servicio/"
+TOPE_DESCUBIERTAS = 20
+
+# Sufijos que no son páginas de contenido. Un PDF enlazado puede ser un anexo
+# legítimo y lo captura otro camino; acá se buscan hojas del mismo sitio.
+SUFIJOS_NO_PAGINA = (".jpg", ".jpeg", ".png", ".gif", ".svg", ".zip", ".xls", ".xlsx", ".doc")
+
 # Un bloque más corto que esto no sostiene una cita: es un rótulo suelto, un
 # «Ver más» o una miga de pan.
 MINIMO_SECCION = 25
@@ -238,6 +262,50 @@ def _secciones(principal: Node, texto_completo: str) -> list[UnidadSegmentada]:
             )
         )
     return unidades
+
+
+def _normalizar(url: str) -> str:
+    sin_ancla = url.split("#", 1)[0]
+    return sin_ancla.rstrip("/")
+
+
+def descubrir_hojas(html: str, url_actual: str) -> list[UrlDescubierta]:
+    """Las páginas hijas de un índice, y las fichas de trámite que enlaza."""
+    if not url_actual:
+        return []
+    from urllib.parse import urlparse
+
+    actual = urlparse(url_actual)
+    base = _normalizar(url_actual)
+    vistas: set[str] = {base}
+    descubiertas: list[UrlDescubierta] = []
+
+    for destino, etiqueta in enlaces_de(html, url_actual):
+        limpia = _normalizar(destino)
+        if limpia in vistas or len(descubiertas) >= TOPE_DESCUBIERTAS:
+            continue
+        partes = urlparse(limpia)
+        if partes.netloc != actual.netloc:
+            continue
+        if limpia.lower().endswith(SUFIJOS_NO_PAGINA):
+            continue
+        es_hija = limpia.startswith(base + "/")
+        es_ficha = MARCA_FICHA_TRAMITE in partes.path
+        if not (es_hija or es_ficha):
+            continue
+        vistas.add(limpia)
+        descubiertas.append(
+            UrlDescubierta(
+                url=destino,
+                rol=RolUrl.DETALLE,
+                relacion=(
+                    f"{RELACION_FICHA_TRAMITE if es_ficha else RELACION_HOJA_INDICE} "
+                    f"enlazada desde {url_actual} "
+                    f"({normalizar_espacios(etiqueta)[:80] or 'sin texto'})"
+                ),
+            )
+        )
+    return descubiertas
 
 
 def _contar_contenedores(principal: Node) -> tuple[int, int]:
@@ -371,4 +439,15 @@ class AdaptadorPaginaInstitucional:
             avisos=list(lectura.avisos),
         )
         resultado.documentos.append(documento)
+        resultado.urls_descubiertas.extend(descubrir_hojas(html, captura.url_final))
+        if resultado.urls_descubiertas:
+            documento.avisos.append(
+                Aviso(
+                    f"{captura.url_final} enlaza {len(resultado.urls_descubiertas)} página(s) "
+                    "propias con el contenido que esta no trae. Quedan como candidatas: "
+                    "promoverlas con `bn ingesta descubrir` es una decisión de revisión.",
+                    tipo=TipoIncidencia.COBERTURA_EXTRACCION,
+                    severidad=Severidad.LOW,
+                )
+            )
         return resultado
