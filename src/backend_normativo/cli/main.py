@@ -670,6 +670,34 @@ def operacion_restaurar(
         raise typer.Exit(1)
 
 
+@calidad.command("grafo")
+def calidad_grafo(
+    profundidad: int = typer.Option(4, "--profundidad", help="Tope de saltos al buscar ciclos."),
+    salida: Path | None = typer.Option(None, "--salida", help="Archivo donde escribir."),
+) -> None:
+    """Informa cómo está conectado el grafo de relaciones y cuántos ciclos tiene.
+
+    No falla por haber ciclos: son legítimos. Falla si hay autorreferencias, que
+    el esquema no admite desde la migración 0010.
+    """
+    from backend_normativo.calidad.grafo import construir, formatear
+
+    with engine_migrador().connect() as conexion:
+        reporte = construir(conexion, profundidad)
+    texto = formatear(reporte)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto, encoding="utf-8")
+        typer.echo(
+            f"Informe del grafo escrito en {salida} · "
+            f"{reporte.relaciones} relaciones, {reporte.ciclos} ciclo(s)"
+        )
+    else:
+        typer.echo(texto)
+    if reporte.autorreferencias:
+        raise typer.Exit(1)
+
+
 @ingesta.command("conciliar")
 def ingesta_conciliar(
     salida: Path | None = typer.Option(None, "--salida", help="Archivo donde escribir."),

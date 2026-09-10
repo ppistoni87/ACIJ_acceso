@@ -246,4 +246,7 @@ if [ "${INFORMES}" = 1 ]; then
   # en algún lado, y ninguna corrida puede quedar a medias. Sale distinto de
   # cero si algo de eso no se cumple, y el script termina con `set -e`.
   $BN ingesta conciliar --salida docs/reportes/conciliacion_ingesta.md
+  # Cuántos ciclos tiene el grafo y cuántas referencias quedan sin resolver. No
+  # falla por haber ciclos —son legítimos—; falla por autorreferencias.
+  $BN calidad grafo --salida docs/reportes/grafo_normativo.md
 fi

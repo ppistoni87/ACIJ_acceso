@@ -258,3 +258,180 @@ def _norma_y_documento(conexion: Connection, jurisdiccion: str) -> tuple[uuid.UU
         {"d": doc, "c": captura, "h": uuid.uuid4().hex + uuid.uuid4().hex},
     ).scalar_one()
     return norma_id, doc_version
+
+
+# --- P-007 criterio 3: dos ejes de tiempo, y la descarga no es ninguno ---------
+#
+# El caso está tomado del corpus: el Decreto 690/2006 de CABA tiene dos textos
+# del artículo 2 —el anterior y el que el Decreto 161/2025 sustituyó—, y otra
+# norma del mismo período quedó derogada. Preguntar «qué decía» exige decir
+# cuándo, y hay dos «cuándo» distintos: en qué fecha se aplica y en qué momento
+# se sabía. La fecha en que se descargó el documento no es ninguno de los dos.
+
+ANTES = "2010-06-15"
+DESPUES = "2026-06-15"
+# Se pregunta por IDENTIFICACION a propósito: no exige ningún campo crítico, así
+# que lo único que puede impedir servir es el tiempo, que es lo que se prueba.
+CAPACIDAD = "IDENTIFICACION"
+
+
+def _version_con_conocimiento(
+    conexion: Connection,
+    *,
+    release: uuid.UUID,
+    desde: str,
+    hasta: str | None,
+    valid_tipo: str = "CERRADO",
+    conocida_desde: str | None = None,
+    entidad: uuid.UUID | None = None,
+) -> uuid.UUID:
+    """Como `_version_publicada`, pero permitiendo declarar desde cuándo se sabe.
+
+    `known_desde` tiene `now()` por defecto, que es lo correcto para la carga
+    real: se sabe desde que se cargó. Para probar el eje de conocimiento hay que
+    poder ponerlo en el pasado.
+    """
+    entidad_id = entidad or uuid.uuid4()
+    return conexion.execute(
+        text(
+            "INSERT INTO registro_versiones (entidad_tipo, entidad_id, numero_version, "
+            "estado_revision, valid_tipo, valid_desde, valid_hasta, release_id, verificado_en, "
+            "reverificar_antes_de, known_desde) "
+            "SELECT 'norma', :e, coalesce(max(numero_version), 0) + 1, 'PUBLISHED', :vt, :vd, "
+            "       :vh, :r, '2026-09-01T00:00:00+00:00', '2027-01-01T00:00:00+00:00', "
+            "       coalesce(CAST(:kd AS timestamptz), now()) "
+            "  FROM registro_versiones "
+            " WHERE entidad_tipo = 'norma' AND entidad_id = :e "
+            "RETURNING id"
+        ),
+        {
+            "e": entidad_id,
+            "vt": valid_tipo,
+            "vd": desde,
+            "vh": hasta,
+            "r": release,
+            "kd": conocida_desde,
+        },
+    ).scalar_one()
+
+
+def test_la_version_que_se_devuelve_depende_de_la_fecha_consultada(
+    conexion: Connection,
+) -> None:
+    """Una modificación parte la norma en dos períodos, y cada fecha cae en uno.
+
+    Es el caso del artículo 2 del Decreto 690/2006: hasta 2024 nombraba un
+    programa y una autoridad de aplicación, y desde el Decreto 161/2025 nombra
+    otros. Servir el texto nuevo para una consulta sobre 2010 sería contestar
+    con una oficina que en 2010 no existía.
+    """
+    release = _release_publicado(conexion)
+    norma = uuid.uuid4()
+    anterior = _version_con_conocimiento(
+        conexion, release=release, desde="2006-06-21", hasta="2024-12-31", entidad=norma
+    )
+    posterior = _version_con_conocimiento(
+        conexion,
+        release=release,
+        desde="2025-01-01",
+        hasta=None,
+        valid_tipo="ABIERTO_FIN",
+        entidad=norma,
+    )
+
+    assert _motivos(conexion, anterior, ANTES, CAPACIDAD) == []
+    assert any("UNSUPPORTED_SCOPE" in m for m in _motivos(conexion, posterior, ANTES, CAPACIDAD))
+
+    assert _motivos(conexion, posterior, DESPUES, CAPACIDAD) == []
+    assert any("UNSUPPORTED_SCOPE" in m for m in _motivos(conexion, anterior, DESPUES, CAPACIDAD))
+
+
+def test_una_norma_derogada_no_se_sirve_como_actual_pero_sigue_sirviendo_su_periodo(
+    conexion: Connection,
+) -> None:
+    """Derogar cierra el período; no borra lo que rigió mientras rigió.
+
+    Quien pregunta por hoy no puede recibirla. Quien pregunta por 2010 sí, y esa
+    es la diferencia entre archivar una norma y perderla.
+    """
+    release = _release_publicado(conexion)
+    derogada = _version_con_conocimiento(
+        conexion, release=release, desde="2006-01-01", hasta="2020-06-30"
+    )
+
+    assert _motivos(conexion, derogada, ANTES, CAPACIDAD) == []
+    assert any("UNSUPPORTED_SCOPE" in m for m in _motivos(conexion, derogada, DESPUES, CAPACIDAD))
+
+
+def test_lo_que_todavia_no_se_sabia_no_se_sirve_por_haberse_sabido_despues(
+    conexion: Connection,
+) -> None:
+    """El eje de conocimiento es independiente del de aplicación.
+
+    Una modificación de 2025 que el corpus incorporó recién en 2026 se aplica
+    desde 2025, pero preguntando «qué sabíamos a mitad de 2025» la respuesta
+    tiene que ser que no la sabíamos. Sin este eje no se puede reconstruir por
+    qué se contestó lo que se contestó en su momento.
+    """
+    release = _release_publicado(conexion)
+    modificacion = _version_con_conocimiento(
+        conexion,
+        release=release,
+        desde="2025-01-01",
+        hasta=None,
+        valid_tipo="ABIERTO_FIN",
+        conocida_desde="2026-09-09T00:00:00+00:00",
+    )
+
+    motivos_hoy = [
+        fila[0]
+        for fila in conexion.execute(
+            text("SELECT bn_motivos_no_servible(:v, :f, now(), 'IDENTIFICACION')"),
+            {"v": modificacion, "f": DESPUES},
+        )
+    ]
+    assert motivos_hoy == [], "hoy se sabe y se aplica"
+
+    motivos_entonces = [
+        fila[0]
+        for fila in conexion.execute(
+            text(
+                "SELECT bn_motivos_no_servible(:v, :f, "
+                "  '2025-06-15T00:00:00+00:00'::timestamptz, 'IDENTIFICACION')"
+            ),
+            {"v": modificacion, "f": "2025-06-15"},
+        )
+    ]
+    assert any("STALE_DATA" in m for m in motivos_entonces), (
+        "en junio de 2025 el corpus todavía no conocía esta versión"
+    )
+
+
+def test_la_fecha_de_descarga_no_decide_la_vigencia(conexion: Connection) -> None:
+    """Que un documento se haya bajado después no lo hace posterior.
+
+    Es el error que el criterio nombra: tomar la captura más nueva como la
+    versión que rige. Acá la versión aplicable a la fecha consultada es la
+    primera, y su captura es la más vieja de las dos.
+    """
+    release = _release_publicado(conexion)
+    norma = uuid.uuid4()
+    # La que rige en 2010, cargada al corpus recién ahora.
+    vieja_pero_aplicable = _version_con_conocimiento(
+        conexion, release=release, desde="2006-06-21", hasta="2024-12-31", entidad=norma
+    )
+    # Y una posterior, cargada antes que la anterior.
+    nueva_no_aplicable = _version_con_conocimiento(
+        conexion,
+        release=release,
+        desde="2025-01-01",
+        hasta=None,
+        valid_tipo="ABIERTO_FIN",
+        conocida_desde="2026-01-01T00:00:00+00:00",
+        entidad=norma,
+    )
+
+    assert _motivos(conexion, vieja_pero_aplicable, ANTES, CAPACIDAD) == []
+    assert any(
+        "UNSUPPORTED_SCOPE" in m for m in _motivos(conexion, nueva_no_aplicable, ANTES, CAPACIDAD)
+    ), "la más nueva no gana por ser la más nueva"

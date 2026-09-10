@@ -1050,3 +1050,50 @@ rechazó una restricción: un consolidado exige la fecha hasta la que consolida,
 esos PDF no la traen. Quedan como `ACTUALIZADO` con un aviso que dice justamente
 eso. La restricción evitó afirmar una cobertura temporal que nadie podía
 sostener.
+
+## D-58 · Los ciclos del grafo normativo son datos, no errores
+
+El Decreto 1134/2005 sustituye la Ley 24.714, y la Ley 24.714 cita al Decreto
+1134/2005. La Ordenanza 43.478 cita a la Ley 547, y la Ley 547 modifica la
+Ordenanza 43.478. En el corpus hay 744 caminos de hasta cuatro saltos que
+vuelven a su origen, y ninguno sobra: borrar una de las dos relaciones para
+«arreglar» el ciclo perdería información que la práctica legislativa produjo.
+
+Con lo cual la protección no puede ser prohibirlos. Tiene que ser que
+recorrerlos termine.
+
+Hoy termina por omisión: ninguna consulta del sistema da más de un salto, así
+que el problema no se ve. Esa es exactamente la clase de cosa que aparece de
+golpe: la primera consulta transitiva —«qué normas afectan a esta», que es lo
+que la recuperación va a necesitar— se encuentra con los 744 ciclos el día que
+alguien la escribe.
+
+**Consecuencia:** `bn_grafo_normativo` recorre con lista de visitados y tope de
+profundidad, y devuelve cada norma una vez por el camino más corto que la
+alcanzó. Y `bn calidad grafo` deja escrito cuántos ciclos hay, para que el
+número se conozca antes y no después.
+
+Un solo caso sí se prohíbe: la autorreferencia. El resolutor ya la omitía —91 en
+la última corrida— pero el esquema la admitía, y una norma que se cita a sí
+misma es el ciclo más corto posible sin aportar nada. La restricción entró sin
+migrar datos porque no había ninguna: el código ya hacía lo correcto, y ahora
+tampoco puede hacerlo otro camino.
+
+## D-59 · La fecha de descarga no es ninguno de los dos relojes
+
+«Qué decía esta norma» no se puede contestar sin decir cuándo, y hay dos
+«cuándo» que no son el mismo: en qué fecha se aplica y en qué momento se sabía.
+La tentación es usar un tercero que no es ninguno —cuándo se descargó el
+documento— y tomar la captura más nueva como la versión que rige.
+
+El corpus tiene el caso: el artículo 2 del Decreto 690/2006 nombra un programa y
+una autoridad de aplicación hasta 2024, y otros desde el Decreto 161/2025.
+Servir el texto nuevo a quien pregunta por 2010 sería mandarlo a una oficina que
+en 2010 no existía.
+
+**Consecuencia:** las cuatro combinaciones quedan como prueba contra la base —dos
+fechas sobre una modificación, una derogación que sigue sirviendo su propio
+período, una versión que hoy se sabe y en 2025 no se sabía, y una versión
+aplicable cuya captura es la más vieja de las dos—. El eje de conocimiento es el
+que no se puede agregar después: sin él no hay forma de reconstruir por qué el
+sistema contestó lo que contestó en su momento.
