@@ -53,6 +53,14 @@ HUELLAS = {
         "select count(*) = 1 from pg_constraint "
         "where conname = 'ck_plazos_fechado_relativo_o_por_evento'",
     ),
+    "0012_un_ciclo_por_vez": (
+        "existe la tabla de turnos y el ingestor no puede borrar constancias",
+        "select count(*) = 1 from information_schema.tables "
+        "where table_name = 'arrendamientos' "
+        "and not exists (select 1 from information_schema.role_table_grants "
+        "                where grantee = 'bn_ingestor' and table_name = 'arrendamientos' "
+        "                and privilege_type = 'DELETE')",
+    ),
 }
 
 

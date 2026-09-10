@@ -57,6 +57,7 @@ SONDAS: dict[str, list[tuple[str, str, str]]] = {
             "publicar un release",
             "insert into releases (id) select gen_random_uuid() where false",
         ),
+        (DENEGADO, "leer los turnos del ciclo", "select 1 from arrendamientos where false"),
     ],
     "BN_DATABASE_URL_INGESTA": [
         (PERMITIDO, "leer capturas", "select 1 from capturas where false"),
@@ -86,9 +87,24 @@ SONDAS: dict[str, list[tuple[str, str, str]]] = {
             "update reglas set estado_revision = estado_revision where false",
         ),
         (
+            PERMITIDO,
+            "tomar el turno del ciclo",
+            "insert into arrendamientos (recurso) select 'x' where false",
+        ),
+        (
+            PERMITIDO,
+            "soltar el turno del ciclo",
+            "update arrendamientos set vence_en = vence_en where false",
+        ),
+        (
             DENEGADO,
             "resolver una incidencia",
             "update incidencias_revision set estado = estado where false",
+        ),
+        (
+            DENEGADO,
+            "borrar la constancia de un turno",
+            "delete from arrendamientos where false",
         ),
     ],
 }

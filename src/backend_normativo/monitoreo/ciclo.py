@@ -10,6 +10,12 @@ Lo que este módulo **no** hace es dispararse solo. Eso lo hace un planificador
 del sistema operativo o del orquestador, y es una decisión de despliegue: el
 ciclo se deja listo para que algo lo llame cada hora, y el reporte de cada
 corrida dice si hubo novedades o si simplemente no le tocaba a nadie.
+
+Lo que sí hace es no correr dos veces a la vez. Los planificadores reintentan, y
+dos vueltas simultáneas capturarían la misma fuente y emitirían el mismo evento.
+El turno se pide con `operacion.arrendamiento` sobre el recurso `RECURSO`; quien
+no lo consigue no hace nada y lo dice, que es la respuesta correcta y no un
+fallo.
 """
 
 from __future__ import annotations
@@ -20,6 +26,10 @@ from dataclasses import dataclass, field
 from sqlalchemy import Connection
 
 from backend_normativo.ingesta.planificador import fuentes_pendientes
+
+# El nombre del recurso que el ciclo arrienda. Vive acá y no en el CLI porque
+# quien quiera saber si el ciclo está corriendo lo consulta por este nombre.
+RECURSO = "monitoreo:ciclo"
 
 
 @dataclass
@@ -36,10 +46,14 @@ class ResultadoCiclo:
     pendientes: list[str] = field(default_factory=list)
     pasos: list[PasoDelCiclo] = field(default_factory=list)
     avisos: list[str] = field(default_factory=list)
+    # Una vuelta que no consiguió el turno no planificó ni revalidó nada. Sin
+    # esta marca, su reporte —cero pendientes, cero pasos— sería idéntico al de
+    # una vuelta a la que no le tocaba nadie, que es una cosa muy distinta.
+    salteada: bool = False
 
     @property
     def hubo_trabajo(self) -> bool:
-        return bool(self.pendientes)
+        return bool(self.pendientes) and not self.salteada
 
     def paso(self, nombre: str) -> PasoDelCiclo | None:
         return next((p for p in self.pasos if p.nombre == nombre), None)
@@ -114,6 +128,20 @@ def correr(
 
 
 def formatear(resultado: ResultadoCiclo) -> str:
+    if resultado.salteada:
+        lineas = [
+            "# Ciclo de monitoreo",
+            "",
+            f"- Corrida: `{resultado.ahora.isoformat() if resultado.ahora else '—'}`",
+            "- Resultado: **salteada, otra corrida tenía el turno**",
+            "",
+            "Esta vuelta no planificó ni revalidó nada, a propósito. No es lo mismo que una",
+            "vuelta sin trabajo: acá no se llegó a mirar a quién le tocaba.",
+        ]
+        for aviso in resultado.avisos:
+            lineas += ["", aviso]
+        return "\n".join(lineas)
+
     lineas = [
         "# Ciclo de monitoreo",
         "",
@@ -137,10 +165,11 @@ def formatear(resultado: ResultadoCiclo) -> str:
         "",
         "## Qué falta para que esto sea periódico de verdad",
         "",
-        "El ciclo está completo y se puede correr entero con un comando. Lo que no hace es",
-        "dispararse solo: eso lo tiene que hacer un planificador del sistema o del",
-        "orquestador llamando a `bn monitoreo ciclo` cada hora. Es una decisión de",
-        "despliegue, no código que falte, y hasta que exista el corpus se actualiza cuando",
-        "alguien corre el comando.",
+        "El ciclo está completo, se puede correr entero con un comando y no corre dos veces",
+        "a la vez: cada vuelta pide un turno con vencimiento y la que no lo consigue se va",
+        "sin tocar nada. Lo que no hace es dispararse solo: eso lo tiene que hacer un",
+        "planificador del sistema o del orquestador llamando a `bn monitoreo ciclo` cada",
+        "hora. Es una decisión de despliegue, no código que falte, y hasta que exista se",
+        "actualiza cuando alguien corre el comando.",
     ]
     return "\n".join(lineas)

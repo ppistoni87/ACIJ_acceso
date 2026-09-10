@@ -1864,19 +1864,33 @@ def monitoreo_ciclo(
     en_seco: bool = typer.Option(
         False, help="Sólo planificar: dice a quién le toca sin salir a la red."
     ),
+    minutos_de_turno: int = typer.Option(
+        30,
+        help="Tope máximo de la corrida. Pasado esto el turno queda libre aunque siga viva.",
+    ),
 ) -> None:
     """Una vuelta del ciclo: planificar y revalidar a quien le toca.
 
     Está pensado para que un planificador del sistema lo llame cada hora. Una
     corrida sin trabajo no es una corrida fallida: es la frecuencia haciendo lo
     suyo.
+
+    Dos disparos simultáneos no procesan lo mismo dos veces: cada vuelta pide un
+    turno con vencimiento y la que no lo consigue se va sin tocar nada. Salir sin
+    hacer nada por ese motivo es un éxito, no un fallo, y termina en cero: si
+    devolviera error, el planificador reintentaría justo lo que no hay que
+    repetir.
     """
+    import datetime as dt
+
     from backend_normativo.ingesta.capturador import Capturador
     from backend_normativo.ingesta.cliente import ClienteCaptura
     from backend_normativo.ingesta.extraccion import Extractor
+    from backend_normativo.monitoreo.ciclo import RECURSO, ResultadoCiclo
     from backend_normativo.monitoreo.ciclo import correr as correr_ciclo
     from backend_normativo.monitoreo.ciclo import formatear as formatear_ciclo
     from backend_normativo.monitoreo.novedades import correr as correr_monitor
+    from backend_normativo.operacion.arrendamiento import arrendar
 
     def _revalidar(fuentes: list[str]) -> dict[str, int]:
         # `novedades.correr` ya encadena captura, extracción y comparación: el
@@ -1898,8 +1912,23 @@ def monitoreo_ciclo(
             "bloqueadas": monitoreo.bloqueadas,
         }
 
-    with engine_migrador().connect() as conexion:
-        resultado = correr_ciclo(conexion, limite=limite, revalidar=None if en_seco else _revalidar)
+    with arrendar(
+        engine_migrador(), RECURSO, duracion=dt.timedelta(minutes=minutos_de_turno)
+    ) as turno:
+        if not turno.tomado:
+            resultado = ResultadoCiclo(
+                ahora=dt.datetime.now(dt.UTC), salteada=True, avisos=[turno.por_que_no()]
+            )
+        else:
+            with engine_migrador().connect() as conexion:
+                resultado = correr_ciclo(
+                    conexion, limite=limite, revalidar=None if en_seco else _revalidar
+                )
+
+    # Se pregunta después del `with`, que es donde se suelta: hasta ahí no se
+    # sabe si la corrida se pasó de su turno.
+    if turno.se_paso:
+        resultado.avisos.append(turno.advertencia())
 
     texto = formatear_ciclo(resultado)
     if salida:

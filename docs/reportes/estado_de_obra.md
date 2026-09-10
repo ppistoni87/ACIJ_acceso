@@ -69,7 +69,7 @@ pudieron ejercitar acá. Afecta a P-002 y P-005.
 | P-017 | Identidad, privacidad y protección | Parcial | Criterio 1: la API acepta un `X-Actor` libre como identidad, que es lo que el plan prohíbe para producción. |
 | P-018 | Hacer obligatoria la integración continua | Parcial | Criterio 3: la protección de rama necesita permisos de administración del repositorio. |
 | P-019 | Desplegar revisión y producción | Sin empezar | Todo el despliegue y los probes de readiness/liveness. Causa B. |
-| P-020 | Programar monitoreo y entrega de eventos | Parcial | El disparador horario (causa B) y el *lease* con vencimiento del criterio 2, que sí es código: hoy dos disparos simultáneos procesarían por duplicado. |
+| P-020 | Programar monitoreo y entrega de eventos | Parcial | Sólo el disparador horario (causa B). El criterio 2 quedó cerrado: dos disparos simultáneos ya no procesan lo mismo dos veces. |
 | P-021 | Medir salud, calidad, costos y nivel de servicio | Sin empezar | No hay tablero, alertas ni panel de gasto. Causa B. |
 | P-022 | Respaldar y restaurar base más documentos | Parcial | La retención de Neon no está decidida y RPO/RTO no están medidos contra el plan contratado. Causa B. |
 | P-023 | Validar el recorrido completo | Sin empezar | Depende de nueve historias. Faltan 52 consultas para llegar a las 150 anotadas. |
@@ -86,8 +86,8 @@ pudieron ejercitar acá. Afecta a P-002 y P-005.
    esquema coincide, pero ninguna prueba corrió contra el motor que va a
    producción.
 4. **Construir P-012.** No espera a nadie; las extensiones ya están disponibles.
-5. **Dos arreglos chicos:** el *lease* del ciclo de monitoreo y la protección de
-   rama.
+5. **La protección de rama** que hace obligatorios los checks de CI (P-018,
+   criterio 3). Necesita permisos de administración del repositorio.
 
 ## Pendiente de seguridad
 

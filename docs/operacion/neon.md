@@ -93,7 +93,7 @@ de secretos.
 `scripts/verificar_permisos.py` prueba contra la base que cada rol pueda lo que
 debe y nada más. Las sondas llevan `WHERE false`: PostgreSQL verifica el permiso
 igual y no se cambia ni una fila, así que la verificación es inocua incluso
-contra producción. Resultado sobre Neon: **18 sondas, 0 discrepancias**.
+contra producción. Resultado sobre Neon: **22 sondas, 0 discrepancias**.
 
 ```
 BN_DATABASE_URL_API        leer normas/reglas/parámetros: permitido

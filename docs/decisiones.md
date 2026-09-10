@@ -1270,3 +1270,36 @@ Quedó además probado lo que nadie había probado: dos cortes seguidos, con A e
 el primero y B en el segundo. Después del segundo se sirven los dos, A no se
 movió de su release, y revirtiendo el segundo A sigue sirviendo y B deja de
 hacerlo sin que se borre nada.
+
+## D-67 · Un turno que se renueva no tiene vencimiento
+
+El ciclo de monitoreo lo va a disparar un planificador cada hora, y los
+planificadores reintentan. Dos vueltas simultáneas capturarían la misma fuente,
+crearían la misma versión documental y emitirían el mismo evento; nada en el
+esquema lo impedía.
+
+Se descartó el candado consultivo de PostgreSQL (`pg_advisory_lock`). Se suelta
+solo al morir la sesión, que es cómodo, pero no se puede mirar: no dice quién lo
+tiene ni hasta cuándo, y un proceso colgado —vivo, sin avanzar— lo retiene para
+siempre. Lo que hace falta es un tope que se pueda consultar con un `SELECT`
+cuando alguien pregunta por qué el ciclo no corrió anoche.
+
+Se descartó también renovar el turno mientras se trabaja, que es lo que hace
+casi todo el mundo. Renovar convierte el vencimiento en una promesa vacía: un
+proceso trabado que sigue renovando bloquea el recurso igual que un candado sin
+vencimiento, y el «tiempo máximo» que el criterio pide deja de existir.
+
+**Consecuencia:** el turno dura lo que dura —treinta minutos por omisión, contra
+vueltas de minutos— y no se renueva. La corrida que se pasa se entera al
+soltarlo, porque `soltar` devuelve falso cuando el turno ya no era suyo, y lo
+declara en su reporte: otra pudo haber empezado en paralelo sobre las mismas
+fuentes. La toma es una sola sentencia —`INSERT … ON CONFLICT DO UPDATE … WHERE
+ya venció`— porque «fijarse si está libre» y «tomarlo» en sentencias separadas es
+la carrera que el turno viene a evitar.
+
+Dos decisiones menores del mismo tamaño. La vuelta que no consigue el turno
+termina en cero: si devolviera error, el planificador reintentaría justo lo que
+no hay que repetir. Y soltar no borra la fila sino que le adelanta el
+vencimiento, así queda constancia de quién corrió la última vuelta y cuántas
+van, que es lo primero que se pregunta cuando algo no corrió.
+
