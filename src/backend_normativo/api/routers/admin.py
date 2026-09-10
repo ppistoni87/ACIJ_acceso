@@ -12,12 +12,11 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import Connection, text
+from sqlalchemy import text
 
 from backend_normativo.api.contratos import CodigoError, ErrorRespuesta
 from backend_normativo.api.dependencias import (
     Administracion,
-    conexion_administracion,
     exigir_rol,
 )
 from backend_normativo.curacion.revision import (
@@ -30,6 +29,7 @@ from backend_normativo.curacion.revision_reglas import (
     RevisionInvalida,
     aprobar,
     detalle,
+    expediente,
     marcar_en_revision,
     rechazar,
 )
@@ -134,10 +134,60 @@ def resolver_revision(
     }
 
 
+@router.get("/reglas")
+def listar_reglas(
+    estado: str = "CANDIDATE",
+    beneficio: str | None = None,
+    clase: str | None = None,
+    admin: Administracion = Depends(exigir_rol(ROL_REVISOR)),
+) -> dict:
+    """La cola de revisión: qué falta decidir y en qué pila cae cada una.
+
+    Las pilas no son decoración. Una regla sin condición ejecutable y una con
+    condición esperando confirmación no plantean lo mismo, y mandarlas a la
+    misma cola hace que la segunda se apruebe sin mirar y la primera se apruebe
+    sin poder. Vienen ordenadas por beneficio y por su ubicación en el texto,
+    porque revisar un articulado salteado es cómo se aprueban contradicciones.
+    """
+    resultado = expediente(admin.conexion, estado=estado or None, beneficio=beneficio)
+    reglas = [r for r in resultado.reglas if clase is None or r.clase == clase]
+
+    por_clase: dict[str, int] = {}
+    por_beneficio: dict[str, int] = {}
+    for regla in resultado.reglas:
+        por_clase[regla.clase] = por_clase.get(regla.clase, 0) + 1
+        por_beneficio[regla.beneficio] = por_beneficio.get(regla.beneficio, 0) + 1
+
+    return {
+        "reglas": [
+            {
+                "id": str(r.id),
+                "beneficio": r.beneficio,
+                "categoria": r.categoria,
+                "estado": r.estado,
+                "clase": r.clase,
+                "norma": r.norma,
+                "ruta": r.ruta,
+                "texto_literal": r.texto_literal,
+                "interpretacion": r.descripcion,
+                "tiene_condicion": r.tiene_condicion,
+                "que_hay_que_decidir": r.que_hay_que_decidir,
+            }
+            for r in reglas
+        ],
+        "total": len(reglas),
+        "por_estado": resultado.por_estado,
+        "por_clase": dict(sorted(por_clase.items())),
+        "por_beneficio": dict(sorted(por_beneficio.items())),
+        "por_categoria": resultado.por_categoria,
+        "sin_ubicar": resultado.sin_ubicar,
+    }
+
+
 @router.get("/reglas/{regla_id}")
 def ver_regla(
     regla_id: uuid.UUID,
-    conexion: Connection = Depends(conexion_administracion),
+    admin: Administracion = Depends(exigir_rol(ROL_REVISOR)),
 ) -> dict:
     """El expediente de una regla: todo lo que hace falta para decidirla.
 
@@ -147,7 +197,7 @@ def ver_regla(
     pedirle que no las cruce.
     """
     try:
-        expediente = detalle(conexion, regla_id)
+        ficha = detalle(admin.conexion, regla_id)
     except RevisionInvalida as exc:
         raise HTTPException(
             status_code=404,
@@ -156,7 +206,7 @@ def ver_regla(
             ),
         ) from exc
 
-    regla = expediente.regla
+    regla = ficha.regla
     return {
         "id": str(regla.id),
         "beneficio": regla.beneficio,
@@ -165,7 +215,7 @@ def ver_regla(
         "clase": regla.clase,
         "texto_literal": regla.texto_literal,
         "interpretacion": regla.descripcion,
-        "condicion": expediente.ast,
+        "condicion": ficha.ast,
         "tiene_condicion": regla.tiene_condicion,
         "requiere_revision": regla.requiere_revision,
         "motivo_revision": regla.motivo_revision,
@@ -179,7 +229,7 @@ def ver_regla(
                 "estado": d["estado_revision"],
                 "texto_literal": d["texto_literal"],
             }
-            for d in expediente.dependencias
+            for d in ficha.dependencias
         ],
         "parametros": [
             {
@@ -189,25 +239,25 @@ def ver_regla(
                 "rol": p["rol"],
                 "tiene_valor": p["tiene_valor"],
             }
-            for p in expediente.parametros
+            for p in ficha.parametros
         ],
         "vigencia": (
             {
-                "estado_revision": expediente.vigencia["estado_revision"],
-                "valid_tipo": expediente.vigencia["valid_tipo"],
+                "estado_revision": ficha.vigencia["estado_revision"],
+                "valid_tipo": ficha.vigencia["valid_tipo"],
                 "valid_desde": (
-                    expediente.vigencia["valid_desde"].isoformat()
-                    if expediente.vigencia["valid_desde"]
+                    ficha.vigencia["valid_desde"].isoformat()
+                    if ficha.vigencia["valid_desde"]
                     else None
                 ),
                 "valid_hasta": (
-                    expediente.vigencia["valid_hasta"].isoformat()
-                    if expediente.vigencia["valid_hasta"]
+                    ficha.vigencia["valid_hasta"].isoformat()
+                    if ficha.vigencia["valid_hasta"]
                     else None
                 ),
-                "publicada": expediente.vigencia["publicada"],
+                "publicada": ficha.vigencia["publicada"],
             }
-            if expediente.vigencia
+            if ficha.vigencia
             else None
         ),
         "controles": [
@@ -216,7 +266,7 @@ def ver_regla(
                 "resultado": c["resultado"],
                 "severidad": c["severidad"],
             }
-            for c in expediente.controles
+            for c in ficha.controles
         ],
     }
 

@@ -302,3 +302,88 @@ def corpus_publicado(conexion: Connection, corpus):
     EvaluadorDeCampos(conexion).evaluar()
     Publicador(conexion).publicar(actor="publicador:equipo", motivo="Primer corte.")
     return corpus
+
+
+@pytest.fixture
+def regla_candidata(conexion: Connection, corpus) -> str:
+    """Una regla candidata con su beneficio, su evidencia y su dependencia.
+
+    El corpus mínimo no trae reglas: las de las otras pruebas entran por las
+    lecturas curadas, que son otro camino. Acá hace falta una sola, con lo que
+    el expediente tiene que mostrar.
+    """
+    import uuid as _uuid
+
+    beneficio = conexion.execute(
+        text(
+            "INSERT INTO beneficios (codigo, nombre, linea, familia) "
+            "VALUES ('AR.PRUEBA-REVISION', 'Beneficio de prueba', 'BECA', 'ALIMENTARIA') "
+            "RETURNING id"
+        )
+    ).scalar_one()
+    version = conexion.execute(
+        text(
+            "INSERT INTO registro_versiones (entidad_tipo, entidad_id, numero_version, "
+            " estado_revision, valid_tipo, valid_desde) "
+            "VALUES ('beneficio', :b, 1, 'CANDIDATE', 'ABIERTO_FIN', '2025-12-23') RETURNING id"
+        ),
+        {"b": beneficio},
+    ).scalar_one()
+    conexion.execute(
+        text(
+            "INSERT INTO beneficio_versiones (registro_version_id, beneficio_id, "
+            " jurisdiccion_id, naturaleza, descripcion) "
+            "VALUES (:rv, :b, 'AR-C', 'PRESTACION_MONETARIA', "
+            " 'Prestación económica mensual para la prueba del circuito de revisión.')"
+        ),
+        {"rv": version, "b": beneficio},
+    )
+    unidad = conexion.execute(
+        text(
+            "SELECT u.id, u.doc_version_id, u.texto FROM unidades_documentales u "
+            " ORDER BY u.orden LIMIT 1"
+        )
+    ).one()
+    evidencia = conexion.execute(
+        text(
+            "INSERT INTO evidencias (doc_version_id, unidad_id, fragmento, hash_fragmento, tipo) "
+            "VALUES (:dv, :u, :f, :h, 'FRAGMENTO_TEXTO') RETURNING id"
+        ),
+        {
+            "dv": unidad.doc_version_id,
+            "u": unidad.id,
+            "f": unidad.texto,
+            "h": _uuid.uuid4().hex + _uuid.uuid4().hex,
+        },
+    ).scalar_one()
+
+    def _regla(categoria: str, literal: str) -> str:
+        return conexion.execute(
+            text(
+                "INSERT INTO reglas (beneficio_version_id, evidencia_id, categoria, "
+                " texto_literal, descripcion, requiere_revision, estado_revision) "
+                "VALUES (:bv, :e, :c, :l, :d, true, 'CANDIDATE') RETURNING id"
+            ),
+            {
+                "bv": version,
+                "e": evidencia,
+                "c": categoria,
+                "l": literal,
+                "d": f"Interpretación de {categoria.lower()}.",
+            },
+        ).scalar_one()
+
+    principal = _regla(
+        "APLICABILIDAD",
+        "Son beneficiarios las personas en situación de "
+        "vulnerabilidad habitacional, conforme el artículo 6.",
+    )
+    referida = _regla("EXCLUSION", "No accede quien ya perciba otra prestación equivalente.")
+    conexion.execute(
+        text(
+            "INSERT INTO regla_dependencias (regla_id, regla_referida_id, tipo) "
+            "VALUES (:a, :b, 'INCOMPATIBLE_CON')"
+        ),
+        {"a": principal, "b": referida},
+    )
+    return str(principal)

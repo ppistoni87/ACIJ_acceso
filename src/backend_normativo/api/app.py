@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import pathlib
+
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from backend_normativo import SCHEMA_VERSION, __version__
 from backend_normativo.api.contratos import CodigoError, ErrorRespuesta
@@ -44,6 +46,20 @@ def crear_app() -> FastAPI:
     app.include_router(evaluaciones.router)
     app.include_router(recuperacion.router)
     app.include_router(admin.router)
+
+    # La consola de revisión se sirve desde la misma aplicación y en un solo
+    # archivo, sin compilar nada. No es minimalismo: es que quien tiene que
+    # firmar 166 reglas necesita una pantalla, no una cadena de herramientas, y
+    # un artefacto que viaja en la misma imagen no puede quedar desfasado de la
+    # API que consume. La credencial la pone quien entra y vive en su pestaña;
+    # el servidor no la guarda ni la conoce hasta que llega en un pedido.
+    @app.get("/backoffice/reglas", tags=["administración"], include_in_schema=False)
+    def consola_de_reglas() -> HTMLResponse:
+        return HTMLResponse(
+            (pathlib.Path(__file__).parent / "backoffice" / "consola.html").read_text(
+                encoding="utf-8"
+            )
+        )
 
     @app.get("/salud", tags=["operativo"])
     def salud() -> dict:

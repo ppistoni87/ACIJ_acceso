@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revisión de reglas · ACIJ Acceso</title>
+<style>
+:root{
+  --papel:#F4F4EF; --papel-2:#FBFBF8; --papel-3:#EAEAE2;
+  --tinta:#1A222C; --tinta-2:#57616F; --tinta-3:#89909A;
+  --linea:#DEDDD3; --linea-fuerte:#C3C2B6;
+  --sello:#9B3A2F; --ok:#2E6A4F; --espera:#87610F; --frio:#345B78;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --papel:#14181E; --papel-2:#1B212A; --papel-3:#222A34;
+    --tinta:#E9E8E0; --tinta-2:#9CA5B0; --tinta-3:#6E7783;
+    --linea:#2A323C; --linea-fuerte:#3C4653;
+    --sello:#DC8377; --ok:#79C09B; --espera:#DCB253; --frio:#87B2D0;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--papel); color:var(--tinta);
+  font:15px/1.55 "Source Sans 3",-apple-system,"Segoe UI",system-ui,sans-serif;
+}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace}
+button{font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--frio); outline-offset:2px;
+}
+
+header.barra{
+  display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center;
+  padding:12px 20px; border-bottom:2px solid var(--tinta); background:var(--papel-2);
+}
+header.barra h1{font-size:1.05rem;margin:0;font-weight:600;letter-spacing:-.01em}
+header.barra .quien{
+  margin-left:auto; font-family:"IBM Plex Mono",monospace; font-size:11.5px;
+  color:var(--tinta-3); text-align:right; line-height:1.5;
+}
+header.barra .quien b{color:var(--ok);font-weight:500}
+
+.aviso-credencial{
+  background:var(--papel-3); border-bottom:1px solid var(--linea); padding:14px 20px;
+}
+.aviso-credencial p{margin:0 0 10px;max-width:70ch;color:var(--tinta-2);font-size:.93rem}
+.aviso-credencial .fila{display:flex;flex-wrap:wrap;gap:8px}
+input[type=password],input[type=text],select,textarea{
+  background:var(--papel-2); color:var(--tinta); border:1px solid var(--linea-fuerte);
+  border-radius:2px; padding:6px 9px; font:inherit;
+}
+input[type=password]{min-width:min(420px,100%);font-family:"IBM Plex Mono",monospace;font-size:12px}
+
+.marco{display:grid;grid-template-columns:minmax(300px,380px) 1fr;min-height:calc(100vh - 52px)}
+@media (max-width:900px){
+  .marco{grid-template-columns:1fr}
+  .cola{border-right:none;border-bottom:1px solid var(--linea)}
+  .lista{max-height:52vh}
+  .ficha{max-height:none;padding:18px 16px}
+}
+
+/* --- cola --- */
+.cola{border-right:1px solid var(--linea);background:var(--papel-2);display:flex;flex-direction:column}
+.filtros{padding:12px 14px;border-bottom:1px solid var(--linea);display:grid;gap:8px}
+.filtros label{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--tinta-3);display:block;margin-bottom:3px;
+}
+.filtros select{width:100%}
+.resumen{
+  padding:10px 14px;border-bottom:1px solid var(--linea);
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--tinta-2);line-height:1.7;
+}
+.resumen b{color:var(--tinta)}
+.lista{overflow-y:auto;flex:1;max-height:calc(100vh - 240px)}
+.item{
+  width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--linea);
+  border-left:3px solid transparent;padding:10px 14px;display:block;color:inherit;
+}
+.item:hover{background:var(--papel-3)}
+.item[aria-current="true"]{background:var(--papel-3);border-left-color:var(--sello)}
+.item .cab{display:flex;flex-wrap:wrap;gap:3px 8px;align-items:baseline;margin-bottom:3px}
+.item .ben{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--tinta-3);
+  overflow-wrap:anywhere}
+.item .cat{font-size:11px;font-weight:600;color:var(--tinta-2)}
+.item .lit{font-size:12.5px;color:var(--tinta);line-height:1.4;overflow-wrap:anywhere}
+.item .ubi{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--tinta-3);margin-top:3px}
+
+.pildora{
+  font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.06em;
+  padding:1px 5px;border:1px solid;border-radius:2px;white-space:nowrap;
+}
+.p-CONDICION_EJECUTABLE{color:var(--ok);border-color:var(--ok)}
+.p-SIN_CONDICION_EJECUTABLE{color:var(--espera);border-color:var(--espera)}
+.p-CONDICION_CON_UMBRAL_SIN_VALOR{color:var(--sello);border-color:var(--sello)}
+.p-NO_ES_CONDICION_SOBRE_LA_PERSONA,.p-CONDICION_EN_CATEGORIA_QUE_NO_DECIDE_ACCESO{
+  color:var(--frio);border-color:var(--frio)
+}
+
+/* --- expediente --- */
+.ficha{padding:22px 26px;overflow-y:auto;max-height:calc(100vh - 52px)}
+.ficha h2{font-size:1.25rem;margin:0 0 4px;font-weight:600;text-wrap:balance}
+.ficha .sub{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--tinta-3);
+  margin-bottom:20px;display:flex;flex-wrap:wrap;gap:4px 14px;
+}
+.bloque{margin-bottom:20px;max-width:78ch}
+.bloque > h3{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--tinta-3);margin:0 0 6px;font-weight:500;
+}
+.literal{
+  background:var(--papel-2);border-left:3px solid var(--linea-fuerte);
+  padding:12px 14px;font-size:.96rem;white-space:pre-wrap;
+}
+.pregunta{
+  background:var(--papel-2);border:1px solid var(--espera);border-left-width:4px;
+  padding:12px 14px;font-size:.94rem;
+}
+pre.ast{
+  background:var(--papel-2);border:1px solid var(--linea);padding:12px 14px;
+  overflow-x:auto;font-size:12px;margin:0;
+}
+table.datos{border-collapse:collapse;width:100%;font-size:.9rem;background:var(--papel-2);
+  border:1px solid var(--linea)}
+table.datos th,table.datos td{padding:6px 11px;text-align:left;border-bottom:1px solid var(--linea)}
+table.datos thead th{
+  font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--tinta-3);font-weight:500;background:var(--papel-3);
+}
+table.datos tbody tr:last-child td{border-bottom:none}
+
+/* --- decisión --- */
+.decidir{
+  border-top:2px solid var(--tinta);padding-top:16px;margin-top:26px;max-width:78ch;
+}
+.decidir textarea{width:100%;min-height:82px;resize:vertical}
+.decidir .acciones{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.btn{padding:7px 14px;border:1px solid var(--linea-fuerte);border-radius:2px;
+  background:var(--papel-2);color:var(--tinta)}
+.btn:hover{border-color:var(--tinta-3)}
+.btn.aprobar{border-color:var(--ok);color:var(--ok)}
+.btn.rechazar{border-color:var(--sello);color:var(--sello)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.nota{font-size:.86rem;color:var(--tinta-3);margin-top:8px;max-width:70ch}
+.mensaje{padding:10px 13px;border:1px solid;border-radius:2px;margin-top:12px;font-size:.92rem}
+.mensaje.ok{border-color:var(--ok);color:var(--ok)}
+.mensaje.mal{border-color:var(--sello);color:var(--sello)}
+.vacio{padding:40px 26px;color:var(--tinta-3);max-width:60ch}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<header class="barra">
+  <h1>Revisión de reglas</h1>
+  <div class="quien" id="quien">sin credencial</div>
+</header>
+
+<section class="aviso-credencial" id="puerta">
+  <p>
+    Esta consola registra decisiones jurídicas con tu nombre. Pegá tu credencial
+    para empezar: se emite con <code>bn operacion emitir-credencial</code> y queda
+    sólo en esta pestaña, nunca se guarda en el servidor ni en el disco.
+  </p>
+  <div class="fila">
+    <input type="password" id="credencial" placeholder="bn1...." autocomplete="off"
+           aria-label="Credencial de revisión">
+    <button class="btn" id="entrar">Entrar</button>
+  </div>
+  <div id="puerta-error"></div>
+</section>
+
+<div class="marco" id="marco" hidden>
+  <aside class="cola">
+    <div class="filtros">
+      <div>
+        <label for="f-estado">Estado</label>
+        <select id="f-estado">
+          <option value="CANDIDATE">Candidatas</option>
+          <option value="IN_REVIEW">En revisión</option>
+          <option value="APPROVED">Aprobadas</option>
+          <option value="REJECTED">Rechazadas</option>
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div>
+        <label for="f-clase">Pila</label>
+        <select id="f-clase"><option value="">Todas</option></select>
+      </div>
+      <div>
+        <label for="f-beneficio">Beneficio</label>
+        <select id="f-beneficio"><option value="">Todos</option></select>
+      </div>
+    </div>
+    <div class="resumen" id="resumen"></div>
+    <div class="lista" id="lista"></div>
+  </aside>
+
+  <main class="ficha" id="ficha">
+    <div class="vacio">Elegí una regla de la cola para ver su expediente.</div>
+  </main>
+</div>
+
+<script>
+"use strict";
+
+// La credencial vive en memoria y nada más. `sessionStorage` la dejaría escrita
+// en el disco del navegador, y esto autoriza a firmar decisiones jurídicas.
+let credencial = null;
+let identidad = null;
+let cola = [];
+let seleccionada = null;
+
+const $ = (id) => document.getElementById(id);
+
+function cabeceras() {
+  return { "Authorization": "Bearer " + credencial, "Content-Type": "application/json" };
+}
+
+async function pedir(ruta, opciones = {}) {
+  const r = await fetch(ruta, { ...opciones, headers: cabeceras() });
+  const cuerpo = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const detalle = cuerpo?.detail?.detalle || cuerpo?.detail || r.statusText;
+    throw new Error(detalle);
+  }
+  return cuerpo;
+}
+
+function mensaje(donde, texto, clase) {
+  donde.innerHTML = "";
+  if (!texto) return;
+  const div = document.createElement("div");
+  div.className = "mensaje " + clase;
+  div.textContent = texto;
+  donde.appendChild(div);
+}
+
+// --- entrar -----------------------------------------------------------------
+
+async function entrar() {
+  const valor = $("credencial").value.trim();
+  if (!valor) return;
+  credencial = valor;
+  try {
+    const datos = await pedir("/v1/admin/reglas?estado=CANDIDATE");
+    identidad = datos;
+    $("puerta").hidden = true;
+    $("marco").hidden = false;
+    $("quien").innerHTML = "credencial <b>válida</b><br>sólo en esta pestaña";
+    poblarFiltros(datos);
+    pintarCola(datos);
+  } catch (error) {
+    credencial = null;
+    mensaje($("puerta-error"), error.message, "mal");
+  }
+}
+
+$("entrar").addEventListener("click", entrar);
+$("credencial").addEventListener("keydown", (e) => { if (e.key === "Enter") entrar(); });
+
+// --- cola -------------------------------------------------------------------
+
+function poblarFiltros(datos) {
+  const clase = $("f-clase");
+  const beneficio = $("f-beneficio");
+  if (clase.options.length === 1) {
+    for (const [nombre, cuantas] of Object.entries(datos.por_clase || {})) {
+      clase.add(new Option(`${nombre} (${cuantas})`, nombre));
+    }
+  }
+  if (beneficio.options.length === 1) {
+    for (const [nombre, cuantas] of Object.entries(datos.por_beneficio || {})) {
+      beneficio.add(new Option(`${nombre} (${cuantas})`, nombre));
+    }
+  }
+}
+
+function pintarCola(datos) {
+  cola = datos.reglas || [];
+  const resumen = $("resumen");
+  const estados = Object.entries(datos.por_estado || {})
+    .map(([e, n]) => `${e} <b>${n}</b>`).join(" · ");
+  resumen.innerHTML =
+    `En la cola: <b>${datos.total}</b><br>${estados}` +
+    (datos.sin_ubicar ? `<br>sin ubicar en el texto: <b>${datos.sin_ubicar}</b>` : "");
+
+  const lista = $("lista");
+  lista.innerHTML = "";
+  if (!cola.length) {
+    const vacio = document.createElement("div");
+    vacio.className = "vacio";
+    vacio.textContent = "No queda ninguna regla con ese filtro.";
+    lista.appendChild(vacio);
+    return;
+  }
+  for (const regla of cola) {
+    const boton = document.createElement("button");
+    boton.className = "item";
+    boton.type = "button";
+    boton.setAttribute("aria-current", String(regla.id === seleccionada));
+    boton.innerHTML = `
+      <span class="cab">
+        <span class="ben"></span>
+        <span class="cat"></span>
+        <span class="pildora p-${regla.clase}"></span>
+      </span>
+      <span class="lit"></span>
+      <span class="ubi"></span>`;
+    boton.querySelector(".ben").textContent = regla.beneficio;
+    boton.querySelector(".cat").textContent = regla.categoria;
+    boton.querySelector(".pildora").textContent = regla.clase.replaceAll("_", " ").toLowerCase();
+    boton.querySelector(".lit").textContent =
+      regla.texto_literal.length > 150
+        ? regla.texto_literal.slice(0, 150) + "…"
+        : regla.texto_literal;
+    boton.querySelector(".ubi").textContent = `${regla.norma} · ${regla.ruta || "sin ubicar"}`;
+    boton.addEventListener("click", () => abrir(regla.id));
+    lista.appendChild(boton);
+  }
+}
+
+async function recargar() {
+  const parametros = new URLSearchParams();
+  parametros.set("estado", $("f-estado").value);
+  if ($("f-clase").value) parametros.set("clase", $("f-clase").value);
+  if ($("f-beneficio").value) parametros.set("beneficio", $("f-beneficio").value);
+  try {
+    pintarCola(await pedir("/v1/admin/reglas?" + parametros));
+  } catch (error) {
+    mensaje($("resumen"), error.message, "mal");
+  }
+}
+
+for (const filtro of ["f-estado", "f-clase", "f-beneficio"]) {
+  $(filtro).addEventListener("change", recargar);
+}
+
+// --- expediente -------------------------------------------------------------
+
+function tabla(encabezados, filas) {
+  if (!filas.length) return "";
+  const th = encabezados.map((h) => `<th>${h}</th>`).join("");
+  const tr = filas.map((f) => "<tr>" + f.map((c) => "<td></td>").join("") + "</tr>").join("");
+  return `<table class="datos"><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table>`;
+}
+
+function llenarTabla(contenedor, filas) {
+  const celdas = contenedor.querySelectorAll("tbody td");
+  let i = 0;
+  for (const fila of filas) for (const celda of fila) celdas[i++].textContent = celda;
+}
+
+function marcarSeleccion() {
+  const botones = document.querySelectorAll(".item");
+  for (let i = 0; i < botones.length; i++) {
+    botones[i].setAttribute("aria-current", String(cola[i]?.id === seleccionada));
+  }
+}
+
+async function abrir(id) {
+  seleccionada = id;
+  marcarSeleccion();
+  const ficha = $("ficha");
+  ficha.innerHTML = '<div class="vacio">Abriendo el expediente…</div>';
+  let e;
+  try {
+    e = await pedir(`/v1/admin/reglas/${id}`);
+  } catch (error) {
+    mensaje(ficha, error.message, "mal");
+    return;
+  }
+  ficha.innerHTML = `
+    <h2 id="titulo"></h2>
+    <div class="sub">
+      <span id="s-norma"></span><span id="s-ruta"></span>
+      <span id="s-estado"></span><span id="s-clase"></span>
+    </div>
+
+    <div class="bloque">
+      <h3>Qué hay que decidir</h3>
+      <div class="pregunta" id="pregunta"></div>
+    </div>
+
+    <div class="bloque">
+      <h3>Texto literal de la norma</h3>
+      <div class="literal" id="literal"></div>
+    </div>
+
+    <div class="bloque">
+      <h3>Qué afirma la lectura curada</h3>
+      <div class="literal" id="interpretacion"></div>
+    </div>
+
+    <div class="bloque" id="b-condicion" hidden>
+      <h3>Condición ejecutable</h3>
+      <pre class="ast" id="condicion"></pre>
+    </div>
+
+    <div class="bloque" id="b-parametros" hidden>
+      <h3>Parámetros de los que depende</h3>
+      <div id="parametros"></div>
+    </div>
+
+    <div class="bloque" id="b-dependencias" hidden>
+      <h3>Otras reglas de las que depende</h3>
+      <div id="dependencias"></div>
+    </div>
+
+    <div class="bloque" id="b-vigencia" hidden>
+      <h3>Vigencia de la versión</h3>
+      <div id="vigencia"></div>
+    </div>
+
+    <div class="bloque" id="b-controles" hidden>
+      <h3>Controles de calidad</h3>
+      <div id="controles"></div>
+    </div>
+
+    <div class="decidir">
+      <h3 style="margin:0 0 6px;font-size:1rem">Decisión</h3>
+      <label for="fundamento" style="display:block;font-size:.88rem;color:var(--tinta-2);
+             margin-bottom:6px">
+        Fundamento — por qué. Queda en la bitácora con tu nombre y no se puede editar después.
+      </label>
+      <textarea id="fundamento" placeholder="Contra qué se contrastó y qué se concluyó."></textarea>
+      <div class="acciones">
+        <button class="btn aprobar" id="b-aprobar">Aprobar</button>
+        <button class="btn rechazar" id="b-rechazar">Rechazar</button>
+        <button class="btn" id="b-revision">Marcar en revisión</button>
+      </div>
+      <p class="nota">
+        Aprobar no publica. La regla queda aprobada y recién el corte de release la vuelve
+        servible: son dos decisiones distintas y las toma gente distinta.
+      </p>
+      <div id="resultado"></div>
+    </div>`;
+
+  $("titulo").textContent = `${e.categoria} · ${e.beneficio}`;
+  $("s-norma").textContent = e.norma;
+  $("s-ruta").textContent = e.ruta || "sin ubicar en el texto";
+  $("s-estado").textContent = e.estado;
+  $("s-clase").textContent = e.clase.replaceAll("_", " ").toLowerCase();
+  $("pregunta").textContent = e.motivo_revision || "Sin reparos declarados por la curaduría.";
+  $("literal").textContent = e.texto_literal;
+  $("interpretacion").textContent = e.interpretacion || "La lectura no dejó interpretación escrita.";
+
+  if (e.condicion) {
+    $("b-condicion").hidden = false;
+    $("condicion").textContent = JSON.stringify(e.condicion, null, 2);
+  }
+
+  if (e.parametros?.length) {
+    $("b-parametros").hidden = false;
+    const filas = e.parametros.map((p) => [
+      p.codigo, p.concepto || "", p.unidad || "", p.rol || "",
+      p.tiene_valor ? "con valor" : "SIN VALOR",
+    ]);
+    $("parametros").innerHTML = tabla(["Código", "Concepto", "Unidad", "Rol", "Valor"], filas);
+    llenarTabla($("parametros"), filas);
+  }
+
+  if (e.dependencias?.length) {
+    $("b-dependencias").hidden = false;
+    const filas = e.dependencias.map((d) => [
+      d.tipo, d.categoria, d.estado,
+      (d.texto_literal || "").slice(0, 120),
+    ]);
+    $("dependencias").innerHTML = tabla(["Tipo", "Categoría", "Estado", "Literal"], filas);
+    llenarTabla($("dependencias"), filas);
+  }
+
+  if (e.vigencia) {
+    $("b-vigencia").hidden = false;
+    const filas = [[
+      e.vigencia.estado_revision, e.vigencia.valid_tipo,
+      e.vigencia.valid_desde || "—", e.vigencia.valid_hasta || "—",
+      e.vigencia.publicada ? "publicada" : "no publicada",
+    ]];
+    $("vigencia").innerHTML = tabla(["Revisión", "Tipo", "Desde", "Hasta", "Corte"], filas);
+    llenarTabla($("vigencia"), filas);
+  }
+
+  if (e.controles?.length) {
+    $("b-controles").hidden = false;
+    const filas = e.controles.map((c) => [c.control_id, c.resultado, c.severidad || ""]);
+    $("controles").innerHTML = tabla(["Control", "Resultado", "Severidad"], filas);
+    llenarTabla($("controles"), filas);
+  }
+
+  const estadoActual = e.estado;
+  $("b-aprobar").addEventListener("click", () => decidir("APROBAR", estadoActual));
+  $("b-rechazar").addEventListener("click", () => decidir("RECHAZAR", estadoActual));
+  $("b-revision").addEventListener("click", () => decidir("EN_REVISION", estadoActual));
+}
+
+async function decidir(decision, estadoEsperado) {
+  const fundamento = $("fundamento").value.trim();
+  const salida = $("resultado");
+  if (!fundamento) {
+    mensaje(salida, "Falta el fundamento. Una firma sin razones no acredita la revisión.", "mal");
+    $("fundamento").focus();
+    return;
+  }
+  const botones = document.querySelectorAll(".decidir .btn");
+  botones.forEach((b) => (b.disabled = true));
+  try {
+    const r = await pedir(`/v1/admin/reglas/${seleccionada}/decidir`, {
+      method: "POST",
+      body: JSON.stringify({ decision, fundamento, estado_esperado: estadoEsperado }),
+    });
+    mensaje(salida, `Quedó ${r.estado}, firmada por ${r.decidido_por}.`, "ok");
+    await recargar();
+  } catch (error) {
+    mensaje(salida, error.message, "mal");
+  } finally {
+    botones.forEach((b) => (b.disabled = false));
+  }
+}
+</script>
+</body>
+</html>

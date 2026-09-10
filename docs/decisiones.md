@@ -1381,3 +1381,31 @@ La procedencia no la pasa cada sitio que escribe en la bitácora —son siete y
 alcanza con que uno se olvide—: sale de un ajuste de sesión que la API pone al
 abrir la transacción y la columna lo toma por omisión.
 
+## D-72 · Una pantalla, no una cadena de herramientas
+
+El bloqueo número uno del proyecto son 166 reglas que necesitan la firma de una
+persona con competencia jurídica. Hasta ahora eso se hacía leyendo un expediente
+en Markdown y corriendo comandos, que funciona y pone la firma más lejos de quien
+tiene que darla.
+
+La consola es un solo archivo HTML servido por la misma aplicación, sin compilar
+nada. Se evaluó lo habitual —un proyecto de front con su cadena de construcción—
+y no paga acá: agrega un artefacto que se despliega aparte, se desfasa de la API
+que consume y necesita que alguien lo mantenga, todo para una pantalla que
+muestra una cola y un formulario.
+
+**Consecuencia:** `/backoffice/reglas` viaja en la misma imagen que la API y no
+puede quedar desfasada de ella. Hay una prueba que comprueba que la página se
+sirva, porque una consola que existe en el repositorio y no en la imagen es una
+consola que no existe.
+
+La credencial vive en la pestaña de quien entra y en ningún otro lado: ni
+`localStorage`, ni `sessionStorage`, ni cookie. Todas esas la dejarían escrita en
+el disco del navegador, y lo que autoriza es firmar decisiones jurídicas. Cerrar
+la pestaña la borra, y hay una prueba que comprueba que la página no llame a esas
+APIs.
+
+Lo que la consola deliberadamente no tiene es un botón de «aprobar todas». El
+criterio 2 de P-010 dice que estas reglas no se aprueban en lote por un agente, y
+una herramienta que ofrece el atajo lo vuelve el camino por omisión.
+

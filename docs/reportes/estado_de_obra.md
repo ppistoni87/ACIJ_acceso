@@ -39,7 +39,8 @@ canal de alertas y el plan contratado de Neon con su retención. Nada de eso se
 provisiona desde el repositorio. Afecta a P-004, P-019, P-020, P-021 y P-022.
 
 **C · Falta construirlo.** Desarrollo no empezado y no bloqueado por nada
-externo. Afecta a P-013, P-015 y P-016.
+externo. Afecta a P-013 y P-015; de P-016 falta la parte que no es revisión de
+reglas.
 
 **D · Límite del contenedor.** Sin egreso TCP al puerto 5432, el esquema se
 aplicó a Neon por su endpoint HTTPS oficial —TLS validado, sin túneles—, pero la
@@ -65,7 +66,7 @@ pudieron ejercitar acá. Afecta a P-002 y P-005.
 | P-013 | Generar respuestas con citas y abstención | Sin empezar | No hay proveedor de modelo ni validadores de cita. Causa C, depende de P-012. |
 | P-014 | Evaluar condiciones con lógica tipada | Parcial | El criterio 1 dice «reglas publicadas» y no hay ninguna. Causa A. |
 | P-015 | Completar el front conversacional | Sin empezar | El proyecto de front no existe: no hay ningún `package.json`. Causa C. |
-| P-016 | Completar el backoffice de datos y revisión | Sin empezar | La interfaz. La capa de datos está lista. Causa C. |
+| P-016 | Completar el backoffice de datos y revisión | Parcial | La consola de revisión de reglas está construida y probada con navegador real: cola de 166 clasificada en cinco pilas, expediente en una pantalla y firma con fundamento obligatorio. Faltan buscar normas y comparar versiones, el resumen del corte antes de publicar y el tablero de calidad con apertura de registros. |
 | P-017 | Identidad, privacidad y protección | Parcial | **Criterio 1 cerrado**: el actor sale de una credencial firmada por persona, con roles y vencimiento, revocable, y la bitácora registra cómo se estableció. Falta un proveedor de identidad (OIDC), la política de retención de conversación y los límites de abuso, que dependen del front. |
 | P-018 | Hacer obligatoria la integración continua | Parcial | Criterio 3: la protección de rama necesita permisos de administración del repositorio. |
 | P-019 | Desplegar revisión y producción | Sin empezar | Todo el despliegue y los probes de readiness/liveness. Causa B. |
