@@ -40,15 +40,24 @@ from backend_normativo.db.vocabularios import (
     TipoCanal,
     TipoEvidencia,
     TipoIncidencia,
+    TipoOrganismo,
 )
 
 
 @dataclasses.dataclass(frozen=True)
 class DeclaracionOrganismo:
-    """A qué organismo pertenecen los canales que publica una fuente."""
+    """A qué organismo pertenecen los canales que publica una fuente.
+
+    El tipo se declara y no se estampa igual para todos: un ministerio es
+    autoridad de aplicación, una defensoría es organismo de control y una
+    distribuidora eléctrica es prestadora. Poner a las tres bajo la misma
+    etiqueta haría que un filtro por tipo devuelva cosas distintas de las que
+    promete.
+    """
 
     nombre: str
     jurisdiccion: str
+    tipo: str = TipoOrganismo.ORGANISMO_CONTROL.value
 
 
 # La correspondencia fuente -> organismo. Cada línea se verificó abriendo la
@@ -65,14 +74,35 @@ ORGANISMOS_POR_FUENTE: dict[str, DeclaracionOrganismo] = {
         "Consejo de Derechos de Niñas, Niños y Adolescentes (CABA)", "AR-C"
     ),
     "F11": DeclaracionOrganismo("Ministerio Público de la Defensa de la Nación", "AR"),
-    "F27": DeclaracionOrganismo("Ministerio de Educación (CABA)", "AR-C"),
-    "F32": DeclaracionOrganismo("Ministerio de Educación (CABA)", "AR-C"),
+    "F27": DeclaracionOrganismo(
+        "Ministerio de Educación (CABA)", "AR-C", TipoOrganismo.AUTORIDAD_APLICACION.value
+    ),
+    "F32": DeclaracionOrganismo(
+        "Ministerio de Educación (CABA)", "AR-C", TipoOrganismo.AUTORIDAD_APLICACION.value
+    ),
     "F43": DeclaracionOrganismo("Ente Regulador de Agua y Saneamiento (ERAS)", "AR"),
+    "F46": DeclaracionOrganismo(
+        "Edenor - Empresa Distribuidora y Comercializadora Norte S.A.",
+        "AR",
+        TipoOrganismo.PRESTADOR.value,
+    ),
+    "F47": DeclaracionOrganismo(
+        "Edenor - Empresa Distribuidora y Comercializadora Norte S.A.",
+        "AR",
+        TipoOrganismo.PRESTADOR.value,
+    ),
+    "F48": DeclaracionOrganismo("Edesur S.A.", "AR", TipoOrganismo.PRESTADOR.value),
     "F49": DeclaracionOrganismo("Ente Nacional Regulador de la Electricidad (ENRE)", "AR"),
     "F50": DeclaracionOrganismo("Ente Nacional Regulador de la Electricidad (ENRE)", "AR"),
     "F51": DeclaracionOrganismo("Ente Nacional Regulador de la Electricidad (ENRE)", "AR"),
-    "F61": DeclaracionOrganismo("Secretaría de Integración Socio Urbana (SISU) - RENABAP", "AR"),
-    "F64": DeclaracionOrganismo("Ministerio de Educación (CABA)", "AR-C"),
+    "F61": DeclaracionOrganismo(
+        "Secretaría de Integración Socio Urbana (SISU) - RENABAP",
+        "AR",
+        TipoOrganismo.AUTORIDAD_APLICACION.value,
+    ),
+    "F64": DeclaracionOrganismo(
+        "Ministerio de Educación (CABA)", "AR-C", TipoOrganismo.AUTORIDAD_APLICACION.value
+    ),
 }
 
 # Un teléfono argentino publicado: 0800 de siete u ocho dígitos, o un número
@@ -107,8 +137,11 @@ RE_URL = re.compile(r"https?://[^\s<>\"')]+")
 RE_WHATSAPP = re.compile(r"whats\s*app", re.I)
 RE_FORMULARIO = re.compile(r"\bformulario\b", re.I)
 
-# Dígitos que un teléfono argentino puede tener, sin el país.
-DIGITOS_MINIMOS, DIGITOS_MAXIMOS = 8, 12
+# Dígitos que un teléfono argentino puede tener. El techo son 13 y no 12: un
+# celular en formato internacional completo es 54 + 9 + característica + abonado
+# —`+54911 7090-4975`, como lo publica el Ministerio Público de la Defensa—. Con
+# el techo en 12 se descartaba, y se veía porque el descarte se cuenta.
+DIGITOS_MINIMOS, DIGITOS_MAXIMOS = 8, 13
 
 # Años sueltos, códigos postales, montos. Se descartan antes de mirar el patrón.
 RE_ANIOS = re.compile(r"^(?:19|20)\d{2}(?:[\s\-](?:19|20)\d{2})*$")
@@ -256,9 +289,9 @@ class CuradorDeCanales:
         return self.conexion.execute(
             text(
                 "INSERT INTO organismos (jurisdiccion_id, nombre, tipo) "
-                "VALUES (:j, :n, 'ORGANISMO_CONTROL') RETURNING id"
+                "VALUES (:j, :n, :t) RETURNING id"
             ),
-            {"j": declaracion.jurisdiccion, "n": declaracion.nombre},
+            {"j": declaracion.jurisdiccion, "n": declaracion.nombre, "t": declaracion.tipo},
         ).scalar_one()
 
     def _ya_esta(self, organismo_id: uuid.UUID, tipo: TipoCanal, normalizado: str) -> bool:

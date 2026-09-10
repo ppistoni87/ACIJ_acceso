@@ -20,13 +20,18 @@ from backend_normativo.ingesta.adaptadores.pagina_institucional import (
 pytestmark = pytest.mark.aceptacion
 
 
-def _captura(html: str, url: str = "https://www.argentina.gob.ar/educacion/progresar/cronograma"):
+def _captura(
+    html: str,
+    url: str = "https://www.argentina.gob.ar/educacion/progresar/cronograma",
+    clase: str | None = "DOCUMENTO",
+):
     return CapturaMaterial(
         source_id="F52",
         url_final=url,
         contenido=html.encode("utf-8"),
         mime="text/html; charset=utf-8",
         sha256="a" * 64,
+        clase=clase,
     )
 
 
@@ -165,16 +170,21 @@ def test_una_pagina_con_sedes_abiertas_no_declara_cierre() -> None:
 # --- Contrato del adaptador ---------------------------------------------------
 
 
-def test_solo_acepta_html_de_los_portales_del_corpus() -> None:
+def test_solo_acepta_html_de_las_clases_institucionales() -> None:
+    """Acepta por lo que el catálogo declara que la fuente es, no por su dominio."""
     adaptador = AdaptadorPaginaInstitucional()
     assert adaptador.acepta(_captura(CRONOGRAMA))
-    assert not adaptador.acepta(_captura(CRONOGRAMA, url="https://ejemplo.com/pagina"))
+    assert adaptador.acepta(
+        _captura(CRONOGRAMA, url="https://www.edenor.com/x", clase="DIRECTORIO")
+    )
+    assert not adaptador.acepta(_captura(CRONOGRAMA, clase="DATASET"))
     captura_pdf = CapturaMaterial(
         source_id="F52",
         url_final="https://www.argentina.gob.ar/x.pdf",
         contenido=b"%PDF-1.4",
         mime="application/pdf",
         sha256="a" * 64,
+        clase="DOCUMENTO",
     )
     assert not adaptador.acepta(captura_pdf)
 
@@ -324,8 +334,8 @@ def test_un_rotulo_suelto_no_es_una_seccion() -> None:
     assert "Ver" not in [u.rotulo for u in documento.unidades]
 
 
-def test_una_pagina_con_texto_y_sin_titulos_lo_declara() -> None:
-    """Queda el documento y no hay dónde anclar una evidencia: eso se dice."""
+def test_una_pagina_con_texto_y_sin_titulos_se_cita_entera() -> None:
+    """No se pierde: se cita más grueso y se declara que es más grueso."""
     plana = (
         "<html><body><main><p>"
         + "Un texto largo sin ningún encabezado que lo organice. " * 4
@@ -334,8 +344,10 @@ def test_una_pagina_con_texto_y_sin_titulos_lo_declara() -> None:
     resultado = AdaptadorPaginaInstitucional().extraer(
         _captura(plana, "https://www.argentina.gob.ar/algo")
     )
-    assert not resultado.documentos[0].unidades
-    assert any("ninguna sección" in a.texto for a in resultado.documentos[0].avisos)
+    unidades = resultado.documentos[0].unidades
+    assert len(unidades) == 1
+    assert unidades[0].ruta == "pagina"
+    assert any("se cita entera" in a.texto for a in resultado.documentos[0].avisos)
 
 
 INDICE = """
@@ -404,3 +416,58 @@ def test_una_pagina_sin_hojas_no_descubre_nada() -> None:
         _captura(PAGINA_CON_CANALES, "https://www.argentina.gob.ar/obras-publicas/canales")
     )
     assert resultado.urls_descubiertas == []
+
+
+SIN_ENCABEZADOS = """
+<html><body><main>
+<p>Responsable del área: Dr. Francisco Finger</p>
+<p>Dirección: Bartolomé Mitre 648, Piso 2º frente, C1036AAL, CABA</p>
+<p>Horario de atención: lunes a viernes de 9 a 15 hs.</p>
+<p>Teléfono: +54911 7090-4975</p>
+</main></body></html>
+"""
+
+
+def test_una_pagina_sin_encabezados_se_cita_entera() -> None:
+    """Sin encabezados no es sin contenido.
+
+    La página de una defensoría zonal dice dirección, horario y teléfono sin un
+    solo título, y es exactamente lo que su historia promete. Citarla entera es
+    menos preciso que citar una sección, y mucho más que no poder citar nada.
+    """
+    resultado = AdaptadorPaginaInstitucional().extraer(
+        _captura(SIN_ENCABEZADOS, "https://www.mpd.gov.ar/index.php/acceder")
+    )
+    unidades = resultado.documentos[0].unidades
+    assert len(unidades) == 1
+    assert unidades[0].ruta == "pagina"
+    assert unidades[0].rol_contenido == RolContenido.INFORMATIVO
+    assert "+54911 7090-4975" in unidades[0].texto
+    assert "Bartolomé Mitre 648" in unidades[0].texto
+    # Y se declara que la cita es más gruesa de lo deseable.
+    assert any("se cita entera" in a.texto for a in resultado.documentos[0].avisos)
+
+
+def test_una_pagina_vacia_no_produce_una_unidad_vacia() -> None:
+    resultado = AdaptadorPaginaInstitucional().extraer(
+        _captura("<html><body><main><p>Ver</p></main></body></html>", "https://www.mpd.gov.ar/x")
+    )
+    assert not resultado.documentos or not resultado.documentos[0].unidades
+
+
+def test_el_adaptador_acepta_por_lo_que_la_fuente_es_y_no_por_su_dominio() -> None:
+    """Una lista de dominios falla en silencio: nadie acepta y nadie se entera.
+
+    Cuatro fuentes del manifiesto —distribuidoras eléctricas— quedaban con los
+    bytes guardados y sin extraer, porque su dominio no estaba en la lista.
+    """
+    adaptador = AdaptadorPaginaInstitucional()
+    assert adaptador.acepta(
+        _captura(PAGINA_CON_CANALES, "https://www.edenor.com/tramites", "FICHA_TRAMITE")
+    )
+    assert not adaptador.acepta(
+        _captura(PAGINA_CON_CANALES, "https://www.boletinoficial.gob.ar/", "BOLETIN")
+    ), "un boletín no es una página institucional"
+    assert not adaptador.acepta(
+        _captura(PAGINA_CON_CANALES, "https://www.argentina.gob.ar/algo", None)
+    ), "sin clase declarada no se adivina"

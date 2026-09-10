@@ -16,6 +16,9 @@ from backend_normativo.db.vocabularios import TipoCanal
         ("11-4024-0764", "1140240764"),
         ("+54 11 2771 3385", "+541127713385"),
         ("(011) 4971-7181", "01149717181"),
+        # Un celular en formato internacional completo son 13 dígitos:
+        # 54 + 9 + característica + abonado. Con el techo en 12 se descartaba.
+        ("+54911 7090-4975", "+5491170904975"),
     ],
 )
 def test_un_telefono_publicado_se_normaliza(crudo: str, esperado: str) -> None:
@@ -82,3 +85,27 @@ def test_un_correo_se_guarda_en_minusculas() -> None:
 def test_una_seccion_sin_canales_no_inventa_ninguno() -> None:
     texto = "El programa acompaña a las familias en situación de calle."
     assert candidatos_de(texto, "Objeto") == []
+
+
+def test_el_tipo_de_organismo_se_declara_por_fuente() -> None:
+    """Un ministerio no es un organismo de control y una distribuidora tampoco.
+
+    Poner a los tres bajo la misma etiqueta hace que un filtro por tipo
+    devuelva cosas distintas de las que promete.
+    """
+    from backend_normativo.curacion.canales import ORGANISMOS_POR_FUENTE
+    from backend_normativo.db.vocabularios import TipoOrganismo
+
+    assert ORGANISMOS_POR_FUENTE["F48"].tipo == TipoOrganismo.PRESTADOR.value
+    assert ORGANISMOS_POR_FUENTE["F27"].tipo == TipoOrganismo.AUTORIDAD_APLICACION.value
+    assert ORGANISMOS_POR_FUENTE["F03"].tipo == TipoOrganismo.ORGANISMO_CONTROL.value
+
+
+def test_toda_declaracion_usa_un_tipo_del_vocabulario() -> None:
+    from backend_normativo.curacion.canales import ORGANISMOS_POR_FUENTE
+    from backend_normativo.db.vocabularios import TipoOrganismo
+
+    validos = {t.value for t in TipoOrganismo}
+    for fuente, declaracion in ORGANISMOS_POR_FUENTE.items():
+        assert declaracion.tipo in validos, fuente
+        assert declaracion.jurisdiccion, fuente

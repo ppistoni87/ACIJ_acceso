@@ -51,6 +51,12 @@ class CapturaMaterial:
     mime: str | None
     sha256: str
     config: dict = field(default_factory=dict)
+    # Qué declara el catálogo que es esta fuente. Sirve para que un adaptador
+    # decida si le corresponde por lo que la fuente **es** y no por el dominio
+    # donde vive: una lista de dominios obliga a tocar código por cada fuente
+    # nueva, y su falla es silenciosa —ningún adaptador acepta, la captura queda
+    # sin usar y nadie se entera hasta contar las que no llegaron a destino—.
+    clase: str | None = None
 
     def texto(self) -> str:
         """Contenido decodificado con el juego de caracteres que declara.

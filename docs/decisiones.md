@@ -1479,3 +1479,40 @@ Vale la generalización: cuando dos módulos se ponen de acuerdo por el contenid
 de un campo y no por su tipo, el desacuerdo no se ve como un error sino como
 ausencia de resultado, que es lo último que alguien va a mirar.
 
+## D-77 · Una lista de dominios falla en silencio
+
+El adaptador de páginas institucionales aceptaba por dominio: una tupla con
+nueve entradas dentro de la clase. Cuatro fuentes del manifiesto —dos de Edenor,
+una de Edesur, una más— quedaban con los bytes guardados y sin extraer, porque su
+dominio no estaba ahí.
+
+El problema no era que la lista estuviera incompleta. Era **cómo fallaba**:
+ningún adaptador aceptaba, la captura quedaba guardada sin usar, no se abría
+ninguna incidencia con nombre propio y nadie se enteraba hasta contar las fuentes
+que no llegaban a destino. Y cada fuente nueva del manifiesto pedía tocar código.
+
+**Consecuencia:** el adaptador acepta por la **clase** que el catálogo declara
+—`CANAL_ATENCION`, `FICHA_TRAMITE`, `DIRECTORIO`, `DOCUMENTO`—, que es lo que la
+fuente es, y no por dónde vive. Es el último de la cadena: los específicos
+—NormativaBA, InfoLeg, fichas de trámite, PDF— eligen primero. Un `BOLETIN` sigue
+sin aceptarse, y eso es correcto: su historia declara `normas` y
+`relaciones_normativas`, que no se resuelven partiendo la página en secciones.
+
+Para que la clase llegara al adaptador hubo que pasarla: `CapturaMaterial` la
+recibe desde la consulta de extracción, como ya pasaba con la configuración
+versionada de la fuente.
+
+## D-78 · Sin encabezados no es sin contenido
+
+La página del programa Acceder del Ministerio Público de la Defensa dice
+«Dirección: Bartolomé Mitre 648… Teléfono: +54911 7090-4975» y no tiene un solo
+título. El adaptador la partía por encabezados, no encontraba ninguno y devolvía
+cero unidades: exactamente el contenido que su historia promete, sin nada donde
+anclar una evidencia.
+
+**Consecuencia:** cuando no hay encabezados utilizables, la página se cita entera
+bajo una sola unidad, y el aviso lo declara: lo que salga de ahí localiza la
+página y no el párrafo. Es una cita más gruesa de lo deseable y verificable, que
+es mejor que ninguna. Una página que solo tiene un rótulo suelto sigue sin
+producir unidad: el piso de longitud se mantiene.
+

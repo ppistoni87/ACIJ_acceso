@@ -48,7 +48,7 @@ from backend_normativo.ingesta.almacen import AlmacenObjetos
 # leía `tipo_documento` de un diccionario que nadie llenaba y caía en OTRO
 # —dejando cada PDF normativo fuera de la resolución de identidad—. Cambió lo
 # que la extracción produce con las mismas capturas, y por eso cambia el número.
-VERSION_EXTRACTOR = "extraccion@10"
+VERSION_EXTRACTOR = "extraccion@11"
 
 # Cobertura mínima para no marcar la extracción como sospechosa. Es una señal
 # técnica: por debajo de esto hay texto que no quedó en ninguna unidad, y
@@ -104,9 +104,10 @@ class Extractor:
             self.conexion.execute(
                 text(
                     "SELECT c.id, c.sha256_raw, c.mime, c.url_final, u.source_id, "
-                    "       cfg.selector_config "
+                    "       cfg.selector_config, f.clase "
                     "FROM capturas c "
                     "JOIN fuente_urls u ON u.id = c.source_url_id "
+                    "JOIN fuentes f ON f.source_id = u.source_id "
                     "LEFT JOIN corridas_ingesta ci ON ci.id = c.corrida_id "
                     "LEFT JOIN fuente_config_versiones cfg ON cfg.id = ci.config_version_id "
                     "WHERE c.id = :id"
@@ -131,6 +132,7 @@ class Extractor:
             # se la pasaba, así que el adaptador de PDF decidía siempre a
             # ciegas: la leía vacía y caía en OTRO.
             config=dict(fila["selector_config"] or {}),
+            clase=fila["clase"],
         )
 
         adaptador = next((a for a in self.adaptadores if a.acepta(material)), None)

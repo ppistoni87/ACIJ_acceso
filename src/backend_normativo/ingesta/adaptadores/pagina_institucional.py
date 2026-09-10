@@ -131,14 +131,31 @@ def leer(html: str, *, url: str = "") -> LecturaPagina:
         )
 
     lectura.secciones = _secciones(principal, lectura.texto)
-    if lectura.texto.strip() and not lectura.secciones:
+    if not lectura.secciones and len(lectura.texto.strip()) >= MINIMO_SECCION:
+        # Una página sin encabezados utilizables no es una página sin contenido.
+        # La de una defensoría zonal dice «Dirección: … Teléfono: …» sin un solo
+        # título, y es exactamente lo que su historia promete. Se la cita entera:
+        # es menos preciso que citar una sección, y mucho más que no poder citar
+        # nada —sin unidad no hay evidencia, y sin evidencia no hay destino—.
+        lectura.secciones = [
+            UnidadSegmentada(
+                tipo=TipoUnidad.SECCION,
+                texto=lectura.texto.strip(),
+                orden=1,
+                rol_contenido=RolContenido.INFORMATIVO,
+                rotulo=(lectura.titulo or url or "página")[:200],
+                ruta="pagina",
+                inicio=0,
+                fin=len(lectura.texto.strip()),
+            )
+        ]
         lectura.avisos.append(
             Aviso(
-                f"{url or 'La página'} tiene texto pero ninguna sección con título que lo "
-                "sostenga como cita. Queda el documento y no hay dónde anclar una evidencia, "
-                "así que nada de esta página puede llegar a una tabla de destino.",
+                f"{url or 'La página'} no tiene encabezados que la dividan, así que se cita "
+                "entera bajo una sola unidad. Lo que salga de acá localiza la página, no el "
+                "párrafo: una cita más gruesa de lo deseable, y verificable.",
                 tipo=TipoIncidencia.COBERTURA_EXTRACCION,
-                severidad=Severidad.HIGH,
+                severidad=Severidad.LOW,
             )
         )
 
@@ -383,23 +400,25 @@ class AdaptadorPaginaInstitucional:
 
     nombre = "pagina_institucional"
 
-    DOMINIOS = (
-        "argentina.gob.ar",
-        "buenosaires.gob.ar",
-        "gba.gob.ar",
-        "dpn.gob.ar",
-        "mptutelar.gob.ar",
-        "defensoria.org.ar",
-        "mpd.gov.ar",
-        "becasprogresar.educacion.gob.ar",
-        "buenosaires.edu.ar",
-    )
+    # Qué clases del catálogo son páginas institucionales. Se decide por lo
+    # que la fuente **es** y no por el dominio donde vive.
+    #
+    # Antes había una lista de dominios, y su problema no era estar incompleta
+    # sino cómo fallaba: una fuente en un dominio nuevo —edenor.com,
+    # edesur.com.ar— no la aceptaba ningún adaptador, la captura quedaba
+    # guardada sin usar y no se enteraba nadie hasta contar las fuentes que no
+    # llegaban a destino. Eran cuatro.
+    #
+    # Este adaptador es el último de la cadena: los específicos —NormativaBA,
+    # InfoLeg, fichas de trámite, PDF— eligen primero. Aceptar acá lo
+    # institucional que nadie reclamó es lo correcto, y si la página no da nada
+    # el aviso lo dice.
+    CLASES = frozenset({"CANAL_ATENCION", "FICHA_TRAMITE", "DIRECTORIO", "DOCUMENTO"})
 
     def acepta(self, captura: CapturaMaterial) -> bool:
         if captura.mime and "html" not in captura.mime.lower():
             return False
-        url = captura.url_final.lower()
-        return any(dominio in url for dominio in self.DOMINIOS)
+        return (captura.clase or "") in self.CLASES
 
     def extraer(self, captura: CapturaMaterial) -> ResultadoExtraccion:
         resultado = ResultadoExtraccion()

@@ -61,6 +61,7 @@ El recuento pasó de **38 a 39 fuentes sirviendo** y de 10 a **9 sin destino**.
 - **Que un índice no aporte nada.** Sus secciones quedan como unidades
   informativas citables: «el organismo publica estas cuatro modalidades» es un
   dato, aunque no sea el trámite.
-- **Que las nueve que faltan se resuelvan igual.** F11, F49 y F50 siguen
-  extrayendo cero unidades, que es un problema anterior y distinto. Y F66
-  declara `reglas` y `beneficio_versiones`: eso es lectura jurídica, no ingesta.
+- **Que las que faltan se resuelvan igual.** F66 declara `reglas` y
+  `beneficio_versiones`: eso es lectura jurídica, no ingesta. Y M01 y M03 son
+  boletines, cuya historia declara `normas` y `relaciones_normativas`: no se
+  resuelven partiendo la página en secciones y siguen sin adaptador.
