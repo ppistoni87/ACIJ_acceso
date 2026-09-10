@@ -15,7 +15,11 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import Connection, text
 
 from backend_normativo.api.contratos import CodigoError, ErrorRespuesta
-from backend_normativo.api.dependencias import actor_de, conexion_administracion
+from backend_normativo.api.dependencias import (
+    Administracion,
+    conexion_administracion,
+    exigir_rol,
+)
 from backend_normativo.curacion.revision import (
     ConflictoDeVersion,
     DecisionInvalida,
@@ -30,6 +34,7 @@ from backend_normativo.curacion.revision_reglas import (
     rechazar,
 )
 from backend_normativo.publicacion.release import PublicacionRechazada, Publicador
+from backend_normativo.seguridad.credenciales import ROL_PUBLICADOR, ROL_REVISOR
 
 router = APIRouter(prefix="/v1/admin", tags=["administración"])
 
@@ -86,9 +91,9 @@ class SolicitudRelease(BaseModel):
 def resolver_revision(
     incidencia_id: uuid.UUID,
     solicitud: SolicitudResolucion,
-    actor: str = Depends(actor_de),
-    conexion: Connection = Depends(conexion_administracion),
+    admin: Administracion = Depends(exigir_rol(ROL_REVISOR)),
 ) -> dict:
+    actor, conexion = admin.actor, admin.conexion
     try:
         resultado = Revisor(conexion).resolver(
             incidencia_id,
@@ -220,14 +225,14 @@ def ver_regla(
 def decidir_regla(
     regla_id: uuid.UUID,
     solicitud: SolicitudDecisionRegla,
-    actor: str = Depends(actor_de),
-    conexion: Connection = Depends(conexion_administracion),
+    admin: Administracion = Depends(exigir_rol(ROL_REVISOR)),
 ) -> dict:
     """Aprueba, rechaza o marca en revisión, con actor y fundamento.
 
     Aprobar no publica: la regla queda aprobada y recién el corte de release la
     vuelve servible. Son dos decisiones distintas y las toma gente distinta.
     """
+    actor, conexion = admin.actor, admin.conexion
     transicion = DECISIONES.get(solicitud.decision.upper())
     if transicion is None:
         raise HTTPException(
@@ -279,9 +284,11 @@ def decidir_regla(
 @router.post("/releases")
 def crear_release(
     solicitud: SolicitudRelease,
-    actor: str = Depends(actor_de),
-    conexion: Connection = Depends(conexion_administracion),
+    admin: Administracion = Depends(exigir_rol(ROL_PUBLICADOR)),
 ) -> dict:
+    # Revisar y publicar son dos decisiones distintas y las toma gente
+    # distinta: una credencial de revisor no abre esta ruta.
+    actor, conexion = admin.actor, admin.conexion
     publicador = Publicador(conexion)
     try:
         resultado = publicador.publicar(

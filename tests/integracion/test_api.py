@@ -13,6 +13,30 @@ from backend_normativo.db.vocabularios import CAMPOS_SOLICITADOS
 pytestmark = pytest.mark.integracion
 
 TOKEN = "credencial-de-prueba"
+SECRETO_PRUEBA = "secreto-de-prueba-que-no-vive-en-produccion"
+ACTOR = "curacion:persona"
+
+
+@pytest.fixture
+def credencial(monkeypatch) -> str:
+    """Una credencial firmada, con todos los roles.
+
+    Las pruebas de administración van por el camino de producción —credencial
+    por persona— y no por el token compartido, que desde P-017 solo se admite en
+    modo desarrollo. Probar por la puerta que producción no usa dejaría sin
+    cubrir la que sí.
+    """
+    import datetime as dt
+
+    from backend_normativo.seguridad.credenciales import ROLES, emitir
+
+    monkeypatch.setenv("BN_CREDENCIAL_SECRETO", SECRETO_PRUEBA)
+    monkeypatch.delenv("BN_IDENTIDAD_MODO", raising=False)
+    monkeypatch.delenv("BN_ADMIN_TOKENS", raising=False)
+    token, _ = emitir(
+        ACTOR, set(ROLES), duracion=dt.timedelta(days=1), secreto_bytes=SECRETO_PRUEBA.encode()
+    )
+    return token
 
 
 # --- Envoltura de respuesta -----------------------------------------------------
@@ -204,14 +228,28 @@ def test_un_beneficio_inexistente_da_error_tipado(cliente_api, corpus_publicado)
 def test_sin_credencial_configurada_la_administracion_esta_cerrada(
     cliente_api, corpus, monkeypatch
 ) -> None:
+    """Sin secreto de firma no hay credencial que se pueda verificar.
+
+    Y sin credencial no se administra: no hay valor por omisión que abra las
+    rutas, porque un secreto por omisión haría que una credencial emitida en
+    cualquier máquina valiera acá.
+    """
     monkeypatch.delenv("BN_ADMIN_TOKENS", raising=False)
-    respuesta = cliente_api.post("/v1/admin/releases", json={"motivo": "intento"})
-    assert respuesta.status_code == 503
-    assert respuesta.json()["detail"]["codigo"] == "NOT_AUTHORIZED"
+    monkeypatch.delenv("BN_CREDENCIAL_SECRETO", raising=False)
+
+    sin_cabecera = cliente_api.post("/v1/admin/releases", json={"motivo": "intento"})
+    assert sin_cabecera.status_code == 401
+
+    con_credencial = cliente_api.post(
+        "/v1/admin/releases",
+        json={"motivo": "intento"},
+        headers={"Authorization": "Bearer bn1.cuerpo.firma"},
+    )
+    assert con_credencial.status_code == 403
+    assert con_credencial.json()["detail"]["codigo"] == "NOT_AUTHORIZED"
 
 
 def test_una_credencial_invalida_no_autoriza(cliente_api, corpus, monkeypatch) -> None:
-    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
     respuesta = cliente_api.post(
         "/v1/admin/releases",
         json={"motivo": "intento"},
@@ -221,37 +259,40 @@ def test_una_credencial_invalida_no_autoriza(cliente_api, corpus, monkeypatch) -
 
 
 def test_toda_operacion_de_administracion_declara_quien_la_hace(
-    cliente_api, corpus, monkeypatch
+    cliente_api, corpus, credencial
 ) -> None:
-    """Lo que se decide queda en la bitácora con nombre."""
-    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
+    """Lo que se decide queda en la bitácora con nombre.
+
+    Antes el actor se pedía en una cabecera y faltaba si nadie la mandaba. Ahora
+    no puede faltar porque no lo manda quien llama: sale de la credencial. Que
+    esta operación falle por los controles de publicación y no por falta de
+    actor es justamente la diferencia.
+    """
     respuesta = cliente_api.post(
         "/v1/admin/releases",
         json={"motivo": "intento"},
-        headers={"Authorization": f"Bearer {TOKEN}"},
+        headers={"Authorization": f"Bearer {credencial}"},
     )
-    assert respuesta.status_code == 400
-    assert "X-Actor" in respuesta.json()["detail"]["detalle"]
+    assert respuesta.status_code == 422
+    assert respuesta.json()["detail"]["codigo"] == "INSUFFICIENT_EVIDENCE"
 
 
 def test_publicar_sin_pasar_los_gates_no_es_un_error_del_servidor(
-    cliente_api, corpus, monkeypatch
+    cliente_api, corpus, credencial
 ) -> None:
     """Información insuficiente es un estado de dominio, no un 500."""
-    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
     respuesta = cliente_api.post(
         "/v1/admin/releases",
         json={"motivo": "intento prematuro"},
-        headers={"Authorization": f"Bearer {TOKEN}", "X-Actor": "publicador:persona"},
+        headers={"Authorization": f"Bearer {credencial}", "X-Actor": "publicador:persona"},
     )
     assert respuesta.status_code == 422
     assert respuesta.json()["detail"]["codigo"] == "INSUFFICIENT_EVIDENCE"
 
 
 def test_resolver_una_incidencia_ya_resuelta_da_409(
-    cliente_api, corpus, conexion: Connection, monkeypatch
+    cliente_api, corpus, conexion: Connection, credencial
 ) -> None:
-    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
     ResolutorVigencia(conexion).resolver()
     incidencia = conexion.execute(
         text("SELECT id FROM incidencias_revision WHERE tipo = 'VIGENCIA_INDETERMINADA'")
@@ -266,7 +307,7 @@ def test_resolver_una_incidencia_ya_resuelta_da_409(
             "estado_legal": "VIGENTE",
         },
     }
-    cabeceras = {"Authorization": f"Bearer {TOKEN}", "X-Actor": "curacion:persona"}
+    cabeceras = {"Authorization": f"Bearer {credencial}", "X-Actor": "curacion:persona"}
 
     primera = cliente_api.post(
         f"/v1/admin/revisiones/{incidencia}/resolver", json=cuerpo, headers=cabeceras
@@ -282,9 +323,8 @@ def test_resolver_una_incidencia_ya_resuelta_da_409(
 
 
 def test_afirmar_una_vigencia_sin_evidencia_se_rechaza(
-    cliente_api, corpus, conexion: Connection, monkeypatch
+    cliente_api, corpus, conexion: Connection, credencial
 ) -> None:
-    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
     ResolutorVigencia(conexion).resolver()
     incidencia = conexion.execute(
         text("SELECT id FROM incidencias_revision WHERE tipo = 'VIGENCIA_INDETERMINADA'")
@@ -295,7 +335,7 @@ def test_afirmar_una_vigencia_sin_evidencia_se_rechaza(
             "decision": "Se aprueba.",
             "vigencia": {"valid_tipo": "ABIERTO_FIN", "estado_legal": "VIGENTE"},
         },
-        headers={"Authorization": f"Bearer {TOKEN}", "X-Actor": "curacion:persona"},
+        headers={"Authorization": f"Bearer {credencial}", "X-Actor": "curacion:persona"},
     )
     assert respuesta.status_code == 400
     assert "evidencia" in respuesta.json()["detail"]["detalle"]
@@ -416,17 +456,16 @@ def _una_regla(conexion: Connection) -> str:
 
 
 def test_el_expediente_de_una_regla_trae_todo_junto(
-    cliente_api, regla_candidata, conexion: Connection, monkeypatch
+    cliente_api, regla_candidata, conexion: Connection, credencial
 ) -> None:
     """Una condición se aprueba o no según de qué depende y sobre qué versión
     rige. Pedirle a quien revisa que cruce seis pantallas es pedirle que no las
     cruce."""
-    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
     regla = regla_candidata
 
     respuesta = cliente_api.get(
         f"/v1/admin/reglas/{regla}",
-        headers={"Authorization": f"Bearer {TOKEN}", "X-Actor": "curacion:persona"},
+        headers={"Authorization": f"Bearer {credencial}", "X-Actor": "curacion:persona"},
     )
 
     assert respuesta.status_code == 200
@@ -446,32 +485,38 @@ def test_el_expediente_de_una_regla_trae_todo_junto(
     assert cuerpo["estado"] == "CANDIDATE"
 
 
-def test_decidir_una_regla_exige_actor_y_fundamento(
-    cliente_api, regla_candidata, conexion: Connection, monkeypatch
+def test_decidir_una_regla_exige_fundamento(
+    cliente_api, regla_candidata, conexion: Connection, credencial
 ) -> None:
-    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
-    regla = regla_candidata
+    """El actor ya no puede faltar —sale de la credencial—; el fundamento sí.
 
-    sin_actor = cliente_api.post(
-        f"/v1/admin/reglas/{regla}/decidir",
-        json={"decision": "APROBAR", "fundamento": "Se corresponde con el artículo citado."},
-        headers={"Authorization": f"Bearer {TOKEN}"},
-    )
-    assert sin_actor.status_code == 400
+    Aprobar una regla sin decir por qué deja en la bitácora una firma sin
+    razones, que para una decisión jurídica es casi lo mismo que no tenerla.
+    """
+    regla = regla_candidata
 
     sin_fundamento = cliente_api.post(
         f"/v1/admin/reglas/{regla}/decidir",
         json={"decision": "APROBAR", "fundamento": "   "},
-        headers={"Authorization": f"Bearer {TOKEN}", "X-Actor": "curacion:persona"},
+        headers={"Authorization": f"Bearer {credencial}"},
     )
     assert sin_fundamento.status_code == 400
 
+    # Y el actor que queda registrado es el de la credencial, no uno que la
+    # cabecera pueda proponer.
+    aprobada = cliente_api.post(
+        f"/v1/admin/reglas/{regla}/decidir",
+        json={"decision": "APROBAR", "fundamento": "Se corresponde con el artículo citado."},
+        headers={"Authorization": f"Bearer {credencial}", "X-Actor": "otro_cualquiera"},
+    )
+    assert aprobada.status_code == 200
+    assert aprobada.json()["decidido_por"] == ACTOR
+
 
 def test_aprobar_una_regla_no_la_publica(
-    cliente_api, regla_candidata, conexion: Connection, monkeypatch
+    cliente_api, regla_candidata, conexion: Connection, credencial
 ) -> None:
     """Aprobar y publicar son dos decisiones distintas y las toma gente distinta."""
-    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
     regla = regla_candidata
 
     respuesta = cliente_api.post(
@@ -481,7 +526,7 @@ def test_aprobar_una_regla_no_la_publica(
             "fundamento": "El literal del artículo 6 sostiene la condición tal como está escrita.",
             "estado_esperado": "CANDIDATE",
         },
-        headers={"Authorization": f"Bearer {TOKEN}", "X-Actor": "curacion:persona"},
+        headers={"Authorization": f"Bearer {credencial}", "X-Actor": "curacion:persona"},
     )
 
     assert respuesta.status_code == 200
@@ -501,13 +546,12 @@ def test_aprobar_una_regla_no_la_publica(
 
 
 def test_la_segunda_decision_sobre_una_version_vieja_da_409(
-    cliente_api, regla_candidata, conexion: Connection, monkeypatch
+    cliente_api, regla_candidata, conexion: Connection, credencial
 ) -> None:
     """Dos personas abren la misma regla. La primera decide. La segunda todavía
     mira la pantalla vieja: su decisión no puede pisar a la otra."""
-    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
     regla = regla_candidata
-    cabeceras = {"Authorization": f"Bearer {TOKEN}", "X-Actor": "curacion:persona"}
+    cabeceras = {"Authorization": f"Bearer {credencial}", "X-Actor": "curacion:persona"}
 
     primera = cliente_api.post(
         f"/v1/admin/reglas/{regla}/decidir",
@@ -540,15 +584,14 @@ def test_la_segunda_decision_sobre_una_version_vieja_da_409(
 
 
 def test_una_decision_desconocida_se_rechaza(
-    cliente_api, regla_candidata, conexion: Connection, monkeypatch
+    cliente_api, regla_candidata, conexion: Connection, credencial
 ) -> None:
-    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
     regla = regla_candidata
 
     respuesta = cliente_api.post(
         f"/v1/admin/reglas/{regla}/decidir",
         json={"decision": "PUBLICAR", "fundamento": "Quiero servirla ya."},
-        headers={"Authorization": f"Bearer {TOKEN}", "X-Actor": "curacion:persona"},
+        headers={"Authorization": f"Bearer {credencial}", "X-Actor": "curacion:persona"},
     )
 
     assert respuesta.status_code == 400

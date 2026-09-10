@@ -58,6 +58,11 @@ SONDAS: dict[str, list[tuple[str, str, str]]] = {
             "insert into releases (id) select gen_random_uuid() where false",
         ),
         (DENEGADO, "leer los turnos del ciclo", "select 1 from arrendamientos where false"),
+        (
+            DENEGADO,
+            "leer quiénes administran el servicio",
+            "select 1 from credenciales_revocadas where false",
+        ),
     ],
     "BN_DATABASE_URL_INGESTA": [
         (PERMITIDO, "leer capturas", "select 1 from capturas where false"),

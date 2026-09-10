@@ -1347,3 +1347,37 @@ extracción vieja y sigue sirviendo esos once fragmentos. Promoverlo exige volve
 a curar las citas que apuntan a las unidades viejas, y el sistema se niega a
 reprocesar una versión con evidencia encima, con razón.
 
+## D-70 · El actor no lo declara quien llama
+
+Las rutas de administración pedían un token compartido y tomaban al actor de la
+cabecera `X-Actor`. El token está bien como puerta, pero identifica al despliegue
+y no a la persona: quien lo tuviera podía firmar como cualquiera. Y lo que se
+firma acá es que una regla dice lo que dice el derecho.
+
+**Consecuencia:** el actor sale de una credencial firmada por persona, con roles
+adentro y vencimiento de a lo sumo 90 días, revocable. `X-Actor` se ignora cuando
+hay credencial. Un revisor no publica y un publicador no decide reglas: son
+decisiones distintas y las toma gente distinta.
+
+Se eligió HMAC y no un proveedor de identidad porque no hay ninguno todavía y
+porque cuál usar no es una decisión de acá. Las rutas piden una `Identidad`, no
+un formato de token, así que reemplazarlo por OIDC no las toca.
+
+## D-71 · Una excepción que no se ve en los datos no es una excepción, es un agujero
+
+Hace falta poder administrar sin montar credenciales —para probar, para levantar
+el sistema la primera vez— y esa necesidad no se va a ir. La forma habitual de
+resolverlo es una bandera de configuración y un comentario que dice «no usar en
+producción», que es exactamente el arreglo que nadie ve cuando falla.
+
+**Consecuencia:** la puerta vieja sigue existiendo detrás de
+`BN_IDENTIDAD_MODO=desarrollo`, y todo lo que entra por ahí queda marcado
+`AUTODECLARADA` en la columna `auditoria_eventos.identidad`, para siempre. La
+excepción no está en un comentario: está en cada fila que produjo. Dentro de dos
+años, una firma jurídica hecha en modo desarrollo se va a poder distinguir de una
+hecha con credencial, que es lo único que hace que la excepción sea aceptable.
+
+La procedencia no la pasa cada sitio que escribe en la bitácora —son siete y
+alcanza con que uno se olvide—: sale de un ajuste de sesión que la API pone al
+abrir la transacción y la columna lo toma por omisión.
+

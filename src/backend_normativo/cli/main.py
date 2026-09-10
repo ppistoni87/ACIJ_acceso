@@ -2069,3 +2069,95 @@ def recuperacion_evaluar(
         typer.echo(f"Reporte escrito en {salida} · Recall@5 híbrido {reporte.recall_hibrido:.1%}")
     else:
         typer.echo(texto)
+
+
+@operacion.command("emitir-credencial")
+def operacion_emitir_credencial(
+    actor: str = typer.Option(..., help="Quién es. Queda en la bitácora de todo lo que firme."),
+    rol: list[str] = typer.Option(
+        ..., "--rol", help="Rol de la credencial. Se puede repetir: revisor, publicador, auditor."
+    ),
+    dias: int = typer.Option(30, help="Cuántos días vale. Máximo 90."),
+) -> None:
+    """Emite una credencial firmada para una persona.
+
+    El token se imprime una sola vez y no se guarda: lo que la base conoce es su
+    identificador, para poder revocarlo. Entregalo por un canal que no lo deje
+    escrito donde no corresponde.
+    """
+    import datetime as dt
+
+    from backend_normativo.seguridad.credenciales import CredencialInvalida, emitir
+
+    try:
+        token, identidad = emitir(actor, set(rol), duracion=dt.timedelta(days=dias))
+    except CredencialInvalida as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    typer.echo(f"actor      {identidad.actor}")
+    typer.echo(f"roles      {', '.join(sorted(identidad.roles))}")
+    typer.echo(f"vence      {identidad.vence_en.isoformat(timespec='seconds')}")
+    typer.echo(f"id         {identidad.jti}   (con esto se revoca)")
+    typer.echo("")
+    typer.echo(token)
+
+
+@operacion.command("revocar-credencial")
+def operacion_revocar_credencial(
+    identificador: str = typer.Argument(..., help="El id que devolvió `emitir-credencial`."),
+    actor: str = typer.Option(..., help="Quién la revoca."),
+    motivo: str = typer.Option(..., help="Por qué. Queda escrito y no se borra."),
+) -> None:
+    """Deja sin efecto una credencial antes de su vencimiento.
+
+    No se puede deshacer: que una credencial haya sido revocada es parte de la
+    historia de quién pudo hacer qué y cuándo dejó de poder.
+    """
+    from sqlalchemy import text as _text
+
+    with engine_migrador().begin() as conexion:
+        anterior = conexion.execute(
+            _text("SELECT actor, revocada_en FROM credenciales_revocadas WHERE jti = :j"),
+            {"j": identificador},
+        ).one_or_none()
+        if anterior is not None:
+            typer.echo(
+                f"Ya estaba revocada el {anterior.revocada_en.isoformat(timespec='seconds')}."
+            )
+            return
+        conexion.execute(
+            _text(
+                "INSERT INTO credenciales_revocadas (jti, actor, motivo, revocada_por) "
+                "VALUES (:j, :a, :m, :p)"
+            ),
+            {"j": identificador, "a": actor, "m": motivo, "p": actor},
+        )
+    typer.echo(f"Credencial {identificador} revocada. Deja de valer en el próximo pedido.")
+
+
+@operacion.command("credenciales-revocadas")
+def operacion_credenciales_revocadas() -> None:
+    """Lista las credenciales que dejaron de valer antes de vencer."""
+    from sqlalchemy import text as _text
+
+    with engine_migrador().connect() as conexion:
+        filas = (
+            conexion.execute(
+                _text(
+                    "SELECT jti, actor, motivo, revocada_por, revocada_en "
+                    "  FROM credenciales_revocadas ORDER BY revocada_en DESC"
+                )
+            )
+            .mappings()
+            .all()
+        )
+    if not filas:
+        typer.echo("Ninguna credencial revocada.")
+        return
+    for fila in filas:
+        typer.echo(
+            f"{fila['jti']}  {fila['actor']}  "
+            f"{fila['revocada_en'].isoformat(timespec='seconds')}  "
+            f"por {fila['revocada_por']}: {fila['motivo']}"
+        )

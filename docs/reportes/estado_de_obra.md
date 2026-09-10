@@ -66,7 +66,7 @@ pudieron ejercitar acá. Afecta a P-002 y P-005.
 | P-014 | Evaluar condiciones con lógica tipada | Parcial | El criterio 1 dice «reglas publicadas» y no hay ninguna. Causa A. |
 | P-015 | Completar el front conversacional | Sin empezar | El proyecto de front no existe: no hay ningún `package.json`. Causa C. |
 | P-016 | Completar el backoffice de datos y revisión | Sin empezar | La interfaz. La capa de datos está lista. Causa C. |
-| P-017 | Identidad, privacidad y protección | Parcial | Criterio 1: la API acepta un `X-Actor` libre como identidad, que es lo que el plan prohíbe para producción. |
+| P-017 | Identidad, privacidad y protección | Parcial | **Criterio 1 cerrado**: el actor sale de una credencial firmada por persona, con roles y vencimiento, revocable, y la bitácora registra cómo se estableció. Falta un proveedor de identidad (OIDC), la política de retención de conversación y los límites de abuso, que dependen del front. |
 | P-018 | Hacer obligatoria la integración continua | Parcial | Criterio 3: la protección de rama necesita permisos de administración del repositorio. |
 | P-019 | Desplegar revisión y producción | Sin empezar | Todo el despliegue y los probes de readiness/liveness. Causa B. |
 | P-020 | Programar monitoreo y entrega de eventos | Parcial | Sólo el disparador horario (causa B). El criterio 2 quedó cerrado: dos disparos simultáneos ya no procesan lo mismo dos veces. |

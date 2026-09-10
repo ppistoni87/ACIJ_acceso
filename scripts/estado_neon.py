@@ -53,6 +53,13 @@ HUELLAS = {
         "select count(*) = 1 from pg_constraint "
         "where conname = 'ck_plazos_fechado_relativo_o_por_evento'",
     ),
+    "0014_identidad_en_la_bitacora": (
+        "la bitácora registra cómo se estableció cada actor",
+        "select count(*) = 1 from information_schema.columns "
+        "where table_name = 'auditoria_eventos' and column_name = 'identidad' "
+        "and exists (select 1 from information_schema.tables "
+        "            where table_name = 'credenciales_revocadas')",
+    ),
     "0013_recuperacion_hibrida": (
         "hay índice semántico y el léxico está sobre la columna generada",
         "select count(*) = 1 from information_schema.tables "
