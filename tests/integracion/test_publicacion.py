@@ -592,3 +592,47 @@ def test_revertir_el_segundo_deja_el_primero_sirviendo(
     assert servibles == [version_candidata], "A sigue sirviendo; B dejó de servir"
     # Y nada se borró: los fragmentos de B siguen ahí.
     assert conexion.execute(text("SELECT count(*) FROM chunks")).scalar_one() > 0
+
+
+@pytest.fixture
+def seccion_informativa(conexion: Connection, corpus) -> str:
+    """Una sección de página institucional dentro del corpus, antes de publicar."""
+    del corpus
+    unidad = conexion.execute(
+        text("SELECT doc_version_id FROM unidades_documentales ORDER BY orden LIMIT 1")
+    ).one()
+    return conexion.execute(
+        text(
+            "INSERT INTO unidades_documentales (doc_version_id, tipo, texto, orden, "
+            " rol_contenido, ruta, rotulo) "
+            "VALUES (:dv, 'SECCION', :t, 9999, 'INFORMATIVO', 'seccion-1', 'Canales de atención') "
+            "RETURNING id"
+        ),
+        {
+            "dv": unidad.doc_version_id,
+            "t": "Canales de atención. Teléfono 0800-222-3245, de 9 a 17 hs.",
+        },
+    ).scalar_one()
+
+
+def test_lo_que_el_organismo_publica_no_entra_al_corte_como_norma(
+    conexion: Connection, seccion_informativa, corpus_publicado
+) -> None:
+    """Una página de sedes no es el articulado, y un corte no puede confundirlos.
+
+    Las secciones de páginas institucionales entran al corpus con
+    `rol_contenido = 'INFORMATIVO'` para que puedan sostener una evidencia —sin
+    unidades no hay evidencia y sin evidencia no hay destino—, pero el
+    publicador arma los fragmentos citables filtrando por `DISPOSITIVO`. Sin esa
+    separación, una respuesta podría citar el pie de una página de trámites como
+    si fuera la ley.
+    """
+    del corpus_publicado
+
+    hay_fragmentos = conexion.execute(text("SELECT count(*) FROM chunks")).scalar_one()
+    assert hay_fragmentos > 0, "el corte tiene que haber publicado algo, si no no prueba nada"
+
+    quedo = conexion.execute(
+        text("SELECT count(*) FROM chunks WHERE unidad_id = :u"), {"u": seccion_informativa}
+    ).scalar_one()
+    assert quedo == 0, "una sección informativa no es texto citable de la norma"

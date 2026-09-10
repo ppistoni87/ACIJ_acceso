@@ -179,7 +179,15 @@ class TipoUnidad(StrEnum):
 
 class RolContenido(StrEnum):
     """Distingue una unidad raíz de un texto citado o sustituido dentro de otra.
-    Un artículo citado dentro de un artículo no es un artículo raíz."""
+    Un artículo citado dentro de un artículo no es un artículo raíz.
+
+    `INFORMATIVO` es de otra clase que las demás: no es una parte de una norma
+    sino lo que un organismo publica **sobre** un derecho —una página de sedes,
+    un cronograma, los canales de atención—. Se cita como «el organismo dice X
+    en su página», nunca como «la norma dice X», y por eso el publicador, que
+    arma los fragmentos citables con `rol_contenido = 'DISPOSITIVO'`, lo deja
+    afuera solo.
+    """
 
     DISPOSITIVO = "DISPOSITIVO"
     CITADO = "CITADO"
@@ -187,6 +195,7 @@ class RolContenido(StrEnum):
     INCORPORADO = "INCORPORADO"
     HISTORICO = "HISTORICO"
     NOTA = "NOTA"
+    INFORMATIVO = "INFORMATIVO"
 
 
 class TipoEvidencia(StrEnum):

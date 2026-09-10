@@ -25,11 +25,14 @@ from dataclasses import dataclass, field
 
 from selectolax.parser import HTMLParser, Node
 
+from backend_normativo.curacion.segmentacion import UnidadSegmentada
 from backend_normativo.db.vocabularios import (
     ModoExtraccion,
+    RolContenido,
     Severidad,
     TipoDocumento,
     TipoIncidencia,
+    TipoUnidad,
     TipoVersionDocumento,
 )
 from backend_normativo.ingesta.adaptadores.base import (
@@ -84,6 +87,7 @@ class LecturaPagina:
     cierre_declarado: str | None = None
     periodo_relativo: str | None = None
     dias_sin_anio: list[str] = field(default_factory=list)
+    secciones: list[UnidadSegmentada] = field(default_factory=list)
     avisos: list[Aviso] = field(default_factory=list)
 
     @property
@@ -117,6 +121,18 @@ def leer(html: str, *, url: str = "") -> LecturaPagina:
                 f"«{lectura.ocultos[0][:120]}»",
                 tipo=TipoIncidencia.COBERTURA_EXTRACCION,
                 severidad=Severidad.MEDIUM,
+            )
+        )
+
+    lectura.secciones = _secciones(principal, lectura.texto)
+    if lectura.texto.strip() and not lectura.secciones:
+        lectura.avisos.append(
+            Aviso(
+                f"{url or 'La página'} tiene texto pero ninguna sección con título que lo "
+                "sostenga como cita. Queda el documento y no hay dónde anclar una evidencia, "
+                "así que nada de esta página puede llegar a una tabla de destino.",
+                tipo=TipoIncidencia.COBERTURA_EXTRACCION,
+                severidad=Severidad.HIGH,
             )
         )
 
@@ -154,6 +170,74 @@ def leer(html: str, *, url: str = "") -> LecturaPagina:
             )
         )
     return lectura
+
+
+# Qué encabezados abren una sección. Una página institucional no tiene
+# articulado, pero sí tiene estructura: sus propios títulos. Cada bloque bajo un
+# título es una unidad citable —«el organismo dice X bajo el título Y»— y eso es
+# lo que faltaba: toda tabla de destino exige una evidencia, y una evidencia
+# apunta a una unidad. Sin unidades, estas fuentes no estaban fallando: estaban
+# estructuralmente impedidas de llegar a ningún lado.
+SELECTOR_TITULOS = "h1, h2, h3, h4"
+
+# Un bloque más corto que esto no sostiene una cita: es un rótulo suelto, un
+# «Ver más» o una miga de pan.
+MINIMO_SECCION = 25
+
+
+def _secciones(principal: Node, texto_completo: str) -> list[UnidadSegmentada]:
+    """Parte la página por sus propios títulos.
+
+    El orden y las posiciones se calculan sobre el texto que el documento
+    guarda, no sobre el HTML: una evidencia localiza un fragmento por su
+    desplazamiento dentro del texto de la versión, y si los dos no coinciden la
+    cita apunta a otro lado.
+    """
+    unidades: list[UnidadSegmentada] = []
+    vistos: set[str] = set()
+    cursor = 0
+    for nodo in principal.css(SELECTOR_TITULOS):
+        titulo = " ".join(nodo.text(separator=" ", strip=True).split())
+        if not titulo:
+            continue
+        cuerpo: list[str] = []
+        siguiente = nodo.next
+        while siguiente is not None and siguiente.tag not in {"h1", "h2", "h3", "h4"}:
+            trozo = " ".join(siguiente.text(separator=" ", strip=True).split())
+            if trozo:
+                cuerpo.append(trozo)
+            siguiente = siguiente.next
+        contenido = " ".join([titulo, *cuerpo]).strip()
+        if len(contenido) < MINIMO_SECCION or contenido in vistos:
+            continue
+        vistos.add(contenido)
+
+        # Se ancla la sección en el texto de la versión. Si no aparece ahí, la
+        # unidad se registra igual pero sin posiciones: una cita sin ancla se
+        # puede leer, y un ancla inventada apunta a otro texto.
+        inicio = texto_completo.find(titulo, cursor)
+        if inicio == -1:
+            inicio = texto_completo.find(titulo)
+        fin = inicio + len(contenido) if inicio != -1 else None
+        if inicio != -1:
+            cursor = inicio + len(titulo)
+
+        unidades.append(
+            UnidadSegmentada(
+                tipo=TipoUnidad.SECCION,
+                texto=contenido,
+                orden=len(unidades) + 1,
+                # No es una parte de una norma: es lo que el organismo publica
+                # sobre un derecho. El publicador filtra por DISPOSITIVO, así
+                # que esto nunca entra a un corte como texto de la ley.
+                rol_contenido=RolContenido.INFORMATIVO,
+                rotulo=titulo[:200],
+                ruta=f"seccion-{len(unidades) + 1}",
+                inicio=inicio if inicio != -1 else None,
+                fin=fin,
+            )
+        )
+    return unidades
 
 
 def _contar_contenedores(principal: Node) -> tuple[int, int]:
@@ -274,12 +358,15 @@ class AdaptadorPaginaInstitucional:
                     "cierre_declarado": lectura.cierre_declarado,
                 }
             },
-            # Sin articulado no hay unidades dispositivas que clasificar: el
-            # score dice eso y no que la extracción haya salido mal.
+            unidades=lectura.secciones,
+            # El score mide qué proporción del texto quedó dentro de una sección
+            # citable. No hay articulado que clasificar y eso no es un fallo: lo
+            # que sí sería un fallo es que el texto no esté en ninguna sección,
+            # porque entonces no hay dónde anclar una evidencia.
             extraccion_score=calcular_score(
-                caracteres_clasificados=0,
+                caracteres_clasificados=sum(len(u.texto) for u in lectura.secciones),
                 caracteres_totales=len(lectura.texto),
-                unidades=0,
+                unidades=len(lectura.secciones),
             ),
             avisos=list(lectura.avisos),
         )

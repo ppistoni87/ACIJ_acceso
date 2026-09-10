@@ -53,6 +53,12 @@ HUELLAS = {
         "select count(*) = 1 from pg_constraint "
         "where conname = 'ck_plazos_fechado_relativo_o_por_evento'",
     ),
+    "0015_lo_que_el_organismo_publica": (
+        "las unidades admiten el rol INFORMATIVO",
+        "select count(*) = 1 from pg_constraint "
+        "where conname = 'ck_unidades_documentales_rol_contenido_vocabulario' "
+        "and pg_get_constraintdef(oid) like '%INFORMATIVO%'",
+    ),
     "0014_identidad_en_la_bitacora": (
         "la bitácora registra cómo se estableció cada actor",
         "select count(*) = 1 from information_schema.columns "

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import pytest
 
+from backend_normativo.db.vocabularios import RolContenido
 from backend_normativo.ingesta.adaptadores.base import CapturaMaterial
 from backend_normativo.ingesta.adaptadores.html import esta_oculto, texto_oculto
 from backend_normativo.ingesta.adaptadores.pagina_institucional import (
@@ -252,3 +253,86 @@ def test_un_cronograma_que_declara_su_periodo_no_queda_pendiente() -> None:
     lectura = leer(CRONOGRAMA_FECHADO)
     assert lectura.periodo_determinado is True
     assert not any("no dice a qué período" in str(a) for a in lectura.avisos)
+
+
+PAGINA_CON_CANALES = """
+<html><body><main>
+<h1>Canales de asesoramiento y denuncia</h1>
+<p>Quienes se notifiquen de un proceso judicial pueden solicitar asesoramiento
+por los siguientes canales:</p>
+<h2>Centro de Acceso a la Justicia</h2>
+<p>0800-222-3245. Atención telefónica para barrios populares.</p>
+<h2>WhatsApp para prevención de desalojos</h2>
+<p>(54-11) 2771-3385. Sólo mensajes, de 9:00 a 17:00 hs.</p>
+<h3>Ver</h3>
+</main></body></html>
+"""
+
+
+def test_una_pagina_institucional_deja_secciones_citables() -> None:
+    """Sin unidades no hay evidencia, y sin evidencia no hay destino posible.
+
+    Diecisiete fuentes del manifiesto respondían 200, se extraían y no dejaban
+    una fila en ninguna tabla. No estaban fallando: el adaptador daba el texto
+    de la página y cero unidades, y toda tabla de destino exige una evidencia
+    que apunta a una unidad.
+    """
+    documento = (
+        AdaptadorPaginaInstitucional()
+        .extraer(
+            _captura(PAGINA_CON_CANALES, "https://www.argentina.gob.ar/obras-publicas/canales")
+        )
+        .documentos[0]
+    )
+
+    rotulos = [u.rotulo for u in documento.unidades]
+    assert "Centro de Acceso a la Justicia" in rotulos
+    assert "WhatsApp para prevención de desalojos" in rotulos
+
+    caj = next(u for u in documento.unidades if u.rotulo == "Centro de Acceso a la Justicia")
+    assert "0800-222-3245" in caj.texto, "el canal tiene que quedar dentro de la unidad que lo cita"
+
+
+def test_las_secciones_no_son_texto_de_la_norma() -> None:
+    """Se citan como dicho del organismo, nunca como la ley.
+
+    El publicador arma los fragmentos citables filtrando por DISPOSITIVO, así
+    que el rol es lo que impide que una página de sedes entre a un corte como
+    si fuera el articulado.
+    """
+    documento = (
+        AdaptadorPaginaInstitucional()
+        .extraer(
+            _captura(PAGINA_CON_CANALES, "https://www.argentina.gob.ar/obras-publicas/canales")
+        )
+        .documentos[0]
+    )
+    assert documento.unidades
+    assert all(u.rol_contenido == RolContenido.INFORMATIVO for u in documento.unidades)
+    assert all(u.rol_contenido != RolContenido.DISPOSITIVO for u in documento.unidades)
+
+
+def test_un_rotulo_suelto_no_es_una_seccion() -> None:
+    """«Ver», «Compartir», una miga de pan: no sostienen una cita."""
+    documento = (
+        AdaptadorPaginaInstitucional()
+        .extraer(
+            _captura(PAGINA_CON_CANALES, "https://www.argentina.gob.ar/obras-publicas/canales")
+        )
+        .documentos[0]
+    )
+    assert "Ver" not in [u.rotulo for u in documento.unidades]
+
+
+def test_una_pagina_con_texto_y_sin_titulos_lo_declara() -> None:
+    """Queda el documento y no hay dónde anclar una evidencia: eso se dice."""
+    plana = (
+        "<html><body><main><p>"
+        + "Un texto largo sin ningún encabezado que lo organice. " * 4
+        + "</p></main></body></html>"
+    )
+    resultado = AdaptadorPaginaInstitucional().extraer(
+        _captura(plana, "https://www.argentina.gob.ar/algo")
+    )
+    assert not resultado.documentos[0].unidades
+    assert any("ninguna sección" in a.texto for a in resultado.documentos[0].avisos)
