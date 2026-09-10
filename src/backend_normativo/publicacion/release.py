@@ -332,11 +332,13 @@ class Publicador:
         creados = (
             self.conexion.execute(
                 text(
+                    # `tsv` no se escribe: desde la 0013 es columna generada a
+                    # partir de `texto`. Antes la escribía este INSERT y podía
+                    # quedar distinta del texto que decía representar.
                     "INSERT INTO chunks (unidad_id, registro_version_id, release_id, texto, hash, "
-                    "                    tipo, tsv) "
+                    "                    tipo) "
                     "SELECT u.id, nv.registro_version_id, :r, u.texto, "
-                    "       encode(sha256(u.texto::bytea), 'hex'), :tipo, "
-                    "       to_tsvector('spanish', u.texto) "
+                    "       encode(sha256(u.texto::bytea), 'hex'), :tipo "
                     "  FROM unidades_documentales u "
                     "  JOIN norma_versiones nv ON nv.doc_version_id = u.doc_version_id "
                     " WHERE nv.registro_version_id = ANY(:v) "

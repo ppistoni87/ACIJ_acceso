@@ -54,6 +54,27 @@ RE_ENCABEZADO = re.compile(
     r"(?P<anio>\d{4})(?:\s+(?P<organismo>[A-ZÁÉÍÓÚÑ\s.]+))?\s*$"
 )
 
+# Dónde termina la norma y empieza la página.
+#
+# El adaptador sabía dónde empieza el articulado y no dónde termina, así que
+# todo lo que la ficha muestra debajo entraba como si fuera la norma: el panel
+# de «Relaciones», sus encabezados de tabla —«Tipo de relación», «Norma
+# relacionada», «Detalle»—, los tipos de vínculo —«INTEGRA», «COMPLEMENTA»—, las
+# normas listadas y los resúmenes que la propia página redacta sobre ellas.
+#
+# Once de los treinta y tres fragmentos publicados de la Ley 6935 eran eso. No
+# es ruido inofensivo: se publicaron como texto citable, así que una respuesta
+# podía citar «Tipo de relación» o «INTEGRA» como si fuera la ley, y en la
+# medición de recuperación esos fragmentos ocupaban el 34,8% de los puestos
+# devueltos.
+#
+# El corte se hace por el encabezado del panel, que es una estructura de la
+# ficha y no una palabra suelta del texto: se exige coincidencia exacta del
+# párrafo entero. Y no se recorta en silencio: se deja aviso con cuántos
+# párrafos quedaron afuera, para que un cambio de maquetación que se coma
+# articulado se vea en vez de aparecer como una norma más corta.
+FIN_DEL_ARTICULADO: frozenset[str] = frozenset({"relaciones"})
+
 TIPOS: tuple[tuple[str, TipoNorma], ...] = (
     ("decreto ley", TipoNorma.DECRETO_LEY),
     ("decreto", TipoNorma.DECRETO),
@@ -161,7 +182,18 @@ class AdaptadorNormativaBA:
             )
 
         identidad, tipo_version, indice_texto, avisos = self._encabezado(parrafos, norma_ba_id)
-        cuerpo = self._reindexar(parrafos[indice_texto:])
+        articulado, descartados = self._recortar_panel(parrafos[indice_texto:])
+        if descartados:
+            avisos.append(
+                Aviso(
+                    f"{captura.url_final}: se descartaron {descartados} párrafo(s) posteriores "
+                    "al articulado (el panel de relaciones de la ficha, que no es la norma). "
+                    "Si la maquetación cambió, este número cambia y hay que mirarlo.",
+                    tipo=TipoIncidencia.COBERTURA_EXTRACCION,
+                    severidad=Severidad.LOW,
+                )
+            )
+        cuerpo = self._reindexar(articulado)
         segmentacion = Segmentador().segmentar(cuerpo)
         avisos.extend(
             Aviso(a, tipo=TipoIncidencia.DISCREPANCIA_NUMERACION) for a in segmentacion.avisos
@@ -314,6 +346,19 @@ class AdaptadorNormativaBA:
                 )
             )
             identidad["numeros_discrepantes_en_sintesis"] = parecidos
+
+    @staticmethod
+    def _recortar_panel(parrafos: list[Parrafo]) -> tuple[list[Parrafo], int]:
+        """Corta donde termina la norma y empieza la ficha que la muestra.
+
+        Devuelve el articulado y cuántos párrafos quedaron afuera. El número
+        vuelve como aviso: recortar en silencio convertiría un cambio de
+        maquetación en una norma más corta sin que nada lo dijera.
+        """
+        for indice, parrafo in enumerate(parrafos):
+            if parrafo.texto.strip().lower() in FIN_DEL_ARTICULADO:
+                return parrafos[:indice], len(parrafos) - indice
+        return parrafos, 0
 
     @staticmethod
     def _reindexar(parrafos: list[Parrafo]) -> list[Parrafo]:

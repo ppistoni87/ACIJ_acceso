@@ -1303,3 +1303,47 @@ no hay que repetir. Y soltar no borra la fila sino que le adelanta el
 vencimiento, así queda constancia de quién corrió la última vuelta y cuántas
 van, que es lo primero que se pregunta cuando algo no corrió.
 
+## D-68 · Fusionar por orden y no por puntaje
+
+La búsqueda híbrida tiene que combinar dos listas cuyos puntajes no son
+comparables: `ts_rank` devuelve un número sin unidad que depende de la longitud
+del documento, y la distancia coseno va de 0 a 2. Sumarlos —con pesos, con
+normalización min-max, con lo que sea— obliga a elegir una escala, y esa
+elección termina siendo el verdadero criterio de orden sin que nadie la haya
+decidido a propósito. Peor: cambia sola cuando cambia el corpus, porque el
+mínimo y el máximo de `ts_rank` dependen de qué documentos entraron.
+
+**Consecuencia:** se fusiona por rango recíproco, `1/(k+puesto)` con k=60, que
+usa solo el orden en que cada mitad dejó a cada fragmento. Un fragmento que las
+dos encuentran sube; uno que encuentra una sola entra igual, que es el punto de
+ser híbrido. Los filtros van adentro de cada mitad y no encima del resultado: si
+se filtrara después, las dos gastarían sus lugares en fragmentos que van a
+descartarse y la respuesta quedaría con menos de los que pidió sin que nada lo
+explique.
+
+## D-69 · Un fragmento publicado es texto citable, y por eso no puede ser la página
+
+La ficha de NormativaBA muestra el articulado y debajo un panel de
+«Relaciones» con las normas vinculadas. El adaptador sabía dónde empieza el
+texto y no dónde termina, así que ese panel entraba como articulado: once de los
+treinta y tres fragmentos publicados de la Ley 6935 eran encabezados de tabla
+—«Tipo de relación», «Norma relacionada»—, tipos de vínculo —«INTEGRA»,
+«COMPLEMENTA»— y resúmenes que la propia página redacta.
+
+Apareció midiendo la recuperación, no leyendo el código: ocupaban el 34,8 % de
+los puestos devueltos y eran la causa de 5 de los 7 fallos. Pero el problema de
+recuperación es el síntoma. El defecto es que se publicó como texto **citable**
+algo que no es la norma, así que una respuesta podía citar «Tipo de relación»
+como si fuera la ley.
+
+**Consecuencia:** el adaptador corta por el encabezado del panel, exigiendo
+coincidencia exacta del párrafo entero —es una estructura de la ficha, no una
+palabra suelta del texto—. Y no recorta en silencio: deja aviso con cuántos
+párrafos quedaron afuera, porque un cambio de maquetación que se coma articulado
+tiene que verse en vez de aparecer como una norma más corta.
+
+Queda dicho lo que todavía no se hizo: el corte publicado se construyó con la
+extracción vieja y sigue sirviendo esos once fragmentos. Promoverlo exige volver
+a curar las citas que apuntan a las unidades viejas, y el sistema se niega a
+reprocesar una versión con evidencia encima, con razón.
+

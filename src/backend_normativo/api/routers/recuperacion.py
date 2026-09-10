@@ -21,6 +21,8 @@ from backend_normativo.api.contratos import (
 )
 from backend_normativo.api.dependencias import Contexto
 from backend_normativo.calidad.cobertura import medir
+from backend_normativo.recuperacion.busqueda import buscar as buscar_fragmentos
+from backend_normativo.recuperacion.embeddings import embebedor_compartido
 
 router = APIRouter(prefix="/v1", tags=["recuperación"])
 
@@ -30,6 +32,7 @@ class SolicitudRecuperacion(BaseModel):
 
     consulta: str
     jurisdiccion: str | None = None
+    beneficio: str | None = None
     limite: int = Field(10, ge=1, le=50)
 
 
@@ -40,6 +43,10 @@ class Fragmento(BaseModel):
     unidad: str | None
     url_fuente: str | None
     relevancia: float
+    # De qué mitad salió. Sirve para leer el resultado: un fragmento que
+    # encontró solo la búsqueda semántica no comparte ninguna palabra con la
+    # consulta, y eso conviene saberlo antes de citarlo.
+    encontrado_por: str = "lexica"
 
 
 class ResultadoRecuperacion(BaseModel):
@@ -73,38 +80,26 @@ def recuperar(
             ],
         )
 
-    condiciones = ["c.release_id = :r", "c.tsv @@ plainto_tsquery('spanish', :q)"]
-    parametros: dict[str, object] = {
-        "r": contexto.release_id,
-        "q": solicitud.consulta,
-        "limite": solicitud.limite,
-    }
-    if solicitud.jurisdiccion:
-        condiciones.append("n.jurisdiccion_id = :j")
-        parametros["j"] = solicitud.jurisdiccion
-
-    filas = (
-        contexto.conexion.execute(
-            text(
-                "SELECT c.id, c.texto, u.ruta, f.url, "
-                "       n.tipo || ' ' || coalesce(n.numero, '?') || '/' || "
-                "       coalesce(n.anio::text, '?') AS norma, "
-                "       ts_rank(c.tsv, plainto_tsquery('spanish', :q)) AS relevancia "
-                "  FROM chunks c "
-                "  JOIN unidades_documentales u ON u.id = c.unidad_id "
-                "  JOIN norma_versiones nv ON nv.registro_version_id = c.registro_version_id "
-                "  JOIN normas n ON n.id = nv.norma_id "
-                "  JOIN documento_versiones dv ON dv.id = u.doc_version_id "
-                "  JOIN capturas cap ON cap.id = dv.captura_id "
-                "  JOIN fuente_urls f ON f.id = cap.source_url_id "
-                f" WHERE {' AND '.join(condiciones)} "
-                " ORDER BY relevancia DESC LIMIT :limite"
-            ),
-            parametros,
-        )
-        .mappings()
-        .all()
+    # La búsqueda vive en `recuperacion.busqueda`: la mitad léxica y la
+    # vectorial comparten los mismos filtros, y compartirlos importa más que
+    # tenerlos cerca. Si una se olvidara de uno, la fusión metería de vuelta lo
+    # que la otra descartó.
+    # Sin el extra de recuperación instalado, `embebedor_compartido` devuelve
+    # `None`, la mitad léxica sirve sola y la respuesta lo declara. No se cae:
+    # una consulta contestada peor es mejor que una no contestada, siempre que
+    # quien la lee sepa que fue peor.
+    hallazgo = buscar_fragmentos(
+        contexto.conexion,
+        solicitud.consulta,
+        release_id=contexto.release_id,
+        embebedor=embebedor_compartido(),
+        limite=solicitud.limite,
+        jurisdiccion=solicitud.jurisdiccion,
+        beneficio=solicitud.beneficio,
+        as_of=contexto.as_of,
+        known_at=contexto.known_at,
     )
+    filas = hallazgo.fragmentos
 
     conflictos = [
         {
@@ -122,7 +117,10 @@ def recuperar(
         ).mappings()
     ]
 
-    advertencias: list[Advertencia] = []
+    advertencias: list[Advertencia] = [
+        Advertencia(codigo=CodigoError.INSUFFICIENT_EVIDENCE, detalle=aviso)
+        for aviso in hallazgo.avisos
+    ]
     if conflictos:
         advertencias.append(
             Advertencia(
@@ -142,14 +140,15 @@ def recuperar(
         data=ResultadoRecuperacion(
             fragmentos=[
                 Fragmento(
-                    chunk_id=fila["id"],
-                    texto=fila["texto"],
-                    norma=fila["norma"],
-                    unidad=fila["ruta"],
-                    url_fuente=fila["url"],
-                    relevancia=float(fila["relevancia"]),
+                    chunk_id=fragmento.chunk_id,
+                    texto=fragmento.texto,
+                    norma=fragmento.norma,
+                    unidad=fragmento.unidad,
+                    url_fuente=fragmento.url_fuente,
+                    relevancia=fragmento.puntaje,
+                    encontrado_por=fragmento.encontrado_por,
                 )
-                for fila in filas
+                for fragmento in filas
             ],
             conflictos_pertinentes=conflictos,
         ),

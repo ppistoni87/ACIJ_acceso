@@ -26,6 +26,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# El modelo de embeddings no es dependencia del núcleo: el backend sirve datos
+# tipados, publica cortes y contesta la API sin ningún modelo. La recuperación
+# híbrida sí lo necesita, y quien la use lo instala a propósito.
+rag = [
+    "fastembed>=0.4",
+]
 dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",

@@ -1,0 +1,179 @@
+{
+ "schema_version": "1.0",
+ "nota": "Conjunto congelado para medir la recuperación (P-012 criterio 3). Las preguntas se escribieron leyendo el texto de los artículos publicados y a propósito con las palabras de quien consulta, no con las de la norma: si usaran el vocabulario legal, la búsqueda léxica sola las respondería y la comparación no mediría nada. Ninguna búsqueda se corrió antes de escribirlas.\n\nEl hash cubre id, consulta y respuesta esperada. `bn recuperacion evaluar` falla si no coincide, así que cambiar una pregunta obliga a volver a congelar en el mismo commit y el cambio queda visible. Un conjunto que se puede editar después de ver el resultado no mide nada.",
+ "corte": "Ley CABA 6935/2025, el único que el release publicado sirve.",
+ "congelado": {
+  "hash": "049727db3c016e761ba6f1b4b7027861e928053bb535c3442d264c7ec97ac496",
+  "fecha": "2026-09-10"
+ },
+ "preguntas": [
+  {
+   "id": "RC-001",
+   "consulta": "¿Para qué se creó este programa?",
+   "responde": "articulo-1",
+   "por_que": "El objeto está en el artículo 1: acceso a una solución habitacional transitoria."
+  },
+  {
+   "id": "RC-002",
+   "consulta": "¿Reemplaza al subsidio habitacional anterior?",
+   "responde": "articulo-1",
+   "por_que": "El artículo 1 dice que es continuador del Decreto 690/06."
+  },
+  {
+   "id": "RC-003",
+   "consulta": "¿Quiénes pueden recibirlo?",
+   "responde": "articulo-2",
+   "por_que": "El artículo 2 define beneficiarios."
+  },
+  {
+   "id": "RC-004",
+   "consulta": "Perdí mi casa en un incendio, ¿me alcanza?",
+   "responde": "articulo-2",
+   "por_que": "El artículo 2 incluye a quienes quedan sin vivienda por incendio, derrumbe o catástrofe."
+  },
+  {
+   "id": "RC-005",
+   "consulta": "¿Sirve si me desalojaron?",
+   "responde": "articulo-2",
+   "por_que": "El artículo 2 comprende la desocupación administrativa."
+  },
+  {
+   "id": "RC-006",
+   "consulta": "¿Cada cuánto me lo pagan?",
+   "responde": "articulo-3",
+   "por_que": "El artículo 3 fija frecuencia mensual."
+  },
+  {
+   "id": "RC-007",
+   "consulta": "¿El monto sube con la inflación?",
+   "responde": "articulo-3",
+   "por_que": "El artículo 3 fija actualización semestral según precios del alquiler."
+  },
+  {
+   "id": "RC-008",
+   "consulta": "Somos cinco en casa, ¿cobramos más que una persona sola?",
+   "responde": "articulo-3",
+   "por_que": "El artículo 3 manda una escala según composición del hogar."
+  },
+  {
+   "id": "RC-009",
+   "consulta": "¿En qué puedo gastar la plata?",
+   "responde": "articulo-4",
+   "por_que": "El artículo 4 fija el destino de la prestación."
+  },
+  {
+   "id": "RC-010",
+   "consulta": "¿Puedo usarlo para pagar la cuota del crédito del IVC?",
+   "responde": "articulo-4/parrafo-6",
+   "por_que": "El inciso ii habla de créditos hipotecarios del IVC."
+  },
+  {
+   "id": "RC-011",
+   "consulta": "¿Tengo que rendir cuentas de lo que gasté?",
+   "responde": "articulo-4/parrafo-7",
+   "por_que": "El inciso iii exige acreditar el destino de los fondos."
+  },
+  {
+   "id": "RC-012",
+   "consulta": "¿Me pueden dar todo junto en vez de mes a mes?",
+   "responde": "articulo-5",
+   "por_que": "El artículo 5 crea la modalidad de pago único."
+  },
+  {
+   "id": "RC-013",
+   "consulta": "Si agarro el pago único, ¿después puedo seguir cobrando?",
+   "responde": "articulo-5/parrafo-9",
+   "por_que": "El párrafo dice que la opción es excluyente por el término que fije la reglamentación."
+  },
+  {
+   "id": "RC-014",
+   "consulta": "¿Qué papeles necesito para pedirlo?",
+   "responde": "articulo-6",
+   "por_que": "El artículo 6 lista los requisitos de acceso."
+  },
+  {
+   "id": "RC-015",
+   "consulta": "¿Cuánto tiempo tengo que llevar viviendo en la Ciudad?",
+   "responde": "articulo-6/inciso-a-11",
+   "por_que": "El inciso a pide dos años de residencia."
+  },
+  {
+   "id": "RC-016",
+   "consulta": "Sufrí violencia de género, ¿me piden igual la antigüedad?",
+   "responde": "articulo-6/inciso-a-11",
+   "por_que": "El inciso a exceptúa a víctimas de violencia de género y trata."
+  },
+  {
+   "id": "RC-017",
+   "consulta": "¿Hay un tope de ingresos para calificar?",
+   "responde": "articulo-6/inciso-b-12",
+   "por_que": "El inciso b compara contra la Canasta Básica Total del INDEC."
+  },
+  {
+   "id": "RC-018",
+   "consulta": "Si tengo un departamento a mi nombre, ¿puedo pedirlo?",
+   "responde": "articulo-6/inciso-c-13",
+   "por_que": "El inciso c excluye a titulares de bienes inmuebles."
+  },
+  {
+   "id": "RC-019",
+   "consulta": "¿Puedo cobrar esto y otro subsidio de vivienda a la vez?",
+   "responde": "articulo-6/inciso-c-13",
+   "por_que": "El inciso c excluye percibir otros subsidios habitacionales."
+  },
+  {
+   "id": "RC-020",
+   "consulta": "No tengo el DNI, ¿igual puedo entrar?",
+   "responde": "articulo-6/parrafo-15",
+   "por_que": "El párrafo admite mecanismos flexibles e ingreso provisorio por falta de documentación."
+  },
+  {
+   "id": "RC-021",
+   "consulta": "¿Por cuánto tiempo me lo dan?",
+   "responde": "articulo-7",
+   "por_que": "El artículo 7 fija un plazo inicial de hasta doce meses."
+  },
+  {
+   "id": "RC-022",
+   "consulta": "¿Se puede renovar cuando se termina?",
+   "responde": "articulo-7",
+   "por_que": "El artículo 7 prevé prórroga por períodos sucesivos."
+  },
+  {
+   "id": "RC-023",
+   "consulta": "Estoy durmiendo en la calle ahora mismo, ¿hay algo urgente?",
+   "responde": "articulo-8",
+   "por_que": "El artículo 8 crea el pago de emergencia y el ingreso provisorio."
+  },
+  {
+   "id": "RC-024",
+   "consulta": "¿Me pueden pagar la primera cuota sin tener todos los papeles?",
+   "responde": "articulo-8",
+   "por_que": "El artículo 8 permite liquidar la primera cuota sin documentación completa."
+  },
+  {
+   "id": "RC-025",
+   "consulta": "¿Alguien me acompaña además de darme la plata?",
+   "responde": "articulo-9",
+   "por_que": "El artículo 9 crea los dispositivos de acompañamiento territorial."
+  },
+  {
+   "id": "RC-026",
+   "consulta": "¿Me ayudan a conseguir trabajo o a anotarme en la escuela?",
+   "responde": "articulo-9",
+   "por_que": "El artículo 9 manda articular para el acceso a salud, educación y empleo."
+  },
+  {
+   "id": "RC-027",
+   "consulta": "Mientras no salga la reglamentación, ¿qué reglas rigen?",
+   "responde": "transitoria-21",
+   "por_que": "La cláusula transitoria mantiene el Decreto 690/06 hasta que se reglamente."
+  }
+ ],
+ "fuera_del_corte": [
+  "asignación universal por hijo para protección social",
+  "beca de comedor escolar",
+  "asignación por maternidad",
+  "barrios populares del RENABAP"
+ ]
+}

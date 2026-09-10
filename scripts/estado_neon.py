@@ -53,6 +53,16 @@ HUELLAS = {
         "select count(*) = 1 from pg_constraint "
         "where conname = 'ck_plazos_fechado_relativo_o_por_evento'",
     ),
+    "0013_recuperacion_hibrida": (
+        "hay índice semántico y el léxico está sobre la columna generada",
+        "select count(*) = 1 from information_schema.tables "
+        "where table_name = 'fragmento_vectores' "
+        "and exists (select 1 from pg_indexes "
+        "            where indexname = 'ix_chunks_tsv') "
+        "and exists (select 1 from information_schema.columns "
+        "            where table_name = 'chunks' and column_name = 'tsv' "
+        "              and is_generated = 'ALWAYS')",
+    ),
     "0012_un_ciclo_por_vez": (
         "existe la tabla de turnos y el ingestor no puede borrar constancias",
         "select count(*) = 1 from information_schema.tables "

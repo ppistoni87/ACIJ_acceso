@@ -307,3 +307,49 @@ def test_una_cita_normal_a_otra_norma_no_se_reporta_como_discrepancia() -> None:
         .documentos[0]
     )
     assert "numeros_discrepantes_en_sintesis" not in documento.identidad
+
+
+NORMATIVA_BA_CON_PANEL = """
+<html><body><main>
+<p>LEY 547 2001</p>
+<p>Síntesis:</p><p>MODIFICACIÓN DE LA ORDENANZA 43478 - SERVICIO DE DESAYUNO</p>
+<p>Publicación:</p><p>24/04/2001</p>
+<p>Estado:</p><p>Vigente</p>
+<p>Texto original</p>
+<p>Artículo 1° - El Poder Ejecutivo brindará un servicio de desayuno.</p>
+<p>Artículo 2° - Comuníquese.</p>
+<p>Relaciones</p>
+<p>Tipo de relación</p>
+<p>Norma relacionada</p>
+<p>Detalle</p>
+<p>INTEGRA</p>
+<p>ORDENANZA 43478 1989</p>
+<p>PROMULGADA POR DECRETO 495 2025</p>
+</main></body></html>
+"""
+
+
+def test_normativaba_no_publica_el_panel_de_relaciones_como_articulado() -> None:
+    """El adaptador sabía dónde empieza el texto y no dónde termina.
+
+    Todo lo que la ficha muestra debajo del articulado —el panel de
+    «Relaciones», sus encabezados de tabla, los tipos de vínculo— entraba como
+    si fuera la norma y se publicaba como texto citable: una respuesta podía
+    citar «Tipo de relación» como si fuera la ley.
+    """
+    resultado = AdaptadorNormativaBA().extraer(
+        _material(
+            "https://boletinoficial.buenosaires.gob.ar/normativaba/norma/11223",
+            NORMATIVA_BA_CON_PANEL,
+        )
+    )
+    documento = resultado.documentos[0]
+    textos = " ".join(unidad.texto for unidad in documento.unidades)
+
+    assert "servicio de desayuno" in textos
+    for intruso in ("Tipo de relación", "Norma relacionada", "INTEGRA", "PROMULGADA POR"):
+        assert intruso not in textos, f"«{intruso}» es de la página, no de la norma"
+
+    # Y el recorte no es silencioso: si la maquetación cambia y el corte se come
+    # articulado, el número de descartados lo dice.
+    assert any("se descartaron 7 párrafo(s)" in aviso.texto for aviso in resultado.avisos)

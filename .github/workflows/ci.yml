@@ -30,7 +30,12 @@ jobs:
 
     services:
       db:
-        image: postgres:16
+        # `pgvector/pgvector:pg16` es `postgres:16` con la extensión `vector`
+        # instalada. Desde la migración 0013 el esquema la crea, así que con la
+        # imagen pelada «migraciones desde cero» falla en CI y pasa en la
+        # máquina de quien tenga el paquete del sistema puesto — que es
+        # exactamente la clase de verde que este workflow existe para impedir.
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres

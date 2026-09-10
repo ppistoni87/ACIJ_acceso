@@ -39,7 +39,7 @@ canal de alertas y el plan contratado de Neon con su retención. Nada de eso se
 provisiona desde el repositorio. Afecta a P-004, P-019, P-020, P-021 y P-022.
 
 **C · Falta construirlo.** Desarrollo no empezado y no bloqueado por nada
-externo. Afecta a P-012, P-013, P-015 y P-016.
+externo. Afecta a P-013, P-015 y P-016.
 
 **D · Límite del contenedor.** Sin egreso TCP al puerto 5432, el esquema se
 aplicó a Neon por su endpoint HTTPS oficial —TLS validado, sin túneles—, pero la
@@ -61,7 +61,7 @@ pudieron ejercitar acá. Afecta a P-002 y P-005.
 | P-009 | Operar el circuito de revisión humana | Hecha | Nada del criterio. Falta que alguien lo use, y eso es P-010. |
 | P-010 | Resolver el expediente jurídico del alcance | **No hecha, a propósito** | La firma. 166 candidatas listas —109 con condición ejecutable, 57 sin ella—. Causa A. |
 | P-011 | Publicar cortes completos y reversibles | Hecha | Nada del criterio. |
-| P-012 | Implementar recuperación híbrida trazable | Sin empezar | Todo lo vectorial: embeddings, fusión, Recall@5. Causa C; es la próxima construible. |
+| P-012 | Implementar recuperación híbrida trazable | Parcial | Construida y medida: Recall@5 híbrido **74,1 %** contra 0 % de la léxica sola, sin llegar al umbral de 90 %. La causa está identificada y corregida en el origen, pero el corte publicado se armó con la extracción vieja; volver a medir sobre un corte limpio exige re-curar las citas (trabajo jurídico). |
 | P-013 | Generar respuestas con citas y abstención | Sin empezar | No hay proveedor de modelo ni validadores de cita. Causa C, depende de P-012. |
 | P-014 | Evaluar condiciones con lógica tipada | Parcial | El criterio 1 dice «reglas publicadas» y no hay ninguna. Causa A. |
 | P-015 | Completar el front conversacional | Sin empezar | El proyecto de front no existe: no hay ningún `package.json`. Causa C. |
@@ -85,7 +85,9 @@ pudieron ejercitar acá. Afecta a P-002 y P-005.
 3. **Correr la suite contra PostgreSQL 18.** El CI usa 16 y Neon sirve 18.6. El
    esquema coincide, pero ninguna prueba corrió contra el motor que va a
    producción.
-4. **Construir P-012.** No espera a nadie; las extensiones ya están disponibles.
+4. **Volver a medir la recuperación sobre un corte limpio.** La extracción
+   corregida existe; falta re-curar las citas de la Ley 6935 para que el corte
+   deje de servir los once fragmentos que no son la norma.
 5. **La protección de rama** que hace obligatorios los checks de CI (P-018,
    criterio 3). Necesita permisos de administración del repositorio.
 

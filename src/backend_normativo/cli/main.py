@@ -53,6 +53,8 @@ objetos = typer.Typer(help="Almacén de originales.", no_args_is_help=True)
 app.add_typer(objetos, name="objetos")
 plazos = typer.Typer(help="Calendarios y cómputo de plazos.", no_args_is_help=True)
 app.add_typer(plazos, name="plazos")
+recuperacion = typer.Typer(help="Índice semántico y búsqueda híbrida.", no_args_is_help=True)
+app.add_typer(recuperacion, name="recuperacion")
 
 
 @catalogo.command("validar")
@@ -1960,3 +1962,110 @@ def monitoreo_entregar(
 
 if __name__ == "__main__":
     app()
+
+
+@recuperacion.command("indexar")
+def recuperacion_indexar(
+    release: str | None = typer.Option(None, help="Corte a indexar. Por omisión, el último."),
+    modelo: str | None = typer.Option(None, help="Modelo de embeddings."),
+    salida: Path | None = typer.Option(None, help="Archivo donde escribir la evidencia."),
+) -> None:
+    """Construye el índice semántico del corte publicado.
+
+    Reconstruir es barato y es lo que hace: compara el hash del texto de cada
+    fragmento contra el que su vector embebió y solo recalcula lo que cambió.
+    """
+    import uuid as _uuid
+
+    from backend_normativo.recuperacion.embeddings import EmbebedorFastEmbed
+    from backend_normativo.recuperacion.indice import Indexador
+    from backend_normativo.recuperacion.indice import formatear as formatear_indice
+
+    embebedor = EmbebedorFastEmbed(modelo) if modelo else EmbebedorFastEmbed()
+    with engine_migrador().begin() as conexion:
+        resultado = Indexador(conexion, embebedor).construir(
+            _uuid.UUID(release) if release else None
+        )
+
+    texto = formatear_indice(resultado)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto + "\n", encoding="utf-8")
+        typer.echo(f"Evidencia escrita en {salida} · fragmentos {resultado.fragmentos}")
+    else:
+        typer.echo(texto)
+    if resultado.release_id is None:
+        raise typer.Exit(code=1)
+
+
+@recuperacion.command("buscar")
+def recuperacion_buscar(
+    consulta: str = typer.Argument(..., help="Lo que se busca, en palabras de quien pregunta."),
+    limite: int = typer.Option(5, help="Cuántos fragmentos devolver."),
+    jurisdiccion: str | None = typer.Option(None, help="Filtrar por jurisdicción."),
+    beneficio: str | None = typer.Option(None, help="Filtrar por código de beneficio."),
+    solo_lexica: bool = typer.Option(False, help="Sin la mitad vectorial, para comparar."),
+) -> None:
+    """Busca en el corte publicado combinando texto y significado."""
+    from sqlalchemy import text as _text
+
+    from backend_normativo.recuperacion.busqueda import buscar as buscar_fragmentos
+    from backend_normativo.recuperacion.embeddings import EmbebedorFastEmbed
+
+    with engine_migrador().connect() as conexion:
+        release = conexion.execute(
+            _text(
+                "SELECT id FROM releases WHERE estado = 'PUBLICADO' "
+                "ORDER BY publicado_en DESC LIMIT 1"
+            )
+        ).scalar_one_or_none()
+        if release is None:
+            typer.echo("No hay ningún corte publicado. No se busca en staging.")
+            raise typer.Exit(code=1)
+        resultado = buscar_fragmentos(
+            conexion,
+            consulta,
+            release_id=release,
+            embebedor=None if solo_lexica else EmbebedorFastEmbed(),
+            limite=limite,
+            jurisdiccion=jurisdiccion,
+            beneficio=beneficio,
+        )
+
+    for fragmento in resultado.fragmentos:
+        typer.echo(
+            f"[{fragmento.encontrado_por:10s}] {fragmento.puntaje:.4f}  "
+            f"{fragmento.norma} · {fragmento.unidad}"
+        )
+        typer.echo(f"    {fragmento.texto[:180].strip()}")
+    if not resultado.fragmentos:
+        typer.echo("Sin resultados en el corte publicado.")
+    for aviso in resultado.avisos:
+        typer.echo(f"  aviso: {aviso}")
+
+
+@recuperacion.command("evaluar")
+def recuperacion_evaluar(
+    conjunto: Path = typer.Option(
+        Path("docs/calidad/recuperacion.json"), help="Conjunto congelado de evaluación."
+    ),
+    salida: Path | None = typer.Option(None, help="Archivo donde escribir el reporte."),
+) -> None:
+    """Mide Recall@k sobre el conjunto congelado, léxica contra híbrida.
+
+    Falla si el conjunto cambió sin que se actualice su hash: un conjunto de
+    evaluación que se puede editar después de ver el resultado no evalúa nada.
+    """
+    from backend_normativo.recuperacion.evaluacion import correr as correr_evaluacion
+    from backend_normativo.recuperacion.evaluacion import formatear as formatear_evaluacion
+
+    with engine_migrador().connect() as conexion:
+        reporte = correr_evaluacion(conexion, conjunto)
+
+    texto = formatear_evaluacion(reporte)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto + "\n", encoding="utf-8")
+        typer.echo(f"Reporte escrito en {salida} · Recall@5 híbrido {reporte.recall_hibrido:.1%}")
+    else:
+        typer.echo(texto)
