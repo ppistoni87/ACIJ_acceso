@@ -52,7 +52,7 @@ pudieron ejercitar acá. Afecta a P-002 y P-005.
 | --- | --- | --- | --- |
 | P-001 | Consolidar una línea de base reproducible | Hecha | Nada del criterio. |
 | P-002 | Provisionar PostgreSQL persistente en Neon | Parcial | Criterio 3: medir el presupuesto de conexiones con carga (causa D). La región se heredó del proyecto y no se eligió con criterios medibles. |
-| P-003 | Migrar el esquema y aislar permisos | Parcial | Neon quedó en la cabeza `0008`; las migraciones 0009, 0010 y 0011 sólo están en local. Ninguna prueba corrió contra PostgreSQL 18. |
+| P-003 | Migrar el esquema y aislar permisos | Parcial | Ninguna prueba corrió todavía contra PostgreSQL 18: el CI usa 16 y Neon sirve 18.6. El esquema remoto está al día en `0011`, verificado contra la base con `scripts/estado_neon.py`. |
 | P-004 | Conservar originales fuera del contenedor | Parcial | El bucket privado y su política de retención (causa B). La verificación de integridad está implementada y bloquea la publicación. |
 | P-005 | Cargar el corpus de forma reanudable | Parcial | Los tres criterios se cumplen, pero nunca corrió contra Neon (causa D). |
 | P-006 | Completar adaptadores y fuentes operativas | Parcial | 54 de 85 fuentes no sirven: 29 sin capturar, 15 sin URL conocida, 17 capturadas y extraídas sin destino SQL, 5 capturadas sin extraer. |
@@ -82,7 +82,9 @@ pudieron ejercitar acá. Afecta a P-002 y P-005.
    Sólo puede hacerlo curación jurídica.
 2. **Definir titularidad de la cuenta de nube y el pagador.** Una decisión
    destraba cinco historias, y además permite correr la carga contra Neon.
-3. **Aplicar las migraciones 0009 a 0011 sobre Neon.** Es un comando.
+3. **Correr la suite contra PostgreSQL 18.** El CI usa 16 y Neon sirve 18.6. El
+   esquema coincide, pero ninguna prueba corrió contra el motor que va a
+   producción.
 4. **Construir P-012.** No espera a nadie; las extensiones ya están disponibles.
 5. **Dos arreglos chicos:** el *lease* del ciclo de monitoreo y la protección de
    rama.

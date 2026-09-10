@@ -9,7 +9,20 @@ septiembre de 2026 contra la base real, no lo que la configuración declara.
   publicarlo sería regalar la mitad de la credencial.
 - **Base:** `neondb`
 - **Motor:** PostgreSQL **18.6**
-- **Cabeza de migraciones aplicada:** `0008_el_ingestor_no_resuelve`
+- **Cabeza de migraciones aplicada:** este acta ya no la declara. Se pregunta:
+
+  ```
+  NEON_DSN=... python scripts/estado_neon.py
+  ```
+
+  Este acta declaraba `0008_el_ingestor_no_resuelve` escrito a mano. Después se
+  aplicaron tres migraciones más y el número quedó viejo sin que nada avisara,
+  hasta que un informe de estado lo leyó y dio por pendiente un trabajo que ya
+  estaba hecho. `scripts/estado_neon.py` compara la cabeza de la base contra la
+  que el código espera y comprueba, migración por migración, que su efecto esté
+  en el esquema y no solo su fila en `alembic_version` —una migración aplicada
+  por HTTP en lotes es exactamente donde una cosa puede pasar sin la otra—. Sale
+  distinto de cero si no coinciden.
 
 La cuenta y el proyecto los creó la persona que opera; el agente recibió la
 cadena de conexión ya provista. Ninguna credencial vive en el repositorio.
