@@ -56,7 +56,7 @@ pudieron ejercitar acá. Afecta a P-002 y P-005.
 | P-003 | Migrar el esquema y aislar permisos | Parcial | Ninguna prueba corrió todavía contra PostgreSQL 18: el CI usa 16 y Neon sirve 18.6. El esquema remoto está al día en `0011`, verificado contra la base con `scripts/estado_neon.py`. |
 | P-004 | Conservar originales fuera del contenedor | Parcial | El bucket privado y su política de retención (causa B). La verificación de integridad está implementada y bloquea la publicación. |
 | P-005 | Cargar el corpus de forma reanudable | Parcial | Los tres criterios se cumplen, pero nunca corrió contra Neon (causa D). |
-| P-006 | Completar adaptadores y fuentes operativas | Parcial | 54 de 85 fuentes no sirven: 29 sin capturar, 15 sin URL conocida, 17 capturadas y extraídas sin destino SQL, 5 capturadas sin extraer. |
+| P-006 | Completar adaptadores y fuentes operativas | Parcial | **38 de 85 sirven** (eran 31). Las «capturadas y sin destino» bajaron de 17 a 10 al arreglar la extracción de páginas institucionales y curar 52 canales de atención. Quedan 29 sin capturar, 15 sin URL conocida, 5 capturadas sin extraer, y 10 que necesitan curadores de trámites, pasos y puntos de atención. |
 | P-007 | Resolver citas, vigencia y relaciones | Hecha | Las 215 referencias sin resolver son la cola auditable que el criterio 2 pide. |
 | P-008 | Completar las siete dimensiones | Parcial | 135 campos en PENDIENTE y sólo 4 INFORMADO (1,06 %). Causa A. |
 | P-009 | Operar el circuito de revisión humana | Hecha | Nada del criterio. Falta que alguien lo use, y eso es P-010. |
