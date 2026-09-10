@@ -33,6 +33,7 @@ from backend_normativo.curacion.revision_reglas import (
     marcar_en_revision,
     rechazar,
 )
+from backend_normativo.publicacion.gates import evaluar_gates
 from backend_normativo.publicacion.release import PublicacionRechazada, Publicador
 from backend_normativo.seguridad.credenciales import ROL_PUBLICADOR, ROL_REVISOR
 
@@ -328,6 +329,51 @@ def decidir_regla(
         "decidido_por": actor,
         # Aprobada no es servible: falta el corte de publicación.
         "publicada": False,
+    }
+
+
+@router.get("/releases/propuesta")
+def propuesta_de_release(
+    admin: Administracion = Depends(exigir_rol(ROL_PUBLICADOR)),
+) -> dict:
+    """Qué publicaría un corte ahora, con sus controles y lo que quedaría afuera.
+
+    P-016 criterio 2. Publicar es irreversible en el sentido que importa —lo
+    publicado se sirve, y quien consulta lo lee como el derecho vigente— así que
+    quien firma tiene que poder ver antes qué entra, qué controles pasan y qué
+    queda en cuarentena. Sin esto, confirmar es firmar a ciegas.
+
+    Es una lectura: no crea nada. La ruta de creación es otra y exige el mismo
+    rol.
+    """
+    publicador = Publicador(admin.conexion)
+    candidatos = publicador.candidatos()
+    controles = evaluar_gates(admin.conexion, candidatos)
+    cuarentena = publicador.cuarentena()
+
+    return {
+        "candidatos": len(candidatos),
+        "puede_publicar": bool(candidatos) and controles.pasa,
+        "por_que_no": (
+            ""
+            if candidatos
+            else "No hay ninguna versión aprobada y con vigencia resuelta esperando corte."
+        ),
+        "controles": [
+            {
+                "id": g.id,
+                "descripcion": g.descripcion,
+                "pasa": g.pasa,
+                "observado": g.observado,
+                "esperado": g.esperado,
+            }
+            for g in controles.gates
+        ],
+        "en_cuarentena": cuarentena,
+        "aclaracion": (
+            "La cuarentena es tan importante como lo publicable: sin ella, «no aparece "
+            "en la respuesta» y «no existe» se vuelven indistinguibles."
+        ),
     }
 
 

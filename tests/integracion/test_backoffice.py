@@ -163,3 +163,42 @@ def test_una_regla_decidida_sale_de_la_cola_de_candidatas(
     ).one()
     assert evento.actor == "curacion_juridica:persona"
     assert evento.identidad == "CREDENCIAL_FIRMADA"
+
+
+def test_el_publicador_ve_el_corte_antes_de_confirmarlo(cliente_api, monkeypatch, corpus) -> None:
+    """P-016 criterio 2: firmar a ciegas no es firmar.
+
+    Lo publicado se sirve, y quien consulta lo lee como el derecho vigente. Ver
+    antes qué entra, qué controles pasan y qué queda en cuarentena es la
+    diferencia entre confirmar y aceptar.
+    """
+    del corpus
+    monkeypatch.setenv("BN_CREDENCIAL_SECRETO", SECRETO)
+    monkeypatch.delenv("BN_IDENTIDAD_MODO", raising=False)
+    token, _ = emitir(
+        "publicacion:persona",
+        {ROL_PUBLICADOR},
+        duracion=dt.timedelta(days=1),
+        secreto_bytes=SECRETO.encode(),
+    )
+
+    respuesta = cliente_api.get(
+        "/v1/admin/releases/propuesta", headers={"Authorization": f"Bearer {token}"}
+    )
+    assert respuesta.status_code == 200
+    cuerpo = respuesta.json()
+
+    assert "candidatos" in cuerpo
+    assert cuerpo["controles"], "los controles se ven antes, no después de fallar"
+    assert all({"id", "descripcion", "pasa"} <= set(g) for g in cuerpo["controles"])
+    # Sin nada aprobado no se puede publicar, y se dice por qué.
+    assert cuerpo["puede_publicar"] is False
+    assert "aprobada" in cuerpo["por_que_no"]
+
+
+def test_la_propuesta_de_corte_es_del_publicador(cliente_api, revisor) -> None:
+    """Un revisor no ve el corte ni lo firma: son decisiones distintas."""
+    respuesta = cliente_api.get(
+        "/v1/admin/releases/propuesta", headers={"Authorization": f"Bearer {revisor}"}
+    )
+    assert respuesta.status_code == 403

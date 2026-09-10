@@ -15,11 +15,11 @@ Generado por `scripts/corrida_limpia.sh`. La base se crea y se destruye en la
 misma corrida: si algo de acá se pudiera explicar por estado previo, no habría
 estado previo del que agarrarse.
 
-- Arranque: `2026-09-10T01:39:35+00:00`
-- Cierre: `2026-09-10T01:52:00+00:00`
-- Resultado: **completa**
+- Arranque: `2026-09-10T19:08:17+00:00`
+- Cierre: `2026-09-10T19:13:50+00:00`
+- Resultado: **interrumpida en «población completa»**
 - Base: `backend_normativo_limpia`
-- Fuentes que el planificador deja pendientes al cerrar: `2`
+- Fuentes que el planificador deja pendientes al cerrar: `—`
 
 ## Pasos
 
@@ -28,33 +28,18 @@ corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
 
 | Paso | Duración | Última línea |
 | --- | ---: | --- |
-| migraciones | 2.0 s | INFO  [alembic.runtime.migration] Running upgrade 0010_grafo_sin_recursion -> 0011_plazo… |
-| población completa | 474.1 s | Incidencias abiertas: 46 |
-| segunda pasada (idempotencia) | 263.1 s | Incidencias abiertas: 0 |
-| planificación al cierre (en seco) | 0.8 s | alguien corre el comando. |
-
-## Controles sobre el corpus recién construido
-
-Corren acá y no en la población porque es el único lugar donde el corpus
-se armó desde cero: un control sobre una base de desarrollo puede estar
-pasando por un resto de una corrida anterior.
-
-| Control | Veredicto | Qué contó |
-| --- | --- | --- |
-| `bn ingesta conciliar` | pasa | - **F01** (catalogo_infoleg) — homonimas: 6561, identidad_incierta: 322331, sin_numero: 142, sin_texto: 235489 - **F20** (directorio) — coordenadas_sin_crs: 21 - **F44** (dpn) — alcance_sin_declarar: 38, correos_no |
-| `bn calidad grafo` | pasa | - Relaciones: 401 - Normas con al menos una relación: 124 - Referencias pendientes de resolver: 210 - Autorreferencias: 0  |
-| `bn calidad plazos` | pasa | - Plazos cargados: 16 - Con la cantidad respaldada por su cita: 13 - Expresados como evento, sin cantidad que comprobar: 3 - **Con una cantidad que su cita no contiene: 0**  |
-| `bn calidad fuentes` | pasa | - Fuentes en el catálogo: 85 - **Sirven** (dejaron filas donde su historia dice): 31, de las cuales 1 acreditadas por la conciliación del importador y no por evidencia por fila - **Capturadas, extraídas y sin destino* |
+| migraciones | 1.4 s | INFO  [alembic.runtime.migration] Running upgrade 0014_identidad_en_la_bitacora -> 0015_… |
+| población completa | 330.7 s | **falló** — F36: 8 URLs promovidas |
 
 ## Con qué quedó la base
 
 | Qué | Cuántos |
 | --- | ---: |
-| Fuentes en el catálogo | 85 |
-| Capturas | 156 |
-| Unidades documentales | 1523 |
-| Beneficios curados | 16 |
-| Incidencias abiertas | 4816 |
+| Fuentes en el catálogo | 83 |
+| Capturas | 66 |
+| Unidades documentales | 1033 |
+| Beneficios curados | 0 |
+| Incidencias abiertas | 125 |
 
 Las incidencias abiertas no son un fallo de la corrida: son lo que el sistema
 encontró y no resolvió solo. Una corrida limpia que no abriera ninguna estaría
@@ -72,40 +57,22 @@ algo distinto de los datos.
 | Fuente | Estado | Solicitadas | Descargadas | Rechazadas | Detalle |
 | --- | --- | ---: | ---: | ---: | --- |
 | F04 | FALLIDA | 1 | 0 | 1 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL |
-| F04 | FALLIDA | 1 | 0 | 1 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL |
 | M05 | FALLIDA | 1 | 0 | 1 | https://www.anses.gob.ar/: HTTP 403. La fuente queda pausada; no se rotan identidades ni se evaden controles d |
-| M05 | FALLIDA | 1 | 0 | 1 | https://www.anses.gob.ar/: HTTP 403. La fuente queda pausada; no se rotan identidades ni se evaden controles d |
-| C01 | COMPLETA | 1 | 1 | 0 |  |
-| C01 | COMPLETA | 1 | 1 | 0 |  |
-| D01 | COMPLETA | 3 | 3 | 0 |  |
 | D01 | COMPLETA | 3 | 3 | 0 |  |
 | D01 | COMPLETA | 1 | 1 | 0 |  |
-| D01 | COMPLETA | 3 | 3 | 0 |  |
-| D02 | COMPLETA | 2 | 2 | 0 |  |
-| D02 | COMPLETA | 2 | 2 | 0 |  |
 | D02 | COMPLETA | 2 | 2 | 0 |  |
 | D02 | COMPLETA | 1 | 1 | 0 |  |
 | D03 | COMPLETA | 1 | 1 | 0 |  |
 | D03 | COMPLETA | 1 | 1 | 0 |  |
-| D03 | COMPLETA | 1 | 1 | 0 |  |
-| D03 | COMPLETA | 1 | 1 | 0 |  |
-| D04 | COMPLETA | 1 | 1 | 0 |  |
-| D04 | COMPLETA | 1 | 1 | 0 |  |
 | D04 | COMPLETA | 1 | 1 | 0 |  |
 | D04 | COMPLETA | 1 | 1 | 0 |  |
 | D05 | COMPLETA | 1 | 1 | 0 |  |
 | D05 | COMPLETA | 1 | 1 | 0 |  |
-| D05 | COMPLETA | 1 | 1 | 0 |  |
-| D05 | COMPLETA | 1 | 1 | 0 |  |
-| D06 | COMPLETA | 1 | 1 | 0 |  |
-| D06 | COMPLETA | 1 | 1 | 0 |  |
 | D06 | COMPLETA | 1 | 1 | 0 |  |
 | D06 | COMPLETA | 1 | 1 | 0 |  |
 | D07 | COMPLETA | 1 | 1 | 0 |  |
 | D08 | COMPLETA | 1 | 1 | 0 |  |
 | D09 | COMPLETA | 1 | 1 | 0 |  |
-| D10 | COMPLETA | 1 | 1 | 0 |  |
-| D10 | COMPLETA | 1 | 1 | 0 |  |
 | D10 | COMPLETA | 1 | 1 | 0 |  |
 | D10 | COMPLETA | 1 | 1 | 0 |  |
 | F01 | COMPLETA | 1 | 1 | 0 |  |
@@ -126,12 +93,8 @@ algo distinto de los datos.
 | F32 | COMPLETA | 1 | 1 | 0 |  |
 | F33 | COMPLETA | 1 | 1 | 0 |  |
 | F33 | COMPLETA | 1 | 1 | 0 |  |
-| F33 | COMPLETA | 1 | 1 | 0 |  |
-| F33 | COMPLETA | 1 | 1 | 0 |  |
 | F36 | COMPLETA | 1 | 1 | 0 |  |
-| F39 | COMPLETA | 2 | 2 | 0 |  |
 | F39 | COMPLETA | 1 | 1 | 0 |  |
-| F39 | COMPLETA | 2 | 2 | 0 |  |
 | F40 | COMPLETA | 1 | 1 | 0 |  |
 | F43 | COMPLETA | 1 | 1 | 0 |  |
 | F44 | COMPLETA | 1 | 1 | 0 |  |
@@ -156,8 +119,6 @@ algo distinto de los datos.
 | M03 | COMPLETA | 1 | 1 | 0 |  |
 | M04 | COMPLETA | 1 | 1 | 0 |  |
 | M06 | COMPLETA | 1 | 1 | 0 |  |
-| N01 | COMPLETA | 31 | 31 | 0 |  |
-| N01 | COMPLETA | 31 | 31 | 0 |  |
 
 No todas las corridas en `FALLIDA` son iguales. Un tiempo de espera agotado o una
 conexión cortada es el portal de turno teniendo un mal momento: el cliente reintenta
@@ -182,10 +143,7 @@ dos veces seguidas sobre la misma base y se cuenta lo que hay antes y después.
 Una primera pasada nunca prueba la segunda, y la segunda es la que corre en
 producción todos los días.
 
-| Momento | Versiones de documento |
-| --- | ---: |
-| Después de la primera pasada | 85 |
-| Después de la segunda | 85 |
+La segunda pasada no llegó a correr: la corrida se interrumpió antes.
 
 ## Lecturas curadas que no se pudieron cargar
 
@@ -193,16 +151,30 @@ Una lectura curada se apoya en el texto capturado de su norma: sin ese texto no
 hay nada que citar y el beneficio no entra. Que falte no es un error de la
 lectura, es que la fuente no entregó en esta corrida.
 
-Ninguna: las 22 lecturas curadas encontraron su norma en el corpus.
+| Lectura | Norma que le falta |
+| --- | --- |
+| `decreto-nacional-1602-2009.json` | `infoleg:159466:original` |
+| `decreto-nacional-1667-2012.json` | `infoleg:202004:original` |
+| `decreto-nacional-840-2020.json` | `infoleg:343905:original` |
+
+> **El reporte no cierra:** 22 lecturas curadas, 3 sin su norma
+> en el corpus y 16 código(s) de beneficio distinto(s) entre las que sí la
+> tienen, pero la base quedó con 0. Hay un error en este informe o una
+> lectura que cargó a medias; no se puede leer como evidencia hasta resolverlo.
+
+> **Faltan lecturas:** 22 lecturas curadas, 3 sin su norma en el
+> corpus, así que tendrían que haber entrado 19 y entraron
+> 0. Las que faltan no son fuentes que no entregaron: son lecturas que la
+> carga rechazó, y el motivo está en la salida de `bn curacion beneficios`.
 
 ## Incidencias que abrió la corrida
 
 | Tipo | Cuántas |
 | --- | ---: |
-| IDENTIDAD_AMBIGUA | 4506 |
-| COBERTURA_EXTRACCION | 127 |
-| DATO_FALTANTE_CRITICO | 83 |
-| VIGENCIA_INDETERMINADA | 61 |
-| ACCESO_BLOQUEADO | 19 |
-| CONFLICTO_DE_FUENTES | 13 |
-| DISCREPANCIA_NUMERACION | 7 |
+| COBERTURA_EXTRACCION | 84 |
+| ACCESO_BLOQUEADO | 17 |
+| VIGENCIA_INDETERMINADA | 14 |
+| CONFLICTO_DE_FUENTES | 3 |
+| DISCREPANCIA_NUMERACION | 3 |
+| DATO_FALTANTE_CRITICO | 2 |
+| IDENTIDAD_AMBIGUA | 2 |
