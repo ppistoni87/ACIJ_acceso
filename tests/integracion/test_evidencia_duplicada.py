@@ -16,7 +16,11 @@ import re
 
 RAIZ = pathlib.Path(__file__).resolve().parents[2] / "src" / "backend_normativo"
 
-INICIO = "SELECT id FROM evidencias WHERE"
+# No siempre se pide solo el id: la curación de beneficios lee además el
+# fragmento, para no reusar una evidencia que no contiene lo que se cita. El
+# patrón tiene que alcanzar a las dos formas o dejaría de mirar justo la que
+# cambió.
+INICIO = r"SELECT id(?:, \w+)* FROM evidencias"
 # Lo que sigue a la consulta hasta que se ejecuta: alcanza para ver si ordena y
 # si pide una fila única.
 LARGO_DE_LA_LLAMADA = 500
@@ -30,7 +34,7 @@ def _busquedas() -> list[tuple[str, str]]:
     encontradas = []
     for archivo in sorted(RAIZ.rglob("*.py")):
         texto = archivo.read_text(encoding="utf-8")
-        for coincidencia in re.finditer(re.escape(INICIO), texto):
+        for coincidencia in re.finditer(INICIO, texto):
             linea = texto[: coincidencia.start()].count("\n") + 1
             encontradas.append(
                 (

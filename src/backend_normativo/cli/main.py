@@ -696,6 +696,33 @@ def curacion_montos(
             typer.echo(f"    {aviso}")
 
 
+@calidad.command("plazos")
+def calidad_plazos(
+    salida: Path | None = typer.Option(None, "--salida", help="Archivo donde escribir."),
+) -> None:
+    """Comprueba que cada plazo pueda señalar su número en el texto que cita.
+
+    Falla si alguno declara una cantidad que su cita no contiene, ni en cifras
+    ni en letras: una cita que solo comparte tema no respalda un número.
+    """
+    from backend_normativo.calidad.plazos import construir, formatear
+
+    with engine_migrador().connect() as conexion:
+        reporte = construir(conexion)
+    texto = formatear(reporte)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto, encoding="utf-8")
+        typer.echo(
+            f"Verificación de plazos escrita en {salida} · "
+            f"{len(reporte.no_sostenidos)} sin respaldo de {len(reporte.plazos)}"
+        )
+    else:
+        typer.echo(texto)
+    if reporte.no_sostenidos:
+        raise typer.Exit(1)
+
+
 @calidad.command("fuentes")
 def calidad_fuentes(
     salida: Path | None = typer.Option(None, "--salida", help="Archivo donde escribir."),

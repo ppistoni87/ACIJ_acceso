@@ -261,4 +261,7 @@ if [ "${INFORMES}" = 1 ]; then
   # por eso mezclaría dos trabajos distintos. Con --estricto falla, que es como
   # tiene que quedar cuando se resuelvan.
   $BN calidad fuentes --salida docs/reportes/fuentes_verificadas.md
+  # Cada plazo contra la cita que declara: un número que la cita no contiene
+  # significa que el plazo se leyó de otro lado o que el ancla apunta mal.
+  $BN calidad plazos --salida docs/reportes/plazos_verificados.md
 fi

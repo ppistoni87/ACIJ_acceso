@@ -168,12 +168,10 @@
    "tipo": "FECHA_PAGO",
    "ruta_evidencia": "articulo-14-octies",
    "texto_literal": "consistirá en el pago de una suma de dinero que se abonará una (1) vez al año a las personas titulares comprendidas en el artículo 1° de la presente ley",
-   "cantidad": 1,
-   "unidad": "dias",
    "tipo_dia": "NO_INFORMADO",
    "evento_inicio": "año calendario en que se tuvo derecho a la Asignación Universal por Hijo",
    "requiere_revision": true,
-   "motivo_revision": "«Una vez al año» dice la frecuencia y no la fecha: la ley no dice en qué mes se paga, a diferencia de la ayuda escolar, que sí dice marzo. El modelo guarda plazos que corren desde un evento y esto es una frecuencia, así que se carga aproximado y el motivo lo dice. El año calendario importa además porque es la unidad con la que se mide el requisito de haber tenido derecho a la Asignación Universal por Hijo."
+   "motivo_revision": "«Una vez al año» dice la frecuencia y no la fecha: la ley no dice en qué mes se paga, a diferencia de la ayuda escolar, que sí dice marzo. Se carga sin cantidad, con el año calendario como evento; hasta la migración 0011 había que escribir «1 día», que no es lo que dice el texto. El año calendario importa además porque es la unidad con la que se mide el requisito de haber tenido derecho a la Asignación Universal por Hijo."
   }
  ],
  "campos_no_informados": [

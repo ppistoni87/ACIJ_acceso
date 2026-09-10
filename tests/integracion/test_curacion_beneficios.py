@@ -521,3 +521,63 @@ def test_una_regla_ya_retirada_no_se_vuelve_a_avisar(conexion: Connection, norma
     segunda = curador.cargar(ruta)
     assert not any("SUPERSEDED" in aviso for aviso in segunda.avisos)
     assert not any("no se retira sola" in aviso for aviso in segunda.avisos)
+
+
+# --- Reusar una evidencia que no respalda lo que se cita -------------------------
+
+
+def test_no_se_reusa_una_evidencia_que_no_contiene_lo_citado(
+    conexion: Connection, norma, curado
+) -> None:
+    """La curación de relaciones escribe evidencias cuyo fragmento es la ventana
+    alrededor de una cita, no el texto de la unidad.
+
+    Reusar esa ventana dejaba plazos apuntando a un fragmento que no contiene lo
+    que afirman: el de «quince (15) días» del artículo 9 de la Ley 2917 citaba
+    273 caracteres de una unidad de 696 que no incluían el número. Todo tenía
+    evidencia y la evidencia no decía lo que se afirmaba.
+    """
+    unidad = conexion.execute(
+        text(
+            "SELECT u.id, u.doc_version_id, u.texto FROM unidades_documentales u "
+            "  JOIN evidencias e ON e.unidad_id = u.id "
+            "  JOIN reglas r ON r.evidencia_id = e.id LIMIT 1"
+        )
+    ).one()
+    literal = unidad.texto.strip()[:40]
+
+    # Una ventana angosta que no contiene el literal, escrita antes que la nuestra.
+    conexion.execute(
+        text(
+            "INSERT INTO evidencias (doc_version_id, unidad_id, fragmento, tipo, "
+            " hash_fragmento, creado_en) "
+            "VALUES (:d, :u, :f, 'FRAGMENTO_TEXTO', :h, now() - interval '1 day')"
+        ),
+        {
+            "d": unidad.doc_version_id,
+            "u": unidad.id,
+            "f": "un pedazo de la unidad que no dice lo que se afirma",
+            "h": "b" * 64,
+        },
+    )
+
+    curador = CuradorDeBeneficios(conexion)
+    unidades = {
+        f.ruta: {"id": f.id, "texto": f.texto}
+        for f in conexion.execute(
+            text("SELECT id, ruta, texto FROM unidades_documentales  WHERE doc_version_id = :d"),
+            {"d": unidad.doc_version_id},
+        )
+    }
+    ruta = conexion.execute(
+        text("SELECT ruta FROM unidades_documentales WHERE id = :u"), {"u": unidad.id}
+    ).scalar_one()
+
+    elegida = curador._evidencia(unidad.doc_version_id, unidades, ruta, literal)
+
+    fragmento = conexion.execute(
+        text("SELECT fragmento FROM evidencias WHERE id = :e"), {"e": elegida}
+    ).scalar_one()
+    assert literal in " ".join(fragmento.split()) or literal in fragmento, (
+        "se eligió una evidencia que no contiene lo citado"
+    )

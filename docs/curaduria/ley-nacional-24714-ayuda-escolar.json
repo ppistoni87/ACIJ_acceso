@@ -172,12 +172,10 @@
    "tipo": "FECHA_PAGO",
    "ruta_evidencia": "articulo-10",
    "texto_literal": "La asignación por ayuda escolar anual consistirá en el pago de una suma de dinero que se hará efectiva en el mes de marzo de cada año.",
-   "cantidad": 1,
-   "unidad": "dias",
    "tipo_dia": "NO_INFORMADO",
    "evento_inicio": "inicio del mes de marzo de cada año",
    "requiere_revision": true,
-   "motivo_revision": "No es un plazo que corra desde un evento: es una fecha recurrente sin año, «el mes de marzo de cada año». El modelo guarda intervalos y plazos relativos y ninguno de los dos describe eso, así que se carga con cantidad uno y el mes como evento, que es una aproximación y hay que decirlo. Ponerle un año la ataría a un ciclo que la ley no nombra, y en la práctica el pago se ha adelantado o corrido por decreto en varios años."
+   "motivo_revision": "No es un plazo que corra desde un evento ni una fecha con año: es una fecha recurrente, «el mes de marzo de cada año». Se carga sin cantidad, con el mes como evento, que es lo que la ley dice. Hasta la migración 0011 el esquema exigía una cantidad y esto se guardaba como «1 día», que era falso. Ponerle un año lo ataría a un ciclo que la ley no nombra, y en la práctica el pago se ha adelantado o corrido por decreto en varios años."
   }
  ],
  "campos_no_informados": [

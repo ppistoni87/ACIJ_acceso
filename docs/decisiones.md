@@ -1182,3 +1182,48 @@ exclusión de `parametro_valores` impide desde la migración 0002 que dos import
 publicables del mismo parámetro se pisen en el tiempo, y `bn_rango_aplicacion`
 no convierte un límite desconocido en vigencia abierta. La tabla tenía cero
 filas: la parte difícil estaba puesta y nadie la había ejercido.
+
+## D-63 · Cuando el modelo obliga a mentir, el que está mal es el modelo
+
+Siete de los dieciséis plazos cargados declaraban una cantidad que su propia
+cita no contiene. La primera lectura fue la fácil: errores de curaduría. La
+segunda mostró otra cosa.
+
+Tres de ellos traían `requiere_revision: true` y un motivo que explicaba el
+problema mejor de lo que lo habría explicado el control: «se guarda con cantidad
+cero porque el modelo exige una cantidad, y eso es exactamente lo que hay que
+revisar: un cero acá significa "no hay duración declarada", no "vence el mismo
+día"». La restricción obligaba a elegir entre una fecha y una duración, y «en el
+mes de marzo de cada año», «una vez al año» y «en el momento de la inscripción»
+no son ninguna de las dos: son eventos.
+
+Así que el esquema forzaba a escribir un número falso y a explicarlo en una
+prosa que nada lee. Un cero que significa «no sé» es indistinguible de un cero
+que significa «cero», y quien consulte la base ve el cero.
+
+**Consecuencia:** la migración 0011 agrega la tercera forma —sin fechas y sin
+cantidad, con el evento declarado— y las tres lecturas quedan sin el número
+inventado. Vale la pena decir de quién es el mérito: las tres lo habían avisado.
+El control no descubrió un descuido, hizo visible una advertencia que estaba
+escrita y que ningún proceso leía.
+
+## D-64 · Una evidencia compartida tiene que respaldar a cada quien la cita
+
+Los otros dos plazos citaban bien su texto literal, y el fragmento guardado no
+lo contenía.
+
+La curación de beneficios reusa la evidencia de una unidad —una unidad tiene una
+evidencia, no una por cada quien la cite— y eso está bien. Pero la curación de
+relaciones escribe evidencias cuyo fragmento es la ventana alrededor de una
+cita, no el texto de la unidad. Reusar esa ventana dejaba el plazo de «quince
+(15) días» del artículo 9 de la Ley 2917 citando 273 caracteres de una unidad de
+696 que no incluían el número.
+
+Es el peor de los defectos posibles en este sistema, porque es invisible desde
+adentro: todo tiene evidencia, y la evidencia no dice lo que se afirma. Los
+controles que cuentan evidencias lo dan por bueno.
+
+**Consecuencia:** se reusa la evidencia que respalde lo que se está citando, y si
+ninguna lo hace se escribe una con el texto de la unidad. Y `bn calidad plazos`
+lo comprueba de afuera: un plazo que declara un número tiene que poder señalarlo
+en el texto que cita, en cifras o en letras.

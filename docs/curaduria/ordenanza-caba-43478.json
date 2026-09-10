@@ -316,12 +316,10 @@
    "tipo": "CONVOCATORIA",
    "ruta_evidencia": "capitulo-VI/articulo-18",
    "texto_literal": "La solicitud de Beca se presentará en el momento de la inscripción, al finalizar el periodo escolar. La Comisión de Becas recibirá las solicitudes y elevará el pedido a !a DICOES.",
-   "cantidad": 0,
-   "unidad": "dias",
    "tipo_dia": "NO_INFORMADO",
    "evento_inicio": "inscripción escolar al finalizar el período escolar",
    "requiere_revision": true,
-   "motivo_revision": "No es un plazo con duración: la ordenanza dice cuándo se presenta —en el momento de la inscripción— y no cuántos días dura la ventana. Se guarda con cantidad cero porque el modelo exige una cantidad, y eso es exactamente lo que hay que revisar: un cero acá significa «no hay duración declarada», no «vence el mismo día». El artículo 20 aclara que durante todo el ciclo lectivo se pueden pedir becas por circunstancias excepcionales, así que esta fecha no cierra la puerta."
+   "motivo_revision": "No es un plazo con duración: la ordenanza dice cuándo se presenta —en el momento de la inscripción— y no cuántos días dura la ventana. Se carga sin cantidad: hasta la migración 0011 el esquema exigía una y se escribía cero, y un cero que significa «no hay duración declarada» es indistinguible de uno que significa «vence el mismo día». El artículo 20 aclara que durante todo el ciclo lectivo se pueden pedir becas por circunstancias excepcionales, así que esta fecha no cierra la puerta."
   },
   {
    "clave": "RESPUESTA-DE-LA-COMISION",

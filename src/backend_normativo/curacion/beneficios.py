@@ -46,6 +46,11 @@ from backend_normativo.reglas.ast import ErrorDeContrato, validar_ast
 RUTA_CURADURIA = pathlib.Path("docs/curaduria")
 
 
+def _sin_espacios(texto: str) -> str:
+    """Compara textos sin que un salto de línea decida si una cita respalda algo."""
+    return " ".join(texto.split())
+
+
 class LecturaInvalida(Exception):
     """La lectura curada no se puede cargar tal como está."""
 
@@ -210,7 +215,11 @@ class CuradorDeBeneficios:
         )
 
     def _evidencia(
-        self, doc_version_id: uuid.UUID, unidades: dict[str, dict], ruta: str
+        self,
+        doc_version_id: uuid.UUID,
+        unidades: dict[str, dict],
+        ruta: str,
+        literal: str | None = None,
     ) -> uuid.UUID:
         unidad = unidades.get(ruta)
         if unidad is None:
@@ -223,20 +232,27 @@ class CuradorDeBeneficios:
         # equivalencias y la de anexos también citan unidades, con su propio
         # selector. Se toma la más antigua para que la elección no dependa del
         # orden en que se hayan cargado.
-        ya = self.conexion.execute(
+        # Se reusa la evidencia de la unidad: una unidad tiene una evidencia, no
+        # una por cada quien la cite. Pero no cualquiera sirve. La curación de
+        # relaciones escribe evidencias cuyo fragmento es la ventana alrededor de
+        # una cita, no el texto de la unidad, y reusar esa ventana dejaba plazos
+        # apuntando a un fragmento que no contiene lo que afirman: el plazo de
+        # «quince (15) días» del artículo 9 de la Ley 2917 citaba 273 caracteres
+        # de una unidad de 696 que no incluían el número. Así que se reusa la que
+        # respalde lo que se está citando, y si ninguna lo hace se escribe una
+        # con el texto de la unidad.
+        candidatas = self.conexion.execute(
             text(
-                "SELECT id FROM evidencias WHERE doc_version_id = :d AND unidad_id = :u "
-                " ORDER BY creado_en, id LIMIT 1"
+                "SELECT id, fragmento FROM evidencias "
+                " WHERE doc_version_id = :d AND unidad_id = :u ORDER BY creado_en, id"
             ),
             {"d": doc_version_id, "u": unidad["id"]},
-        ).scalar_one_or_none()
-        if ya is not None:
-            # Se reusa: una unidad tiene una evidencia, no una por cada quien la
-            # cite. Si viene de una pasada anterior y no trae `selector`, se deja
-            # como está. La evidencia es inmutable por diseño y el intento de
-            # completarle el localizador terminó en el error que corresponde: lo
-            # que localiza es `unidad_id`, que es más preciso que un texto.
-            return ya
+        ).mappings()
+        buscado = _sin_espacios(literal) if literal else None
+        for candidata in candidatas:
+            if buscado and buscado not in _sin_espacios(candidata["fragmento"] or ""):
+                continue
+            return candidata["id"]
         fragmento = unidad["texto"]
         return self.conexion.execute(
             text(
@@ -708,10 +724,20 @@ class CuradorDeBeneficios:
                 "rv": registro,
                 "p": plazo_id,
                 "bv": version_id,
-                "e": self._evidencia(doc_version_id, unidades, datos["ruta_evidencia"]),
+                "e": self._evidencia(
+                    doc_version_id,
+                    unidades,
+                    datos["ruta_evidencia"],
+                    datos.get("texto_literal"),
+                ),
                 "tipo": datos["tipo"],
-                "cant": datos["cantidad"],
-                "uni": datos["unidad"],
+                # Un plazo que la norma expresa como evento —«en el momento de
+                # la inscripción», «en el mes de marzo de cada año»— no tiene
+                # cantidad, y desde la migración 0011 el esquema lo admite. Antes
+                # había que escribir un cero o un uno y explicarlo en prosa que
+                # nada lee.
+                "cant": datos.get("cantidad"),
+                "uni": datos.get("unidad"),
                 # La ley no dice si corre en corridos o hábiles; NO_INFORMADO es
                 # la respuesta, no un defecto que haya que rellenar.
                 "td": datos["tipo_dia"],
