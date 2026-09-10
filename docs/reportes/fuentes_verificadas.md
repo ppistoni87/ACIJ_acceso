@@ -4,9 +4,10 @@ El manifiesto declara en qué tablas tiene que terminar lo que cada fuente aport
 
 - Fuentes en el catálogo: 85
 - **Sirven** (dejaron filas donde su historia dice): 44, de las cuales 1 acreditadas por la conciliación del importador y no por evidencia por fila
-- **Capturadas, extraídas y sin destino** (200 y ninguna fila): 7
+- **Capturadas, extraídas y sin destino** (200 y ninguna fila): 6
 - **Capturadas y nunca extraídas**: 2
 - Solo descubrimiento (su destino es el catálogo mismo): 2
+- Declaran que no hay nada que cargar: 1
 - Bloqueadas: 17
 - No se ingestan (alias, retiradas o de referencia): 9
 - Esperan carga manual: 4
@@ -20,13 +21,12 @@ Estas respondieron, se extrajeron y no dejaron una sola fila donde su historia d
 
 | Fuente | Prioridad | Versiones | Unidades | Tablas declaradas y vacías |
 | --- | --- | ---: | ---: | --- |
-| F18 | P0 | 2 | 3 | canales |
+| F18 | P0 | 2 | 1 | canales |
 | F52 | P0 | 2 | 1 | parametro_valores, plazos |
-| F53 | P0 | 9 | 23 | tramites, plazos |
-| F66 | P0 | 5 | 7 | reglas, beneficio_versiones |
-| F32 | P1 | 1 | 5 | canales |
+| F53 | P0 | 9 | 11 | tramites, plazos |
+| F66 | P0 | 5 | 4 | reglas, beneficio_versiones |
+| F32 | P1 | 1 | 4 | canales |
 | F49 | P1 | 7 | 6 | tramites, canales |
-| F64 | P1 | 1 | 1 | puntos_atencion |
 
 ## Capturadas y nunca extraídas
 
@@ -43,7 +43,7 @@ El fallo se conserva y la capacidad queda pendiente. No se convierte en «sin da
 
 | Fuente | Estado de acceso | Motivo | Incidencias abiertas |
 | --- | --- | --- | ---: |
-| M05 | ACCESO_LIMITADO | Contenido incorporado por carga manual (ingesta:equipo-de-datos): Marcador de vía manual creado durante la imp | 9 |
+| M05 | ACCESO_LIMITADO | Contenido incorporado por carga manual (ingesta:equipo-de-datos): Marcador de vía manual creado durante la imp | 11 |
 | F04 | ERROR_TLS | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL | 7 |
 | F08 | SIN_URL_CONOCIDA | — | 1 |
 | F13 | SIN_URL_CONOCIDA | — | 1 |
@@ -60,6 +60,14 @@ El fallo se conserva y la capacidad queda pendiente. No se convierte en «sin da
 | F57 | SIN_URL_CONOCIDA | — | 1 |
 | F58 | SIN_URL_CONOCIDA | — | 1 |
 | F59 | SIN_URL_CONOCIDA | — | 1 |
+
+## Declaran que no hay nada que cargar
+
+Su página dice, con todas las letras, que no hay sedes abiertas, turnos ni inscripción en curso. Eso **es** el dato: contarlas como fuentes que no llegaron a destino inventa una tarea que nadie puede completar, porque no hay qué cargar. Y completarlas con el listado de una captura anterior lo presentaría como vigente.
+
+| Fuente | Qué declara |
+| --- | --- |
+| F64 | «presencial de las sedes permanecerá cerrada hasta el comienzo del nuevo periodo de» |
 
 ## No se ingestan, y está decidido
 

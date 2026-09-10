@@ -1539,3 +1539,50 @@ no usarlos como sinónimos: «44 de 85» mete en el mismo saco nueve fuentes que
 nadie va a ingestar y diecisiete que la política de acceso no permite tocar.
 Sobre las que se pueden ingestar hoy, sirven **44 de 55**.
 
+## D-80 · Que no haya nada es una respuesta
+
+La página de sedes presenciales de inscripción escolar dice: «la atención
+presencial de las sedes permanecerá cerrada hasta el comienzo del nuevo periodo
+de inscripción». El adaptador lo detectaba y dejaba constancia, pero el recuento
+de fuentes seguía contando a esa fuente entre las que «no llegaron a destino»,
+como si faltara un curador.
+
+No falta ninguno. Contarla como pendiente inventa una tarea que nadie puede
+completar, porque no hay qué cargar; y peor, empuja a completarla con el listado
+de una captura anterior, que presentaría como vigente algo que la página dice que
+no lo está.
+
+**Consecuencia:** el veredicto `declara ausencia`, leído de la estructura que el
+adaptador dejó —`identidad_candidata->'pagina'->>'cierre_declarado'`— y no del
+texto de una incidencia. Un acuerdo por prosa entre dos módulos se rompe en
+silencio el día que alguien mejora la redacción, que es lo que ya había pasado
+con las relaciones promovibles.
+
+## D-81 · «Sin turno» no es un cierre
+
+El patrón que detecta ausencias tomaba «sin» seguida de «turno» dentro de sesenta
+caracteres. Con eso, «podés hacerlo (sin turno) en una delegación de ANSES»
+—que dice que se puede ir sin sacar turno— quedaba registrado como una
+declaración de cierre. Dos fuentes tenían anotado que declaraban algo que su
+página no declara.
+
+**Consecuencia:** «sin» solo cuenta como ausencia cuando dice que algo **no está
+disponible**: `sin turnos disponibles`, `sin vacantes disponibles`. Las formas
+inequívocas —`no hay turnos`, `cerrada`, `finalizó`— siguen igual. Siete casos,
+cuatro positivos y tres negativos, quedaron como prueba: los negativos son los
+que importan, porque un falso positivo acá no deja un hueco sino un dato falso.
+
+## D-82 · Un encabezado sin cuerpo es un botón
+
+Cinco fuentes tenían todas sus secciones «vacías»: el texto de la sección era su
+propio título. «Inscripción Nivel Superior», «Sedes - Puntos presenciales»,
+«Cronograma de pagos y monto». No son secciones: son los rótulos de los enlaces
+de un menú, y el contenido estaba en otra parte de la página que la caminata por
+hermanos del encabezado no alcanzaba.
+
+**Consecuencia:** una sección cuyo cuerpo no agrega nada al título no se emite. Y
+como el respaldo de «página entera» ya existía para cuando no hay ninguna
+sección, esas cinco pasaron a citarse enteras y con eso apareció el contenido
+real: el cronograma de pagos de Progresar con su tabla de DNI, y la declaración
+de que las sedes están cerradas.
+

@@ -8,6 +8,8 @@ el denominador con trabajo que nadie va a hacer porque no hay nada que hacer.
 
 from __future__ import annotations
 
+import dataclasses
+
 import pytest
 from sqlalchemy import Connection
 
@@ -68,3 +70,32 @@ def test_el_reporte_declara_sobre_cuantas_tiene_sentido_esperar_filas(
     texto = formatear(construir(conexion))
     assert "Sobre las que se pueden ingestar hoy" in texto
     assert "No se ingestan" in texto
+
+
+def test_una_fuente_que_declara_que_no_hay_nada_no_es_una_deuda(
+    conexion: Connection, crear_fuente
+) -> None:
+    """«La atención presencial permanecerá cerrada» es la respuesta, no un vacío.
+
+    Contarla como fuente que no llegó a destino inventa una tarea que nadie
+    puede completar, porque no hay qué cargar.
+    """
+    from backend_normativo.calidad.fuentes import DECLARA_AUSENCIA, FuenteVerificada
+
+    fuente = FuenteVerificada(
+        source_id="Z08",
+        nombre="Sedes presenciales",
+        clase="DIRECTORIO",
+        prioridad="P1",
+        estado="ACTIVE",
+        access_status="ACCESIBLE",
+        capturas=1,
+        doc_versiones=1,
+        declaradas=["puntos_atencion"],
+        cierre_declarado="la atención presencial permanecerá cerrada",
+    )
+    assert fuente.veredicto == DECLARA_AUSENCIA
+
+    sin_cierre = dataclasses.replace(fuente, cierre_declarado=None)
+    assert sin_cierre.veredicto != DECLARA_AUSENCIA
+    del crear_fuente

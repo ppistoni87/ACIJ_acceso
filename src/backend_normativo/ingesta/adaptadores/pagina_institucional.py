@@ -76,8 +76,18 @@ RE_DIA_SIN_ANIO = re.compile(
     re.I,
 )
 
+# La página declara que no hay nada que ofrecer. Es un dato, no un vacío: si la
+# inscripción está cerrada, eso es lo que hay que contestar, y completarlo con
+# el listado de una captura anterior lo presentaría como vigente.
+#
+# «Sin» solo cuenta como ausencia cuando dice que algo **no está disponible**.
+# La versión anterior tomaba «sin» seguida de «turno» en sesenta caracteres, y
+# marcaba como cierre la frase «podés hacerlo (sin turno) en una delegación de
+# ANSES», que dice justo lo contrario: que se puede ir sin sacar turno. Dos
+# fuentes quedaron registradas declarando un cierre que su página no declara.
 RE_CIERRE = re.compile(
-    r"\b(no hay|sin)\b[^.]{0,60}\b(sedes?|puntos?|turnos?|vacantes?|inscripci[oó]n)\b"
+    r"\bno hay\b[^.]{0,60}\b(sedes?|puntos?|turnos?|vacantes?|cupos?|inscripci[oó]n)\b"
+    r"|\bsin\b[^.]{0,40}\b(turnos?|vacantes?|cupos?|sedes?)\s+disponibles?\b"
     r"|\b(cerrad[ao]s?|finaliz[oó]|no disponible|pr[oó]ximamente)\b",
     re.I,
 )
@@ -249,6 +259,12 @@ def _secciones(principal: Node, texto_completo: str) -> list[UnidadSegmentada]:
                 cuerpo.append(trozo)
             siguiente = siguiente.next
         contenido = " ".join([titulo, *cuerpo]).strip()
+        # Un encabezado cuyo cuerpo no agrega nada es un rótulo de navegación,
+        # no una sección: «Inscripción Nivel Superior» a secas es un botón. Se
+        # descartan, y si no queda ninguna la página se cita entera —que es
+        # exactamente el caso de una cuyo contenido está en otra parte—.
+        if not cuerpo or contenido == titulo:
+            continue
         if len(contenido) < MINIMO_SECCION or contenido in vistos:
             continue
         vistos.add(contenido)

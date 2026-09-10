@@ -471,3 +471,59 @@ def test_el_adaptador_acepta_por_lo_que_la_fuente_es_y_no_por_su_dominio() -> No
     assert not adaptador.acepta(
         _captura(PAGINA_CON_CANALES, "https://www.argentina.gob.ar/algo", None)
     ), "sin clase declarada no se adivina"
+
+
+@pytest.mark.parametrize(
+    "texto",
+    [
+        "La atención presencial de las sedes permanecerá cerrada hasta el nuevo periodo.",
+        "No hay turnos disponibles para este trámite.",
+        "La inscripción finalizó el 30 de abril.",
+        "Sin vacantes disponibles en este nivel.",
+    ],
+)
+def test_la_pagina_que_dice_que_no_hay_nada_lo_declara(texto: str) -> None:
+    """Que no haya sedes abiertas es el dato, no un vacío."""
+    from backend_normativo.ingesta.adaptadores.pagina_institucional import RE_CIERRE
+
+    assert RE_CIERRE.search(texto)
+
+
+@pytest.mark.parametrize(
+    "texto",
+    [
+        "Podés hacerlo (sin turno) en una delegación de ANSES.",
+        "Solicitá el certificado sin turno previo en cualquier sede.",
+        "Las sedes atienden de lunes a viernes de 9 a 15 hs.",
+    ],
+)
+def test_sin_turno_como_comodidad_no_es_un_cierre(texto: str) -> None:
+    """«Sin turno» dice que se puede ir sin sacarlo: lo contrario de un cierre.
+
+    La versión anterior tomaba «sin» seguida de «turno» en sesenta caracteres y
+    dejaba a dos fuentes registradas declarando un cierre que su página no
+    declara.
+    """
+    from backend_normativo.ingesta.adaptadores.pagina_institucional import RE_CIERRE
+
+    assert RE_CIERRE.search(texto) is None
+
+
+def test_un_rotulo_de_navegacion_no_es_una_seccion() -> None:
+    """«Inscripción Nivel Superior» a secas es un botón, no contenido."""
+    menu = """
+    <html><body><main>
+    <h1>Progresar</h1><p>Acompañamos a los jóvenes para que finalicen la educación.</p>
+    <h2>Inscripción Nivel Superior</h2>
+    <h2>Inscripción Nivel Obligatorio</h2>
+    </main></body></html>
+    """
+    documento = (
+        AdaptadorPaginaInstitucional()
+        .extraer(_captura(menu, "https://becasprogresar.educacion.gob.ar/"))
+        .documentos[0]
+    )
+    rotulos = [u.rotulo for u in documento.unidades]
+    assert "Inscripción Nivel Superior" not in rotulos
+    assert "Inscripción Nivel Obligatorio" not in rotulos
+    assert documento.unidades, "la sección que sí trae cuerpo se conserva"

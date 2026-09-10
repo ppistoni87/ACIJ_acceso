@@ -132,6 +132,7 @@ def _ingestables(conteo: dict[str, int]) -> int:
         + conteo[SIN_EXTRAER]
         + conteo[SOLO_DESCUBRIMIENTO]
         + conteo[SIN_CORRER]
+        + conteo[DECLARA_AUSENCIA]
     )
 
 
@@ -143,6 +144,7 @@ SIN_CORRER = "sin correr"
 SOLO_DESCUBRIMIENTO = "solo descubrimiento"
 NO_SE_INGESTA = "no se ingesta"
 ESPERA_CARGA_MANUAL = "espera carga manual"
+DECLARA_AUSENCIA = "declara ausencia"
 
 # Estados del catálogo que dicen que esta fuente no se captura, y por qué.
 # Contarlas como «sin correr» las presenta como trabajo pendiente cuando son
@@ -175,6 +177,11 @@ class FuenteVerificada:
     # no deja evidencia por fila —no hay fragmento que citar en un ZIP de
     # 428.380 renglones— así que su acreditación es la conciliación.
     conciliadas: int | None = None
+    # Lo que la página dice cuando dice que no hay nada. «La atención presencial
+    # permanecerá cerrada hasta el nuevo período» no es una carga que faltó: es
+    # la respuesta, y contarla como fuente que no llegó a destino la convierte
+    # en una tarea pendiente que nadie puede completar porque no hay qué cargar.
+    cierre_declarado: str | None = None
     incidencias: int = 0
     declaradas: list[str] = field(default_factory=list)
     pobladas: dict[str, int] = field(default_factory=dict)
@@ -218,6 +225,8 @@ class FuenteVerificada:
             return SIRVE
         if self.doc_versiones == 0:
             return SIN_EXTRAER
+        if self.cierre_declarado:
+            return DECLARA_AUSENCIA
         return SIN_DESTINO
 
     @property
@@ -288,6 +297,21 @@ def construir(conexion: Connection) -> ReporteFuentes:
             ),
             parametros,
         ).scalar_one()
+        # Se consulta la estructura que el adaptador dejó, no el texto de una
+        # incidencia: un acuerdo por prosa entre dos módulos se rompe en
+        # silencio el día que alguien mejora la redacción.
+        fuente.cierre_declarado = conexion.execute(
+            text(
+                "SELECT dv.identidad_candidata->'pagina'->>'cierre_declarado' "
+                "  FROM documento_versiones dv "
+                "  JOIN capturas c ON c.id = dv.captura_id "
+                "  JOIN fuente_urls u ON u.id = c.source_url_id "
+                " WHERE u.source_id = :sid "
+                "   AND dv.identidad_candidata->'pagina'->>'cierre_declarado' IS NOT NULL "
+                " ORDER BY dv.creado_en DESC LIMIT 1"
+            ),
+            parametros,
+        ).scalar_one_or_none()
         fuente.conciliadas = conexion.execute(
             text(
                 "SELECT max((cc.observado->>'nuevas')::int + (cc.observado->>'repetidas')::int) "
@@ -342,6 +366,7 @@ def formatear(reporte: ReporteFuentes) -> str:
             SIN_EXTRAER,
             SOLO_DESCUBRIMIENTO,
             BLOQUEADA,
+            DECLARA_AUSENCIA,
             NO_SE_INGESTA,
             ESPERA_CARGA_MANUAL,
             SIN_CORRER,
@@ -366,6 +391,7 @@ def formatear(reporte: ReporteFuentes) -> str:
         f"- **Capturadas, extraídas y sin destino** (200 y ninguna fila): {conteo[SIN_DESTINO]}",
         f"- **Capturadas y nunca extraídas**: {conteo[SIN_EXTRAER]}",
         f"- Solo descubrimiento (su destino es el catálogo mismo): {conteo[SOLO_DESCUBRIMIENTO]}",
+        f"- Declaran que no hay nada que cargar: {conteo[DECLARA_AUSENCIA]}",
         f"- Bloqueadas: {conteo[BLOQUEADA]}",
         f"- No se ingestan (alias, retiradas o de referencia): {conteo[NO_SE_INGESTA]}",
         f"- Esperan carga manual: {conteo[ESPERA_CARGA_MANUAL]}",
@@ -434,6 +460,26 @@ def formatear(reporte: ReporteFuentes) -> str:
             lineas.append(
                 f"| {fuente.source_id} | {fuente.access_status} | {motivo} | {fuente.incidencias} |"
             )
+        lineas.append("")
+
+    ausencias = reporte.por_veredicto(DECLARA_AUSENCIA)
+    if ausencias:
+        lineas += [
+            "## Declaran que no hay nada que cargar",
+            "",
+            "Su página dice, con todas las letras, que no hay sedes abiertas, turnos ni "
+            "inscripción en curso. Eso **es** el dato: contarlas como fuentes que no "
+            "llegaron a destino inventa una tarea que nadie puede completar, porque no hay "
+            "qué cargar. Y completarlas con el listado de una captura anterior lo "
+            "presentaría como vigente.",
+            "",
+            "| Fuente | Qué declara |",
+            "| --- | --- |",
+        ]
+        lineas += [
+            f"| {f.source_id} | «{(f.cierre_declarado or '')[:110]}» |"
+            for f in sorted(ausencias, key=lambda f: f.source_id)
+        ]
         lineas.append("")
 
     no_se_ingestan = reporte.por_veredicto(NO_SE_INGESTA)
