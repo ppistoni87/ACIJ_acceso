@@ -15,11 +15,11 @@ Generado por `scripts/corrida_limpia.sh`. La base se crea y se destruye en la
 misma corrida: si algo de acá se pudiera explicar por estado previo, no habría
 estado previo del que agarrarse.
 
-- Arranque: `2026-09-10T19:08:17+00:00`
-- Cierre: `2026-09-10T19:13:50+00:00`
-- Resultado: **interrumpida en «población completa»**
+- Arranque: `2026-09-10T19:16:01+00:00`
+- Cierre: `2026-09-10T19:52:13+00:00`
+- Resultado: **completa**
 - Base: `backend_normativo_limpia`
-- Fuentes que el planificador deja pendientes al cerrar: `—`
+- Fuentes que el planificador deja pendientes al cerrar: `2`
 
 ## Pasos
 
@@ -29,17 +29,32 @@ corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
 | Paso | Duración | Última línea |
 | --- | ---: | --- |
 | migraciones | 1.4 s | INFO  [alembic.runtime.migration] Running upgrade 0014_identidad_en_la_bitacora -> 0015_… |
-| población completa | 330.7 s | **falló** — F36: 8 URLs promovidas |
+| población completa | 1070.7 s | Incidencias abiertas: 46 |
+| segunda pasada (idempotencia) | 1095.9 s | Incidencias abiertas: 0 |
+| planificación al cierre (en seco) | 0.7 s | actualiza cuando alguien corre el comando. |
+
+## Controles sobre el corpus recién construido
+
+Corren acá y no en la población porque es el único lugar donde el corpus
+se armó desde cero: un control sobre una base de desarrollo puede estar
+pasando por un resto de una corrida anterior.
+
+| Control | Veredicto | Qué contó |
+| --- | --- | --- |
+| `bn ingesta conciliar` | pasa | - **F01** (catalogo_infoleg) — homonimas: 6561, identidad_incierta: 322331, sin_numero: 142, sin_texto: 235489 - **F20** (directorio) — coordenadas_sin_crs: 21 - **F44** (dpn) — alcance_sin_declarar: 38, correos_no |
+| `bn calidad grafo` | pasa | - Relaciones: 385 - Normas con al menos una relación: 124 - Referencias pendientes de resolver: 152 - Autorreferencias: 0  |
+| `bn calidad plazos` | pasa | - Plazos cargados: 16 - Con la cantidad respaldada por su cita: 13 - Expresados como evento, sin cantidad que comprobar: 3 - **Con una cantidad que su cita no contiene: 0**  |
+| `bn calidad fuentes` | pasa | - Fuentes en el catálogo: 85 - **Sirven** (dejaron filas donde su historia dice): 40, de las cuales 1 acreditadas por la conciliación del importador y no por evidencia por fila - **Capturadas, extraídas y sin destino* |
 
 ## Con qué quedó la base
 
 | Qué | Cuántos |
 | --- | ---: |
-| Fuentes en el catálogo | 83 |
-| Capturas | 66 |
-| Unidades documentales | 1033 |
-| Beneficios curados | 0 |
-| Incidencias abiertas | 125 |
+| Fuentes en el catálogo | 85 |
+| Capturas | 359 |
+| Unidades documentales | 1700 |
+| Beneficios curados | 16 |
+| Incidencias abiertas | 5059 |
 
 Las incidencias abiertas no son un fallo de la corrida: son lo que el sistema
 encontró y no resolvió solo. Una corrida limpia que no abriera ninguna estaría
@@ -57,68 +72,147 @@ algo distinto de los datos.
 | Fuente | Estado | Solicitadas | Descargadas | Rechazadas | Detalle |
 | --- | --- | ---: | ---: | ---: | --- |
 | F04 | FALLIDA | 1 | 0 | 1 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL |
+| F04 | FALLIDA | 1 | 0 | 1 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL |
 | M05 | FALLIDA | 1 | 0 | 1 | https://www.anses.gob.ar/: HTTP 403. La fuente queda pausada; no se rotan identidades ni se evaden controles d |
+| M05 | FALLIDA | 1 | 0 | 1 | https://www.anses.gob.ar/: HTTP 403. La fuente queda pausada; no se rotan identidades ni se evaden controles d |
+| F03 | PARCIAL | 5 | 4 | 1 | https://defensoria.org.ar/atencion-vecinal/consultas@defensoria.org.ar: HTTP 404. El recurso ya no está en esa |
+| F32 | PARCIAL | 9 | 8 | 1 | https://turnoseducacion.buenosaires.gob.ar/default: HTTP 404. El recurso ya no está en esa dirección; hay que  |
+| C01 | COMPLETA | 1 | 1 | 0 |  |
+| C01 | COMPLETA | 1 | 1 | 0 |  |
+| D01 | COMPLETA | 3 | 3 | 0 |  |
+| D01 | COMPLETA | 3 | 3 | 0 |  |
 | D01 | COMPLETA | 3 | 3 | 0 |  |
 | D01 | COMPLETA | 1 | 1 | 0 |  |
 | D02 | COMPLETA | 2 | 2 | 0 |  |
+| D02 | COMPLETA | 2 | 2 | 0 |  |
 | D02 | COMPLETA | 1 | 1 | 0 |  |
+| D02 | COMPLETA | 2 | 2 | 0 |  |
+| D03 | COMPLETA | 1 | 1 | 0 |  |
+| D03 | COMPLETA | 1 | 1 | 0 |  |
 | D03 | COMPLETA | 1 | 1 | 0 |  |
 | D03 | COMPLETA | 1 | 1 | 0 |  |
 | D04 | COMPLETA | 1 | 1 | 0 |  |
 | D04 | COMPLETA | 1 | 1 | 0 |  |
+| D04 | COMPLETA | 1 | 1 | 0 |  |
+| D04 | COMPLETA | 1 | 1 | 0 |  |
+| D05 | COMPLETA | 1 | 1 | 0 |  |
+| D05 | COMPLETA | 1 | 1 | 0 |  |
 | D05 | COMPLETA | 1 | 1 | 0 |  |
 | D05 | COMPLETA | 1 | 1 | 0 |  |
 | D06 | COMPLETA | 1 | 1 | 0 |  |
 | D06 | COMPLETA | 1 | 1 | 0 |  |
+| D06 | COMPLETA | 1 | 1 | 0 |  |
+| D06 | COMPLETA | 1 | 1 | 0 |  |
+| D07 | COMPLETA | 1 | 1 | 0 |  |
+| D07 | COMPLETA | 1 | 1 | 0 |  |
 | D07 | COMPLETA | 1 | 1 | 0 |  |
 | D08 | COMPLETA | 1 | 1 | 0 |  |
 | D09 | COMPLETA | 1 | 1 | 0 |  |
 | D10 | COMPLETA | 1 | 1 | 0 |  |
 | D10 | COMPLETA | 1 | 1 | 0 |  |
+| D10 | COMPLETA | 1 | 1 | 0 |  |
+| D10 | COMPLETA | 1 | 1 | 0 |  |
 | F01 | COMPLETA | 1 | 1 | 0 |  |
 | F03 | COMPLETA | 1 | 1 | 0 |  |
 | F05 | COMPLETA | 1 | 1 | 0 |  |
+| F05 | COMPLETA | 1 | 1 | 0 |  |
+| F05 | COMPLETA | 1 | 1 | 0 |  |
 | F07 | COMPLETA | 1 | 1 | 0 |  |
+| F07 | COMPLETA | 1 | 1 | 0 |  |
+| F07 | COMPLETA | 1 | 1 | 0 |  |
+| F11 | COMPLETA | 2 | 2 | 0 |  |
 | F11 | COMPLETA | 1 | 1 | 0 |  |
+| F11 | COMPLETA | 2 | 2 | 0 |  |
 | F12 | COMPLETA | 1 | 1 | 0 |  |
 | F16 | COMPLETA | 2 | 2 | 0 |  |
+| F16 | COMPLETA | 2 | 2 | 0 |  |
+| F16 | COMPLETA | 2 | 2 | 0 |  |
 | F17 | COMPLETA | 1 | 1 | 0 |  |
+| F17 | COMPLETA | 2 | 2 | 0 |  |
+| F17 | COMPLETA | 2 | 2 | 0 |  |
+| F18 | COMPLETA | 7 | 7 | 0 |  |
+| F18 | COMPLETA | 7 | 7 | 0 |  |
 | F18 | COMPLETA | 1 | 1 | 0 |  |
 | F19 | COMPLETA | 1 | 1 | 0 |  |
 | F20 | COMPLETA | 1 | 1 | 0 |  |
 | F23 | COMPLETA | 1 | 1 | 0 |  |
 | F25 | COMPLETA | 1 | 1 | 0 |  |
 | F27 | COMPLETA | 1 | 1 | 0 |  |
+| F27 | COMPLETA | 1 | 1 | 0 |  |
+| F27 | COMPLETA | 1 | 1 | 0 |  |
+| F31 | COMPLETA | 1 | 1 | 0 |  |
+| F31 | COMPLETA | 1 | 1 | 0 |  |
 | F31 | COMPLETA | 1 | 1 | 0 |  |
 | F32 | COMPLETA | 1 | 1 | 0 |  |
+| F32 | COMPLETA | 5 | 5 | 0 |  |
+| F33 | COMPLETA | 1 | 1 | 0 |  |
+| F33 | COMPLETA | 1 | 1 | 0 |  |
 | F33 | COMPLETA | 1 | 1 | 0 |  |
 | F33 | COMPLETA | 1 | 1 | 0 |  |
 | F36 | COMPLETA | 1 | 1 | 0 |  |
+| F36 | COMPLETA | 9 | 9 | 0 |  |
+| F36 | COMPLETA | 17 | 17 | 0 |  |
 | F39 | COMPLETA | 1 | 1 | 0 |  |
+| F39 | COMPLETA | 2 | 2 | 0 |  |
+| F39 | COMPLETA | 2 | 2 | 0 |  |
 | F40 | COMPLETA | 1 | 1 | 0 |  |
+| F43 | COMPLETA | 9 | 9 | 0 |  |
 | F43 | COMPLETA | 1 | 1 | 0 |  |
+| F43 | COMPLETA | 17 | 17 | 0 |  |
+| F44 | COMPLETA | 1 | 1 | 0 |  |
+| F44 | COMPLETA | 1 | 1 | 0 |  |
 | F44 | COMPLETA | 1 | 1 | 0 |  |
 | F45 | COMPLETA | 1 | 1 | 0 |  |
+| F45 | COMPLETA | 1 | 1 | 0 |  |
+| F45 | COMPLETA | 1 | 1 | 0 |  |
 | F46 | COMPLETA | 1 | 1 | 0 |  |
+| F46 | COMPLETA | 4 | 4 | 0 |  |
+| F46 | COMPLETA | 4 | 4 | 0 |  |
+| F47 | COMPLETA | 1 | 1 | 0 |  |
+| F47 | COMPLETA | 1 | 1 | 0 |  |
 | F47 | COMPLETA | 1 | 1 | 0 |  |
 | F48 | COMPLETA | 1 | 1 | 0 |  |
+| F48 | COMPLETA | 1 | 1 | 0 |  |
+| F48 | COMPLETA | 1 | 1 | 0 |  |
 | F49 | COMPLETA | 1 | 1 | 0 |  |
+| F49 | COMPLETA | 7 | 7 | 0 |  |
+| F49 | COMPLETA | 7 | 7 | 0 |  |
 | F50 | COMPLETA | 1 | 1 | 0 |  |
+| F50 | COMPLETA | 1 | 1 | 0 |  |
+| F50 | COMPLETA | 1 | 1 | 0 |  |
+| F51 | COMPLETA | 17 | 17 | 0 |  |
 | F51 | COMPLETA | 1 | 1 | 0 |  |
+| F51 | COMPLETA | 9 | 9 | 0 |  |
 | F52 | COMPLETA | 1 | 1 | 0 |  |
+| F52 | COMPLETA | 1 | 1 | 0 |  |
+| F52 | COMPLETA | 1 | 1 | 0 |  |
+| F53 | COMPLETA | 8 | 8 | 0 |  |
 | F53 | COMPLETA | 1 | 1 | 0 |  |
+| F53 | COMPLETA | 12 | 12 | 0 |  |
+| F54 | COMPLETA | 1 | 1 | 0 |  |
+| F54 | COMPLETA | 1 | 1 | 0 |  |
 | F54 | COMPLETA | 1 | 1 | 0 |  |
 | F60 | COMPLETA | 1 | 1 | 0 |  |
 | F61 | COMPLETA | 1 | 1 | 0 |  |
+| F61 | COMPLETA | 1 | 1 | 0 |  |
+| F61 | COMPLETA | 1 | 1 | 0 |  |
+| F62 | COMPLETA | 1 | 1 | 0 |  |
+| F62 | COMPLETA | 1 | 1 | 0 |  |
 | F62 | COMPLETA | 1 | 1 | 0 |  |
 | F64 | COMPLETA | 1 | 1 | 0 |  |
+| F64 | COMPLETA | 1 | 1 | 0 |  |
+| F64 | COMPLETA | 1 | 1 | 0 |  |
 | F66 | COMPLETA | 1 | 1 | 0 |  |
+| F66 | COMPLETA | 4 | 4 | 0 |  |
+| F66 | COMPLETA | 4 | 4 | 0 |  |
 | F67 | COMPLETA | 2 | 2 | 0 |  |
 | M01 | COMPLETA | 1 | 1 | 0 |  |
 | M02 | COMPLETA | 1 | 1 | 0 |  |
 | M03 | COMPLETA | 1 | 1 | 0 |  |
 | M04 | COMPLETA | 1 | 1 | 0 |  |
 | M06 | COMPLETA | 1 | 1 | 0 |  |
+| N01 | COMPLETA | 31 | 31 | 0 |  |
+| N01 | COMPLETA | 31 | 31 | 0 |  |
 
 No todas las corridas en `FALLIDA` son iguales. Un tiempo de espera agotado o una
 conexión cortada es el portal de turno teniendo un mal momento: el cliente reintenta
@@ -143,7 +237,15 @@ dos veces seguidas sobre la misma base y se cuenta lo que hay antes y después.
 Una primera pasada nunca prueba la segunda, y la segunda es la que corre en
 producción todos los días.
 
-La segunda pasada no llegó a correr: la corrida se interrumpió antes.
+| Momento | Versiones de documento |
+| --- | ---: |
+| Después de la primera pasada | 139 |
+| Después de la segunda | 171 |
+
+> **La segunda pasada agregó versiones:** de 139 a 171. Volver a
+> pedir lo mismo no lo cambia, así que una versión nueva es una versión
+> duplicada: el procedimiento no es idempotente y lo que dice de sí mismo es
+> falso.
 
 ## Lecturas curadas que no se pudieron cargar
 
@@ -151,30 +253,16 @@ Una lectura curada se apoya en el texto capturado de su norma: sin ese texto no
 hay nada que citar y el beneficio no entra. Que falte no es un error de la
 lectura, es que la fuente no entregó en esta corrida.
 
-| Lectura | Norma que le falta |
-| --- | --- |
-| `decreto-nacional-1602-2009.json` | `infoleg:159466:original` |
-| `decreto-nacional-1667-2012.json` | `infoleg:202004:original` |
-| `decreto-nacional-840-2020.json` | `infoleg:343905:original` |
-
-> **El reporte no cierra:** 22 lecturas curadas, 3 sin su norma
-> en el corpus y 16 código(s) de beneficio distinto(s) entre las que sí la
-> tienen, pero la base quedó con 0. Hay un error en este informe o una
-> lectura que cargó a medias; no se puede leer como evidencia hasta resolverlo.
-
-> **Faltan lecturas:** 22 lecturas curadas, 3 sin su norma en el
-> corpus, así que tendrían que haber entrado 19 y entraron
-> 0. Las que faltan no son fuentes que no entregaron: son lecturas que la
-> carga rechazó, y el motivo está en la salida de `bn curacion beneficios`.
+Ninguna: las 22 lecturas curadas encontraron su norma en el corpus.
 
 ## Incidencias que abrió la corrida
 
 | Tipo | Cuántas |
 | --- | ---: |
-| COBERTURA_EXTRACCION | 84 |
-| ACCESO_BLOQUEADO | 17 |
-| VIGENCIA_INDETERMINADA | 14 |
-| CONFLICTO_DE_FUENTES | 3 |
-| DISCREPANCIA_NUMERACION | 3 |
-| DATO_FALTANTE_CRITICO | 2 |
-| IDENTIDAD_AMBIGUA | 2 |
+| IDENTIDAD_AMBIGUA | 4506 |
+| COBERTURA_EXTRACCION | 338 |
+| DATO_FALTANTE_CRITICO | 111 |
+| VIGENCIA_INDETERMINADA | 65 |
+| ACCESO_BLOQUEADO | 21 |
+| CONFLICTO_DE_FUENTES | 13 |
+| DISCREPANCIA_NUMERACION | 5 |

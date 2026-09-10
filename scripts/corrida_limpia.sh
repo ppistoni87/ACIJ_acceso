@@ -37,6 +37,14 @@ ARRANQUE=$(date -Iseconds)
 ESTADO_FINAL="completa"
 ANTES=""
 DESPUES=""
+MARCA=""
+SEGUNDAS_SOBRE_EXISTENTE=""
+PRIMERAS_DE_DOCUMENTO_NUEVO=""
+DETALLE_NO_IDEMPOTENTE=""
+MARCA2=""
+TRAS_TERCERA=""
+TERCERA_SOBRE_EXISTENTE=""
+TERCERA_PRIMERAS=""
 PENDIENTES_AL_CIERRE=""
 
 cronometrar() {
@@ -170,7 +178,7 @@ escribir_reporte() {
     echo "trazada. Volverlas verdes relajando TLS o cambiando de identidad sería"
     echo "convertir un acceso bloqueado en un dato inventado."
     echo
-    echo "## La segunda pasada no agrega nada"
+    echo "## Qué agrega la segunda pasada"
     echo
     echo "El procedimiento se documenta como idempotente: reejecutarlo revalida las"
     echo "capturas, no duplica versiones y solo reprocesa lo que cambió. Acá se corre"
@@ -178,18 +186,61 @@ escribir_reporte() {
     echo "Una primera pasada nunca prueba la segunda, y la segunda es la que corre en"
     echo "producción todos los días."
     echo
+    echo "El total solo no alcanza para juzgar: una versión nueva puede ser la **primera**"
+    echo "de un documento que la primera pasada no alcanzó, o la **segunda** de uno que ya"
+    echo "estaba. Únicamente la segunda rompe la idempotencia. Se cuentan por separado."
+    echo
     if [ -n "${ANTES}" ] && [ -n "${DESPUES}" ]; then
       echo "| Momento | Versiones de documento |"
       echo "| --- | ---: |"
       echo "| Después de la primera pasada | ${ANTES} |"
       echo "| Después de la segunda | ${DESPUES} |"
+      if [ -n "${TRAS_TERCERA}" ]; then
+        echo "| Después de la tercera | ${TRAS_TERCERA} |"
+      fi
       echo
-      if [ "${ANTES}" != "${DESPUES}" ]; then
-        echo "> **La segunda pasada agregó versiones:** de ${ANTES} a ${DESPUES}. Volver a"
-        echo "> pedir lo mismo no lo cambia, así que una versión nueva es una versión"
-        echo "> duplicada: el procedimiento no es idempotente y lo que dice de sí mismo es"
-        echo "> falso."
+      if [ "${SEGUNDAS_SOBRE_EXISTENTE:-0}" -gt 0 ] 2>/dev/null; then
+        echo "> **El procedimiento no es idempotente.** La segunda pasada creó"
+        echo "> ${SEGUNDAS_SOBRE_EXISTENTE} versión(es) sobre documentos que ya tenían una."
+        echo "> Volver a pedir lo mismo no lo cambia, así que una segunda versión del"
+        echo "> mismo documento es texto duplicado o extracción no determinista, y lo"
+        echo "> que el procedimiento dice de sí mismo es falso. Por fuente:"
+        echo "> ${DETALLE_NO_IDEMPOTENTE:-sin detalle}."
         echo
+      elif [ "${PRIMERAS_DE_DOCUMENTO_NUEVO:-0}" -gt 0 ] 2>/dev/null; then
+        echo "> **Ningún documento se duplicó**, y aun así el total subió de ${ANTES} a"
+        echo "> ${DESPUES}: las ${PRIMERAS_DE_DOCUMENTO_NUEVO} versiones nuevas son todas la"
+        echo "> primera de su documento. No son duplicados: son páginas que la primera"
+        echo "> pasada nunca llegó a capturar, porque el descubrimiento de URLs corre"
+        echo "> entremezclado con la captura y promueve hojas después de que su fuente ya"
+        echo "> pasó. La segunda pasada no repite trabajo, lo termina."
+        echo ">"
+        echo "> Eso no es idempotencia rota, pero tampoco es un punto fijo: una pasada"
+        echo "> sola no deja el corpus completo, y el procedimiento no debería decir que"
+        echo "> sí. Lo que corresponde medir es si una tercera pasada agrega algo."
+        echo
+      else
+        echo "La segunda pasada no agregó ninguna versión: ni un documento nuevo ni una"
+        echo "versión sobre uno que ya estaba."
+        echo
+      fi
+      if [ -n "${TRAS_TERCERA}" ]; then
+        if [ "${TERCERA_SOBRE_EXISTENTE:-0}" -gt 0 ] 2>/dev/null; then
+          echo "> **La tercera pasada volvió a versionar documentos existentes**"
+          echo "> (${TERCERA_SOBRE_EXISTENTE}). No hay punto fijo: cada pasada reescribe lo"
+          echo "> mismo, y eso es no determinismo o contenido que cambia solo."
+          echo
+        elif [ "${TERCERA_PRIMERAS:-0}" -gt 0 ] 2>/dev/null; then
+          echo "> **La tercera pasada todavía encontró documentos nuevos**"
+          echo "> (${TERCERA_PRIMERAS}). El recorrido no converge en dos pasadas: hay que"
+          echo "> correrlo hasta que deje de crecer, y decir cuántas hacen falta."
+          echo
+        else
+          echo "> **La tercera pasada no agregó nada.** Ahí está el punto fijo: el corpus"
+          echo "> se completa en dos pasadas y a partir de la tercera reejecutar no cambia"
+          echo "> nada. Eso es lo que la palabra idempotente tiene que significar acá."
+          echo
+        fi
       fi
     else
       echo "La segunda pasada no llegó a correr: la corrida se interrumpió antes."
@@ -298,9 +349,44 @@ cronometrar "población completa" bash scripts/poblar_corpus.sh --sin-informes $
 # porque la corrida limpia empieza de cero y la base de desarrollo nunca empieza
 # de cero.
 ANTES=$(sql "SELECT count(*) FROM documento_versiones" 2>/dev/null || echo "")
+# La marca separa lo que existía de lo que agregue la segunda pasada. Contar
+# solo el total no alcanza: una versión nueva puede ser la primera de un
+# documento que la primera pasada nunca alcanzó —porque el descubrimiento de
+# URLs corre entremezclado con la captura y promueve hojas después de haber
+# capturado su fuente— o la segunda de un documento que ya estaba. Solo la
+# segunda es una violación de idempotencia; llamar duplicada a la primera es
+# afirmar algo falso en un informe generado.
+MARCA=$(sql "SELECT coalesce(max(creado_en), now())::text FROM documento_versiones" 2>/dev/null || echo "")
 # shellcheck disable=SC2086
 cronometrar "segunda pasada (idempotencia)" bash scripts/poblar_corpus.sh --sin-informes --sin-ampliar ${EXTRA}
 DESPUES=$(sql "SELECT count(*) FROM documento_versiones" 2>/dev/null || echo "")
+if [ -n "${MARCA}" ]; then
+  SEGUNDAS_SOBRE_EXISTENTE=$(sql "SELECT count(*) FROM documento_versiones \
+    WHERE creado_en > '${MARCA}' AND version > 1" 2>/dev/null || echo "")
+  PRIMERAS_DE_DOCUMENTO_NUEVO=$(sql "SELECT count(*) FROM documento_versiones \
+    WHERE creado_en > '${MARCA}' AND version = 1" 2>/dev/null || echo "")
+  DETALLE_NO_IDEMPOTENTE=$(sql "SELECT string_agg(x.linea, ', ') FROM ( \
+      SELECT d.source_id || ' (' || count(*) || ')' AS linea \
+        FROM documento_versiones dv JOIN documentos d ON d.id = dv.documento_id \
+       WHERE dv.creado_en > '${MARCA}' AND dv.version > 1 \
+       GROUP BY d.source_id ORDER BY count(*) DESC) x" 2>/dev/null || echo "")
+fi
+
+# Si la segunda pasada solo terminó lo que la primera dejó a medias, la tercera
+# tiene que no agregar nada: ese es el punto fijo. Correrla cuesta una pasada más
+# y es la única forma de distinguir «la primera quedó corta» de «cada pasada
+# encuentra algo nuevo», que serían dos diagnósticos opuestos con el mismo
+# síntoma.
+MARCA2=$(sql "SELECT coalesce(max(creado_en), now())::text FROM documento_versiones" 2>/dev/null || echo "")
+# shellcheck disable=SC2086
+cronometrar "tercera pasada (punto fijo)" bash scripts/poblar_corpus.sh --sin-informes --sin-ampliar ${EXTRA}
+TRAS_TERCERA=$(sql "SELECT count(*) FROM documento_versiones" 2>/dev/null || echo "")
+if [ -n "${MARCA2}" ]; then
+  TERCERA_SOBRE_EXISTENTE=$(sql "SELECT count(*) FROM documento_versiones \
+    WHERE creado_en > '${MARCA2}' AND version > 1" 2>/dev/null || echo "")
+  TERCERA_PRIMERAS=$(sql "SELECT count(*) FROM documento_versiones \
+    WHERE creado_en > '${MARCA2}' AND version = 1" 2>/dev/null || echo "")
+fi
 
 # Al cerrar, el planificador se vuelve a preguntar a quién le toca. Si el
 # recorrido hizo lo que dice, ya no le toca a nadie: eso es lo que se mira.
