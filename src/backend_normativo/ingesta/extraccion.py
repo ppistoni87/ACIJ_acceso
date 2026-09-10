@@ -48,7 +48,7 @@ from backend_normativo.ingesta.almacen import AlmacenObjetos
 # leía `tipo_documento` de un diccionario que nadie llenaba y caía en OTRO
 # —dejando cada PDF normativo fuera de la resolución de identidad—. Cambió lo
 # que la extracción produce con las mismas capturas, y por eso cambia el número.
-VERSION_EXTRACTOR = "extraccion@13"
+VERSION_EXTRACTOR = "extraccion@14"
 
 # Cobertura mínima para no marcar la extracción como sospechosa. Es una señal
 # técnica: por debajo de esto hay texto que no quedó en ninguna unidad, y

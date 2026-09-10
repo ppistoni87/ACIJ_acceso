@@ -1603,3 +1603,35 @@ estados: `NO_SE_INGESTA` y `ESPERA_CARGA_MANUAL`. `NO_INICIADA` pasó de nueve a
 cero, y lo que queda ahí —si algún día vuelve a haber algo— es un recorrido que
 de verdad falta. Que los dos informes cuenten distinto sobre las mismas filas era
 el defecto; que compartan el vocabulario es la corrección.
+
+## D-84 · Una versión es el mismo documento en otro momento
+
+La corrida limpia no llegaba a un punto fijo: la segunda pasada agregaba 31
+versiones sobre documentos que ya tenían una, y la tercera otras 20. Las fuentes
+eran F43, F36, F51, F53, F32 y F44.
+
+No era contenido que cambia solo ni extracción no determinista: extraer tres
+veces los mismos bytes da el mismo texto, y se comprobó. Era la identidad del
+documento. `AdaptadorPaginaInstitucional` la construía como `pagina:<fuente>` y
+`AdaptadorTramiteArgentina` como `tramite:<fuente>` —constantes por fuente—, lo
+cual alcanzaba mientras cada fuente tuviera una sola URL. Desde que
+`descubrir_hojas()` promueve hasta veinte hojas por fuente, las veinte páginas
+caían en el mismo documento y cada una entraba como **versión** de la anterior.
+
+El daño no es solo que el corpus creciera en cada pasada. Una versión es el
+mismo documento en otro momento; acá la versión 7 y la versión 8 eran páginas
+distintas, así que una cita anclada a una versión apuntaba a otro texto en la
+siguiente, y de veinte páginas solo la última quedaba a la vista.
+
+**Consecuencia:** la identidad incluye la página, no solo la fuente:
+`pagina:F43:/eras` y `pagina:F43:/eras/marco-regulatorio`. La clave sale de la
+ruta y la consulta —`clave_de_pagina()` en `adaptadores/base.py`—; el esquema y
+el host quedan afuera porque son de la fuente, y meterlos haría que pasar de
+http a https inventara un documento. `VERSION_EXTRACTOR` sube a `extraccion@14`.
+
+Lo que hay que retener es que el control lo encontró después de que yo arreglara
+el control. Antes decía «una versión nueva es una versión duplicada» ante
+cualquier aumento, y esa frase era falsa la mitad de las veces; al separar
+«primera versión de un documento nuevo» de «segunda versión de uno que ya
+estaba», el número que quedó señalaba el bug directamente. Un control que grita
+por todo no distingue nada.

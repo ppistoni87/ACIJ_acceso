@@ -164,3 +164,21 @@ def test_el_texto_conserva_pasos_y_aclaraciones() -> None:
     documento = AdaptadorTramiteArgentina().extraer(_captura(FICHA)).documentos[0]
     assert "Paso 2: Completá el formulario con:" in documento.texto
     assert "Los datos del proveedor." in documento.texto
+
+
+def test_dos_fichas_de_un_portal_son_dos_documentos() -> None:
+    """La ficha del DNI y la del pasaporte no son la misma con otro número.
+
+    `tramite:<fuente>` identificaba a todas las fichas de un portal como un solo
+    documento, así que cada ficha nueva se apilaba como versión de la anterior.
+    """
+    adaptador = AdaptadorTramiteArgentina()
+    dni = adaptador.extraer(
+        _captura(FICHA, url="https://www.argentina.gob.ar/servicio/dni-al-instante")
+    ).documentos
+    pasaporte = adaptador.extraer(
+        _captura(FICHA, url="https://www.argentina.gob.ar/servicio/pasaporte")
+    ).documentos
+    assert dni and pasaporte
+    assert dni[0].external_id != pasaporte[0].external_id
+    assert dni[0].external_id == "tramite:F45:/servicio/dni-al-instante"

@@ -165,3 +165,30 @@ def calcular_score(
     cobertura = min(1.0, caracteres_clasificados / caracteres_totales)
     estructura = 1.0 if unidades else 0.0
     return round(0.7 * cobertura + 0.3 * estructura, 4)
+
+
+def clave_de_pagina(url: str | None) -> str:
+    """Lo que distingue una página de otra dentro de la misma fuente.
+
+    Los adaptadores de página y de trámite identificaban su documento como
+    `pagina:<fuente>`, que alcanzaba mientras cada fuente tuviera una sola URL.
+    Desde que el descubrimiento promueve hojas, una fuente tiene veinte páginas
+    distintas y todas caían en el mismo documento: cada página nueva entraba
+    como una «versión» de la anterior. Eso no es una versión —una versión es el
+    mismo documento en otro momento, no otro documento— y hacía que el corpus
+    nunca dejara de crecer al reejecutar.
+
+    La clave sale de la ruta y la consulta, que es lo que separa dos páginas de
+    un mismo sitio. El esquema y el host no entran: son de la fuente, no de la
+    página, y meterlos haría que pasar de http a https inventara un documento.
+    """
+    from urllib.parse import urlsplit
+
+    partes = urlsplit((url or "").strip())
+    ruta = (partes.path or "").rstrip("/")
+    if partes.query:
+        ruta = f"{ruta}?{partes.query}"
+    # Una fuente cuya URL es la raíz del sitio no tiene ruta que la distinga, y
+    # es justo el caso de la página principal: se queda sin sufijo, que es la
+    # identidad que ya tenía.
+    return ruta or ""

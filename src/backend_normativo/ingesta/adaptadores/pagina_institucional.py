@@ -45,6 +45,7 @@ from backend_normativo.ingesta.adaptadores.base import (
     ResultadoExtraccion,
     UrlDescubierta,
     calcular_score,
+    clave_de_pagina,
 )
 from backend_normativo.ingesta.adaptadores.html import (
     decodificar_html,
@@ -451,7 +452,7 @@ class AdaptadorPaginaInstitucional:
             modo_extraccion=ModoExtraccion.HTML,
             texto=lectura.texto,
             titulo=lectura.titulo,
-            external_id=f"pagina:{captura.source_id}",
+            external_id=_identidad_de_pagina("pagina", captura),
             identidad={
                 "pagina": {
                     "titulo": lectura.titulo,
@@ -486,3 +487,16 @@ class AdaptadorPaginaInstitucional:
                 )
             )
         return resultado
+
+
+def _identidad_de_pagina(prefijo: str, captura: CapturaMaterial) -> str:
+    """Identidad del documento: la fuente **y** la página dentro de ella.
+
+    Con `pagina:<fuente>` a secas, las veinte hojas que el descubrimiento
+    promueve para una misma fuente caían todas en el mismo documento y cada una
+    entraba como una versión nueva de la anterior. Una versión es el mismo
+    documento en otro momento; dos páginas distintas no lo son, y anclar una
+    cita a «versión 7» apuntaba a otra página que en la versión 8.
+    """
+    clave = clave_de_pagina(captura.url_final)
+    return f"{prefijo}:{captura.source_id}{':' + clave if clave else ''}"

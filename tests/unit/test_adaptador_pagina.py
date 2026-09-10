@@ -527,3 +527,46 @@ def test_un_rotulo_de_navegacion_no_es_una_seccion() -> None:
     assert "Inscripción Nivel Superior" not in rotulos
     assert "Inscripción Nivel Obligatorio" not in rotulos
     assert documento.unidades, "la sección que sí trae cuerpo se conserva"
+
+
+def test_dos_paginas_de_una_fuente_son_dos_documentos() -> None:
+    """Una hoja descubierta no es una versión nueva de la portada.
+
+    Mientras cada fuente tuvo una sola URL, identificar el documento como
+    `pagina:<fuente>` alcanzaba. Desde que el descubrimiento promueve hojas, una
+    fuente tiene veinte páginas distintas, y con la identidad vieja las veinte
+    caían en el mismo documento: cada página entraba como «versión» de la
+    anterior, el corpus crecía en cada pasada sin llegar nunca a un punto fijo, y
+    una cita anclada a la versión 7 apuntaba a otra página que la versión 8.
+    """
+    adaptador = AdaptadorPaginaInstitucional()
+    portada = adaptador.extraer(
+        _captura(CRONOGRAMA, url="https://www.argentina.gob.ar/eras")
+    ).documentos
+    hoja = adaptador.extraer(
+        _captura(CRONOGRAMA, url="https://www.argentina.gob.ar/eras/marco-regulatorio")
+    ).documentos
+    assert portada and hoja
+    assert portada[0].external_id != hoja[0].external_id
+
+
+def test_la_misma_pagina_conserva_su_identidad() -> None:
+    """Y lo contrario: volver a capturar la misma URL no inventa un documento.
+
+    Si la identidad cambiara entre capturas, cada corrida crearía un documento
+    nuevo y no habría historia de la página: dos versiones de lo mismo tienen que
+    quedar bajo un solo documento.
+    """
+    adaptador = AdaptadorPaginaInstitucional()
+    una = adaptador.extraer(_captura(CRONOGRAMA, url="https://x.gob.ar/a/b")).documentos
+    # La barra final y el fragmento son de la dirección, no de la página.
+    otra = adaptador.extraer(_captura(CRONOGRAMA, url="https://x.gob.ar/a/b/#top")).documentos
+    assert una[0].external_id == otra[0].external_id
+
+
+def test_la_consulta_distingue_dos_paginas_del_mismo_script() -> None:
+    """`oficinas.php?idS=2300` y `?idS=2301` son dos oficinas, no una."""
+    adaptador = AdaptadorPaginaInstitucional()
+    a = adaptador.extraer(_captura(CRONOGRAMA, url="https://d.gob.ar/of.php?idS=2300")).documentos
+    b = adaptador.extraer(_captura(CRONOGRAMA, url="https://d.gob.ar/of.php?idS=2301")).documentos
+    assert a[0].external_id != b[0].external_id

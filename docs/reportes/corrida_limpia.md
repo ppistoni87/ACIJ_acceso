@@ -15,8 +15,8 @@ Generado por `scripts/corrida_limpia.sh`. La base se crea y se destruye en la
 misma corrida: si algo de acá se pudiera explicar por estado previo, no habría
 estado previo del que agarrarse.
 
-- Arranque: `2026-09-10T19:16:01+00:00`
-- Cierre: `2026-09-10T19:52:13+00:00`
+- Arranque: `2026-09-10T19:57:04+00:00`
+- Cierre: `2026-09-10T20:54:40+00:00`
 - Resultado: **completa**
 - Base: `backend_normativo_limpia`
 - Fuentes que el planificador deja pendientes al cerrar: `2`
@@ -29,8 +29,9 @@ corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
 | Paso | Duración | Última línea |
 | --- | ---: | --- |
 | migraciones | 1.4 s | INFO  [alembic.runtime.migration] Running upgrade 0014_identidad_en_la_bitacora -> 0015_… |
-| población completa | 1070.7 s | Incidencias abiertas: 46 |
-| segunda pasada (idempotencia) | 1095.9 s | Incidencias abiertas: 0 |
+| población completa | 1082.0 s | Incidencias abiertas: 46 |
+| segunda pasada (idempotencia) | 1093.2 s | Incidencias abiertas: 0 |
+| tercera pasada (punto fijo) | 1275.3 s | Incidencias abiertas: 0 |
 | planificación al cierre (en seco) | 0.7 s | actualiza cuando alguien corre el comando. |
 
 ## Controles sobre el corpus recién construido
@@ -51,10 +52,10 @@ pasando por un resto de una corrida anterior.
 | Qué | Cuántos |
 | --- | ---: |
 | Fuentes en el catálogo | 85 |
-| Capturas | 359 |
-| Unidades documentales | 1700 |
+| Capturas | 541 |
+| Unidades documentales | 1720 |
 | Beneficios curados | 16 |
-| Incidencias abiertas | 5059 |
+| Incidencias abiertas | 5172 |
 
 Las incidencias abiertas no son un fallo de la corrida: son lo que el sistema
 encontró y no resolvió solo. Una corrida limpia que no abriera ninguna estaría
@@ -73,20 +74,29 @@ algo distinto de los datos.
 | --- | --- | ---: | ---: | ---: | --- |
 | F04 | FALLIDA | 1 | 0 | 1 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL |
 | F04 | FALLIDA | 1 | 0 | 1 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL |
+| F04 | FALLIDA | 1 | 0 | 1 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL |
+| M05 | FALLIDA | 1 | 0 | 1 | https://www.anses.gob.ar/: HTTP 403. La fuente queda pausada; no se rotan identidades ni se evaden controles d |
 | M05 | FALLIDA | 1 | 0 | 1 | https://www.anses.gob.ar/: HTTP 403. La fuente queda pausada; no se rotan identidades ni se evaden controles d |
 | M05 | FALLIDA | 1 | 0 | 1 | https://www.anses.gob.ar/: HTTP 403. La fuente queda pausada; no se rotan identidades ni se evaden controles d |
 | F03 | PARCIAL | 5 | 4 | 1 | https://defensoria.org.ar/atencion-vecinal/consultas@defensoria.org.ar: HTTP 404. El recurso ya no está en esa |
 | F32 | PARCIAL | 9 | 8 | 1 | https://turnoseducacion.buenosaires.gob.ar/default: HTTP 404. El recurso ya no está en esa dirección; hay que  |
 | C01 | COMPLETA | 1 | 1 | 0 |  |
 | C01 | COMPLETA | 1 | 1 | 0 |  |
+| C01 | COMPLETA | 1 | 1 | 0 |  |
 | D01 | COMPLETA | 3 | 3 | 0 |  |
 | D01 | COMPLETA | 3 | 3 | 0 |  |
 | D01 | COMPLETA | 3 | 3 | 0 |  |
 | D01 | COMPLETA | 1 | 1 | 0 |  |
+| D01 | COMPLETA | 3 | 3 | 0 |  |
+| D01 | COMPLETA | 3 | 3 | 0 |  |
 | D02 | COMPLETA | 2 | 2 | 0 |  |
 | D02 | COMPLETA | 2 | 2 | 0 |  |
 | D02 | COMPLETA | 1 | 1 | 0 |  |
 | D02 | COMPLETA | 2 | 2 | 0 |  |
+| D02 | COMPLETA | 2 | 2 | 0 |  |
+| D02 | COMPLETA | 2 | 2 | 0 |  |
+| D03 | COMPLETA | 1 | 1 | 0 |  |
+| D03 | COMPLETA | 1 | 1 | 0 |  |
 | D03 | COMPLETA | 1 | 1 | 0 |  |
 | D03 | COMPLETA | 1 | 1 | 0 |  |
 | D03 | COMPLETA | 1 | 1 | 0 |  |
@@ -95,6 +105,10 @@ algo distinto de los datos.
 | D04 | COMPLETA | 1 | 1 | 0 |  |
 | D04 | COMPLETA | 1 | 1 | 0 |  |
 | D04 | COMPLETA | 1 | 1 | 0 |  |
+| D04 | COMPLETA | 1 | 1 | 0 |  |
+| D04 | COMPLETA | 1 | 1 | 0 |  |
+| D05 | COMPLETA | 1 | 1 | 0 |  |
+| D05 | COMPLETA | 1 | 1 | 0 |  |
 | D05 | COMPLETA | 1 | 1 | 0 |  |
 | D05 | COMPLETA | 1 | 1 | 0 |  |
 | D05 | COMPLETA | 1 | 1 | 0 |  |
@@ -103,6 +117,9 @@ algo distinto de los datos.
 | D06 | COMPLETA | 1 | 1 | 0 |  |
 | D06 | COMPLETA | 1 | 1 | 0 |  |
 | D06 | COMPLETA | 1 | 1 | 0 |  |
+| D06 | COMPLETA | 1 | 1 | 0 |  |
+| D06 | COMPLETA | 1 | 1 | 0 |  |
+| D07 | COMPLETA | 1 | 1 | 0 |  |
 | D07 | COMPLETA | 1 | 1 | 0 |  |
 | D07 | COMPLETA | 1 | 1 | 0 |  |
 | D07 | COMPLETA | 1 | 1 | 0 |  |
@@ -112,24 +129,32 @@ algo distinto de los datos.
 | D10 | COMPLETA | 1 | 1 | 0 |  |
 | D10 | COMPLETA | 1 | 1 | 0 |  |
 | D10 | COMPLETA | 1 | 1 | 0 |  |
+| D10 | COMPLETA | 1 | 1 | 0 |  |
+| D10 | COMPLETA | 1 | 1 | 0 |  |
 | F01 | COMPLETA | 1 | 1 | 0 |  |
 | F03 | COMPLETA | 1 | 1 | 0 |  |
 | F05 | COMPLETA | 1 | 1 | 0 |  |
 | F05 | COMPLETA | 1 | 1 | 0 |  |
 | F05 | COMPLETA | 1 | 1 | 0 |  |
+| F05 | COMPLETA | 1 | 1 | 0 |  |
 | F07 | COMPLETA | 1 | 1 | 0 |  |
 | F07 | COMPLETA | 1 | 1 | 0 |  |
 | F07 | COMPLETA | 1 | 1 | 0 |  |
-| F11 | COMPLETA | 2 | 2 | 0 |  |
+| F07 | COMPLETA | 1 | 1 | 0 |  |
 | F11 | COMPLETA | 1 | 1 | 0 |  |
+| F11 | COMPLETA | 2 | 2 | 0 |  |
+| F11 | COMPLETA | 2 | 2 | 0 |  |
 | F11 | COMPLETA | 2 | 2 | 0 |  |
 | F12 | COMPLETA | 1 | 1 | 0 |  |
 | F16 | COMPLETA | 2 | 2 | 0 |  |
 | F16 | COMPLETA | 2 | 2 | 0 |  |
 | F16 | COMPLETA | 2 | 2 | 0 |  |
+| F16 | COMPLETA | 2 | 2 | 0 |  |
+| F17 | COMPLETA | 2 | 2 | 0 |  |
+| F17 | COMPLETA | 2 | 2 | 0 |  |
+| F17 | COMPLETA | 2 | 2 | 0 |  |
 | F17 | COMPLETA | 1 | 1 | 0 |  |
-| F17 | COMPLETA | 2 | 2 | 0 |  |
-| F17 | COMPLETA | 2 | 2 | 0 |  |
+| F18 | COMPLETA | 7 | 7 | 0 |  |
 | F18 | COMPLETA | 7 | 7 | 0 |  |
 | F18 | COMPLETA | 7 | 7 | 0 |  |
 | F18 | COMPLETA | 1 | 1 | 0 |  |
@@ -140,6 +165,8 @@ algo distinto de los datos.
 | F27 | COMPLETA | 1 | 1 | 0 |  |
 | F27 | COMPLETA | 1 | 1 | 0 |  |
 | F27 | COMPLETA | 1 | 1 | 0 |  |
+| F27 | COMPLETA | 1 | 1 | 0 |  |
+| F31 | COMPLETA | 1 | 1 | 0 |  |
 | F31 | COMPLETA | 1 | 1 | 0 |  |
 | F31 | COMPLETA | 1 | 1 | 0 |  |
 | F31 | COMPLETA | 1 | 1 | 0 |  |
@@ -149,46 +176,62 @@ algo distinto de los datos.
 | F33 | COMPLETA | 1 | 1 | 0 |  |
 | F33 | COMPLETA | 1 | 1 | 0 |  |
 | F33 | COMPLETA | 1 | 1 | 0 |  |
+| F33 | COMPLETA | 1 | 1 | 0 |  |
+| F33 | COMPLETA | 1 | 1 | 0 |  |
+| F36 | COMPLETA | 21 | 21 | 0 |  |
 | F36 | COMPLETA | 1 | 1 | 0 |  |
 | F36 | COMPLETA | 9 | 9 | 0 |  |
 | F36 | COMPLETA | 17 | 17 | 0 |  |
+| F39 | COMPLETA | 2 | 2 | 0 |  |
 | F39 | COMPLETA | 1 | 1 | 0 |  |
 | F39 | COMPLETA | 2 | 2 | 0 |  |
 | F39 | COMPLETA | 2 | 2 | 0 |  |
 | F40 | COMPLETA | 1 | 1 | 0 |  |
 | F43 | COMPLETA | 9 | 9 | 0 |  |
 | F43 | COMPLETA | 1 | 1 | 0 |  |
+| F43 | COMPLETA | 25 | 25 | 0 |  |
 | F43 | COMPLETA | 17 | 17 | 0 |  |
 | F44 | COMPLETA | 1 | 1 | 0 |  |
 | F44 | COMPLETA | 1 | 1 | 0 |  |
 | F44 | COMPLETA | 1 | 1 | 0 |  |
+| F44 | COMPLETA | 1 | 1 | 0 |  |
 | F45 | COMPLETA | 1 | 1 | 0 |  |
 | F45 | COMPLETA | 1 | 1 | 0 |  |
 | F45 | COMPLETA | 1 | 1 | 0 |  |
+| F45 | COMPLETA | 1 | 1 | 0 |  |
+| F46 | COMPLETA | 4 | 4 | 0 |  |
+| F46 | COMPLETA | 4 | 4 | 0 |  |
+| F46 | COMPLETA | 4 | 4 | 0 |  |
 | F46 | COMPLETA | 1 | 1 | 0 |  |
-| F46 | COMPLETA | 4 | 4 | 0 |  |
-| F46 | COMPLETA | 4 | 4 | 0 |  |
 | F47 | COMPLETA | 1 | 1 | 0 |  |
 | F47 | COMPLETA | 1 | 1 | 0 |  |
 | F47 | COMPLETA | 1 | 1 | 0 |  |
+| F47 | COMPLETA | 1 | 1 | 0 |  |
+| F48 | COMPLETA | 1 | 1 | 0 |  |
 | F48 | COMPLETA | 1 | 1 | 0 |  |
 | F48 | COMPLETA | 1 | 1 | 0 |  |
 | F48 | COMPLETA | 1 | 1 | 0 |  |
 | F49 | COMPLETA | 1 | 1 | 0 |  |
 | F49 | COMPLETA | 7 | 7 | 0 |  |
 | F49 | COMPLETA | 7 | 7 | 0 |  |
+| F49 | COMPLETA | 7 | 7 | 0 |  |
 | F50 | COMPLETA | 1 | 1 | 0 |  |
 | F50 | COMPLETA | 1 | 1 | 0 |  |
 | F50 | COMPLETA | 1 | 1 | 0 |  |
-| F51 | COMPLETA | 17 | 17 | 0 |  |
+| F50 | COMPLETA | 1 | 1 | 0 |  |
 | F51 | COMPLETA | 1 | 1 | 0 |  |
+| F51 | COMPLETA | 17 | 17 | 0 |  |
 | F51 | COMPLETA | 9 | 9 | 0 |  |
+| F51 | COMPLETA | 25 | 25 | 0 |  |
 | F52 | COMPLETA | 1 | 1 | 0 |  |
 | F52 | COMPLETA | 1 | 1 | 0 |  |
 | F52 | COMPLETA | 1 | 1 | 0 |  |
-| F53 | COMPLETA | 8 | 8 | 0 |  |
-| F53 | COMPLETA | 1 | 1 | 0 |  |
+| F52 | COMPLETA | 1 | 1 | 0 |  |
 | F53 | COMPLETA | 12 | 12 | 0 |  |
+| F53 | COMPLETA | 1 | 1 | 0 |  |
+| F53 | COMPLETA | 8 | 8 | 0 |  |
+| F53 | COMPLETA | 12 | 12 | 0 |  |
+| F54 | COMPLETA | 1 | 1 | 0 |  |
 | F54 | COMPLETA | 1 | 1 | 0 |  |
 | F54 | COMPLETA | 1 | 1 | 0 |  |
 | F54 | COMPLETA | 1 | 1 | 0 |  |
@@ -196,12 +239,16 @@ algo distinto de los datos.
 | F61 | COMPLETA | 1 | 1 | 0 |  |
 | F61 | COMPLETA | 1 | 1 | 0 |  |
 | F61 | COMPLETA | 1 | 1 | 0 |  |
+| F61 | COMPLETA | 1 | 1 | 0 |  |
+| F62 | COMPLETA | 1 | 1 | 0 |  |
 | F62 | COMPLETA | 1 | 1 | 0 |  |
 | F62 | COMPLETA | 1 | 1 | 0 |  |
 | F62 | COMPLETA | 1 | 1 | 0 |  |
 | F64 | COMPLETA | 1 | 1 | 0 |  |
 | F64 | COMPLETA | 1 | 1 | 0 |  |
 | F64 | COMPLETA | 1 | 1 | 0 |  |
+| F64 | COMPLETA | 1 | 1 | 0 |  |
+| F66 | COMPLETA | 4 | 4 | 0 |  |
 | F66 | COMPLETA | 1 | 1 | 0 |  |
 | F66 | COMPLETA | 4 | 4 | 0 |  |
 | F66 | COMPLETA | 4 | 4 | 0 |  |
@@ -211,6 +258,7 @@ algo distinto de los datos.
 | M03 | COMPLETA | 1 | 1 | 0 |  |
 | M04 | COMPLETA | 1 | 1 | 0 |  |
 | M06 | COMPLETA | 1 | 1 | 0 |  |
+| N01 | COMPLETA | 31 | 31 | 0 |  |
 | N01 | COMPLETA | 31 | 31 | 0 |  |
 | N01 | COMPLETA | 31 | 31 | 0 |  |
 
@@ -229,7 +277,7 @@ corrida, y su cobertura se resuelve por fuente equivalente o carga manual
 trazada. Volverlas verdes relajando TLS o cambiando de identidad sería
 convertir un acceso bloqueado en un dato inventado.
 
-## La segunda pasada no agrega nada
+## Qué agrega la segunda pasada
 
 El procedimiento se documenta como idempotente: reejecutarlo revalida las
 capturas, no duplica versiones y solo reprocesa lo que cambió. Acá se corre
@@ -237,15 +285,26 @@ dos veces seguidas sobre la misma base y se cuenta lo que hay antes y después.
 Una primera pasada nunca prueba la segunda, y la segunda es la que corre en
 producción todos los días.
 
+El total solo no alcanza para juzgar: una versión nueva puede ser la **primera**
+de un documento que la primera pasada no alcanzó, o la **segunda** de uno que ya
+estaba. Únicamente la segunda rompe la idempotencia. Se cuentan por separado.
+
 | Momento | Versiones de documento |
 | --- | ---: |
 | Después de la primera pasada | 139 |
 | Después de la segunda | 171 |
+| Después de la tercera | 192 |
 
-> **La segunda pasada agregó versiones:** de 139 a 171. Volver a
-> pedir lo mismo no lo cambia, así que una versión nueva es una versión
-> duplicada: el procedimiento no es idempotente y lo que dice de sí mismo es
-> falso.
+> **El procedimiento no es idempotente.** La segunda pasada creó
+> 31 versión(es) sobre documentos que ya tenían una.
+> Volver a pedir lo mismo no lo cambia, así que una segunda versión del
+> mismo documento es texto duplicado o extracción no determinista, y lo
+> que el procedimiento dice de sí mismo es falso. Por fuente:
+> F43 (8), F36 (8), F51 (8), F53 (3), F32 (3), F44 (1).
+
+> **La tercera pasada volvió a versionar documentos existentes**
+> (20). No hay punto fijo: cada pasada reescribe lo
+> mismo, y eso es no determinismo o contenido que cambia solo.
 
 ## Lecturas curadas que no se pudieron cargar
 
@@ -260,9 +319,9 @@ Ninguna: las 22 lecturas curadas encontraron su norma en el corpus.
 | Tipo | Cuántas |
 | --- | ---: |
 | IDENTIDAD_AMBIGUA | 4506 |
-| COBERTURA_EXTRACCION | 338 |
-| DATO_FALTANTE_CRITICO | 111 |
+| COBERTURA_EXTRACCION | 439 |
+| DATO_FALTANTE_CRITICO | 120 |
 | VIGENCIA_INDETERMINADA | 65 |
-| ACCESO_BLOQUEADO | 21 |
-| CONFLICTO_DE_FUENTES | 13 |
+| ACCESO_BLOQUEADO | 23 |
+| CONFLICTO_DE_FUENTES | 14 |
 | DISCREPANCIA_NUMERACION | 5 |

@@ -38,6 +38,7 @@ from backend_normativo.ingesta.adaptadores.base import (
     CapturaMaterial,
     DocumentoExtraido,
     ResultadoExtraccion,
+    clave_de_pagina,
 )
 from backend_normativo.ingesta.adaptadores.html import decodificar_html
 
@@ -296,7 +297,7 @@ class AdaptadorTramiteArgentina:
             modo_extraccion=ModoExtraccion.HTML,
             texto=cuerpo,
             titulo=ficha.titulo,
-            external_id=f"tramite:{captura.source_id}",
+            external_id=_identidad_de_tramite(captura),
             identidad={
                 "tramite": {
                     "titulo": ficha.titulo,
@@ -330,3 +331,15 @@ def _texto_de(ficha: FichaTramite) -> str:
     if ficha.duracion:
         partes.append(f"Duración: {ficha.duracion}")
     return "\n".join(p for p in partes if p)
+
+
+def _identidad_de_tramite(captura: CapturaMaterial) -> str:
+    """La ficha, no la fuente.
+
+    Una fuente de trámites tiene una ficha por servicio. Identificarlas todas
+    como `tramite:<fuente>` las apilaba como versiones de un solo documento, de
+    modo que la ficha del DNI y la del pasaporte eran «la misma» con distinto
+    número de versión.
+    """
+    clave = clave_de_pagina(captura.url_final)
+    return f"tramite:{captura.source_id}{':' + clave if clave else ''}"
