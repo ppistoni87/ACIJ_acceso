@@ -135,9 +135,21 @@ class Extractor:
 
         adaptador = next((a for a in self.adaptadores if a.acepta(material)), None)
         if adaptador is None:
-            resultado.avisos.append(
+            # El aviso solo vive mientras alguien mira la terminal, y la fuente
+            # queda ACTIVE y ACCESIBLE como si hubiera funcionado. Se abre
+            # incidencia para que la capacidad quede pendiente hasta que haya un
+            # adaptador que lea esto: los bytes están, lo que falta es leerlos.
+            texto_aviso = (
                 f"Ninguna familia de extracción acepta {material.url_final!r} "
                 f"(mime {material.mime!r}). La captura queda guardada sin extraer."
+            )
+            resultado.avisos.append(texto_aviso)
+            self._abrir_incidencia(
+                fila["source_id"],
+                TipoIncidencia.COBERTURA_EXTRACCION,
+                Severidad.HIGH,
+                texto_aviso,
+                resultado,
             )
             return resultado
 
@@ -146,6 +158,20 @@ class Extractor:
             self._persistir_documento(fila, documento, resultado)
         self._persistir_candidatas(fila["source_id"], extraccion, resultado)
         resultado.avisos.extend(a.texto for a in extraccion.avisos)
+
+        if not extraccion.documentos:
+            # Un adaptador la aceptó y no salió ningún documento. Los avisos del
+            # adaptador explican por qué, pero viven en la salida de la corrida:
+            # sin incidencia, la fuente queda ACTIVE y ACCESIBLE como si hubiera
+            # traído algo. Se abre una sola, con el motivo que el adaptador dio.
+            motivo = " | ".join(a.texto for a in extraccion.avisos) or "sin motivo declarado"
+            self._abrir_incidencia(
+                fila["source_id"],
+                TipoIncidencia.COBERTURA_EXTRACCION,
+                Severidad.HIGH,
+                f"La captura de {material.url_final!r} no produjo ningún documento: {motivo}",
+                resultado,
+            )
         return resultado
 
     def extraer_pendientes(self, source_id: str | None = None) -> ResultadoPersistencia:

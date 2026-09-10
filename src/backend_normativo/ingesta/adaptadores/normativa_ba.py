@@ -135,7 +135,13 @@ class AdaptadorNormativaBA:
         coincidencia = RE_URL.search(captura.url_final)
         if coincidencia is None:
             return ResultadoExtraccion(
-                avisos=[f"{captura.url_final} no es una ficha de NormativaBA"]
+                avisos=[
+                    Aviso(
+                        f"{captura.url_final} no es una ficha de NormativaBA",
+                        tipo=TipoIncidencia.COBERTURA_EXTRACCION,
+                        severidad=Severidad.HIGH,
+                    )
+                ]
             )
         norma_ba_id = coincidencia.group("id")
 

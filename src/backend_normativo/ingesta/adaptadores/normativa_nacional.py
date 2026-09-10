@@ -117,7 +117,13 @@ class AdaptadorNormativaNacional:
         coincidencia = RE_URL_NORMA.search(captura.url_final)
         if coincidencia is None:
             return ResultadoExtraccion(
-                avisos=[f"{captura.url_final} no es una URL de norma del portal nacional"]
+                avisos=[
+                    Aviso(
+                        f"{captura.url_final} no es una URL de norma del portal nacional",
+                        tipo=TipoIncidencia.COBERTURA_EXTRACCION,
+                        severidad=Severidad.HIGH,
+                    )
+                ]
             )
         vista = (coincidencia.group("vista") or "").strip("/")
         infoleg_id = coincidencia.group("id")
@@ -142,7 +148,16 @@ class AdaptadorNormativaNacional:
         arbol = HTMLParser(html)
         ficha = arbol.css_first(SELECTOR_FICHA)
         if ficha is None:
-            return ResultadoExtraccion(avisos=["La ficha no tiene el bloque esperado"])
+            return ResultadoExtraccion(
+                avisos=[
+                    Aviso(
+                        f"{captura.url_final}: la ficha no tiene el bloque esperado. "
+                        "La captura queda guardada sin extraer.",
+                        tipo=TipoIncidencia.CAMBIO_DE_ESQUEMA,
+                        severidad=Severidad.HIGH,
+                    )
+                ]
+            )
 
         # El portal publica normativa nacional: la jurisdicción es parte de
         # la identidad y sin ella dos leyes con el mismo número colisionan.

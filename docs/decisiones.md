@@ -1097,3 +1097,53 @@ período, una versión que hoy se sabe y en 2025 no se sabía, y una versión
 aplicable cuya captura es la más vieja de las dos—. El eje de conocimiento es el
 que no se puede agregar después: sin él no hay forma de reconstruir por qué el
 sistema contestó lo que contestó en su momento.
+
+## D-60 · Lo que una fuente declara traer se comprueba, no se supone
+
+El manifiesto dice, fuente por fuente, en qué tablas tiene que terminar lo que
+esa fuente aporta. Nadie lo comprobaba, y el catálogo mostraba `ACTIVE`,
+`ACCESIBLE` y «capturada» tanto para una fuente que dejó mil filas como para una
+que no dejó ninguna. Sobre 85 fuentes: 18 capturaron, se extrajeron y no
+dejaron una sola fila donde su historia dice, y cinco más nunca se extrajeron.
+
+La regla de atribución es la misma disciplina que el proyecto ya se impuso: una
+fila es de una fuente cuando su evidencia lleva de vuelta a un documento de esa
+fuente. Y tuvo dos límites que valió la pena encontrar antes de publicar el
+informe y no después.
+
+El primero: **un dataset no deja evidencia por fila**. F01 carga 428.380 normas
+y ninguna trae un fragmento que citar, porque no hay cómo citar un renglón de un
+ZIP. La primera corrida la daba por «sin destino», que habría sido un hallazgo
+falso sobre la fuente más grande del corpus. Se acredita por su conciliación
+DQ11, y el informe dice cuáles se acreditan así en vez de mezclarlas.
+
+El segundo: **hay tablas que no son de nadie**. Una norma no es «de» una fuente;
+es la norma, y varias la publican. Contarlas por fuente diría algo falso, así
+que se declaran no atribuibles.
+
+**Consecuencia:** `bn calidad fuentes` informa y no falla. Con 18 fuentes
+pendientes, un gate rojo permanente entrena a ignorarlo; `--estricto` existe y
+es como tiene que quedar cuando se resuelvan.
+
+## D-61 · Un aviso que nadie guarda es un fallo que no ocurrió
+
+Tres fuentes tienen su HTML capturado y ningún adaptador que lo lea. La
+extracción lo decía —«Ninguna familia de extracción acepta… La captura queda
+guardada sin extraer»— y lo decía bien: los bytes se conservan, no se inventa
+nada. Pero el aviso vivía en la salida de la corrida, y la fuente seguía
+`ACTIVE` y `ACCESIBLE` como si hubiera funcionado.
+
+Es la misma forma que ya apareció con los permisos, con los objetos y con los
+tipos de documento: el sistema hace lo correcto y no deja rastro de haberlo
+hecho, con lo cual nadie se entera. Un fallo sin registro es indistinguible de
+que no haya pasado nada.
+
+**Consecuencia:** una captura que ningún adaptador lee, y una que un adaptador
+acepta sin producir documento, abren incidencia contra la fuente. La capacidad
+queda pendiente hasta que haya con qué leerla.
+
+Escribir esa prueba destapó algo más: `ResultadoExtraccion.avisos` está
+declarado `list[Aviso]` y cuatro adaptadores metían cadenas sueltas. Nunca había
+fallado porque esos caminos no se recorrían. Un aviso que es una cadena no
+puede convertirse en incidencia, así que el tipo no era decorativo: era la
+diferencia entre registrar el fallo y perderlo.

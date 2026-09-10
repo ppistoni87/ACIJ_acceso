@@ -121,7 +121,18 @@ class AdaptadorInfolegLegacy:
     def extraer(self, captura: CapturaMaterial) -> ResultadoExtraccion:
         coincidencia = RE_URL.search(captura.url_final)
         if coincidencia is None:
-            return ResultadoExtraccion(avisos=[f"{captura.url_final} no es una ruta de InfoLEG"])
+            # `acepta` la tomó por el host y la URL no es una ruta de norma. La
+            # captura queda sin leer, y eso no puede ser una cadena suelta: el
+            # tipo declarado es Aviso, y solo un Aviso llega a ser incidencia.
+            return ResultadoExtraccion(
+                avisos=[
+                    Aviso(
+                        f"{captura.url_final} no es una ruta de InfoLEG",
+                        tipo=TipoIncidencia.COBERTURA_EXTRACCION,
+                        severidad=Severidad.HIGH,
+                    )
+                ]
+            )
 
         infoleg_id = coincidencia.group("id")
         tipo_version = VISTAS[coincidencia.group("vista").lower()]

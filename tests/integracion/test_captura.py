@@ -628,3 +628,61 @@ def test_reanudar_no_duplica_capturas(
         text("SELECT count(*) FROM corridas_ingesta WHERE source_id = 'D01'")
     ).scalar_one()
     assert corridas == 1, "reanudar continúa la corrida en vez de abrir una nueva"
+
+
+# --- P-006 criterio 2: un fallo de extracción no puede quedar en la terminal ---
+
+
+def _incidencias_de(conexion: Connection, source_id: str) -> list[str]:
+    return [
+        fila[0]
+        for fila in conexion.execute(
+            text(
+                "SELECT descripcion FROM incidencias_revision "
+                " WHERE source_id = :s AND estado = 'ABIERTA' AND tipo = 'COBERTURA_EXTRACCION'"
+            ),
+            {"s": source_id},
+        )
+    ]
+
+
+def test_una_captura_que_ningun_adaptador_lee_abre_incidencia(
+    conexion: Connection, catalogo, almacen: AlmacenObjetos
+) -> None:
+    """Los bytes están guardados y nadie los puede leer.
+
+    El aviso existía y vivía en la salida de la corrida: mientras tanto la
+    fuente seguía ACTIVE y ACCESIBLE, como si hubiera funcionado. Ahora la
+    capacidad queda pendiente hasta que haya un adaptador que lea esto.
+    """
+    from backend_normativo.ingesta.extraccion import Extractor
+
+    url = _url_de(conexion, "D01")
+    cliente = ClienteDePrueba(
+        {url: [_descarga(url, contenido=b"BM\x00\x00mapa de bits", mime="image/bmp")]}
+    )
+    Capturador(conexion, cliente=cliente, almacen=almacen).capturar_fuente("D01")
+
+    resultado = Extractor(conexion, almacen=almacen).extraer_pendientes("D01")
+
+    assert any("Ninguna familia de extracción acepta" in a for a in resultado.avisos)
+    incidencias = _incidencias_de(conexion, "D01")
+    assert len(incidencias) == 1
+    assert "queda guardada sin extraer" in incidencias[0]
+
+
+def test_una_captura_que_no_produce_documento_abre_incidencia(
+    conexion: Connection, catalogo, almacen: AlmacenObjetos
+) -> None:
+    """Un adaptador la aceptó y no salió nada. El motivo lo da el adaptador; sin
+    incidencia, ese motivo se pierde con la terminal."""
+    from backend_normativo.ingesta.extraccion import Extractor
+
+    url = _url_de(conexion, "D01")
+    cliente = ClienteDePrueba({url: [_descarga(url, contenido=b"<html><body></body></html>")]})
+    Capturador(conexion, cliente=cliente, almacen=almacen).capturar_fuente("D01")
+
+    Extractor(conexion, almacen=almacen).extraer_pendientes("D01")
+
+    incidencias = _incidencias_de(conexion, "D01")
+    assert any("no produjo ningún documento" in i for i in incidencias)

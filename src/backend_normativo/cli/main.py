@@ -670,6 +670,40 @@ def operacion_restaurar(
         raise typer.Exit(1)
 
 
+@calidad.command("fuentes")
+def calidad_fuentes(
+    salida: Path | None = typer.Option(None, "--salida", help="Archivo donde escribir."),
+    estricto: bool = typer.Option(
+        False,
+        "--estricto",
+        help="Salir con error si alguna fuente capturó bien y no llegó a destino.",
+    ),
+) -> None:
+    """Compara cada fuente con la historia que el manifiesto le declara.
+
+    Informa y sale bien por defecto: hoy hay fuentes que no llegan a destino y
+    hacer fallar la población por eso trabaría un trabajo que no es el mismo.
+    Con `--estricto` falla, que es como tiene que quedar cuando esas fuentes se
+    resuelvan.
+    """
+    from backend_normativo.calidad.fuentes import construir, formatear
+
+    with engine_migrador().connect() as conexion:
+        reporte = construir(conexion)
+    texto = formatear(reporte)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto, encoding="utf-8")
+        typer.echo(
+            f"Verificación de fuentes escrita en {salida} · "
+            f"{len(reporte.sin_destino)} capturada(s) sin llegar a destino"
+        )
+    else:
+        typer.echo(texto)
+    if estricto and (reporte.sin_destino or reporte.sin_extraer):
+        raise typer.Exit(1)
+
+
 @calidad.command("grafo")
 def calidad_grafo(
     profundidad: int = typer.Option(4, "--profundidad", help="Tope de saltos al buscar ciclos."),
