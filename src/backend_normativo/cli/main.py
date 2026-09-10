@@ -670,6 +670,32 @@ def operacion_restaurar(
         raise typer.Exit(1)
 
 
+@curacion.command("montos")
+def curacion_montos(
+    fuentes: list[str] = typer.Argument(..., help="Fuentes de montos (F12, ...)."),
+) -> None:
+    """Carga los importes publicados por una fuente, cada uno con su período.
+
+    El período sale de la tabla —«a partir del X» rige hasta el día anterior al
+    siguiente— y no de cuándo se descargó. Un importe sin fecha desde la que
+    rija no se carga: se registra como faltante.
+    """
+    from backend_normativo.curacion.montos import CuradorDeMontos
+
+    for source_id in fuentes:
+        with engine_migrador().begin() as conexion:
+            resultado = CuradorDeMontos(conexion).cargar(source_id)
+        typer.echo(
+            f"{source_id}: {resultado.filas_leidas} renglón(es) leído(s) · "
+            f"valores nuevos {resultado.valores_creados} · "
+            f"ya estaban {resultado.valores_existentes} · "
+            f"rechazados {len(resultado.rechazadas)} · "
+            f"sin período {resultado.sin_periodo}"
+        )
+        for aviso in resultado.avisos:
+            typer.echo(f"    {aviso}")
+
+
 @calidad.command("fuentes")
 def calidad_fuentes(
     salida: Path | None = typer.Option(None, "--salida", help="Archivo donde escribir."),

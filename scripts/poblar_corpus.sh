@@ -216,6 +216,13 @@ else
 fi
 
 echo
+echo "== Montos publicados por fuente =="
+# Cada importe entra con el período que su tabla declara. Un importe sin fecha
+# desde la que rija no se carga: queda como incidencia. Tomar la fecha de
+# descarga como su período es servir un histórico como el actual.
+$BN curacion montos F12 F52 | grep -v '^$' || true
+
+echo
 echo "== Calendario de feriados =="
 $BN plazos calendario "$(date +%Y)" | tail -2
 

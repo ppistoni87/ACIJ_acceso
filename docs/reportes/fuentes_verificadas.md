@@ -3,8 +3,8 @@
 El manifiesto declara en qué tablas tiene que terminar lo que cada fuente aporta. Esto compara lo declarado con lo que hay. Una fila se atribuye a una fuente cuando su evidencia lleva de vuelta a un documento de esa fuente.
 
 - Fuentes en el catálogo: 85
-- **Sirven** (dejaron filas donde su historia dice): 30, de las cuales 1 acreditadas por la conciliación del importador y no por evidencia por fila
-- **Capturadas, extraídas y sin destino** (200 y ninguna fila): 18
+- **Sirven** (dejaron filas donde su historia dice): 31, de las cuales 1 acreditadas por la conciliación del importador y no por evidencia por fila
+- **Capturadas, extraídas y sin destino** (200 y ninguna fila): 17
 - **Capturadas y nunca extraídas**: 5
 - Solo descubrimiento (su destino es el catálogo mismo): 2
 - Bloqueadas: 17
@@ -16,7 +16,6 @@ Estas respondieron, se extrajeron y no dejaron una sola fila donde su historia d
 
 | Fuente | Prioridad | Versiones | Unidades | Tablas declaradas y vacías |
 | --- | --- | ---: | ---: | --- |
-| F12 | P0 | 1 | 0 | parametro_valores, relaciones_normativas |
 | F18 | P0 | 2 | 0 | canales |
 | F27 | P0 | 1 | 0 | tramites, plazos, canales |
 | F36 | P0 | 1 | 0 | tramites, tramite_pasos, parametro_valores |

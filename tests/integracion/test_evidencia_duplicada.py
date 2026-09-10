@@ -23,7 +23,7 @@ LARGO_DE_LA_LLAMADA = 500
 
 # Si el código deja de escribir la consulta así, esta prueba no está mirando
 # nada. El número está para que ese caso falle en vez de pasar en silencio.
-BUSQUEDAS_CONOCIDAS = 7
+BUSQUEDAS_CONOCIDAS = 8
 
 
 def _busquedas() -> list[tuple[str, str]]:

@@ -137,6 +137,26 @@ def jurisdiccion_de(fuente: FuenteManifiesto) -> str | None:
     return None
 
 
+# Qué parámetros publica cada fuente de montos y en qué orden aparecen en su
+# tabla. No se deriva de nada: el encabezado de esas tablas viene sin
+# separadores —«Fecha Salario Mínimo, Vital y Móvil Prestación por Desempleo
+# monto mínimo…»— y partirlo por heurística es inventar a qué concepto pertenece
+# cada número. Se declara acá, donde se revisa en el diff.
+COLUMNAS_DE_MONTOS: dict[str, list[str]] = {
+    # Consejo del Salario: SMVM y los topes de la prestación por desempleo.
+    "F12": [
+        "SMVM",
+        "PRESTACION_DESEMPLEO_MINIMO",
+        "PRESTACION_DESEMPLEO_MAXIMO",
+    ],
+    # Progresar publica un solo monto y no dice desde cuándo rige. Declararlo
+    # igual es lo que hace que el faltante se registre en vez de pasar
+    # desapercibido: sin columna declarada, la incidencia diría que falta la
+    # declaración; con ella, dice lo que realmente falta, que es la fecha.
+    "F52": ["BECA_PROGRESAR"],
+}
+
+
 def selector_config_de(fuente: FuenteManifiesto) -> dict[str, object] | None:
     """Configuración por fuente que los adaptadores leen.
 
@@ -152,6 +172,9 @@ def selector_config_de(fuente: FuenteManifiesto) -> dict[str, object] | None:
     jurisdiccion = jurisdiccion_de(fuente)
     if jurisdiccion is not None:
         config["jurisdiccion"] = jurisdiccion
+    columnas = COLUMNAS_DE_MONTOS.get(fuente.source_id)
+    if columnas:
+        config["montos"] = {"columnas": list(columnas)}
     return config or None
 
 

@@ -1147,3 +1147,38 @@ declarado `list[Aviso]` y cuatro adaptadores metían cadenas sueltas. Nunca hab�
 fallado porque esos caminos no se recorrían. Un aviso que es una cadena no
 puede convertirse en incidencia, así que el tipo no era decorativo: era la
 diferencia entre registrar el fallo y perderlo.
+
+## D-62 · El período de un importe sale de la tabla, nunca de la descarga
+
+La página del Consejo del Salario publica, en septiembre, tres importes que
+empiezan a regir en octubre, noviembre y diciembre. Tomar el último renglón de
+la descarga más reciente y servirlo como el monto vigente —que es el error que
+el criterio nombra— daría un número que no rige hasta dentro de tres meses. En
+septiembre no rige ninguno de los tres.
+
+Así que cada importe entra con el período que la tabla declara: «a partir del
+1/10» rige hasta el día anterior al «a partir del» siguiente, y el último queda
+abierto, porque un piso salarial rige desde su fecha hasta que otra resolución
+lo cambie y publicar el cronograma es respaldar eso.
+
+**Las columnas se declaran, no se adivinan.** El encabezado viene sin
+separadores —«Fecha Salario Mínimo, Vital y Móvil Prestación por Desempleo monto
+mínimo…»— y partirlo por heurística es inventar a qué concepto pertenece cada
+número. Un número asignado al concepto equivocado es peor que no tenerlo. La
+fuente declara qué parámetros trae y en qué orden; un renglón con otra cantidad
+de importes se rechaza en vez de acomodarse.
+
+**Un importe sin fecha no se carga.** La página de Progresar dice que el monto
+de la beca es de $35.000 y no dice desde cuándo. Es incómodo a propósito: la
+página lo publica como el vigente y el sistema se abstiene de servirlo como
+vigente porque la página no lo respalda con una fecha. Quien pregunta cuánto
+cobra no puede recibir un número que quizá cambió el mes pasado.
+
+**Consecuencia:** cargar un importe no es aprobarlo. Los nueve entran como
+candidatos y no publicables; publicarlos es una decisión de revisión.
+
+Vale decir qué parte de esto ya estaba hecha y sin usar. La restricción de
+exclusión de `parametro_valores` impide desde la migración 0002 que dos importes
+publicables del mismo parámetro se pisen en el tiempo, y `bn_rango_aplicacion`
+no convierte un límite desconocido en vigencia abierta. La tabla tenía cero
+filas: la parte difícil estaba puesta y nadie la había ejercido.
