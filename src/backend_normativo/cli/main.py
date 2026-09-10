@@ -2161,3 +2161,28 @@ def operacion_credenciales_revocadas() -> None:
             f"{fila['revocada_en'].isoformat(timespec='seconds')}  "
             f"por {fila['revocada_por']}: {fila['motivo']}"
         )
+
+
+@curacion.command("canales")
+def curacion_canales(
+    fuente: str | None = typer.Argument(None, help="Una fuente en particular. Por omisión, todas."),
+    salida: Path | None = typer.Option(None, help="Archivo donde escribir la evidencia."),
+) -> None:
+    """Carga los canales de atención que publican las páginas institucionales.
+
+    Un valor que no normaliza no se carga, y una fuente sin organismo declarado
+    tampoco: deja incidencia con cuántos canales encontró.
+    """
+    from backend_normativo.curacion.canales import CuradorDeCanales
+    from backend_normativo.curacion.canales import formatear as formatear_canales
+
+    with engine_migrador().begin() as conexion:
+        resultado = CuradorDeCanales(conexion).cargar(fuente)
+
+    texto = formatear_canales(resultado)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto + "\n", encoding="utf-8")
+        typer.echo(f"Evidencia escrita en {salida} · canales {resultado.creados}")
+    else:
+        typer.echo(texto)

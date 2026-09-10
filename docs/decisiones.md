@@ -1409,3 +1409,37 @@ Lo que la consola deliberadamente no tiene es un botón de «aprobar todas». El
 criterio 2 de P-010 dice que estas reglas no se aprueban en lote por un agente, y
 una herramienta que ofrece el atajo lo vuelve el camino por omisión.
 
+## D-73 · El organismo de un canal se declara, no se infiere
+
+`canales.organismo_id` no admite nulo y ninguna de las 85 fuentes del catálogo
+trae organismo. La salida obvia era emparejar el nombre de la fuente contra la
+tabla de organismos por parecido: «Defensoría del Pueblo CABA - Sede Central» y
+«Defensor del Pueblo de la Ciudad Autónoma de Buenos Aires» son casi lo mismo.
+
+No se hizo, y la razón es lo que pasa cuando falla: un teléfono queda bajo el
+nombre de otro organismo y quien consulta marca ese número. En un producto que
+existe para que una persona sepa dónde ir, ese error no es un dato mal
+clasificado: es una persona llamando al lugar equivocado en el peor momento.
+
+**Consecuencia:** la correspondencia vive en `ORGANISMOS_POR_FUENTE`, escrita a
+mano, revisable en un diff, y cada línea verificada abriendo la página de la
+fuente. Tampoco se infiere del dominio: `argentina.gob.ar` aloja decenas de
+organismos distintos. Una fuente sin declaración no carga canales y deja
+incidencia diciendo cuántos encontró y dónde se declara lo que falta. Dos
+quedaron así, con 31 y 10 canales esperando una línea.
+
+Es el mismo patrón que los datasets de directorios, que declaran su organismo en
+el código desde HU-020. Lo que cambió es que ahora está dicho por qué.
+
+## D-74 · Encontrar y aceptar son dos decisiones
+
+Una expresión regular que busca teléfonos encuentra «1999 1998 1997». Se puede
+angostar el patrón hasta que no lo encuentre, y entonces deja de encontrar
+`(54–11) 27713385`, que es un teléfono real de una página real.
+
+**Consecuencia:** el patrón busca ancho y la normalización decide. `RE_TELEFONO`
+acepta candidatos con generosidad; `normalizar_telefono` los rechaza si no tienen
+entre 8 y 12 dígitos o si son una tira de años, y devuelve `None` en vez de un
+valor a medias. Ensanchar el patrón para tomar un formato nuevo no arrastra
+basura a la base, porque la puerta de entrada no es el patrón.
+
