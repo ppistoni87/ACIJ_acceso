@@ -11,7 +11,7 @@ import json
 import pathlib
 
 import pytest
-from sqlalchemy import Connection
+from sqlalchemy import Connection, text
 
 from backend_normativo.calidad import backlog, trazabilidad
 
@@ -136,3 +136,84 @@ def test_los_estados_declarados_son_del_vocabulario() -> None:
         if entrada["estado"] not in backlog.ESTADOS
     }
     assert fuera == {}
+
+
+def _metricas(**cambios: object) -> dict:
+    """Una fuente que no dio nada: lo que cambia entre casos es por qué."""
+    base: dict = {
+        "alias_of": None,
+        "access_status": "NO_VERIFICADO",
+        "estado": "ACTIVE",
+        "motivo_estado": None,
+        "exclusion_reason": None,
+        "responsable_rol": None,
+        "urls": 1,
+        "capturas": 0,
+        "documentos": 0,
+        "versiones": 0,
+        "unidades": 0,
+        "puntos": 0,
+        "normas": 0,
+        "campos": 0,
+        "publicadas": 0,
+        "incidencias": 0,
+    }
+    base.update(cambios)
+    return base
+
+
+_HISTORIA = {
+    "id": "HU-FXX",
+    "title": "Una fuente cualquiera",
+    "source_id": "FXX",
+    "owner_capability": "ingesta",
+    "priority": "P2",
+}
+
+
+@pytest.mark.parametrize(
+    ("estado_catalogo", "esperado"),
+    [
+        ("RETIRED", backlog.NO_SE_INGESTA),
+        ("REFERENCE_ONLY", backlog.NO_SE_INGESTA),
+        ("MANUAL", backlog.ESPERA_CARGA_MANUAL),
+        ("ACTIVE", "NO_INICIADA"),
+    ],
+)
+def test_una_decision_del_catalogo_no_se_reporta_como_recorrido_pendiente(
+    estado_catalogo: str, esperado: str
+) -> None:
+    """Sin capturas no alcanza para decir «todavía no se recorrió».
+
+    Una fuente retirada, una de referencia y una de carga manual tampoco tienen
+    capturas, y llamarlas no iniciadas convierte una decisión ya registrada en
+    trabajo pendiente que nadie va a hacer porque no hay nada que hacer. Solo la
+    fuente ACTIVE sin capturas es un recorrido que falta.
+    """
+    historia = backlog._historia_de_fuente(_HISTORIA, _metricas(estado=estado_catalogo))
+    assert historia.estado == esperado
+    assert historia.detencion
+
+
+def _decididas_por_el_catalogo(conexion: Connection) -> set[str]:
+    """Las fuentes que el catálogo declaró retiradas, de referencia o manuales."""
+    estados = [*backlog.ESTADOS_SIN_INGESTA, backlog.ESTADO_MANUAL]
+    filas = conexion.execute(
+        text("SELECT source_id FROM fuentes WHERE estado = ANY(:estados)"),
+        {"estados": estados},
+    ).scalars()
+    return set(filas)
+
+
+def test_ninguna_fuente_decidida_por_el_catalogo_figura_no_iniciada(
+    conexion: Connection,
+) -> None:
+    """La misma regla, contra el catálogo real y no contra un diccionario."""
+    reporte = backlog.construir(conexion, raiz=RAIZ)
+    decididas = _decididas_por_el_catalogo(conexion)
+    mal_rotuladas = {
+        h.source_id
+        for h in reporte.fuentes
+        if h.estado == "NO_INICIADA" and h.source_id in decididas
+    }
+    assert mal_rotuladas == set()

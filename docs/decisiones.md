@@ -1586,3 +1586,20 @@ sección, esas cinco pasaron a citarse enteras y con eso apareció el contenido
 real: el cronograma de pagos de Progresar con su tabla de DNI, y la declaración
 de que las sedes están cerradas.
 
+
+## D-83 · Sin capturas no quiere decir sin recorrer
+
+El estado del backlog rotulaba `NO_INICIADA` —«la fuente está en el catálogo y
+todavía no se recorrió»— a nueve fuentes que sí tenían capturas en cero pero por
+motivos ya decididos: dos retiradas por URL muerta, tres declaradas solo de
+referencia y cuatro de carga manual. El informe de fuentes ya había aprendido
+esta distinción; el de backlog conservaba su propia lista de estados y no la
+había aprendido, así que las mismas nueve decisiones aparecían como nueve tareas
+pendientes de ingesta.
+
+**Consecuencia:** `calidad/backlog.py` importa `ESTADOS_SIN_INGESTA` y
+`ESTADO_MANUAL` de `calidad/fuentes.py` en vez de repetirlos, y agrega dos
+estados: `NO_SE_INGESTA` y `ESPERA_CARGA_MANUAL`. `NO_INICIADA` pasó de nueve a
+cero, y lo que queda ahí —si algún día vuelve a haber algo— es un recorrido que
+de verdad falta. Que los dos informes cuenten distinto sobre las mismas filas era
+el defecto; que compartan el vocabulario es la corrección.

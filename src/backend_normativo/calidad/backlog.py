@@ -26,6 +26,8 @@ from dataclasses import dataclass, field
 
 from sqlalchemy import Connection, text
 
+from backend_normativo.calidad.fuentes import ESTADO_MANUAL, ESTADOS_SIN_INGESTA
+
 RUTA_ESTADO = pathlib.Path("docs/calidad/estado_backlog.json")
 RUTA_BACKLOG = pathlib.Path("docs/paquete/06_Backlog.json")
 
@@ -36,10 +38,20 @@ ACCESOS_IMPEDIDOS = frozenset(
     {"ACCESO_LIMITADO", "BLOQUEADA", "ERROR_TLS", "NO_ENCONTRADA", "SIN_URL_CONOCIDA"}
 )
 
+# Estados que el catálogo ya decidió: la fuente no espera turno de captura.
+# Se importan de `calidad.fuentes` en vez de repetirse acá porque los dos
+# reportes tienen que contar lo mismo; cuando esta lista era propia, el backlog
+# llamaba «todavía no se recorrió» a nueve fuentes retiradas, de referencia o
+# de carga manual, y convertía nueve decisiones registradas en nueve pendientes.
+NO_SE_INGESTA = "NO_SE_INGESTA"
+ESPERA_CARGA_MANUAL = "ESPERA_CARGA_MANUAL"
+
 ESTADOS = (
     "NO_INICIADA",
     "BLOQUEADA",
     "EN_CURSO",
+    ESPERA_CARGA_MANUAL,
+    NO_SE_INGESTA,
     "ALIAS_REGISTRADO",
     "CERRADA",
 )
@@ -256,6 +268,15 @@ def _historia_de_fuente(historia: dict, metricas: dict) -> HistoriaDeFuente:
     elif bloqueada:
         estado = "BLOQUEADA"
         detencion = _motivo_de_detencion(metricas)
+    elif metricas["estado"] in ESTADOS_SIN_INGESTA:
+        # Antes de preguntar si se recorrió, preguntar si había que recorrerla.
+        estado = NO_SE_INGESTA
+        detencion = f"Sin capturas y {ESTADOS_SIN_INGESTA[metricas['estado']]}: no se captura."
+    elif metricas["estado"] == ESTADO_MANUAL:
+        estado = ESPERA_CARGA_MANUAL
+        detencion = (
+            "Sin capturas y declarada de carga manual: espera una carga trazada, no un recorrido."
+        )
     else:
         estado = "NO_INICIADA"
         detencion = "Sin capturas: la fuente está en el catálogo y todavía no se recorrió."
@@ -369,6 +390,10 @@ def formatear(reporte: ReporteBacklog) -> str:
         "- **BLOQUEADA**: hay un impedimento concreto —acceso restringido o URL inequívoca",
         "  desconocida— con su motivo y su responsable. No es un pendiente de programación.",
         "- **NO_INICIADA**: la fuente está en el catálogo y todavía no se recorrió.",
+        "- **ESPERA_CARGA_MANUAL**: el catálogo la declara de carga manual. Lo que "
+        "falta es una carga trazada, no un recorrido.",
+        "- **NO_SE_INGESTA**: el catálogo la declara retirada o solo de referencia. "
+        "No es un pendiente: es una decisión registrada.",
         "",
         "Una fuente importada como metadatos —F01, el catálogo nacional— figura con sus",
         "capturas y sin versiones de documento: no tiene textos segmentados porque no se",

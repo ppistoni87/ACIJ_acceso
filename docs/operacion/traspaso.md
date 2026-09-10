@@ -73,15 +73,22 @@ las usuarias pagan la latencia una vez por mensaje, no una por consulta.
 
 ## Qué queda construido
 
-| | |
-| --- | ---: |
-| Pruebas | 1.111, sin salteos sin declarar |
-| Migraciones | 15, aplicadas también en Neon y verificadas contra el motor |
-| Decisiones de dominio registradas | 82 |
-| Normas en el catálogo nacional | 423.718 |
-| Beneficios curados desde el texto | 16 |
-| Reglas extraídas con su artículo | 176 |
-| Fuentes que sirven | 44 de 55 ingestables |
+Las cifras de esta tabla son una foto al 10.09.2026. Este proyecto ya se
+tropezó una vez con un número escrito a mano que envejeció en silencio —el acta
+de Neon declaraba una cabeza de migraciones vieja y este mismo informe dio por
+pendiente un trabajo ya hecho—, así que abajo está el comando que regenera cada
+una. Si no coinciden, mandan los comandos.
+
+| | | Se regenera con |
+| --- | ---: | --- |
+| Pruebas | 1.113, sin salteos sin declarar | `pytest -q -rs` |
+| Migraciones | 15, aplicadas también en Neon | `scripts/estado_neon.py` |
+| Sondas de permisos | 23, sin discrepancia | `scripts/verificar_permisos.py` |
+| Decisiones de dominio registradas | 82 | `docs/decisiones.md` |
+| Normas en el catálogo nacional | 423.718 | `bn calidad cobertura` |
+| Beneficios curados desde el texto | 16 | `bn curacion beneficios` |
+| Reglas extraídas con su artículo | 176 | `bn revision reglas` |
+| Fuentes que sirven | 44 de 55 ingestables | `bn calidad fuentes` |
 
 Y lo que el sistema **se niega** a hacer, que es la parte que más costó:
 
@@ -97,15 +104,17 @@ Y lo que el sistema **se niega** a hacer, que es la parte que más costó:
 
 ```bash
 bash scripts/corrida_limpia.sh      # base vacía -> corpus, con reporte
-pytest -q -rs                        # 1.111 pruebas, los salteos con motivo
+pytest -q -rs                        # 1.113 pruebas, los salteos con motivo
 bn calidad fuentes                   # cada fuente contra la historia que declara
 bn calidad backlog                   # cada historia contra su evidencia en el repo
 NEON_DSN=... python scripts/estado_neon.py       # la base gestionada contra el código
 NEON_DSN=... python scripts/verificar_permisos.py  # 23 sondas de permisos
 ```
 
-Ninguna cifra de la documentación está escrita a mano: todas se regeneran, y
-regenerarlas sin cambios da el mismo texto.
+Los informes generados (`docs/reportes/`) no tienen cifras escritas a mano:
+salen de esos comandos, y regenerarlos sin cambios da el mismo texto. La tabla
+de arriba sí es una transcripción —por eso lleva al lado el comando que la
+desmiente.
 
 ## Lo que no se construyó, y por qué
 
