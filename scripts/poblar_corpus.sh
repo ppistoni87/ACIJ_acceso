@@ -93,6 +93,27 @@ echo
 echo "== Resto de las fuentes, por el planificador =="
 $BN monitoreo ciclo | sed -n '1,8p'
 
+# Varias páginas del manifiesto son índices: el propio manifiesto las describe
+# como «hub /requisitos + 3 hojas» o «mapa de subpaginas». El contenido —los
+# requisitos, los pasos, el cronograma— está un clic más allá, y curar el índice
+# produciría un trámite sin un solo paso. Una vuelta de descubrimiento sobre
+# todo lo capturado, y después captura y extracción de lo que resultó.
+#
+# Una sola vuelta a propósito: cada anillo multiplica las páginas y este
+# procedimiento tiene que terminar en un tiempo comparable entre corridas.
+echo
+echo "== Hojas de los índices =="
+for fuente in $(consulta "SELECT DISTINCT source_id_origen FROM fuentes_candidatas WHERE estado = 'NUEVA'"); do
+  $BN ingesta descubrir "$fuente" --limite 8 | head -1
+done
+institucionales=$(consulta "SELECT DISTINCT f.source_id FROM fuentes f
+    JOIN fuente_urls u ON u.source_id = f.source_id
+   WHERE f.estado = 'ACTIVE'
+     AND f.clase IN ('FICHA_TRAMITE', 'DIRECTORIO', 'CANAL_ATENCION', 'DOCUMENTO')")
+# shellcheck disable=SC2086
+$BN ingesta capturar $institucionales 2>&1 | tail -3
+$BN ingesta extraer | tail -2
+
 # El corpus cita normas que no tiene, y el catálogo nacional ya sabe dónde está
 # el texto de buena parte de ellas. Va después de la identidad y las relaciones
 # de la primera vuelta —que son las que dejan escritas esas citas— y antes de
@@ -221,6 +242,14 @@ echo "== Montos publicados por fuente =="
 # desde la que rija no se carga: queda como incidencia. Tomar la fecha de
 # descarga como su período es servir un histórico como el actual.
 $BN curacion montos F12 F52 | grep -v '^$' || true
+
+# Los canales de atención que publican las páginas institucionales: teléfonos,
+# correos, WhatsApp y formularios. El organismo se declara en el código y no se
+# infiere del nombre de la fuente; la que no tenga declaración deja incidencia
+# en vez de cargar un teléfono bajo el organismo equivocado.
+echo
+echo "== Canales de atención =="
+$BN curacion canales | grep -E "^- |^\| F" | head -12
 
 echo
 echo "== Calendario de feriados =="
