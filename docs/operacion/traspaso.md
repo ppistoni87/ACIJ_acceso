@@ -81,7 +81,7 @@ una. Si no coinciden, mandan los comandos.
 
 | | | Se regenera con |
 | --- | ---: | --- |
-| Pruebas | 1.113, sin salteos sin declarar | `pytest -q -rs` |
+| Pruebas | 1.118, sin salteos sin declarar | `pytest -q -rs` |
 | Migraciones | 15, aplicadas también en Neon | `scripts/estado_neon.py` |
 | Sondas de permisos | 23, sin discrepancia | `scripts/verificar_permisos.py` |
 | Decisiones de dominio registradas | 82 | `docs/decisiones.md` |
@@ -104,7 +104,7 @@ Y lo que el sistema **se niega** a hacer, que es la parte que más costó:
 
 ```bash
 bash scripts/corrida_limpia.sh      # base vacía -> corpus, con reporte
-pytest -q -rs                        # 1.113 pruebas, los salteos con motivo
+pytest -q -rs                        # 1.118 pruebas, los salteos con motivo
 bn calidad fuentes                   # cada fuente contra la historia que declara
 bn calidad backlog                   # cada historia contra su evidencia en el repo
 NEON_DSN=... python scripts/estado_neon.py       # la base gestionada contra el código
@@ -128,4 +128,21 @@ desmiente.
   extracción vieja; volver a medir sobre un corte limpio exige re-curar las citas,
   que es trabajo jurídico.
 - **Un adaptador de boletines**: M01 y M03 declaran `normas` y
-  `relaciones_normativas`, que no salen de partir una página en secciones.
+  `relaciones_normativas`, que no salen de partir una página en secciones. Son
+  las dos únicas fuentes capturadas que ningún adaptador procesó, y el informe
+  las separa de las que sí se extrajeron pero no dejaron filas.
+
+## Una cosa que el informe marca y no es un error de programa
+
+`bn calidad fuentes` lista seis fuentes «capturadas, extraídas y sin destino»:
+respondieron 200, se extrajeron y no dejaron una fila donde su historia dice que
+deberían. En dos de ellas —F18 y F32— miré la página: F32 es el widget de turnos
+(cuatro botones: reservar, modificar, cancelar, comprobante) y F18 es un párrafo
+que describe Progresar. Ninguna de las dos tiene un teléfono, una dirección ni un
+horario, así que el catálogo les declara `canales` y la página no los contiene.
+
+No las reclasifiqué. La diferencia entre «el extractor no lo vio» y «la página no
+lo tiene» decide si esto es trabajo de ingesta o una corrección del catálogo, y
+esa es una revisión de las seis, una por una, con la página al lado. Dejarlas
+visibles y mal atribuidas cuesta una revisión; esconderlas detrás de un estado
+nuevo que yo inventara cuesta no volver a mirarlas.
