@@ -30,6 +30,15 @@ from sqlalchemy import Connection, text
 from backend_normativo.db.vocabularios import EstadoRevision
 
 
+class ConflictoDeRevision(Exception):
+    """La regla cambió desde que quien decide la leyó.
+
+    Es distinto de una transición inválida: no está mal pedida, está pedida
+    sobre una versión que ya no es. Quien decidió primero no puede ser
+    sobrescrito por quien todavía miraba la pantalla vieja.
+    """
+
+
 class RevisionInvalida(Exception):
     """La transición pedida no corresponde al estado en que está la regla."""
 
@@ -149,6 +158,122 @@ SELECT r.id, b.codigo AS beneficio, r.categoria, r.estado_revision AS estado,
 """
 
 
+@dataclass
+class ExpedienteDeRegla:
+    """Todo lo que hay que tener a la vista para decidir sobre una regla.
+
+    El criterio pide seis cosas juntas: literal, interpretación, condición,
+    dependencias, vigencia y controles. Juntas y no en seis pantallas: una
+    condición se aprueba o no según de qué depende y sobre qué versión rige, y
+    pedirle a quien revisa que las cruce a mano es pedirle que no las cruce.
+    """
+
+    regla: ReglaEnRevision
+    ast: dict | None = None
+    dependencias: list[dict] = field(default_factory=list)
+    parametros: list[dict] = field(default_factory=list)
+    vigencia: dict | None = None
+    controles: list[dict] = field(default_factory=list)
+
+
+def detalle(conexion: Connection, regla_id: uuid.UUID) -> ExpedienteDeRegla:
+    """El expediente de una sola regla, con lo que cuelga de ella."""
+    # Se reusa la consulta del expediente en vez de escribir otra: dos consultas
+    # que tienen que decir lo mismo terminan diciendo cosas distintas.
+    una_regla = CONSULTA.replace(
+        "WHERE (CAST(:estado AS text)",
+        "WHERE (r.id = :regla) AND (CAST(:estado AS text)",
+    )
+    fila = (
+        conexion.execute(
+            text(una_regla),
+            {"estado": None, "beneficio": None, "regla": regla_id},
+        )
+        .mappings()
+        .first()
+    )
+    if fila is None:
+        raise RevisionInvalida(f"No hay ninguna regla con id {regla_id}.")
+
+    regla = ReglaEnRevision(
+        id=fila["id"],
+        beneficio=fila["beneficio"],
+        categoria=fila["categoria"],
+        estado=fila["estado"],
+        texto_literal=fila["texto_literal"],
+        descripcion=fila["descripcion"] or "",
+        tiene_condicion=bool(fila["tiene_condicion"]),
+        requiere_revision=bool(fila["requiere_revision"]),
+        motivo_revision=fila["motivo_revision"],
+        norma=fila["norma"],
+        ruta=fila["ruta"],
+        parametro_sin_valor=bool(fila["parametro_sin_valor"]),
+    )
+    expediente_ = ExpedienteDeRegla(regla=regla)
+
+    expediente_.ast = conexion.execute(
+        text("SELECT ast FROM reglas WHERE id = :id"), {"id": regla_id}
+    ).scalar_one_or_none()
+
+    expediente_.dependencias = [
+        dict(f)
+        for f in conexion.execute(
+            text(
+                "SELECT rd.tipo, rd.regla_referida_id, r2.categoria, r2.estado_revision, "
+                "       r2.texto_literal "
+                "  FROM regla_dependencias rd "
+                "  JOIN reglas r2 ON r2.id = rd.regla_referida_id "
+                " WHERE rd.regla_id = :id ORDER BY r2.categoria"
+            ),
+            {"id": regla_id},
+        ).mappings()
+    ]
+
+    expediente_.parametros = [
+        dict(f)
+        for f in conexion.execute(
+            text(
+                "SELECT p.codigo, p.concepto, p.unidad, rp.rol, "
+                "       EXISTS (SELECT 1 FROM parametro_valores pv "
+                "                WHERE pv.parametro_id = p.id) AS tiene_valor "
+                "  FROM regla_parametros rp JOIN parametros p ON p.id = rp.parametro_id "
+                " WHERE rp.regla_id = :id ORDER BY p.codigo"
+            ),
+            {"id": regla_id},
+        ).mappings()
+    ]
+
+    fila_vigencia = (
+        conexion.execute(
+            text(
+                "SELECT rv.estado_revision, rv.valid_tipo, rv.valid_desde, rv.valid_hasta, "
+                "       rv.known_desde, rv.known_hasta, rv.release_id IS NOT NULL AS publicada "
+                "  FROM reglas r "
+                "  JOIN registro_versiones rv ON rv.id = r.beneficio_version_id "
+                " WHERE r.id = :id"
+            ),
+            {"id": regla_id},
+        )
+        .mappings()
+        .first()
+    )
+    expediente_.vigencia = dict(fila_vigencia) if fila_vigencia else None
+
+    expediente_.controles = [
+        dict(f)
+        for f in conexion.execute(
+            text(
+                "SELECT cc.control_id, cc.resultado, cc.severidad, cc.observado "
+                "  FROM controles_calidad cc "
+                "  JOIN reglas r ON r.beneficio_version_id = cc.registro_version_id "
+                " WHERE r.id = :id ORDER BY cc.ejecutado_en DESC LIMIT 20"
+            ),
+            {"id": regla_id},
+        ).mappings()
+    ]
+    return expediente_
+
+
 def expediente(
     conexion: Connection,
     *,
@@ -190,12 +315,23 @@ def _mover(
     actor: str,
     fundamento: str,
     accion: str,
+    estado_esperado: str | None = None,
 ) -> None:
     estado = conexion.execute(
         text("SELECT estado_revision FROM reglas WHERE id = :id"), {"id": regla_id}
     ).scalar_one_or_none()
     if estado is None:
         raise RevisionInvalida(f"No hay ninguna regla con id {regla_id}.")
+    # Concurrencia optimista: quien decide declara en qué estado la leyó. Sin
+    # esto, dos revisiones simultáneas se distinguen solo por cuál llegó
+    # primero, y la segunda recibe un error de transición que parece un error
+    # suyo cuando en realidad alguien ya decidió.
+    if estado_esperado is not None and estado != estado_esperado:
+        raise ConflictoDeRevision(
+            f"La regla estaba en {estado_esperado} cuando se la leyó y ahora está en "
+            f"{estado}: alguien decidió antes. La decisión no se aplica; hay que volver "
+            "a leerla y decidir sobre lo que hay."
+        )
     if estado not in desde:
         raise RevisionInvalida(
             f"La regla está en {estado} y esta transición sale de {' o '.join(desde)}. "
@@ -215,7 +351,12 @@ def _mover(
 
 
 def marcar_en_revision(
-    conexion: Connection, regla_id: uuid.UUID, *, actor: str, fundamento: str
+    conexion: Connection,
+    regla_id: uuid.UUID,
+    *,
+    actor: str,
+    fundamento: str,
+    estado_esperado: str | None = None,
 ) -> None:
     """Deja constancia de que la regla ya fue mirada y espera decisión.
 
@@ -232,10 +373,18 @@ def marcar_en_revision(
         actor=actor,
         fundamento=fundamento,
         accion="REGLA_EN_REVISION",
+        estado_esperado=estado_esperado,
     )
 
 
-def aprobar(conexion: Connection, regla_id: uuid.UUID, *, actor: str, fundamento: str) -> None:
+def aprobar(
+    conexion: Connection,
+    regla_id: uuid.UUID,
+    *,
+    actor: str,
+    fundamento: str,
+    estado_esperado: str | None = None,
+) -> None:
     """Convierte una lectura curada en regla aplicable.
 
     Es la única transición que habilita a la evaluación a usarla, así que exige
@@ -256,10 +405,18 @@ def aprobar(conexion: Connection, regla_id: uuid.UUID, *, actor: str, fundamento
         actor=actor,
         fundamento=fundamento,
         accion="APROBAR_REGLA",
+        estado_esperado=estado_esperado,
     )
 
 
-def rechazar(conexion: Connection, regla_id: uuid.UUID, *, actor: str, fundamento: str) -> None:
+def rechazar(
+    conexion: Connection,
+    regla_id: uuid.UUID,
+    *,
+    actor: str,
+    fundamento: str,
+    estado_esperado: str | None = None,
+) -> None:
     """Descarta una regla: la lectura afirmaba algo que la norma no dice."""
     if not fundamento.strip():
         raise RevisionInvalida("Rechazar una regla sin fundamento no explica qué estaba mal.")
@@ -271,6 +428,7 @@ def rechazar(conexion: Connection, regla_id: uuid.UUID, *, actor: str, fundament
         actor=actor,
         fundamento=fundamento,
         accion="RECHAZAR_REGLA",
+        estado_esperado=estado_esperado,
     )
 
 

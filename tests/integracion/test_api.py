@@ -317,3 +317,239 @@ def test_el_cuerpo_de_una_evaluacion_no_se_persiste(
     )
     almacenado = conexion.execute(text("SELECT count(*) FROM consultas_auditadas")).scalar_one()
     assert almacenado == 0
+
+
+# --- P-009: el circuito de revisión de reglas ----------------------------------
+
+
+@pytest.fixture
+def regla_candidata(conexion: Connection, corpus) -> str:
+    """Una regla candidata con su beneficio, su evidencia y su dependencia.
+
+    El corpus mínimo no trae reglas: las de las otras pruebas entran por las
+    lecturas curadas, que son otro camino. Acá hace falta una sola, con lo que
+    el expediente tiene que mostrar.
+    """
+    import uuid as _uuid
+
+    beneficio = conexion.execute(
+        text(
+            "INSERT INTO beneficios (codigo, nombre, linea, familia) "
+            "VALUES ('AR.PRUEBA-REVISION', 'Beneficio de prueba', 'BECA', 'ALIMENTARIA') "
+            "RETURNING id"
+        )
+    ).scalar_one()
+    version = conexion.execute(
+        text(
+            "INSERT INTO registro_versiones (entidad_tipo, entidad_id, numero_version, "
+            " estado_revision, valid_tipo, valid_desde) "
+            "VALUES ('beneficio', :b, 1, 'CANDIDATE', 'ABIERTO_FIN', '2025-12-23') RETURNING id"
+        ),
+        {"b": beneficio},
+    ).scalar_one()
+    conexion.execute(
+        text(
+            "INSERT INTO beneficio_versiones (registro_version_id, beneficio_id, "
+            " jurisdiccion_id, naturaleza, descripcion) "
+            "VALUES (:rv, :b, 'AR-C', 'PRESTACION_MONETARIA', "
+            " 'Prestación económica mensual para la prueba del circuito de revisión.')"
+        ),
+        {"rv": version, "b": beneficio},
+    )
+    unidad = conexion.execute(
+        text(
+            "SELECT u.id, u.doc_version_id, u.texto FROM unidades_documentales u "
+            " ORDER BY u.orden LIMIT 1"
+        )
+    ).one()
+    evidencia = conexion.execute(
+        text(
+            "INSERT INTO evidencias (doc_version_id, unidad_id, fragmento, hash_fragmento, tipo) "
+            "VALUES (:dv, :u, :f, :h, 'FRAGMENTO_TEXTO') RETURNING id"
+        ),
+        {
+            "dv": unidad.doc_version_id,
+            "u": unidad.id,
+            "f": unidad.texto,
+            "h": _uuid.uuid4().hex + _uuid.uuid4().hex,
+        },
+    ).scalar_one()
+
+    def _regla(categoria: str, literal: str) -> str:
+        return conexion.execute(
+            text(
+                "INSERT INTO reglas (beneficio_version_id, evidencia_id, categoria, "
+                " texto_literal, descripcion, requiere_revision, estado_revision) "
+                "VALUES (:bv, :e, :c, :l, :d, true, 'CANDIDATE') RETURNING id"
+            ),
+            {
+                "bv": version,
+                "e": evidencia,
+                "c": categoria,
+                "l": literal,
+                "d": f"Interpretación de {categoria.lower()}.",
+            },
+        ).scalar_one()
+
+    principal = _regla(
+        "APLICABILIDAD",
+        "Son beneficiarios las personas en situación de "
+        "vulnerabilidad habitacional, conforme el artículo 6.",
+    )
+    referida = _regla("EXCLUSION", "No accede quien ya perciba otra prestación equivalente.")
+    conexion.execute(
+        text(
+            "INSERT INTO regla_dependencias (regla_id, regla_referida_id, tipo) "
+            "VALUES (:a, :b, 'INCOMPATIBLE_CON')"
+        ),
+        {"a": principal, "b": referida},
+    )
+    return str(principal)
+
+
+def _una_regla(conexion: Connection) -> str:
+    return str(
+        conexion.execute(
+            text("SELECT id FROM reglas WHERE estado_revision = 'CANDIDATE' LIMIT 1")
+        ).scalar_one()
+    )
+
+
+def test_el_expediente_de_una_regla_trae_todo_junto(
+    cliente_api, regla_candidata, conexion: Connection, monkeypatch
+) -> None:
+    """Una condición se aprueba o no según de qué depende y sobre qué versión
+    rige. Pedirle a quien revisa que cruce seis pantallas es pedirle que no las
+    cruce."""
+    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
+    regla = regla_candidata
+
+    respuesta = cliente_api.get(
+        f"/v1/admin/reglas/{regla}",
+        headers={"Authorization": f"Bearer {TOKEN}", "X-Actor": "curacion:persona"},
+    )
+
+    assert respuesta.status_code == 200
+    cuerpo = respuesta.json()
+    for clave in (
+        "texto_literal",
+        "interpretacion",
+        "condicion",
+        "dependencias",
+        "parametros",
+        "vigencia",
+        "controles",
+        "norma",
+        "ruta",
+    ):
+        assert clave in cuerpo, f"el expediente no trae {clave}"
+    assert cuerpo["estado"] == "CANDIDATE"
+
+
+def test_decidir_una_regla_exige_actor_y_fundamento(
+    cliente_api, regla_candidata, conexion: Connection, monkeypatch
+) -> None:
+    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
+    regla = regla_candidata
+
+    sin_actor = cliente_api.post(
+        f"/v1/admin/reglas/{regla}/decidir",
+        json={"decision": "APROBAR", "fundamento": "Se corresponde con el artículo citado."},
+        headers={"Authorization": f"Bearer {TOKEN}"},
+    )
+    assert sin_actor.status_code == 400
+
+    sin_fundamento = cliente_api.post(
+        f"/v1/admin/reglas/{regla}/decidir",
+        json={"decision": "APROBAR", "fundamento": "   "},
+        headers={"Authorization": f"Bearer {TOKEN}", "X-Actor": "curacion:persona"},
+    )
+    assert sin_fundamento.status_code == 400
+
+
+def test_aprobar_una_regla_no_la_publica(
+    cliente_api, regla_candidata, conexion: Connection, monkeypatch
+) -> None:
+    """Aprobar y publicar son dos decisiones distintas y las toma gente distinta."""
+    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
+    regla = regla_candidata
+
+    respuesta = cliente_api.post(
+        f"/v1/admin/reglas/{regla}/decidir",
+        json={
+            "decision": "APROBAR",
+            "fundamento": "El literal del artículo 6 sostiene la condición tal como está escrita.",
+            "estado_esperado": "CANDIDATE",
+        },
+        headers={"Authorization": f"Bearer {TOKEN}", "X-Actor": "curacion:persona"},
+    )
+
+    assert respuesta.status_code == 200
+    assert respuesta.json()["estado"] == "APPROVED"
+    assert respuesta.json()["publicada"] is False
+    assert respuesta.json()["decidido_por"] == "curacion:persona"
+    # Y queda en la bitácora, con nombre.
+    quien = conexion.execute(
+        text(
+            "SELECT actor, motivo FROM auditoria_eventos "
+            " WHERE accion = 'APROBAR_REGLA' AND objeto_id = :id"
+        ),
+        {"id": regla},
+    ).one()
+    assert quien.actor == "curacion:persona"
+    assert "artículo 6" in quien.motivo
+
+
+def test_la_segunda_decision_sobre_una_version_vieja_da_409(
+    cliente_api, regla_candidata, conexion: Connection, monkeypatch
+) -> None:
+    """Dos personas abren la misma regla. La primera decide. La segunda todavía
+    mira la pantalla vieja: su decisión no puede pisar a la otra."""
+    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
+    regla = regla_candidata
+    cabeceras = {"Authorization": f"Bearer {TOKEN}", "X-Actor": "curacion:persona"}
+
+    primera = cliente_api.post(
+        f"/v1/admin/reglas/{regla}/decidir",
+        json={
+            "decision": "APROBAR",
+            "fundamento": "El literal sostiene la condición.",
+            "estado_esperado": "CANDIDATE",
+        },
+        headers=cabeceras,
+    )
+    assert primera.status_code == 200
+
+    segunda = cliente_api.post(
+        f"/v1/admin/reglas/{regla}/decidir",
+        json={
+            "decision": "RECHAZAR",
+            "fundamento": "Me parece que el artículo no dice eso.",
+            "estado_esperado": "CANDIDATE",
+        },
+        headers={**cabeceras, "X-Actor": "curacion:otra-persona"},
+    )
+
+    assert segunda.status_code == 409
+    assert segunda.json()["detail"]["codigo"] == "VERSION_CONFLICT"
+    # Y la decisión de la primera sigue en pie.
+    estado = conexion.execute(
+        text("SELECT estado_revision FROM reglas WHERE id = :id"), {"id": regla}
+    ).scalar_one()
+    assert estado == "APPROVED"
+
+
+def test_una_decision_desconocida_se_rechaza(
+    cliente_api, regla_candidata, conexion: Connection, monkeypatch
+) -> None:
+    monkeypatch.setenv("BN_ADMIN_TOKENS", TOKEN)
+    regla = regla_candidata
+
+    respuesta = cliente_api.post(
+        f"/v1/admin/reglas/{regla}/decidir",
+        json={"decision": "PUBLICAR", "fundamento": "Quiero servirla ya."},
+        headers={"Authorization": f"Bearer {TOKEN}", "X-Actor": "curacion:persona"},
+    )
+
+    assert respuesta.status_code == 400
+    assert "PUBLICAR" in respuesta.json()["detail"]["detalle"]

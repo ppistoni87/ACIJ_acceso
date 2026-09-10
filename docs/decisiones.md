@@ -1227,3 +1227,25 @@ controles que cuentan evidencias lo dan por bueno.
 ninguna lo hace se escribe una con el texto de la unidad. Y `bn calidad plazos`
 lo comprueba de afuera: un plazo que declara un número tiene que poder señalarlo
 en el texto que cita, en cifras o en letras.
+
+## D-65 · Un error de transición no es lo mismo que «alguien decidió antes»
+
+Las transiciones de una regla ya rechazaban los saltos imposibles: aprobar algo
+que está rechazado falla, y está bien que falle. Pero el error decía «la regla
+está en REJECTED y esta transición sale de CANDIDATE», que suena a que quien
+llama se equivocó, cuando lo que pasó es que **otra persona decidió mientras
+esta miraba la pantalla**.
+
+La diferencia no es de redacción. Un error de transición se corrige llamando
+distinto; un conflicto de concurrencia se corrige volviendo a leer y decidiendo
+sobre lo que hay. Y quien decidió primero no puede quedar sobrescrito porque el
+segundo insistió.
+
+**Consecuencia:** quien decide declara en qué estado leyó la regla y recibe 409
+`VERSION_CONFLICT` cuando no coincide, con lo que pasó escrito. Es el mismo
+mecanismo que las incidencias ya tenían; lo que faltaba era aplicarlo a las
+reglas, que es donde se decide lo que el sistema va a afirmar.
+
+Y una decisión que el endpoint no acepta: `PUBLICAR`. Aprobar y publicar son dos
+puertas distintas y las abre gente distinta. La respuesta de una aprobación dice
+`"publicada": false` para que nadie tenga que acordarse.
