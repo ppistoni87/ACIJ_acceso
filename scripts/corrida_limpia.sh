@@ -112,6 +112,18 @@ escribir_reporte() {
     echo "| --- | ---: | --- |"
     cat "${TABLA}"
     echo
+    if [ -s "${CONTROLES:-/dev/null}" ]; then
+      echo "## Controles sobre el corpus recién construido"
+      echo
+      echo "Corren acá y no en la población porque es el único lugar donde el corpus"
+      echo "se armó desde cero: un control sobre una base de desarrollo puede estar"
+      echo "pasando por un resto de una corrida anterior."
+      echo
+      echo "| Control | Veredicto | Qué contó |"
+      echo "| --- | --- | --- |"
+      cat "${CONTROLES}"
+      echo
+    fi
     echo "## Con qué quedó la base"
     echo
     echo "| Qué | Cuántos |"
@@ -294,3 +306,21 @@ DESPUES=$(sql "SELECT count(*) FROM documento_versiones" 2>/dev/null || echo "")
 # recorrido hizo lo que dice, ya no le toca a nadie: eso es lo que se mira.
 cronometrar "planificación al cierre (en seco)" ${VENV}/bn monitoreo ciclo --en-seco
 PENDIENTES_AL_CIERRE=$(grep -oP 'vuelven a la cola: \*\*\K\d+' "${BITACORA}" | head -1 || true)
+
+# Los controles de calidad corren acá y no en la población: es el único lugar
+# donde el corpus se construyó desde cero, y un control sobre una base de
+# desarrollo puede estar pasando por un resto de una corrida anterior. No
+# escriben en `docs/reportes/`: esos informes son del corpus real y esta base se
+# destruye en un rato. Lo que dicen entra en este reporte.
+CONTROLES=$(mktemp)
+for control in "ingesta conciliar" "calidad grafo" "calidad plazos" "calidad fuentes"; do
+  # shellcheck disable=SC2086
+  if salida_control=$(${VENV}/bn ${control} 2>&1); then
+    veredicto="pasa"
+  else
+    veredicto="**FALLA**"
+    ESTADO_FINAL="con controles en rojo"
+  fi
+  resumen=$(printf '%s' "${salida_control}" | grep -E '^- ' | head -4 | tr '\n' ' ' | tr -s ' ')
+  printf '| `bn %s` | %s | %s |\n' "${control}" "${veredicto}" "${resumen:0:220}" >> "${CONTROLES}"
+done

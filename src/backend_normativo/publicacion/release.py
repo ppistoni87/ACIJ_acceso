@@ -266,8 +266,31 @@ class Publicador:
     # --- Internos ----------------------------------------------------------
 
     def _manifiesto(self, candidatos: list[uuid.UUID]) -> str:
-        """Huella del contenido del release, reproducible desde sus versiones."""
-        contenido = json.dumps(sorted(str(c) for c in candidatos)).encode("utf-8")
+        """Huella de lo que el corte sirve entero, no de lo que agrega.
+
+        Un corte no es su delta. El segundo release incorpora B y sigue
+        sirviendo A —el primero conserva sus versiones, y por eso las dos cosas
+        se recuperan después del segundo—, así que un manifiesto que solo
+        nombrara B no identificaría lo que el corte sirve: dos corpus distintos
+        con el mismo agregado tendrían la misma huella.
+
+        Se cuentan las versiones que van a quedar publicadas: las que este corte
+        promueve más las que ya lo estaban en un release todavía publicado. Un
+        release revertido no aporta, porque dejó de servir.
+        """
+        ya_publicadas = (
+            self.conexion.execute(
+                text(
+                    "SELECT rv.id FROM registro_versiones rv "
+                    "  JOIN releases r ON r.id = rv.release_id "
+                    " WHERE rv.estado_revision = 'PUBLISHED' AND r.estado = 'PUBLICADO'"
+                )
+            )
+            .scalars()
+            .all()
+        )
+        todas = {str(c) for c in candidatos} | {str(v) for v in ya_publicadas}
+        contenido = json.dumps(sorted(todas)).encode("utf-8")
         return hashlib.sha256(contenido).hexdigest()
 
     def _registrar_controles(

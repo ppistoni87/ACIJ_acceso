@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
+import json
 import uuid
 
 import pytest
@@ -440,3 +442,153 @@ def test_publicar_con_los_campos_aprobados_no_avisa_nada(
 
     assert resultado.versiones_publicadas == 1
     assert resultado.sin_afirmaciones_aprobadas == []
+
+
+# --- P-011: dos cortes, y el primero no cambia --------------------------------
+#
+# `_aprobar_todo` toma «la» incidencia de vigencia, que con una sola norma es la
+# única. Acá hay dos, así que se aprueba por versión.
+
+
+def _segunda_norma(
+    conexion: Connection, sufijo: str, normativaba_id: str, numero: str
+) -> uuid.UUID:
+    """Otra norma, y su versión.
+
+    `_norma` devuelve `LIMIT 1` de `norma_versiones`, que con una sola norma es
+    la suya y con dos es la primera. Acá hace falta la nueva.
+    """
+    previas = {
+        f[0] for f in conexion.execute(text("SELECT registro_version_id FROM norma_versiones"))
+    }
+    _norma(
+        conexion,
+        normativaba_id=normativaba_id,
+        numero=numero,
+        external_id=f"normativaba:{normativaba_id}:original",
+        sufijo_url=sufijo,
+    )
+    ahora = {
+        f[0] for f in conexion.execute(text("SELECT registro_version_id FROM norma_versiones"))
+    }
+    return (ahora - previas).pop()
+
+
+def _aprobar_version(conexion: Connection, version_id: uuid.UUID) -> None:
+    from backend_normativo.db.vocabularios import CAMPOS_SOLICITADOS
+
+    ResolutorVigencia(conexion).resolver()
+    incidencia = conexion.execute(
+        text(
+            "SELECT id FROM incidencias_revision "
+            " WHERE tipo = 'VIGENCIA_INDETERMINADA' AND estado = 'ABIERTA' "
+            "   AND registro_version_id = :v"
+        ),
+        {"v": version_id},
+    ).scalar_one()
+    revisor = Revisor(conexion)
+    revisor.resolver(
+        incidencia,
+        decision="Publicada el 23/12/2025 sin norma derogatoria registrada.",
+        actor="curacion_juridica:persona",
+        fundamento_evidencia_id=_evidencia_cualquiera(conexion),
+        vigencia={
+            "valid_tipo": "ABIERTO_FIN",
+            "valid_desde": "2025-12-23",
+            "estado_legal": "VIGENTE",
+        },
+    )
+    for campo in CAMPOS_SOLICITADOS:
+        revisor.aprobar_afirmaciones(version_id, campo, actor="curacion_juridica:persona")
+    EvaluadorDeCampos(conexion).evaluar()
+
+
+def test_el_segundo_corte_sirve_lo_suyo_y_lo_del_primero(
+    conexion: Connection, version_candidata
+) -> None:
+    """El criterio: dado un primer corte con A y un segundo que incorpora B,
+    ambos se recuperan en el segundo y el primero conserva su contenido."""
+    _aprobar_version(conexion, version_candidata)
+    primero = Publicador(conexion).publicar(actor="publicador", motivo="corte A")
+    assert primero.versiones_publicadas == 1
+
+    version_b = _segunda_norma(conexion, "-b", "830432", "6936")
+    _aprobar_version(conexion, version_b)
+    segundo = Publicador(conexion).publicar(actor="publicador", motivo="corte B")
+    assert segundo.versiones_publicadas == 1, "B es lo único nuevo del segundo corte"
+
+    # A no se movió de su release: un corte publicado no pierde lo suyo cuando
+    # sale el siguiente.
+    release_de_a = conexion.execute(
+        text("SELECT release_id FROM registro_versiones WHERE id = :v"),
+        {"v": version_candidata},
+    ).scalar_one()
+    assert release_de_a == primero.release_id
+
+    # Y después del segundo, las dos se sirven.
+    servibles = conexion.execute(
+        text(
+            "SELECT count(DISTINCT registro_version_id) "
+            "  FROM v_hechos_servibles(current_date, now(), 'IDENTIFICACION')"
+        )
+    ).scalar_one()
+    assert servibles == 2
+
+
+def test_el_manifiesto_describe_lo_que_el_corte_sirve_y_no_lo_que_agrega(
+    conexion: Connection, version_candidata
+) -> None:
+    """Un corte no es su delta.
+
+    Si el manifiesto solo nombrara lo agregado, dos corpus distintos con el
+    mismo agregado tendrían la misma huella y el hash dejaría de identificar
+    qué se estaba sirviendo.
+    """
+    _aprobar_version(conexion, version_candidata)
+    primero = Publicador(conexion).publicar(actor="publicador", motivo="corte A")
+
+    version_b = _segunda_norma(conexion, "-c", "830433", "6937")
+    _aprobar_version(conexion, version_b)
+    segundo = Publicador(conexion).publicar(actor="publicador", motivo="corte B")
+
+    hashes = dict(
+        conexion.execute(
+            text("SELECT id, manifest_hash FROM releases WHERE id = ANY(:ids)"),
+            {"ids": [primero.release_id, segundo.release_id]},
+        ).all()
+    )
+    esperado = hashlib.sha256(
+        json.dumps(sorted([str(version_candidata), str(version_b)])).encode("utf-8")
+    ).hexdigest()
+
+    assert hashes[segundo.release_id] == esperado, "el segundo describe A y B"
+    assert hashes[primero.release_id] != hashes[segundo.release_id]
+
+
+def test_revertir_el_segundo_deja_el_primero_sirviendo(
+    conexion: Connection, version_candidata
+) -> None:
+    """Volver al corte anterior es dejar de servir lo nuevo, no apagar todo."""
+    _aprobar_version(conexion, version_candidata)
+    Publicador(conexion).publicar(actor="publicador", motivo="corte A")
+
+    version_b = _segunda_norma(conexion, "-d", "830434", "6938")
+    _aprobar_version(conexion, version_b)
+    segundo = Publicador(conexion).publicar(actor="publicador", motivo="corte B")
+
+    Publicador(conexion).revertir(
+        segundo.release_id, actor="publicador", motivo="B tenía un error de curación."
+    )
+
+    servibles = [
+        f[0]
+        for f in conexion.execute(
+            text(
+                "SELECT DISTINCT registro_version_id "
+                "  FROM v_hechos_servibles(current_date, now(), 'IDENTIFICACION')"
+            )
+        )
+    ]
+    assert servibles == [version_candidata], "A sigue sirviendo; B dejó de servir"
+    # Y nada se borró: los fragmentos de B siguen ahí.
+    assert conexion.execute(text("SELECT count(*) FROM chunks")).scalar_one() > 0

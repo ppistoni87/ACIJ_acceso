@@ -15,8 +15,8 @@ Generado por `scripts/corrida_limpia.sh`. La base se crea y se destruye en la
 misma corrida: si algo de acá se pudiera explicar por estado previo, no habría
 estado previo del que agarrarse.
 
-- Arranque: `2026-09-09T04:50:30+00:00`
-- Cierre: `2026-09-09T05:01:34+00:00`
+- Arranque: `2026-09-10T01:19:30+00:00`
+- Cierre: `2026-09-10T01:32:40+00:00`
 - Resultado: **completa**
 - Base: `backend_normativo_limpia`
 - Fuentes que el planificador deja pendientes al cerrar: `2`
@@ -28,10 +28,10 @@ corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
 
 | Paso | Duración | Última línea |
 | --- | ---: | --- |
-| migraciones | 1.9 s | INFO  [alembic.runtime.migration] Running upgrade 0006_indice_de_listado -> 0007_servibl… |
-| población completa | 431.0 s | Incidencias abiertas: 43 |
-| segunda pasada (idempotencia) | 229.5 s | Incidencias abiertas: 0 |
-| planificación al cierre (en seco) | 0.6 s | alguien corre el comando. |
+| migraciones | 1.7 s | INFO  [alembic.runtime.migration] Running upgrade 0010_grafo_sin_recursion -> 0011_plazo… |
+| población completa | 517.1 s | Incidencias abiertas: 46 |
+| segunda pasada (idempotencia) | 270.2 s | Incidencias abiertas: 0 |
+| planificación al cierre (en seco) | 0.9 s | alguien corre el comando. |
 
 ## Con qué quedó la base
 
@@ -41,7 +41,7 @@ corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
 | Capturas | 156 |
 | Unidades documentales | 1523 |
 | Beneficios curados | 16 |
-| Incidencias abiertas | 4757 |
+| Incidencias abiertas | 4817 |
 
 Las incidencias abiertas no son un fallo de la corrida: son lo que el sistema
 encontró y no resolvió solo. Una corrida limpia que no abriera ninguna estaría
@@ -58,14 +58,15 @@ algo distinto de los datos.
 
 | Fuente | Estado | Solicitadas | Descargadas | Rechazadas | Detalle |
 | --- | --- | ---: | ---: | ---: | --- |
+| D07 | FALLIDA | 1 | 0 | 1 | https://documentosboletinoficial.buenosaires.gob.ar/publico/PE-RES-MEDGC-MEDGC-1621-25-ANX.pdf: RemoteProtocol |
 | F04 | FALLIDA | 1 | 0 | 1 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL |
 | F04 | FALLIDA | 1 | 0 | 1 | https://ladefe.gob.ar/soy-una-nina-nino-o-adolescente/: Fallo de validación TLS: [SSL: CERTIFICATE_VERIFY_FAIL |
 | M05 | FALLIDA | 1 | 0 | 1 | https://www.anses.gob.ar/: HTTP 403. La fuente queda pausada; no se rotan identidades ni se evaden controles d |
 | M05 | FALLIDA | 1 | 0 | 1 | https://www.anses.gob.ar/: HTTP 403. La fuente queda pausada; no se rotan identidades ni se evaden controles d |
 | C01 | COMPLETA | 1 | 1 | 0 |  |
 | C01 | COMPLETA | 1 | 1 | 0 |  |
-| D01 | COMPLETA | 1 | 1 | 0 |  |
 | D01 | COMPLETA | 3 | 3 | 0 |  |
+| D01 | COMPLETA | 1 | 1 | 0 |  |
 | D01 | COMPLETA | 3 | 3 | 0 |  |
 | D01 | COMPLETA | 3 | 3 | 0 |  |
 | D02 | COMPLETA | 1 | 1 | 0 |  |
@@ -171,8 +172,13 @@ producción todos los días.
 
 | Momento | Versiones de documento |
 | --- | ---: |
-| Después de la primera pasada | 85 |
+| Después de la primera pasada | 84 |
 | Después de la segunda | 85 |
+
+> **La segunda pasada agregó versiones:** de 84 a 85. Volver a
+> pedir lo mismo no lo cambia, así que una versión nueva es una versión
+> duplicada: el procedimiento no es idempotente y lo que dice de sí mismo es
+> falso.
 
 ## Lecturas curadas que no se pudieron cargar
 
@@ -186,10 +192,10 @@ Ninguna: las 22 lecturas curadas encontraron su norma en el corpus.
 
 | Tipo | Cuántas |
 | --- | ---: |
-| IDENTIDAD_AMBIGUA | 4504 |
-| DATO_FALTANTE_CRITICO | 82 |
-| COBERTURA_EXTRACCION | 77 |
-| VIGENCIA_INDETERMINADA | 55 |
-| ACCESO_BLOQUEADO | 19 |
+| IDENTIDAD_AMBIGUA | 4506 |
+| COBERTURA_EXTRACCION | 127 |
+| DATO_FALTANTE_CRITICO | 83 |
+| VIGENCIA_INDETERMINADA | 61 |
+| ACCESO_BLOQUEADO | 20 |
 | CONFLICTO_DE_FUENTES | 13 |
 | DISCREPANCIA_NUMERACION | 7 |

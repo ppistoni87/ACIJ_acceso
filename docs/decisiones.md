@@ -1249,3 +1249,24 @@ reglas, que es donde se decide lo que el sistema va a afirmar.
 Y una decisión que el endpoint no acepta: `PUBLICAR`. Aprobar y publicar son dos
 puertas distintas y las abre gente distinta. La respuesta de una aprobación dice
 `"publicada": false` para que nadie tenga que acordarse.
+
+## D-66 · Un corte no es su delta
+
+El manifiesto de un release hasheaba las versiones que ese release **agrega**.
+Suena razonable hasta que se mira qué sirve un corte: el segundo release
+incorpora B y sigue sirviendo A —el primero conserva sus versiones, que es
+justo lo que lo vuelve un corte histórico y no un momento que se pisa—, así que
+lo que el segundo sirve es A y B.
+
+Con un manifiesto que solo nombra B, dos corpus distintos con el mismo agregado
+tienen la misma huella. El hash deja de identificar qué se estaba sirviendo, que
+es exactamente para lo que existe.
+
+**Consecuencia:** el manifiesto cuenta las versiones que van a quedar
+publicadas: las que el corte promueve más las que ya lo estaban en un release
+todavía publicado. Un release revertido no aporta, porque dejó de servir.
+
+Quedó además probado lo que nadie había probado: dos cortes seguidos, con A en
+el primero y B en el segundo. Después del segundo se sirven los dos, A no se
+movió de su release, y revirtiendo el segundo A sigue sirviendo y B deja de
+hacerlo sin que se borre nada.
