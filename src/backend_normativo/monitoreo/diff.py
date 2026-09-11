@@ -72,6 +72,60 @@ class Diferencia:
         return conteo
 
 
+def unidades_dispositivas(conexion: Connection, version_id: uuid.UUID) -> dict:
+    """Las unidades de una versión que son texto de la norma.
+
+    Solo `DISPOSITIVO`: un cambio de maquetación o una nota editorial no son un
+    cambio en la norma, y tratarlos como tal llena la cola de revisión de ruido.
+    """
+    return {
+        f["ruta"]: (f["tipo"], f["texto"])
+        for f in conexion.execute(
+            text(
+                "SELECT ruta, tipo, texto FROM unidades_documentales "
+                " WHERE doc_version_id = :v AND rol_contenido = 'DISPOSITIVO'"
+            ),
+            {"v": version_id},
+        ).mappings()
+    }
+
+
+def comparar_dos(
+    conexion: Connection, version_a: uuid.UUID, version_b: uuid.UUID
+) -> Diferencia | None:
+    """Compara dos versiones cualesquiera, no necesariamente consecutivas.
+
+    `comparar_versiones` mira una versión contra la inmediata anterior, que es
+    lo que necesita el monitoreo. Quien revisa necesita otra cosa: elegir dos
+    —la que se publicó y la que está por publicarse, o la de hace un año— y ver
+    qué cambió entre ellas. Es el mismo motor de emparejado, con los extremos
+    elegidos a mano.
+    """
+    documentos = (
+        conexion.execute(
+            text("SELECT id, documento_id FROM documento_versiones WHERE id IN (:a, :b)"),
+            {"a": version_a, "b": version_b},
+        )
+        .mappings()
+        .all()
+    )
+    if len(documentos) != 2:
+        return None
+
+    diferencia = Diferencia(
+        documento_id=documentos[0]["documento_id"],
+        version_anterior=version_a,
+        version_nueva=version_b,
+    )
+    diferencia.cambios.extend(
+        _comparar(
+            unidades_dispositivas(conexion, version_a),
+            unidades_dispositivas(conexion, version_b),
+        )
+    )
+    return diferencia
+
+
 def comparar_versiones(conexion: Connection, version_nueva: uuid.UUID) -> Diferencia | None:
     """Compara una versión documental con la anterior del mismo documento.
 
@@ -106,19 +160,8 @@ def comparar_versiones(conexion: Connection, version_nueva: uuid.UUID) -> Difere
     if anterior is None:
         return diferencia
 
-    def unidades(version_id: uuid.UUID) -> dict[str, tuple[str, str]]:
-        return {
-            f["ruta"]: (f["tipo"], f["texto"])
-            for f in conexion.execute(
-                text(
-                    "SELECT ruta, tipo, texto FROM unidades_documentales "
-                    " WHERE doc_version_id = :v AND rol_contenido = 'DISPOSITIVO'"
-                ),
-                {"v": version_id},
-            ).mappings()
-        }
-
-    viejas, nuevas = unidades(anterior), unidades(version_nueva)
+    viejas = unidades_dispositivas(conexion, anterior)
+    nuevas = unidades_dispositivas(conexion, version_nueva)
     diferencia.cambios.extend(_comparar(viejas, nuevas))
     return diferencia
 

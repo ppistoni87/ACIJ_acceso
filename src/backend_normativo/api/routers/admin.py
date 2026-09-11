@@ -471,3 +471,105 @@ def registros_del_indicador(
         "mostrados": len(medicion.filas),
         "registros": medicion.filas,
     }
+
+
+# --- P-016 criterio 1: buscar normas y comparar versiones ---------------------
+
+
+@router.get("/normas")
+def buscar_normas(
+    q: str = "",
+    limite: int = 30,
+    admin: Administracion = Depends(exigir_rol(ROL_REVISOR)),
+) -> dict:
+    """Busca normas por su identidad o su título.
+
+    Quien revisa llega con una cita —«la 24.714», «decreto 1382»— y no con un
+    identificador interno, así que se busca por tipo, número, año y título a la
+    vez. Sin texto devuelve las más recientes, que es mejor que una pantalla en
+    blanco pidiendo que adivinen.
+    """
+    patron = f"%{q.strip()}%"
+    filas = admin.conexion.execute(
+        text(
+            "SELECT n.id, n.tipo, n.numero, n.anio, n.jurisdiccion_id, "
+            "       left(coalesce(n.titulo, ''), 180) AS titulo, "
+            "  (SELECT count(*) FROM norma_versiones nv WHERE nv.norma_id = n.id) AS versiones "
+            "  FROM normas n "
+            " WHERE :vacio OR n.titulo ILIKE :p OR n.numero ILIKE :p OR n.tipo ILIKE :p "
+            "    OR cast(n.anio AS text) ILIKE :p "
+            " ORDER BY n.anio DESC NULLS LAST, n.numero DESC "
+            " LIMIT :lim"
+        ),
+        {"p": patron, "vacio": not q.strip(), "lim": max(1, min(limite, 200))},
+    ).mappings()
+    return {"consulta": q, "normas": [dict(f) for f in filas]}
+
+
+@router.get("/normas/{norma_id}/versiones")
+def versiones_de_una_norma(
+    norma_id: uuid.UUID,
+    admin: Administracion = Depends(exigir_rol(ROL_REVISOR)),
+) -> dict:
+    """Las versiones documentales de una norma, para poder elegir dos.
+
+    Cada una dice si está publicada y desde cuándo vale: comparar dos versiones
+    sin saber cuál se está sirviendo es comparar a ciegas.
+    """
+    filas = admin.conexion.execute(
+        text(
+            "SELECT dv.id AS doc_version_id, dv.version, dv.tipo_version, "
+            "       dv.fecha_documento, dv.creado_en, "
+            "       rv.release_id IS NOT NULL AS publicada, rv.valid_desde, rv.estado_revision "
+            "  FROM norma_versiones nv "
+            "  JOIN documento_versiones dv ON dv.id = nv.doc_version_id "
+            "  LEFT JOIN registro_versiones rv ON rv.id = nv.registro_version_id "
+            " WHERE nv.norma_id = :n "
+            " ORDER BY dv.version DESC"
+        ),
+        {"n": norma_id},
+    ).mappings()
+    return {"norma_id": str(norma_id), "versiones": [dict(f) for f in filas]}
+
+
+@router.get("/comparacion")
+def comparar_dos_versiones(
+    a: uuid.UUID,
+    b: uuid.UUID,
+    admin: Administracion = Depends(exigir_rol(ROL_REVISOR)),
+) -> dict:
+    """Qué cambió entre dos versiones documentales.
+
+    Los desplazamientos se cuentan aparte: cuando se inserta un párrafo, todas
+    las rutas posteriores corren un lugar, y contar eso como texto modificado
+    llenaría la comparación de cambios falsos por cada inserción real.
+    """
+    from backend_normativo.monitoreo.diff import comparar_dos
+
+    diferencia = comparar_dos(admin.conexion, a, b)
+    if diferencia is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "codigo": CodigoError.UNKNOWN_IDENTITY.value,
+                "detalle": "Alguna de las dos versiones no existe.",
+            },
+        )
+    return {
+        "version_a": str(a),
+        "version_b": str(b),
+        "resumen": diferencia.resumen,
+        "hay_cambios": diferencia.hay_cambios,
+        "cambios": [
+            {
+                "ruta": c.ruta,
+                "clase": c.clase,
+                "similitud": c.similitud,
+                "antes": c.antes,
+                "despues": c.despues,
+                "ruta_nueva": c.ruta_nueva,
+            }
+            for c in diferencia.sustantivos
+        ],
+        "desplazadas": len(diferencia.cambios) - len(diferencia.sustantivos),
+    }

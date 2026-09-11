@@ -1910,3 +1910,27 @@ es el sistema comportándose bien.
 
 Va con rol `auditor`, como la cobertura: lee estado operativo, no proyecciones
 servibles.
+
+## D-94 · Comparar dos versiones no es comparar con la anterior
+
+El criterio 1 de P-016 pide, entre otras cosas, «comparar versiones». El motor
+de diff existía desde el monitoreo, pero sólo compara una versión contra su
+**inmediata anterior**: es lo que el monitoreo necesita —qué cambió desde la
+última vez que miré— y no lo que necesita quien revisa, que es elegir dos: la
+que está publicada y la que está por publicarse, o la de hace un año.
+
+**Consecuencia:** `comparar_dos()` toma los dos extremos a mano y usa el mismo
+emparejado. Se expuso `unidades_dispositivas()`, que ya existía adentro como
+cierre, y `comparar_versiones()` ahora la reusa en vez de tener su propia copia.
+
+Tres cosas quedaron fijadas con prueba:
+
+- **Un desplazamiento no es un cambio de la norma.** Insertar un párrafo corre
+  todas las rutas posteriores; contarlo como texto modificado haría que agregar
+  tres párrafos produzca decenas de cambios falsos. Se cuentan aparte.
+- **Comparar contra una versión inexistente devuelve `None`, no una diferencia
+  vacía.** Una diferencia vacía se leería como «las dos versiones son iguales»,
+  que es lo contrario de lo que pasó.
+- **Se busca por número y por título a la vez.** Quien revisa llega con una cita
+  —«la 24.714»— y el catálogo guarda el título; pedir el identificador interno
+  es pedir lo único que nadie tiene a mano.
