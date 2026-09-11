@@ -1803,3 +1803,40 @@ Tres negativas escritas en el cargador, cada una con su prueba:
   aprobadas. Admitirla acá salteaba ese control.
 
 Sin `--confirmar` el comando solo valida. Es lo que conviene correr primero.
+
+## D-91 · Una sonda que no mira nada declara sana una instancia rota
+
+`/salud` devolvía un diccionario fijo: estado, versión de esquema y versión de
+la aplicación, sin tocar la base. Con la base caída contestaba `ok`, y un
+orquestador le mandaba tráfico a una instancia que no podía resolver una sola
+consulta.
+
+**Consecuencia:** dos sondas separadas, que es lo que pide P-019 criterio 2.
+`/salud` queda como **liveness** y sigue sin tocar la base, a propósito: si
+dependiera de ella, una base momentáneamente inalcanzable reiniciaría procesos
+sanos y convertiría una caída parcial en total. `/listo` es **readiness**:
+verifica conexión y que el esquema aplicado sea el que el código espera, y en
+producción exige además un corte publicado —sin release la API contesta
+abstenciones correctas y vacías, lo que está bien en desarrollo y no está bien
+recibiendo gente que pregunta por sus derechos—. Devuelve 503 con el detalle de
+qué verificación falló.
+
+Tres cosas aparecieron al probarlo contra el despliegue real, no en las pruebas:
+
+- **La cabeza de migraciones se deduce de los archivos**, no de una constante.
+  Una constante envejece en silencio y este proyecto ya se tropezó con eso.
+- **El lector no podía leer `alembic_version`**, así que la sonda no podía
+  comprobar contra qué esquema servía. La migración 0016 le concede `SELECT`
+  sólo sobre esa tabla. No contradice la invariante de D-86: aquello era
+  `capturas`, contenido de staging; esto es una fila con el identificador del
+  esquema que el lector ya usa. Y la verificación tiene que hacerla la conexión
+  que sirve, o pasaría mientras el lector está roto.
+- **Con la base inalcanzable, readiness daba 500.** La conexión se abría como
+  dependencia del framework y fallaba antes de la sonda, así que el servicio no
+  alcanzaba a decir qué estaba mal. Ahora la apertura ocurre dentro de la sonda
+  y el resultado es 503 con el motivo.
+
+Y un error propio, el mismo de siempre: atrapar `Exception` al leer la migración
+hizo que «no pude leer cuál hay» se informara como «no hay ninguna». Dos
+diagnósticos opuestos con el mismo síntoma, y el mensaje mandaba a revisar la
+base cuando el problema era un permiso.
