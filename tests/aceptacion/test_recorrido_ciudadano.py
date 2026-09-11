@@ -250,6 +250,42 @@ def test_lo_que_la_persona_cuenta_no_se_guarda(pagina) -> None:
     assert pagina.evaluate("() => Object.keys(sessionStorage).length") == 0
 
 
+def test_la_pantalla_abre_invitando_a_escribir(pagina) -> None:
+    """Un chat que arranca con un mensaje del sistema ya parece usado.
+
+    Mientras no hay conversación la portada está sobre la página y el cuadro de
+    escritura va al centro; en cuanto se manda algo, la portada se va y el
+    cuadro baja.
+    """
+    assert pagina.locator(".bienvenida").count() == 1
+    assert "sin-conversacion" in (pagina.get_attribute("body", "class") or "")
+
+    _preguntar(pagina, "estoy durmiendo en la calle")
+    assert pagina.locator(".bienvenida").count() == 0
+    assert "sin-conversacion" not in (pagina.get_attribute("body", "class") or "")
+
+
+def test_mientras_busca_se_ve_que_esta_buscando(pagina) -> None:
+    """Y se puede parar: un control apagado mientras el sistema piensa deja a
+    quien escribió sin ninguna salida."""
+    assert pagina.locator("#cancelar").is_hidden()
+    pagina.fill("#pregunta", "prestación económica")
+    pagina.keyboard.press("Enter")
+    pagina.wait_for_selector(".pensando", timeout=5_000)
+    assert pagina.locator("#cancelar").is_visible()
+
+    pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
+    # El indicador no queda colgado después de contestar.
+    assert pagina.locator(".pensando").count() == 0
+    assert pagina.locator("#cancelar").is_hidden()
+
+
+def test_el_indicador_no_queda_colgado_si_falla(pagina) -> None:
+    pagina.route("**/v1/respuestas**", lambda ruta: ruta.fulfill(status=503, body="{}"))
+    _preguntar(pagina, "prestación")
+    assert pagina.locator(".pensando").count() == 0
+
+
 def test_la_apertura_avisa_que_no_hacen_falta_datos_personales(pagina) -> None:
     """Lo que no se pide no se puede filtrar, y en un chat hay que decirlo."""
     apertura = pagina.inner_text(".msj.suyo")

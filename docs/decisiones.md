@@ -2602,3 +2602,29 @@ externo le cuenta a ese servicio quién entró a preguntar por sus derechos**, y
 además ata la pantalla a que ese servicio esté vivo y a que la conexión alcance.
 Para esta gente, ninguna de las dos cosas es aceptable a cambio de una letra más
 linda. Queda la pila del sistema, declarada entera.
+
+## D-120 · La forma de un chat, y el streaming que no se finge
+
+El frente pasó a tener la forma de un chat de los que la gente ya usa: portada
+con el cuadro de escritura al centro y la pregunta invitada, hilo cuando la
+conversación empieza, indicador de que está buscando, botón para parar,
+respuestas sobre la página en vez de adentro de una tarjeta.
+
+Tres decisiones que importan más que el aspecto:
+
+**La portada no es un mensaje del hilo.** Un chat que arranca con un mensaje del
+sistema ya parece usado antes de que nadie lo use. La bienvenida va sobre la
+página y se retira en cuanto hay conversación.
+
+**El botón de enviar no se apaga: aparece el de parar.** Un control deshabilitado
+mientras el sistema piensa deja a quien escribió sin ninguna salida.
+
+**No se finge que la respuesta se escribe.** Un chat de modelo transmite mientras
+redacta, y eso acá sería teatro: sin proveedor configurado la respuesta es texto
+ya publicado, el tiempo se va en la búsqueda y el p50 medido es de 190 ms. Hacer
+aparecer las letras de a poco demoraría información que el sistema ya tiene para
+simular un trabajo que no está haciendo.
+
+El streaming de verdad va cuando haya proveedor: ahí los tokens tardan segundos
+y transmitirlos es información, no adorno. Queda anotado como lo próximo de
+P-013, junto con la clave.
