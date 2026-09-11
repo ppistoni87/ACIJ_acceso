@@ -209,6 +209,7 @@ def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depen
     Hoy no hay proveedor configurado, así que contesta en modo extracto: texto
     publicado, literal y citado. No puede alucinar, y se declara.
     """
+    from backend_normativo.generacion.proveedores import configurado as proveedor_configurado
     from backend_normativo.generacion.respuesta import responder
 
     if not contexto.hay_release:
@@ -231,10 +232,11 @@ def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depen
         as_of=contexto.as_of,
         known_at=contexto.known_at,
     )
-    # El proveedor llega por inyección cuando exista; hoy es `None` y el
-    # orquestador cae al extracto, que es el comportamiento correcto y no un
-    # parche: se declara como extracto y se puede verificar entero.
-    salida = responder(solicitud.consulta, hallazgo.fragmentos, proveedor=None)
+    # El proveedor sale del entorno: con `BN_MODELO_CLAVE` puesta redacta, sin
+    # ella el orquestador cae al extracto. Ninguna de las dos ramas cambia los
+    # validadores ni la política de modo, que es lo que protege a quien
+    # consulta.
+    salida = responder(solicitud.consulta, hallazgo.fragmentos, proveedor=proveedor_configurado())
     return {
         "release_id": str(contexto.release_id),
         "as_of": contexto.as_of.isoformat(),

@@ -2160,3 +2160,31 @@ Tres cosas propias que costaron:
   declarada— en todas las columnas de la fila, y `latencia_ms` puede valer 34.
   Pasaba sola y fallaba acompañada. Ahora mira sólo las columnas que podrían
   llevar contenido: una prueba que falla al azar se termina ignorando.
+
+## D-103 · El proveedor configurado, probado sin una clave real
+
+P-013 queda construido hasta donde se puede sin credenciales del proyecto.
+`ProveedorHttp` habla con una API de mensajes por `httpx` —sin SDK: un `POST`
+alcanza y evita atarse a una biblioteca que cambia más rápido que este backend—
+y se configura por entorno con `BN_MODELO_CLAVE`, `BN_MODELO_URL`,
+`BN_MODELO_NOMBRE`. Sin clave, `configurado()` devuelve `None` y el orquestador
+cae al extracto: no se finge generación.
+
+La petición entera se prueba con `httpx.MockTransport`, que ejercita cabeceras,
+cuerpo, respuesta y error sin llamar a nadie. Doce pruebas, entre ellas que la
+clave viaja en la cabecera y **no** en el cuerpo, que un 503 del proveedor
+termina en extracto y no en un 500, y que un monto inventado en la redacción no
+se sirve.
+
+Tres cosas quedaron escritas en la consigna, porque son las que el criterio 2
+pide y no se pueden dejar implícitas: los fragmentos llegan delimitados y
+declarados como datos, se exige el formato `[[chunk:<id>]]` —una cita en prosa
+no se puede verificar contra nada—, y se prohíbe afirmar elegibilidad, porque
+este sistema no otorga, no deniega y no revoca.
+
+**Por qué no se usó el proveedor que hay a mano.** Este entorno tiene
+credenciales de la sesión de Claude Code, no del proyecto. Usarlas habría dado
+una corrida verde y un sistema que, desplegado, no tiene proveedor: la evidencia
+diría lo contrario de la realidad. El criterio 1 pide «el modelo configurado» y
+su evidencia es «proveedor real probado en staging»; eso queda abierto y es lo
+único que falta.
