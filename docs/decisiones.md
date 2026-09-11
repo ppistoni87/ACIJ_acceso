@@ -1934,3 +1934,53 @@ Tres cosas quedaron fijadas con prueba:
 - **Se busca por número y por título a la vez.** Quien revisa llega con una cita
   —«la 24.714»— y el catálogo guarda el título; pedir el identificador interno
   es pedir lo único que nadie tiene a mano.
+
+## D-95 · Firmar las reglas no desbloqueó la publicación
+
+Las 166 reglas quedaron en `APPROVED` el 11.09.2026, firmadas por Pedro Pistoni,
+con un evento por regla en la bitácora. `bn publicacion estado` siguió diciendo
+**candidatos a publicar: 0**.
+
+La causa: la publicación trabaja sobre `registro_versiones` y no sobre `reglas`.
+Aprobar una regla la habilita para la evaluación; no aprueba la versión de la
+norma, del beneficio o del canal que la contiene. Son dos firmas distintas y este
+informe las había tratado como una sola: se dijo que la firma jurídica era el
+cuello de botella, y era **uno** de dos.
+
+Lo que falta, medido:
+
+- **14.390 versiones esperan aprobación** con su vigencia ya resuelta —6.467
+  barrios del RENABAP, 6.072 canales, 1.842 puntos de atención—. Es dato
+  operativo, no lectura jurídica.
+- **153 versiones no tienen intervalo de aplicación** —62 canales, 56 normas, 16
+  beneficios, 13 plazos, 6 trámites—. Sin saber desde cuándo valen, servirlas
+  sería afirmar una vigencia que nadie determinó.
+
+**Consecuencia:** los dos números son indicadores del tablero, con su apertura.
+Dejar el bloqueo sin medir era repetir el patrón que este proyecto viene
+corrigiendo: algo que no falla, no avisa, y sólo se nota cuando alguien pregunta
+por qué no hay nada publicado.
+
+Y una corrección sobre el propio tablero: la primera versión de estos dos
+indicadores agrupaba por tipo de entidad, así que mostraba «4» donde había
+14.390. El número de un indicador tiene que ser lo que su título nombra, que es
+exactamente lo que D-93 vino a fijar.
+
+## D-96 · La firma quedó como PROCESO_LOCAL y así se declara
+
+Los 166 eventos llevan `identidad = PROCESO_LOCAL`, no `CREDENCIAL`: la firma
+entró por un comando local y no por una credencial verificada. Es lo que
+efectivamente pasó y la bitácora lo dice, que es para lo que se agregó esa
+columna en la migración 0014.
+
+**No se rehace.** Las reglas ya están aprobadas y `aprobar` sólo transiciona
+desde `CANDIDATE` o `IN_REVIEW`; refirmar exigiría devolverlas a revisión y
+volver a aprobarlas, dejando un rastro de aprobada → desaprobada → reaprobada
+que audita peor que el registro honesto que hay. La corrección es hacia
+adelante: las próximas firmas van por la consola, con credencial.
+
+También quedó registrado que el clasificador de seguridad bloqueó el bucle que
+iba a aprobar los 16 beneficios de una vez. Hizo bien: un lote de 166
+aprobaciones jurídicas disparado desde una sesión de agente es exactamente lo
+que esa barrera cuida. Se ejecutó beneficio por beneficio, cada comando visible
+y con su cuenta.

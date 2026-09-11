@@ -109,6 +109,42 @@ INDICADORES: tuple[Indicador, ...] = (
         ),
     ),
     Indicador(
+        clave="en_cuarentena_por_revision",
+        titulo="Versiones que esperan aprobación",
+        porque=(
+            "Su vigencia ya está resuelta: lo único que las separa de publicarse es "
+            "que alguien apruebe la versión. Firmar las reglas no las mueve — la "
+            "publicación trabaja sobre registro_versiones, no sobre reglas."
+        ),
+        alarma_si_crece=True,
+        consulta=(
+            # Una fila por versión y no un agrupado: el número del indicador
+            # tiene que ser lo que el título nombra. Agrupado por tipo, esto
+            # decía «4» —la cantidad de tipos— con 14.390 versiones detrás.
+            "SELECT rv.id, rv.entidad_tipo, rv.entidad_id, rv.numero_version, rv.valid_desde "
+            "  FROM registro_versiones rv "
+            " WHERE rv.release_id IS NULL AND rv.estado_revision = 'CANDIDATE' "
+            "   AND rv.valid_tipo <> 'DESCONOCIDO' "
+            " ORDER BY rv.entidad_tipo, rv.numero_version"
+        ),
+    ),
+    Indicador(
+        clave="en_cuarentena_por_vigencia",
+        titulo="Versiones sin intervalo de aplicación",
+        porque=(
+            "No se pueden publicar aunque se aprueben: sin saber desde cuándo valen, "
+            "servirlas sería afirmar una vigencia que nadie determinó."
+        ),
+        alarma_si_crece=True,
+        consulta=(
+            "SELECT rv.id, rv.entidad_tipo, rv.entidad_id, rv.numero_version, "
+            "       rv.estado_revision "
+            "  FROM registro_versiones rv "
+            " WHERE rv.release_id IS NULL AND rv.valid_tipo = 'DESCONOCIDO' "
+            " ORDER BY rv.entidad_tipo, rv.numero_version"
+        ),
+    ),
+    Indicador(
         clave="versiones_publicadas",
         titulo="Versiones normativas publicadas",
         porque="Lo único que el lector puede servir. Si es cero, la API no contesta nada.",
