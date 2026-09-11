@@ -53,7 +53,7 @@ from backend_normativo.ingesta.almacen import AlmacenObjetos
 from backend_normativo.ingesta.conciliacion import Conciliacion, registrar
 from backend_normativo.ingesta.versiones import (
     proxima_version,
-    sha_de_la_captura,
+    sha_del_contenido,
     version_ya_existente,
 )
 
@@ -207,7 +207,9 @@ class ImportadorDirectorios:
                 f"{dataset.source_id} no trae las columnas {faltan}. Llegaron: {sorted(columnas)}."
             )
 
-        doc_version_id = self._version_documental(dataset, captura_id, capturado_en)
+        doc_version_id = self._version_documental(
+            dataset, captura_id, capturado_en, contenido.decode("utf-8-sig", "replace")
+        )
         organismo_id = self._organismo(dataset.organismo)
 
         for numero, fila in enumerate(lector, start=1):
@@ -448,7 +450,11 @@ class ImportadorDirectorios:
         ).scalar_one()
 
     def _version_documental(
-        self, dataset: Dataset, captura_id: uuid.UUID, capturado_en: dt.datetime
+        self,
+        dataset: Dataset,
+        captura_id: uuid.UUID,
+        capturado_en: dt.datetime,
+        contenido: str,
     ) -> uuid.UUID:
         external_id = f"directorio:{dataset.source_id}"
         documento_id = self.conexion.execute(
@@ -465,7 +471,9 @@ class ImportadorDirectorios:
                 "e": external_id,
             },
         ).scalar_one()
-        sha = sha_de_la_captura(self.conexion, captura_id)
+        # La huella sale del CSV ya decodificado y no de los bytes: la marca de
+        # orden de bytes o un cambio de codificación no son un directorio nuevo.
+        sha = sha_del_contenido([dataset.source_id, contenido])
         ya = version_ya_existente(self.conexion, documento_id, captura_id, sha)
         if ya is not None:
             return ya

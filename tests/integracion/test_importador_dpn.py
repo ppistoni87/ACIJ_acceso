@@ -385,3 +385,51 @@ def test_un_whatsapp_no_se_ofrece_como_telefono(publicado: str) -> None:
     """El sitio los rotula con el icono del teléfono; sólo el texto los delata.
     Llamar a un número que sólo atiende por WhatsApp da tono y nadie contesta."""
     assert es_whatsapp(publicado) is True
+
+
+def test_reimportar_el_mismo_directorio_no_crea_una_version_nueva(
+    conexion: Connection, captura
+) -> None:
+    """Dos descargas del mismo directorio son una sola versión documental.
+
+    dpn.gob.ar agrega a cada respuesta un token que cambia solo —el ofuscador de
+    correos de Cloudflare—, así que los bytes difieren en cada descarga aunque el
+    directorio esté idéntico. Mientras la versión se decidía por el sha de los
+    bytes, cada corrida creaba una versión documental nueva del mismo contenido:
+    la corrida limpia lo mostró como una versión de más por pasada, sin fin, y
+    costó cuatro hipótesis descartadas encontrarlo porque el texto de la página
+    sí era estable.
+
+    La fixture ya da un `sha256_raw` distinto por captura, que es justo la
+    condición de producción.
+    """
+    _importar(conexion, HTML_TERCEROS, URL_TERCEROS, captura(URL_TERCEROS))
+    _importar(conexion, HTML_TERCEROS, URL_TERCEROS, captura(URL_TERCEROS))
+
+    versiones = conexion.execute(
+        text(
+            "SELECT count(*) FROM documento_versiones dv JOIN documentos d "
+            "  ON d.id = dv.documento_id WHERE d.source_id = 'F44'"
+        )
+    ).scalar_one()
+    assert versiones == 1
+
+
+def test_un_directorio_que_cambia_sí_crea_una_version_nueva(conexion: Connection, captura) -> None:
+    """Y lo contrario: si el directorio cambia, la versión nueva tiene que salir.
+
+    Sin esta mitad, la corrección anterior se podría satisfacer devolviendo
+    siempre la misma versión, que escondería un cambio real en las oficinas.
+    """
+    _importar(conexion, HTML_TERCEROS, URL_TERCEROS, captura(URL_TERCEROS))
+    distinto = HTML_TERCEROS.replace("Defensoría del Pueblo", "Defensoría del Pueblo (nueva sede)")
+    assert distinto != HTML_TERCEROS
+    _importar(conexion, distinto, URL_TERCEROS, captura(URL_TERCEROS))
+
+    versiones = conexion.execute(
+        text(
+            "SELECT count(*) FROM documento_versiones dv JOIN documentos d "
+            "  ON d.id = dv.documento_id WHERE d.source_id = 'F44'"
+        )
+    ).scalar_one()
+    assert versiones == 2

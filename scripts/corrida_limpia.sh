@@ -219,33 +219,43 @@ escribir_reporte() {
           echo "${EVIDENCIA_NO_IDEMPOTENTE}"
           echo
         fi
-      elif [ "${PRIMERAS_DE_DOCUMENTO_NUEVO:-0}" -gt 0 ] 2>/dev/null; then
-        echo "> **Ningún documento se duplicó**, y aun así el total subió de ${ANTES} a"
-        echo "> ${DESPUES}: las ${PRIMERAS_DE_DOCUMENTO_NUEVO} versiones nuevas son todas la"
-        echo "> primera de su documento. No son duplicados: son páginas que la primera"
-        echo "> pasada nunca llegó a capturar, porque el descubrimiento de URLs corre"
-        echo "> entremezclado con la captura y promueve hojas después de que su fuente ya"
-        echo "> pasó. La segunda pasada no repite trabajo, lo termina."
-        echo ">"
-        echo "> Eso no es idempotencia rota, pero tampoco es un punto fijo: una pasada"
-        echo "> sola no deja el corpus completo, y el procedimiento no debería decir que"
-        echo "> sí. Lo que corresponde medir es si una tercera pasada agrega algo."
-        echo
       else
-        echo "La segunda pasada no agregó ninguna versión: ni un documento nuevo ni una"
-        echo "versión sobre uno que ya estaba."
+        echo "Ningún documento se volvió a versionar: la segunda pasada no duplicó nada."
+        echo
+      fi
+      # El crecimiento por documentos nuevos se informa **siempre**, haya o no
+      # fallo duro. Cuando solo se contaba en la rama sin fallo, una corrida con
+      # una versión repetida dejaba treinta y un documentos nuevos sin explicar:
+      # el total subía a la vista de todos y el informe hablaba de otra cosa.
+      if [ "${PRIMERAS_DE_DOCUMENTO_NUEVO:-0}" -gt 0 ] 2>/dev/null; then
+        echo "Aparte de eso, la segunda pasada sumó ${PRIMERAS_DE_DOCUMENTO_NUEVO} documento(s)"
+        echo "que no existían. No son duplicados ni versiones de nada: son páginas que la"
+        echo "primera pasada no llegó a capturar. \`descubrir_hojas()\` promueve hasta veinte"
+        echo "hojas por fuente y por pasada, y cada hoja nueva descubre las suyas, así que el"
+        echo "recorrido avanza a lo ancho y con tope: crece hasta agotar el árbol."
+        echo
+        echo "Eso no es idempotencia rota —volver a pedir lo mismo no lo cambia— pero tampoco"
+        echo "es un punto fijo. Una pasada sola no deja el corpus completo, y el procedimiento"
+        echo "no debería decir que sí. Lo que falta medir no es si converge, sino en cuántas."
         echo
       fi
       if [ -n "${TRAS_TERCERA}" ]; then
         if [ "${TERCERA_SOBRE_EXISTENTE:-0}" -gt 0 ] 2>/dev/null; then
-          echo "> **La tercera pasada volvió a versionar documentos existentes**"
-          echo "> (${TERCERA_SOBRE_EXISTENTE}). No hay punto fijo: cada pasada reescribe lo"
-          echo "> mismo, y eso es no determinismo o contenido que cambia solo."
+          echo "> **La tercera pasada volvió a versionar ${TERCERA_SOBRE_EXISTENTE} documento(s)**"
+          echo "> que ya existían. Sobre esos no hay punto fijo: se reescriben en cada"
+          echo "> pasada, y eso es no determinismo o contenido que cambia solo. El resto"
+          echo "> del corpus sí se estabilizó."
           echo
+          if [ "${TERCERA_PRIMERAS:-0}" -gt 0 ] 2>/dev/null; then
+            echo "La tercera pasada además sumó ${TERCERA_PRIMERAS} documento(s) nuevos, por lo"
+            echo "mismo que la segunda: el recorrido a lo ancho todavía no agotó el árbol."
+            echo
+          fi
         elif [ "${TERCERA_PRIMERAS:-0}" -gt 0 ] 2>/dev/null; then
-          echo "> **La tercera pasada todavía encontró documentos nuevos**"
-          echo "> (${TERCERA_PRIMERAS}). El recorrido no converge en dos pasadas: hay que"
-          echo "> correrlo hasta que deje de crecer, y decir cuántas hacen falta."
+          echo "> **La tercera pasada todavía encontró ${TERCERA_PRIMERAS} documento(s) nuevos**,"
+          echo "> y ninguno repetido. El recorrido no converge en tres pasadas —el tope de"
+          echo "> veinte hojas por fuente y por pasada lo impide— pero no duplica: hay que"
+          echo "> correrlo hasta que deje de crecer y decir cuántas pasadas hicieron falta."
           echo
         else
           echo "> **La tercera pasada no agregó nada.** Ahí está el punto fijo: el corpus"
@@ -328,6 +338,16 @@ escribir_reporte() {
 
 al_salir() {
   local codigo=$?
+  # `ESTADO_FINAL` solo lo movía `cronometrar` cuando fallaba un paso medido, así
+  # que cualquier otra muerte —un error de sintaxis, un `set -e` en medio del
+  # armado del informe— dejaba el encabezado diciendo «completa» sobre una
+  # corrida que no llegó al final. Pasó: una edición del script mientras corría
+  # lo mató en la línea 374 y el informe salió declarándose completo, con la
+  # mitad de las tablas vacías. El código de salida es lo único que sabe la
+  # verdad, así que manda él.
+  if [ "${codigo}" -ne 0 ] && [ "${ESTADO_FINAL}" = "completa" ]; then
+    ESTADO_FINAL="interrumpida (el script terminó con código ${codigo})"
+  fi
   escribir_reporte
   if [ "${codigo}" -eq 0 ]; then
     admin -c "DROP DATABASE IF EXISTS \"${BASE}\" WITH (FORCE)"

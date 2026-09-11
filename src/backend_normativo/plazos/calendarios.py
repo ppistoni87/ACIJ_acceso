@@ -38,7 +38,7 @@ from backend_normativo.db.vocabularios import (
 from backend_normativo.ingesta.almacen import AlmacenObjetos
 from backend_normativo.ingesta.versiones import (
     proxima_version,
-    sha_de_la_captura,
+    sha_del_contenido,
     version_ya_existente,
 )
 from backend_normativo.plazos.computo import Calendario, Excepcion
@@ -174,7 +174,7 @@ def importar(
     ).scalar_one()
     resultado.calendario_id = calendario_id
 
-    doc_version_id = _version_documental(conexion, captura_id, anio)
+    doc_version_id = _version_documental(conexion, captura_id, anio, feriados)
     ya = {
         fila[0]
         for fila in conexion.execute(
@@ -315,7 +315,12 @@ def _leer(contenido: bytes, anio: int) -> dict[dt.date, str]:
     return feriados
 
 
-def _version_documental(conexion: Connection, captura_id: uuid.UUID, anio: int) -> uuid.UUID:
+def _version_documental(
+    conexion: Connection,
+    captura_id: uuid.UUID,
+    anio: int,
+    feriados: dict[dt.date, str],
+) -> uuid.UUID:
     documento_id = conexion.execute(
         text(
             "INSERT INTO documentos (source_id, tipo, titulo, external_id) "
@@ -330,7 +335,10 @@ def _version_documental(conexion: Connection, captura_id: uuid.UUID, anio: int) 
             "e": f"feriados:{anio}",
         },
     ).scalar_one()
-    sha = sha_de_la_captura(conexion, captura_id)
+    # La huella son los feriados leídos, no los bytes del archivo: descargar
+    # dos veces el mismo calendario no es una versión nueva, y los bytes pueden
+    # diferir por cosas que no son el contenido.
+    sha = sha_del_contenido([anio, *sorted((f.isoformat(), n) for f, n in feriados.items())])
     ya = version_ya_existente(conexion, documento_id, captura_id, sha)
     if ya is not None:
         return ya

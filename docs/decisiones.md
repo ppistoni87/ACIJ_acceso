@@ -1635,3 +1635,34 @@ cualquier aumento, y esa frase era falsa la mitad de las veces; al separar
 «primera versión de un documento nuevo» de «segunda versión de uno que ya
 estaba», el número que quedó señalaba el bug directamente. Un control que grita
 por todo no distingue nada.
+
+## D-85 · Versionar por los bytes crea una versión por corrida
+
+La corrida limpia dejaba una versión documental de más por pasada, siempre una,
+siempre en F44. Cuatro hipótesis cayeron con medición: el extractor es
+determinista sobre los mismos bytes, el texto de la página no cambia en
+dieciocho minutos, F44 aislada es idempotente en cuatro pasadas, y recargar el
+catálogo no crea configuración nueva.
+
+El documento que se reversionaba no era el que yo perseguía. Era
+`dpn:otros-defensores`, del importador de la DPN, que no pasa por el extractor
+genérico: guarda en `hash_texto` el **sha de los bytes descargados** y deja
+`texto_extraido` en NULL. Y dpn.gob.ar agrega a cada respuesta un token que
+cambia solo —el ofuscador de correos de Cloudflare—, así que los bytes difieren
+en cada descarga con el directorio idéntico. Una versión por corrida, para
+siempre. El mismo patrón estaba en los importadores de directorios y de
+calendarios: ahí no se veía porque sus servidores devuelven bytes estables.
+
+**Consecuencia:** `sha_del_contenido()` en `ingesta/versiones.py` arma la huella
+con lo que el importador **leyó** —las oficinas, el CSV decodificado, los
+feriados— y no con lo que descargó. `sha_de_la_captura()` queda para comparar
+descargas, con su docstring diciendo para qué no sirve. Ningún importador
+versiona ya por bytes crudos.
+
+Dos cosas que este caso enseñó sobre el método. La primera: el control solo
+señaló el bug después de que separé «primera versión de un documento nuevo» de
+«segunda versión de uno que ya estaba»; mientras gritaba por cualquier aumento,
+el número que importaba estaba tapado por treinta y uno que no eran nada. La
+segunda: perseguí esto cuatro veces reconstruyendo a mano una base que la
+corrida destruye al terminar. La evidencia ahora se junta mientras la base
+existe. Sin eso, el quinto intento hubiera sido igual que los cuatro anteriores.

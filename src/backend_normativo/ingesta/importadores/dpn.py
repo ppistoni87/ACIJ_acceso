@@ -55,7 +55,7 @@ from backend_normativo.ingesta.almacen import AlmacenObjetos
 from backend_normativo.ingesta.conciliacion import Conciliacion, registrar
 from backend_normativo.ingesta.versiones import (
     proxima_version,
-    sha_de_la_captura,
+    sha_del_contenido,
     version_ya_existente,
 )
 
@@ -361,7 +361,7 @@ class ImportadorDpn:
             avisos=list(lectura.avisos),
         )
 
-        doc_version_id = self._version_documental(captura_id, lectura.seccion)
+        doc_version_id = self._version_documental(captura_id, lectura.seccion, lectura.oficinas)
         nacional_id = self._organismo(ORGANISMO_NACIONAL, JURISDICCION_NACIONAL)
         sin_mapear: set[str] = set()
 
@@ -684,7 +684,9 @@ class ImportadorDpn:
             },
         ).scalar_one()
 
-    def _version_documental(self, captura_id: uuid.UUID, seccion: str) -> uuid.UUID:
+    def _version_documental(
+        self, captura_id: uuid.UUID, seccion: str, oficinas: list[Oficina]
+    ) -> uuid.UUID:
         documento_id = self.conexion.execute(
             text(
                 "INSERT INTO documentos (source_id, tipo, titulo, external_id) "
@@ -699,7 +701,28 @@ class ImportadorDpn:
                 "e": f"dpn:{seccion.lower().replace(' ', '-')}",
             },
         ).scalar_one()
-        sha = sha_de_la_captura(self.conexion, captura_id)
+        # La huella sale de las oficinas leídas, no de los bytes: dpn.gob.ar
+        # devuelve un token distinto en cada descarga —el ofuscador de correos—
+        # y versionar por bytes creaba una versión documental por corrida, con
+        # el directorio idéntico. Se vio en la corrida limpia: una por pasada,
+        # sin fin.
+        sha = sha_del_contenido(
+            [
+                seccion,
+                *(
+                    (
+                        o.nombre,
+                        o.jurisdiccion_listada,
+                        o.direccion,
+                        o.codigo_postal,
+                        o.localidad,
+                        "/".join(o.telefonos),
+                        o.web,
+                    )
+                    for o in oficinas
+                ),
+            ]
+        )
         ya = version_ya_existente(self.conexion, documento_id, captura_id, sha)
         if ya is not None:
             return ya
