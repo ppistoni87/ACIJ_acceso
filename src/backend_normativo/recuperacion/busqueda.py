@@ -141,7 +141,7 @@ sin_repetidos AS (
      ORDER BY c.hash, f.puntaje DESC, f.chunk_id
 )
 SELECT r.chunk_id, r.puesto_lexico, r.puesto_semantico, r.puntaje,
-       c.texto, u.ruta, fu.url, n.jurisdiccion_id,
+       c.texto, u.ruta, c.url_fuente AS url, n.jurisdiccion_id,
        n.tipo || ' ' || coalesce(n.numero, '?') || '/' || coalesce(n.anio::text, '?') AS norma
   FROM sin_repetidos r
   JOIN chunks c ON c.id = r.chunk_id
@@ -149,8 +149,6 @@ SELECT r.chunk_id, r.puesto_lexico, r.puesto_semantico, r.puntaje,
   JOIN norma_versiones nv ON nv.registro_version_id = c.registro_version_id
   JOIN normas n ON n.id = nv.norma_id
   JOIN documento_versiones dv ON dv.id = u.doc_version_id
-  JOIN capturas cap ON cap.id = dv.captura_id
-  JOIN fuente_urls fu ON fu.id = cap.source_url_id
  ORDER BY r.puntaje DESC, r.chunk_id
  LIMIT :limite
 """
@@ -164,7 +162,7 @@ SELECT c.id AS chunk_id,
                           DESC, c.id)::int AS puesto_lexico,
        NULL::int AS puesto_semantico,
        ts_rank(c.tsv, plainto_tsquery('spanish', :consulta))::float AS puntaje,
-       c.texto, u.ruta, fu.url, n.jurisdiccion_id,
+       c.texto, u.ruta, c.url_fuente AS url, n.jurisdiccion_id,
        n.tipo || ' ' || coalesce(n.numero, '?') || '/' || coalesce(n.anio::text, '?') AS norma
   FROM chunks c
   JOIN registro_versiones rv ON rv.id = c.registro_version_id
@@ -172,8 +170,6 @@ SELECT c.id AS chunk_id,
   JOIN normas n ON n.id = nv.norma_id
   JOIN unidades_documentales u ON u.id = c.unidad_id
   JOIN documento_versiones dv ON dv.id = u.doc_version_id
-  JOIN capturas cap ON cap.id = dv.captura_id
-  JOIN fuente_urls fu ON fu.id = cap.source_url_id
  WHERE c.tsv @@ plainto_tsquery('spanish', :consulta)
    AND {FILTROS}
  ORDER BY puntaje DESC, c.id

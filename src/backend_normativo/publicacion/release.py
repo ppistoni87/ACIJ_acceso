@@ -336,11 +336,18 @@ class Publicador:
                     # partir de `texto`. Antes la escribía este INSERT y podía
                     # quedar distinta del texto que decía representar.
                     "INSERT INTO chunks (unidad_id, registro_version_id, release_id, texto, hash, "
-                    "                    tipo) "
+                    "                    tipo, url_fuente) "
+                    # La URL se copia al fragmento en el momento de publicar.
+                    # El publicador corre con el rol migrador y sí alcanza
+                    # staging; el lector no, y no tiene por qué: el corte le
+                    # lleva la cita ya resuelta.
                     "SELECT u.id, nv.registro_version_id, :r, u.texto, "
-                    "       encode(sha256(u.texto::bytea), 'hex'), :tipo "
+                    "       encode(sha256(u.texto::bytea), 'hex'), :tipo, fu.url "
                     "  FROM unidades_documentales u "
                     "  JOIN norma_versiones nv ON nv.doc_version_id = u.doc_version_id "
+                    "  LEFT JOIN documento_versiones dv ON dv.id = u.doc_version_id "
+                    "  LEFT JOIN capturas cap ON cap.id = dv.captura_id "
+                    "  LEFT JOIN fuente_urls fu ON fu.id = cap.source_url_id "
                     " WHERE nv.registro_version_id = ANY(:v) "
                     "   AND u.rol_contenido = 'DISPOSITIVO' "
                     "   AND length(btrim(u.texto)) > 0 "

@@ -11,7 +11,6 @@ import uuid
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import text
 
 from backend_normativo.api.contratos import (
     Advertencia,
@@ -102,21 +101,17 @@ def recuperar(
     )
     filas = hallazgo.fragmentos
 
-    conflictos = [
-        {
-            "tipo": fila["tipo"],
-            "severidad": fila["severidad"],
-            "descripcion": fila["descripcion"],
-        }
-        for fila in contexto.conexion.execute(
-            text(
-                "SELECT i.tipo, i.severidad, left(i.descripcion, 300) AS descripcion "
-                "  FROM incidencias_revision i "
-                " WHERE i.estado IN ('ABIERTA', 'EN_REVISION') "
-                "   AND i.severidad IN ('CRITICAL', 'HIGH') LIMIT 10"
-            )
-        ).mappings()
-    ]
+    # Esta ruta leía `incidencias_revision` para advertir sobre conflictos
+    # abiertos. Dos problemas. Uno: es staging, el lector no la puede leer y la
+    # consulta devolvía 500 en cualquier despliegue con roles de verdad. Dos: la
+    # advertencia era global —conflictos en cualquier parte del corpus— y no
+    # sobre los fragmentos devueltos, así que alarmaba sin decir de qué.
+    #
+    # Y era redundante: el control DQ09 impide publicar con conflictos abiertos
+    # de severidad alta **sobre lo que se publica**, así que por construcción un
+    # fragmento servido no tiene uno. La garantía está en el momento de
+    # publicar, que es donde corresponde, y no en cada consulta.
+    conflictos: list[dict] = []
 
     advertencias: list[Advertencia] = [
         Advertencia(codigo=CodigoError.INSUFFICIENT_EVIDENCE, detalle=aviso)
@@ -188,3 +183,61 @@ def cobertura(
             )
         ],
     )
+
+
+# --- P-013: respuesta con citas, o el límite explicado ------------------------
+
+
+class SolicitudRespuesta(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    consulta: str
+    jurisdiccion: str | None = None
+    beneficio: str | None = None
+    limite: int = Field(default=5, ge=1, le=10)
+
+
+@router.post("/respuestas")
+def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depends()) -> dict:
+    """Recupera y arma la respuesta, declarando con qué se armó.
+
+    Tres modos y la diferencia no se borra: `GENERADA` si un proveedor redactó y
+    los validadores aprobaron, `EXTRACTO` si no hubo proveedor o lo que devolvió
+    no se sostiene, `ABSTENCION` si no hay evidencia. El plan lo pide con esas
+    palabras: «un extracto de respaldo no se presenta como generación activa».
+
+    Hoy no hay proveedor configurado, así que contesta en modo extracto: texto
+    publicado, literal y citado. No puede alucinar, y se declara.
+    """
+    from backend_normativo.generacion.respuesta import responder
+
+    if not contexto.hay_release:
+        salida = responder(solicitud.consulta, [])
+        return {
+            "release_id": None,
+            "as_of": contexto.as_of.isoformat(),
+            "known_at": contexto.known_at.isoformat(),
+            **salida.a_dict(),
+        }
+
+    hallazgo = buscar_fragmentos(
+        contexto.conexion,
+        solicitud.consulta,
+        release_id=contexto.release_id,
+        embebedor=embebedor_compartido(),
+        limite=solicitud.limite,
+        jurisdiccion=solicitud.jurisdiccion,
+        beneficio=solicitud.beneficio,
+        as_of=contexto.as_of,
+        known_at=contexto.known_at,
+    )
+    # El proveedor llega por inyección cuando exista; hoy es `None` y el
+    # orquestador cae al extracto, que es el comportamiento correcto y no un
+    # parche: se declara como extracto y se puede verificar entero.
+    salida = responder(solicitud.consulta, hallazgo.fragmentos, proveedor=None)
+    return {
+        "release_id": str(contexto.release_id),
+        "as_of": contexto.as_of.isoformat(),
+        "known_at": contexto.known_at.isoformat(),
+        **salida.a_dict(),
+    }

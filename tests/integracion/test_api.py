@@ -385,8 +385,16 @@ def test_el_cuerpo_de_una_evaluacion_no_se_persiste(
     # ninguna columna, y que la tabla no tenga dónde guardar una identidad. Sin
     # la segunda mitad, alguien podría agregar mañana una columna `actor` y esta
     # prueba seguiría pasando.
+    # Se miran las columnas que **podrían** llevar contenido, no las métricas.
+    # La primera versión escaneaba la fila entera buscando «34» y fallaba cuando
+    # `latencia_ms` daba 34: una latencia que coincide con un dato declarado no
+    # es una filtración, y una prueba que falla al azar se termina ignorando.
     filas = conexion.execute(
-        text("SELECT * FROM consultas_auditadas WHERE intencion = :r"),
+        text(
+            "SELECT intencion, resultado_tipo, motivo_abstencion, request_id, "
+            "       evidencias_usadas::text AS evidencias, reglas_versiones::text AS reglas "
+            "  FROM consultas_auditadas WHERE intencion = :r"
+        ),
         {"r": "/v1/evaluaciones-preliminares"},
     ).mappings()
     for fila in filas:

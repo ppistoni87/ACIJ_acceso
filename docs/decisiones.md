@@ -2085,3 +2085,78 @@ mecánico como el que permitió aprobar los canales en bloque (D-97): aprobar un
 afirmación es decir que «esta norma establece X sobre la población Y» es una
 lectura correcta. Lo mismo con las vigencias: de las 153, sólo diez tienen fecha
 de inicio cargada, y aun esas necesitan que alguien diga si la norma tiene fin.
+
+## D-101 · Una respuesta no puede afirmar lo que sus citas no sostienen
+
+P-013 pide generar respuestas con citas y abstención. Lo que se construyó no es
+un envoltorio de un modelo: son los validadores y la política de modo, que son
+lo que protege a quien consulta y tienen que funcionar igual con cualquier
+proveedor detrás —o con ninguno—.
+
+**Tres modos, y la diferencia no se borra.** `GENERADA` cuando un proveedor
+redactó y los validadores aprobaron; `EXTRACTO` cuando no hubo proveedor, se
+cayó, o lo que devolvió no se sostiene; `ABSTENCION` cuando no hay evidencia. El
+plan lo pide con esas palabras: «un extracto de respaldo no se presenta como
+generación activa».
+
+El modo extractivo **no puede alucinar**: el texto sale literal de fragmentos
+publicados, con su cita. Es menos cómodo de leer que una explicación redactada y
+es completamente verificable, así que es el piso del sistema y no un parche.
+
+**Los validadores rechazan tres cosas**, verificando contra el contexto y no
+preguntándole al modelo si está seguro —un modelo que se equivoca no sabe que se
+equivocó—: citas que no están entre los fragmentos recuperados, enlaces que no
+aparecen en el contexto, y números sin soporte. El número es el caso más caro:
+«te corresponden $85.000» con un importe que no está en ninguna cita es peor que
+no contestar, porque alguien planifica el mes con eso.
+
+Sobre instrucciones maliciosas (criterio 2), lo que cierra el caso no es la
+consigna al modelo sino la verificación: una respuesta que cambió de tema porque
+un documento se lo pidió no va a tener citas que la sostengan. Hay prueba de
+las dos formas.
+
+**Lo que no se cumple:** el criterio 1 pide «el modelo configurado» y su
+evidencia es «proveedor real probado en staging». No hay proveedor ni staging.
+La interfaz está y es mínima a propósito —cambiar de proveedor no puede obligar
+a tocar los validadores— pero P-013 no está cerrado hasta que corra contra un
+modelo de verdad.
+
+## D-102 · La recuperación estaba rota en cualquier despliegue real
+
+Al probar `/v1/respuestas` con el rol de producción apareció que
+`POST /v1/recuperacion` devolvía **500**, y no por el endpoint nuevo: la consulta
+híbrida hacía `JOIN` contra `capturas` y `fuente_urls` —las dos staging— para
+traer la URL de la fuente, y el lector no las puede leer. Es el mismo defecto de
+D-86, en otra ruta, y la prueba de D-87 no lo veía porque **sólo cubría GET**.
+
+Quitar la URL arreglaba el permiso y rompía algo peor: una cita que no se puede
+abrir. Todo este proyecto se apoya en que quien lee una respuesta pueda ir al
+texto y verificarlo.
+
+**Consecuencia:** la URL viaja con el fragmento publicado. La migración 0018
+agrega `chunks.url_fuente` y el publicador la completa al cortar —el publicador
+corre con el rol migrador y sí alcanza staging; el lector no, y no tiene por qué,
+porque el corte le lleva la cita ya resuelta—. Es lo que tiene que pasar con todo
+lo que el lector necesita.
+
+Y una segunda tabla de staging en la misma ruta: leía `incidencias_revision`
+para advertir sobre conflictos abiertos. Se quitó, por tres razones. Es staging.
+La advertencia era global —conflictos en cualquier parte del corpus— y no sobre
+los fragmentos devueltos, así que alarmaba sin decir de qué. Y es redundante: el
+control DQ09 impide publicar con conflictos de severidad alta sobre lo que se
+publica, así que la garantía ya está en el momento de publicar, que es donde
+corresponde.
+
+Tres cosas propias que costaron:
+
+- **La prueba de POST no atrapaba el defecto.** Sin release en el corpus de
+  prueba, la ruta corta antes de ejecutar el SQL: pasaba en verde con el bug
+  puesto. Se agregó una prueba que hace `EXPLAIN` de cada consulta de
+  recuperación con `SET ROLE bn_lector_api`, que verifica permisos sin necesitar
+  una sola fila. Verificada revirtiendo el arreglo: falla.
+- **Se rompió una prueba de citas localizables**, y estaba bien que se rompiera:
+  avisó que la URL se había perdido.
+- **Una prueba propia quedó inestable.** La de privacidad buscaba «34» —la edad
+  declarada— en todas las columnas de la fila, y `latencia_ms` puede valer 34.
+  Pasaba sola y fallaba acompañada. Ahora mira sólo las columnas que podrían
+  llevar contenido: una prueba que falla al azar se termina ignorando.

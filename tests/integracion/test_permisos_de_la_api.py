@@ -63,6 +63,27 @@ def _rutas_publicas() -> list[str]:
     return sorted(rutas)
 
 
+def _rutas_publicas_post() -> list[str]:
+    """Los POST de `/v1` que no son de administración.
+
+    Esta mitad faltaba, y por el hueco pasó un defecto real: la recuperación
+    híbrida hacía `JOIN` contra `capturas` para traer la URL de la fuente, y el
+    lector no puede leer esa tabla. `POST /v1/recuperacion` devolvía 500 en
+    cualquier despliegue con roles de verdad, igual que la cobertura en D-86, y
+    una prueba que sólo mira GET no lo podía ver.
+    """
+    from backend_normativo.api.app import crear_app
+
+    esquema = crear_app().openapi()
+    rutas = [
+        camino
+        for camino, operaciones in esquema["paths"].items()
+        if "post" in operaciones and camino.startswith("/v1") and "/admin/" not in camino
+    ]
+    assert rutas, "No se encontró ninguna ruta POST pública: la prueba estaría vacía."
+    return sorted(rutas)
+
+
 @pytest.mark.parametrize("camino", _rutas_publicas())
 def test_ninguna_ruta_publica_se_cae_por_permisos(
     cliente_con_permisos_de_produccion, camino: str
@@ -86,3 +107,68 @@ def _parametros(camino: str) -> dict[str, str]:
         for nombre in camino.split("/")
         if nombre.startswith("{") and nombre.endswith("}")
     }
+
+
+@pytest.mark.parametrize("camino", _rutas_publicas_post())
+def test_ningun_post_publico_se_cae_por_permisos(
+    cliente_con_permisos_de_produccion, camino: str
+) -> None:
+    """Un cuerpo vacío basta: lo que se mira es que no reviente por permisos.
+
+    Un 422 por validación está perfecto —significa que la ruta llegó a mirar el
+    cuerpo— y un 500 no.
+    """
+    respuesta = cliente_con_permisos_de_produccion.post(
+        camino.format(**_parametros(camino)), json={"consulta": "vivienda"}
+    )
+    assert respuesta.status_code != 500, (
+        f"{camino} devolvió 500 con los permisos de producción: {respuesta.text[:300]}"
+    )
+
+
+# --- Las consultas de recuperación, contra los permisos reales ----------------
+#
+# La prueba de POST de arriba no alcanza para esto: sin release publicado la
+# ruta corta antes de ejecutar el SQL, así que pasaba con el defecto puesto.
+# `EXPLAIN` resuelve el problema: verifica los permisos de cada tabla sin
+# necesitar una sola fila de datos.
+
+
+@pytest.mark.parametrize("nombre", ["CONSULTA", "SOLO_LEXICA"])
+def test_las_consultas_de_recuperacion_no_tocan_staging(
+    engine_pruebas: Engine, nombre: str
+) -> None:
+    """El lector accede únicamente a proyecciones servibles.
+
+    La recuperación híbrida hacía `JOIN` contra `capturas` y `fuente_urls` para
+    traer la URL de la fuente. Las dos son staging y el lector no las alcanza,
+    así que `POST /v1/recuperacion` devolvía 500 en cualquier despliegue con
+    roles de verdad. Se quitó el join: la cita identifica norma y ruta, que sí
+    son del corpus publicado.
+    """
+    from backend_normativo.recuperacion import busqueda
+
+    consulta = getattr(busqueda, nombre)
+    parametros = {
+        "consulta": "vivienda",
+        "release": uuid.uuid4(),
+        "limite": 5,
+        "jurisdiccion": None,
+        "beneficio": None,
+        "as_of": "2026-01-01",
+        "known_at": "2026-01-01T00:00:00+00:00",
+        "k": 60,
+        "vector": None,
+    }
+    conexion = engine_pruebas.connect()
+    try:
+        conexion.execute(text(f"SET ROLE {ROL_DE_PRODUCCION}"))
+        try:
+            conexion.execute(text(f"EXPLAIN {consulta}"), parametros)
+        except Exception as error:
+            if "permission denied" in str(error).lower():
+                pytest.fail(f"{nombre} toca una tabla que el lector no puede leer: {error}")
+            # Otros errores —un parámetro que no aplica a esta variante— no son
+            # lo que esta prueba mira.
+    finally:
+        conexion.close()
