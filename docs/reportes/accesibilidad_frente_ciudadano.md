@@ -10,7 +10,7 @@ accesibilidad del navegador, y lo que **no se puede afirmar desde acá**. Lo
 
 ## 1 · Lo que se mide en cada corrida
 
-Nueve de los veintiún casos de `tests/aceptacion/test_recorrido_ciudadano.py`
+Nueve de los veintitrés casos de `tests/aceptacion/test_recorrido_ciudadano.py`
 son de accesibilidad, y corren en Chromium contra el servidor real:
 
 | Qué | Cómo se verifica | Criterio WCAG |
@@ -38,11 +38,21 @@ respuesta ya cargada, a 360 px:
 * **Encabezados en orden**: h1 «Consulta de derechos» → h2 con el modo de la
   respuesta → h3 «Lo que dicen las normas», «Fuentes», «Qué conviene saber»,
   «Canal oficial». Sin saltos de nivel.
-* **Orden de tabulación**: salto al formulario → «Salir y borrar» → pregunta →
-  situación → jurisdicción → tipo de beneficio → fecha → Consultar → Cancelar →
-  Empezar de nuevo. Coincide con el orden visual.
-* **Nombres de los controles**: cada uno se anuncia con su etiqueta visible
-  («¿Qué querés averiguar?», «Tu situación (opcional)», «Jurisdicción»…).
+* **Orden de tabulación**: salto al cuadro de escritura → «Nueva conversación» →
+  «Salir y borrar» → los mensajes del hilo con sus enlaces y sugerencias → el
+  cuadro de escritura → Enviar → Cancelar. Coincide con el orden visual.
+  Un detalle que la prueba de teclado encontró: el saludo inicial hacía
+  `scrollIntoView`, y eso mueve el punto desde el que el navegador empieza a
+  tabular, así que el primer Tab dejaba de llegar al salto de contenido. El
+  saludo ya no se desplaza —no hay nada arriba de él—.
+* **Nombres de los controles**: el cuadro de escritura se anuncia como «Escribí
+  tu consulta» (etiqueta sólo para lectores, porque a la vista alcanza el texto
+  de ayuda), y cada sugerencia y cada ficha de contexto es un botón con su
+  nombre. La ficha que se puede quitar dice «Dejar de tener en cuenta
+  Jurisdicción: …», no sólo «×».
+* **El hilo es un `log`**: `role="log"` con `aria-live="polite"`, así cada
+  mensaje nuevo se anuncia sin que haya que ir a buscarlo. El foco se mueve al
+  encabezado de la respuesta.
 * **Enlaces**: «fuente 1» (la nota al pie) y «Abrir el texto oficial (se abre en
   una pestaña nueva)», con el aviso de pestaña nueva en texto sólo para lectores.
 * **Texto al 200 %**: con `font-size: 32px` en la raíz y 360 px de ancho, el

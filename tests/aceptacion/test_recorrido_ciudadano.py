@@ -194,59 +194,77 @@ def pagina(navegador, servidor: str):
     """Una pestaña a 360 px: el ancho que el criterio 3 nombra."""
     contexto = navegador.new_context(viewport={"width": ANCHO_MINIMO, "height": 780})
     hoja = contexto.new_page()
-    hoja.goto(f"{servidor}/consulta", wait_until="networkidle")
+    hoja.goto(f"{servidor}/consulta", wait_until="domcontentloaded")
+    # El saludo aparece cuando el hilo ya cargó lo que hay publicado. No se
+    # espera «networkidle»: el navegador hace pedidos de fondo propios que a
+    # través del proxy quedan colgados y esa espera nunca termina.
+    hoja.wait_for_selector(".msj.suyo", timeout=25_000)
     yield hoja
     contexto.close()
+
+
+def _preguntar(pagina, texto: str) -> None:
+    """Escribir y mandar, como se manda un mensaje: con Enter."""
+    pagina.fill("#pregunta", texto)
+    pagina.keyboard.press("Enter")
+    pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
 
 
 # --- criterio 1: quien pregunta no pierde el control -------------------------
 
 
 def test_se_puede_preguntar_y_se_contesta(pagina) -> None:
-    pagina.fill("#pregunta", "beneficiarios del programa de apoyo")
-    pagina.click("#enviar")
-    pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
+    _preguntar(pagina, "beneficiarios del programa de apoyo")
     assert pagina.inner_text("#titulo-respuesta").strip()
+    # Queda un hilo: lo que escribió la persona y lo que contestó el sistema.
+    assert pagina.locator(".msj.mia").count() == 1
 
 
-def test_se_puede_aclarar_jurisdiccion_beneficio_y_fecha(pagina) -> None:
-    """Los tres se pueden elegir, y las opciones salen de la base."""
-    opciones = pagina.eval_on_selector_all(
-        "#jurisdiccion option", "nodos => nodos.map(n => n.value)"
-    )
-    assert "AR-C" in opciones, "el selector se llenó con lo que la API devolvió"
-    pagina.select_option("#jurisdiccion", "AR-C")
-    pagina.fill("#fecha", "2026-01-15")
-    pagina.fill("#pregunta", "prestación económica")
-    pagina.click("#enviar")
-    pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
-    assert "2026" in pagina.inner_text(".ficha-datos")
+def test_se_puede_aclarar_la_jurisdiccion_dentro_de_la_conversacion(pagina) -> None:
+    """Las aclaraciones son parte del diálogo, no un formulario arriba.
+
+    Y lo que el sistema termina teniendo en cuenta queda a la vista y se puede
+    quitar: un chat que arrastra supuestos sin mostrarlos es donde estos
+    sistemas empiezan a mentir.
+    """
+    _preguntar(pagina, "prestación económica")
+    pagina.get_by_role("button", name="Acotar a dónde vivo").click()
+    pagina.get_by_role("button", name="Ciudad Autónoma de Buenos Aires").first.click()
+    pagina.wait_for_selector("#contexto:not([hidden])", timeout=20_000)
+    assert "Jurisdicción" in pagina.inner_text("#contexto")
+
+    # Y se puede sacar: el supuesto no queda pegado a la conversación.
+    pagina.locator("#contexto-fichas button").first.click()
+    assert pagina.locator("#contexto").is_hidden()
 
 
-def test_los_hechos_se_suman_a_la_consulta_y_no_se_guardan(pagina) -> None:
-    """Aportar hechos mínimos sin que se conviertan en un registro de nadie."""
-    pagina.fill("#pregunta", "prestación")
-    pagina.fill("#hechos", "vivo en un barrio popular")
+def test_lo_que_la_persona_cuenta_no_se_guarda(pagina) -> None:
+    """Un chat hace que la gente cuente más que un formulario. No se guarda nada."""
+    pagina.fill("#pregunta", "me quedé sin casa después de un incendio")
     with pagina.expect_request("**/v1/respuestas**") as esperado:
-        pagina.click("#enviar")
+        pagina.keyboard.press("Enter")
     enviado = esperado.value.post_data_json
-    assert "vivo en un barrio popular" in enviado["consulta"]
+    assert "me quedé sin casa" in enviado["consulta"]
     pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
-    # Y no quedó guardado en el navegador.
     assert pagina.evaluate("() => Object.keys(localStorage).length") == 0
     assert pagina.evaluate("() => Object.keys(sessionStorage).length") == 0
 
 
-def test_se_puede_empezar_de_nuevo(pagina) -> None:
-    pagina.fill("#pregunta", "algo")
-    pagina.fill("#hechos", "una situación privada")
-    pagina.click("#enviar")
-    pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
+def test_la_apertura_avisa_que_no_hacen_falta_datos_personales(pagina) -> None:
+    """Lo que no se pide no se puede filtrar, y en un chat hay que decirlo."""
+    apertura = pagina.inner_text(".msj.suyo")
+    assert "no hace falta" in apertura.lower()
+    assert "documento" in apertura.lower()
+
+
+def test_se_puede_empezar_una_conversacion_nueva(pagina) -> None:
+    _preguntar(pagina, "una situación privada que conté")
     pagina.click("#limpiar")
+    pagina.wait_for_selector(".msj.suyo", timeout=10_000)
     assert pagina.input_value("#pregunta") == ""
-    assert pagina.input_value("#hechos") == ""
-    assert pagina.inner_html("#resultado").strip() == ""
-    # El foco vuelve al principio del formulario, no queda en el botón.
+    # El hilo anterior no está: queda sólo el saludo de la conversación nueva.
+    assert pagina.locator(".msj.mia").count() == 0
+    assert "una situación privada" not in pagina.inner_text("#resultado")
     assert pagina.evaluate("() => document.activeElement.id") == "pregunta"
 
 
@@ -260,14 +278,14 @@ def test_se_puede_reintentar_cuando_el_servicio_falla(pagina) -> None:
     """El error tiene que ser comprensible y no dejar a la persona sin salida."""
     pagina.route("**/v1/respuestas**", lambda ruta: ruta.fulfill(status=503, body="{}"))
     pagina.fill("#pregunta", "prestación")
-    pagina.click("#enviar")
+    pagina.keyboard.press("Enter")
     pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
     texto = pagina.inner_text("#resultado")
-    assert "no pudo" in texto.lower()
+    assert "no pude" in texto.lower()
     assert "503" not in pagina.inner_text("#titulo-respuesta")
     assert pagina.is_visible("#reintentar")
-    # Lo escrito sigue ahí: reintentar no obliga a volver a tipear.
-    assert pagina.input_value("#pregunta") == "prestación"
+    # La pregunta quedó en el hilo: reintentar no obliga a volver a escribirla.
+    assert "prestación" in pagina.inner_text(".msj.mia")
 
     pagina.unroute("**/v1/respuestas**")
     pagina.click("#reintentar")
@@ -291,9 +309,7 @@ def test_se_puede_cancelar_una_consulta_en_curso(pagina) -> None:
 
 
 def test_la_respuesta_muestra_fuentes_abribles(pagina) -> None:
-    pagina.fill("#pregunta", "beneficiarios vulnerabilidad habitacional")
-    pagina.click("#enviar")
-    pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
+    _preguntar(pagina, "beneficiarios vulnerabilidad habitacional")
     if pagina.is_visible(".s-ABSTENCION"):
         pytest.fail("el corpus publicado tiene el texto: esto debería encontrarlo")
     assert pagina.locator("ol.fuentes li").count() >= 1
@@ -305,36 +321,30 @@ def test_la_respuesta_muestra_fuentes_abribles(pagina) -> None:
 
 
 def test_la_respuesta_declara_fecha_estado_y_modo(pagina) -> None:
-    pagina.fill("#pregunta", "prestación económica")
-    pagina.click("#enviar")
-    pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
-    ficha = pagina.inner_text(".ficha-datos")
-    assert "Vale para el día" in ficha
-    assert "Estado de la información" in ficha
-    assert "Corte publicado" in ficha
+    _preguntar(pagina, "prestación económica")
+    ficha = pagina.inner_text(".ficha")
+    assert "Vale para" in ficha
+    assert "Estado" in ficha
     # Un extracto no se presenta como generación activa.
     assert pagina.locator(".sello").count() == 1
 
 
 def test_una_abstencion_se_explica_y_ofrece_una_salida(pagina) -> None:
-    pagina.fill("#pregunta", "zzzz qwrtpxk esto no existe en ninguna norma")
-    pagina.click("#enviar")
-    pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
+    _preguntar(pagina, "zzzz qwrtpxk esto no existe en ninguna norma")
     # `inner_text` devuelve el texto **renderizado**, y los encabezados de
     # sección van en versalitas por CSS: se compara sin distinguir mayúsculas.
     texto = pagina.inner_text("#resultado").casefold()
-    assert "Sin respuesta" in pagina.inner_text("#titulo-respuesta")
-    assert "qué podés hacer" in texto
+    assert "no tengo con qué" in pagina.inner_text("#titulo-respuesta").casefold()
     assert "no significa que no te corresponda" in texto
+    # Y le dice qué hay publicado, en vez de dejarla sin salida.
+    assert "qué hay publicado" in texto
 
 
 def test_siempre_hay_canal_oficial_o_se_dice_que_no_lo_hay(pagina) -> None:
-    """Nunca una pantalla que termina sin decir a dónde ir."""
-    pagina.fill("#pregunta", "prestación")
-    pagina.click("#enviar")
-    pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
+    """Nunca una respuesta que termina sin decir a dónde ir."""
+    _preguntar(pagina, "prestación")
     texto = pagina.inner_text("#resultado").casefold()
-    assert "canal oficial" in texto
+    assert "a dónde ir" in texto
     assert ("punto de atención" in texto) or pagina.locator(".canal").count() >= 1
 
 
@@ -367,9 +377,7 @@ def test_cada_control_tiene_etiqueta(pagina) -> None:
 
 
 def test_a_360_px_no_hay_desborde_horizontal(pagina) -> None:
-    pagina.fill("#pregunta", "beneficiarios vulnerabilidad habitacional")
-    pagina.click("#enviar")
-    pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
+    _preguntar(pagina, "beneficiarios vulnerabilidad habitacional")
     desborde = pagina.evaluate(
         "() => document.documentElement.scrollWidth - document.documentElement.clientWidth"
     )
@@ -378,9 +386,7 @@ def test_a_360_px_no_hay_desborde_horizontal(pagina) -> None:
 
 def test_el_foco_se_mueve_a_la_respuesta(pagina) -> None:
     """Con lector de pantalla, una respuesta que aparece fuera del foco no se anuncia."""
-    pagina.fill("#pregunta", "prestación")
-    pagina.click("#enviar")
-    pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
+    _preguntar(pagina, "prestación")
     assert pagina.evaluate("() => document.activeElement.id") == "titulo-respuesta"
 
 
@@ -391,8 +397,8 @@ def test_el_estado_se_anuncia_en_vivo(pagina) -> None:
 
 
 def test_el_recorrido_principal_se_hace_con_teclado(pagina) -> None:
-    """Sin tocar el mouse: tabular hasta el campo, escribir y mandar con Enter."""
-    pagina.keyboard.press("Tab")  # el salto al formulario
+    """Sin tocar el mouse: tabular al salto, escribir y mandar con Enter."""
+    pagina.keyboard.press("Tab")
     assert pagina.evaluate("() => document.activeElement.className") == "saltar"
     pagina.focus("#pregunta")
     pagina.keyboard.type("beneficiarios")
@@ -400,16 +406,22 @@ def test_el_recorrido_principal_se_hace_con_teclado(pagina) -> None:
     pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
 
 
+def test_shift_enter_hace_un_renglon_y_no_envia(pagina) -> None:
+    """En un chat, Enter manda; escribir dos renglones no puede ser un accidente."""
+    pagina.focus("#pregunta")
+    pagina.keyboard.type("primera línea")
+    pagina.keyboard.press("Shift+Enter")
+    pagina.keyboard.type("segunda línea")
+    assert pagina.locator(".msj.mia").count() == 0
+    assert "\n" in pagina.input_value("#pregunta")
+
+
 def test_salir_borra_lo_privado_que_estaba_a_la_vista(pagina) -> None:
     """Una pantalla compartida es el caso normal, no el raro."""
-    pagina.fill("#pregunta", "prestación")
-    pagina.fill("#hechos", "situación de salud de mi hija")
-    pagina.click("#enviar")
-    pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
+    _preguntar(pagina, "situación de salud de mi hija")
     pagina.evaluate("() => localStorage.setItem('rastro', 'algo')")
 
     pagina.click("#salir")
-    assert pagina.input_value("#hechos") == ""
     assert pagina.input_value("#pregunta") == ""
     assert pagina.inner_html("#resultado").strip() == ""
     assert "situación de salud" not in pagina.inner_text("body")
@@ -433,9 +445,7 @@ def test_el_texto_del_corpus_no_se_interpreta_como_marcado(pagina, servidor: str
             ),
         ),
     )
-    pagina.fill("#pregunta", "lo que sea")
-    pagina.click("#enviar")
-    pagina.wait_for_selector("#titulo-respuesta", timeout=20_000)
+    _preguntar(pagina, "lo que sea")
     assert pagina.evaluate("() => window.__colado === undefined")
     assert pagina.locator("#resultado img").count() == 0
     # Se muestra como texto, que es lo que es.
@@ -497,9 +507,10 @@ def test_el_contraste_alcanza_el_umbral_en_los_dos_esquemas(
     )
     hoja = contexto.new_page()
     try:
-        hoja.goto(f"{servidor}/consulta", wait_until="networkidle")
+        hoja.goto(f"{servidor}/consulta", wait_until="domcontentloaded")
+        hoja.wait_for_selector(".msj.suyo", timeout=25_000)
         hoja.fill("#pregunta", "beneficiarios vulnerabilidad habitacional")
-        hoja.click("#enviar")
+        hoja.keyboard.press("Enter")
         hoja.wait_for_selector("#titulo-respuesta", timeout=20_000)
         flojos = hoja.evaluate(MEDIR_CONTRASTE)
         assert flojos == [], f"con esquema {esquema} no llegan a {CONTRASTE_MINIMO}:1 → {flojos}"

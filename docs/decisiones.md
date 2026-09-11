@@ -2476,3 +2476,41 @@ confirmó— y lo usa como si fuera un hecho establecido. El plan ya lo acota
 —ocho turnos, contexto acotado, retención de conversaciones desactivada por
 omisión—, y cuando se construya, cada hecho arrastrado tiene que seguir siendo
 visible y editable por quien pregunta, igual que hoy lo es el campo de hechos.
+
+## D-115 · El frente es un chat, no un formulario
+
+Corrección de rumbo, y era de fondo. Lo que había construido para P-015 era un
+formulario: selects de jurisdicción, campo de fecha, textarea de «tu situación».
+Eso es exactamente la forma de la que la gente que va a usar esto está tratando
+de escapar. Un producto conversacional de acceso a derechos tiene que dejar que
+alguien escriba **lo que le está pasando**, en sus palabras, y seguir desde ahí.
+
+Ahora es un hilo: mensajes, cuadro de escritura abajo, Enter envía. El saludo
+dice qué es, qué no resuelve y qué hay publicado hoy, y ofrece tres preguntas
+sugeridas **sacadas de lo que el corte realmente cubre** —ofrecer ejemplos que el
+sistema no puede contestar es prometer algo que no tiene—.
+
+**Las aclaraciones pasan dentro del diálogo.** Después de cada respuesta hay dos
+sugerencias: «Acotar a dónde vivo» y «Ver a otra fecha». Lo que el sistema
+termina teniendo en cuenta vive en una franja visible, como fichas que se pueden
+quitar de a una. Esto no es decoración: **un chat que arrastra supuestos sin
+mostrarlos es donde estos sistemas empiezan a mentir**, y acá no hay nada
+inferido que la persona no pueda ver y borrar.
+
+**Un chat hace que la gente cuente más que un formulario.** Un campo sin casilla
+de DNI no invita a escribirlo; un cuadro abierto sí. El saludo lo dice de
+entrada —no hace falta nombre, documento, dirección exacta ni datos de otras
+personas—, el backend nunca guarda el texto y «Salir y borrar» limpia el hilo
+entero. Ya estaba probado; ahora además está dicho donde se lee.
+
+**Cada respuesta era un muro de dos mil palabras.** Cinco artículos completos, que
+en un formulario se toleran y en un hilo entierran a quien pregunta. Se muestra
+el mejor puntuado y el resto queda en un `<details>` —«Ver 4 textos más de la
+norma»—: la evidencia no se recorta, se ordena. Se usa `<details>` y no un
+acordeón propio porque ya es accesible con teclado y con lector de pantalla sin
+construir nada.
+
+**Un hallazgo de la prueba de teclado.** El saludo hacía `scrollIntoView`, y eso
+mueve el punto desde el que el navegador empieza a tabular: el primer Tab dejaba
+de llegar al salto de contenido y caía en la primera sugerencia. El saludo ya no
+se desplaza, porque no hay nada arriba de él.

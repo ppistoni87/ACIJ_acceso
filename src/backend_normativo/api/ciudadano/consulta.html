@@ -10,6 +10,7 @@
   --tinta:#1A222C; --tinta-2:#4A5563; --tinta-3:#5F666F;
   --linea:#DEDDD3; --linea-fuerte:#B4B3A6;
   --sello:#8C3125; --ok:#245840; --espera:#6E4D08; --frio:#28506B;
+  --mia:#E3E7EC;
 }
 @media (prefers-color-scheme: dark){
   :root{
@@ -17,17 +18,20 @@
     --tinta:#EDECE4; --tinta-2:#AEB6C0; --tinta-3:#8A929C;
     --linea:#2A323C; --linea-fuerte:#47515E;
     --sello:#E89486; --ok:#8AD0AB; --espera:#E6C163; --frio:#98C1DE;
+    --mia:#2B3542;
   }
 }
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%; height:100%}
 body{
-  margin:0; background:var(--papel); color:var(--tinta);
+  margin:0; background:var(--papel); color:var(--tinta); min-height:100%;
   font:16px/1.6 "Source Sans 3",-apple-system,"Segoe UI",system-ui,sans-serif;
+  display:flex; flex-direction:column;
 }
 .mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace}
 button{font:inherit;cursor:pointer}
 :focus-visible{outline:3px solid var(--frio); outline-offset:2px}
+.vr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 .saltar{
   position:absolute; left:-9999px; top:0; background:var(--papel-2); color:var(--tinta);
@@ -36,218 +40,182 @@ button{font:inherit;cursor:pointer}
 .saltar:focus{left:8px; top:8px}
 
 header.barra{
-  padding:14px 16px; border-bottom:2px solid var(--tinta); background:var(--papel-2);
-  display:flex; flex-wrap:wrap; gap:8px 16px; align-items:baseline;
+  padding:10px 16px; border-bottom:2px solid var(--tinta); background:var(--papel-2);
+  display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; position:sticky; top:0; z-index:5;
 }
-header.barra h1{font-size:1.1rem;margin:0;font-weight:600;letter-spacing:-.01em}
-header.barra p{margin:0;color:var(--tinta-2);font-size:.9rem;max-width:60ch}
-header.barra .salir{margin-left:auto}
+header.barra h1{font-size:1rem;margin:0;font-weight:600;letter-spacing:-.01em}
+header.barra .acciones{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap}
 
-main{max-width:760px; margin:0 auto; padding:18px 16px 64px}
-@media (max-width:420px){ main{padding:14px 12px 56px} }
-
-.aclaracion{
-  border-left:4px solid var(--frio); background:var(--papel-2);
-  padding:12px 14px; margin:0 0 20px; color:var(--tinta-2); font-size:.92rem;
-}
-.aclaracion b{color:var(--tinta)}
-
-fieldset{border:1px solid var(--linea); background:var(--papel-2); border-radius:3px;
-  padding:14px; margin:0 0 16px}
-legend{font-weight:600; padding:0 6px; font-size:.95rem}
-label{display:block; font-size:.86rem; color:var(--tinta-2); margin:0 0 4px; font-weight:600}
-.ayuda{font-size:.8rem; color:var(--tinta-3); font-weight:400; margin:3px 0 0}
-input[type=text],input[type=date],select,textarea{
-  width:100%; background:var(--papel); color:var(--tinta);
-  border:1px solid var(--linea-fuerte); border-radius:2px; padding:9px 10px; font:inherit;
-}
-textarea{min-height:76px; resize:vertical}
-.campo{margin:0 0 14px}
-.campo:last-child{margin-bottom:0}
-.duo{display:grid; grid-template-columns:1fr 1fr; gap:14px}
-@media (max-width:560px){ .duo{grid-template-columns:1fr} }
-
-.acciones{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px}
 .btn{
-  padding:10px 16px; border:1px solid var(--tinta); border-radius:2px;
+  padding:8px 14px; border:1px solid var(--tinta); border-radius:2px;
   background:var(--papel-3); color:var(--tinta); font-weight:600;
 }
 .btn.principal{background:var(--tinta); color:var(--papel-2)}
 .btn:disabled{opacity:.5; cursor:not-allowed}
 .btn.tenue{font-weight:400; border-color:var(--linea-fuerte); color:var(--tinta-2);
-  background:transparent}
+  background:transparent; padding:6px 11px; font-size:.88rem}
 
-.estado{
-  margin:16px 0 0; padding:12px 14px; border:1px dashed var(--linea-fuerte);
-  background:var(--papel-2); font-size:.92rem; color:var(--tinta-2);
+/* --- el hilo --- */
+main{flex:1; width:100%; max-width:760px; margin:0 auto; padding:16px 16px 8px}
+@media (max-width:420px){ main{padding:12px 12px 6px} }
+
+.hilo{display:flex; flex-direction:column; gap:16px}
+.msj{max-width:100%}
+.msj.mia{align-self:flex-end; max-width:min(560px,92%)}
+.msj.mia .burbuja{
+  background:var(--mia); border:1px solid var(--linea); border-radius:14px 14px 2px 14px;
+  padding:10px 14px; overflow-wrap:anywhere;
 }
-.estado[hidden]{display:none}
-
-.tarjeta{border:1px solid var(--linea); background:var(--papel-2); border-radius:3px;
-  padding:16px; margin:18px 0 0}
-.tarjeta h2{margin:0 0 4px; font-size:1.1rem; font-weight:600}
-/* Sin `text-transform:uppercase`: el nombre accesible que calcula el navegador
-   sale del texto renderizado, y algunos lectores de pantalla deletrean las
-   palabras en mayúsculas. El peso visual se consigue con el tamaño y el
-   espaciado, que no tocan lo que se anuncia. */
-.tarjeta h3{margin:20px 0 8px; font-size:.86rem; letter-spacing:.04em;
-  color:var(--tinta-2); font-family:"IBM Plex Mono",monospace; font-weight:600}
+.msj .quien{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.06em;
+  color:var(--tinta-3); margin:0 0 4px;
+}
+.msj.mia .quien{text-align:right}
+.msj.suyo .burbuja{
+  background:var(--papel-2); border:1px solid var(--linea); border-radius:14px 14px 14px 2px;
+  padding:14px 16px;
+}
+.msj h2{margin:0 0 4px; font-size:1.02rem; font-weight:600; scroll-margin-top:70px}
+.msj h3{
+  margin:16px 0 6px; font-size:.84rem; letter-spacing:.04em; color:var(--tinta-2);
+  font-family:"IBM Plex Mono",monospace; font-weight:600;
+}
+.msj p{margin:0 0 10px; overflow-wrap:anywhere}
+.msj p:last-child{margin-bottom:0}
+.msj hr{border:none; border-top:1px solid var(--linea); margin:14px 0}
+.norma{font-weight:600}
 
 .sello{
-  display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:.72rem;
-  letter-spacing:.06em; padding:2px 7px; border:1px solid; border-radius:2px;
-  vertical-align:middle;
+  display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:.68rem;
+  letter-spacing:.06em; padding:1px 6px; border:1px solid; border-radius:2px; vertical-align:middle;
 }
 .s-GENERADA{color:var(--ok); border-color:var(--ok)}
 .s-EXTRACTO{color:var(--frio); border-color:var(--frio)}
 .s-ABSTENCION{color:var(--espera); border-color:var(--espera)}
 .s-ERROR{color:var(--sello); border-color:var(--sello)}
 
-.ficha-datos{
-  margin:10px 0 0; padding:10px 12px; background:var(--papel-3);
-  font-size:.85rem; color:var(--tinta-2);
+.alerta{
+  border-left:4px solid var(--espera); background:var(--papel-3); padding:10px 12px;
+  margin:0 0 12px; font-size:.95rem;
 }
-.ficha-datos div{display:flex; flex-wrap:wrap; gap:2px 8px}
-.ficha-datos dt{font-weight:600; color:var(--tinta-2)}
-.ficha-datos dd{margin:0; font-family:"IBM Plex Mono",monospace; font-size:.8rem;
-  overflow-wrap:anywhere}
+.alerta b{display:block; margin-bottom:3px}
+.aviso-privacidad{border-left-color:var(--frio)}
 
-.cuerpo p{margin:0 0 12px; overflow-wrap:anywhere}
-.cuerpo hr{border:none; border-top:1px solid var(--linea); margin:16px 0}
-.cuerpo .norma{font-weight:600}
 a.nota{
-  font-family:"IBM Plex Mono",monospace; font-size:.75rem; text-decoration:none;
+  font-family:"IBM Plex Mono",monospace; font-size:.72rem; text-decoration:none;
   color:var(--frio); border:1px solid var(--frio); border-radius:2px; padding:0 4px;
   margin-left:3px; white-space:nowrap;
 }
 a.nota:hover,a.nota:focus-visible{background:var(--frio); color:var(--papel-2)}
 
-ol.fuentes{margin:0; padding:0 0 0 1.4em}
-ol.fuentes li{margin:0 0 12px; overflow-wrap:anywhere}
-ol.fuentes .norma{font-weight:600; display:block}
+ol.fuentes{margin:0; padding:0 0 0 1.4em; font-size:.95rem}
+ol.fuentes li{margin:0 0 10px; overflow-wrap:anywhere}
 ol.fuentes .unidad{color:var(--tinta-2); font-size:.9rem}
 ol.fuentes a{color:var(--frio)}
-ol.fuentes .sin-url{color:var(--tinta-3); font-size:.85rem; font-style:italic}
+ol.fuentes .sin-url{color:var(--tinta-3); font-size:.88rem; font-style:italic}
 ol.fuentes li:target{background:var(--papel-3); outline:2px solid var(--frio); outline-offset:4px}
 
-ul.avisos{margin:0; padding:0 0 0 1.2em; color:var(--tinta-2); font-size:.92rem}
-ul.avisos li{margin:0 0 6px}
+ul.avisos{margin:0; padding:0 0 0 1.2em; color:var(--tinta-2); font-size:.93rem}
+ul.avisos li{margin:0 0 5px}
+.ayuda{font-size:.85rem; color:var(--tinta-3); margin:4px 0 0}
 
-.alerta{
-  border-left:4px solid var(--espera); background:var(--papel-3); padding:12px 14px;
-  margin:0 0 14px; color:var(--tinta);
+details.mas{margin:10px 0 0; border-top:1px solid var(--linea); padding-top:8px}
+details.mas > summary{
+  cursor:pointer; font-size:.92rem; color:var(--frio); font-weight:600;
+  list-style:none; padding:4px 0;
 }
-.alerta b{display:block; margin-bottom:4px}
-.cobertura{font-size:.88rem; color:var(--tinta-2); margin:0 0 14px}
-.cobertura ul{margin:6px 0 0; padding:0 0 0 1.2em}
-.cobertura li{margin:0 0 3px}
-.canal{border:1px solid var(--linea); padding:12px; margin:0 0 10px; background:var(--papel)}
+details.mas > summary::-webkit-details-marker{display:none}
+details.mas > summary::before{content:"▸ "; }
+details.mas[open] > summary::before{content:"▾ "; }
+
+.ficha{
+  margin:12px 0 0; padding:8px 10px; background:var(--papel-3);
+  font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--tinta-2); line-height:1.7;
+}
+.ficha b{color:var(--tinta-2); font-weight:600}
+.ficha span{display:block; overflow-wrap:anywhere}
+
+.canal{border:1px solid var(--linea); padding:10px 12px; margin:0 0 8px; background:var(--papel)}
 .canal .nombre{font-weight:600; display:block}
 .canal .org,.canal .dir{color:var(--tinta-2); font-size:.9rem; display:block}
-.canal ul{margin:6px 0 0; padding:0 0 0 1.2em; font-size:.9rem}
+.canal ul{margin:5px 0 0; padding:0 0 0 1.2em; font-size:.9rem}
 
-footer{max-width:760px; margin:0 auto; padding:0 16px 40px; color:var(--tinta-3);
-  font-size:.82rem}
-footer p{margin:0 0 8px}
-.vr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* --- fichas de contexto y sugerencias --- */
+.fichas{display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 0}
+.ficha-btn{
+  border:1px solid var(--linea-fuerte); background:var(--papel); color:var(--tinta);
+  border-radius:999px; padding:5px 12px; font-size:.9rem;
+}
+.ficha-btn:hover{background:var(--papel-3)}
+.ficha-btn.puesta{border-color:var(--frio); color:var(--frio); font-weight:600}
+.ficha-btn .quitar{font-weight:700; margin-left:6px}
+
+.contexto{
+  border-top:1px solid var(--linea); background:var(--papel-2); padding:8px 16px;
+  font-size:.88rem; color:var(--tinta-2);
+}
+.contexto[hidden]{display:none}
+.contexto .fichas{margin:4px 0 0}
+
+/* --- el compositor --- */
+.compositor{
+  position:sticky; bottom:0; background:var(--papel-2); border-top:2px solid var(--tinta);
+  padding:10px 16px 12px;
+}
+.compositor .marco{max-width:760px; margin:0 auto}
+.compositor .fila{display:flex; gap:8px; align-items:flex-end}
+textarea#pregunta{
+  flex:1; min-height:46px; max-height:180px; resize:none;
+  background:var(--papel); color:var(--tinta); border:1px solid var(--linea-fuerte);
+  border-radius:3px; padding:11px 12px; font:inherit;
+}
+.estado{margin:8px 0 0; font-size:.88rem; color:var(--tinta-2)}
+.estado[hidden]{display:none}
+.pie{margin:6px 0 0; font-size:.78rem; color:var(--tinta-3)}
 </style>
 </head>
 <body>
-<a class="saltar" href="#consulta">Ir al formulario de consulta</a>
+<a class="saltar" href="#pregunta">Ir al cuadro para escribir</a>
 
 <header class="barra">
-  <div>
-    <h1>Consulta de derechos</h1>
-    <p>Qué dicen las normas publicadas, con la fuente que lo respalda.</p>
+  <h1>Consulta de derechos</h1>
+  <div class="acciones">
+    <button type="button" class="btn tenue" id="limpiar">Nueva conversación</button>
+    <button type="button" class="btn tenue" id="salir">Salir y borrar</button>
   </div>
-  <button type="button" class="btn tenue salir" id="salir">Salir y borrar</button>
 </header>
 
 <main>
-  <p class="aclaracion">
-    Esto <b>no resuelve</b> si te corresponde un beneficio, no lo otorga y no lo
-    rechaza: muestra el texto de las normas publicadas y de dónde sale, para que
-    puedas verificarlo y llevarlo al organismo. Lo que escribas queda en esta
-    pestaña y se borra al salir.
-  </p>
-
-  <form id="consulta" novalidate>
-    <fieldset>
-      <legend>Tu consulta</legend>
-
-      <div class="campo">
-        <label for="pregunta">¿Qué querés averiguar?</label>
-        <input type="text" id="pregunta" name="pregunta" autocomplete="off"
-               aria-describedby="ayuda-pregunta"
-               placeholder="Por ejemplo: requisitos de la asignación universal por hijo">
-        <p class="ayuda" id="ayuda-pregunta">Escribilo con tus palabras.</p>
-      </div>
-
-      <div class="campo">
-        <label for="hechos">Tu situación (opcional)</label>
-        <textarea id="hechos" name="hechos" aria-describedby="ayuda-hechos"
-                  placeholder="Datos que ayuden a acotar la búsqueda."></textarea>
-        <p class="ayuda" id="ayuda-hechos">
-          Se suma al texto de la búsqueda. No lo guardamos y no hace falta que pongas
-          tu nombre, tu documento ni datos de contacto.
-        </p>
-      </div>
-    </fieldset>
-
-    <fieldset>
-      <legend>Precisiones</legend>
-      <div class="duo">
-        <div class="campo">
-          <label for="jurisdiccion">Jurisdicción</label>
-          <select id="jurisdiccion" name="jurisdiccion" aria-describedby="ayuda-jurisdiccion">
-            <option value="">Todas</option>
-          </select>
-          <p class="ayuda" id="ayuda-jurisdiccion">Dónde vivís o dónde vas a tramitarlo.</p>
-        </div>
-        <div class="campo">
-          <label for="beneficio">Tipo de beneficio</label>
-          <select id="beneficio" name="beneficio">
-            <option value="">Cualquiera</option>
-          </select>
-          <p class="ayuda">Si no sabés cuál es, dejalo en «Cualquiera».</p>
-        </div>
-      </div>
-      <div class="campo">
-        <label for="fecha">Fecha de la consulta</label>
-        <input type="date" id="fecha" name="fecha" aria-describedby="ayuda-fecha">
-        <p class="ayuda" id="ayuda-fecha">
-          Para qué día vale la respuesta. Por omisión, hoy; cambiala para ver qué
-          decían las normas en otra fecha.
-        </p>
-      </div>
-    </fieldset>
-
-    <div class="acciones">
-      <button type="submit" class="btn principal" id="enviar">Consultar</button>
-      <button type="button" class="btn" id="cancelar" disabled>Cancelar</button>
-      <button type="button" class="btn" id="reintentar" hidden>Reintentar</button>
-      <button type="button" class="btn tenue" id="limpiar">Empezar de nuevo</button>
-    </div>
-  </form>
-
-  <p class="estado" id="estado" role="status" aria-live="polite" hidden></p>
-
-  <div id="resultado" aria-live="polite"></div>
+  <div class="hilo" id="resultado" role="log" aria-live="polite" aria-label="Conversación"></div>
 </main>
 
-<footer>
-  <p>
-    Las respuestas salen de un corte publicado del corpus. Si una norma cambió
-    después de ese corte, la respuesta no lo sabe: la fecha del corte se muestra
-    con cada respuesta.
-  </p>
-  <p id="pie-version" class="mono"></p>
-</footer>
+<div class="contexto" id="contexto" hidden>
+  <span id="contexto-titulo">Lo que estoy teniendo en cuenta:</span>
+  <div class="fichas" id="contexto-fichas"></div>
+</div>
+
+<form class="compositor" id="consulta" novalidate>
+  <div class="marco">
+    <div class="fila">
+      <label class="vr" for="pregunta">Escribí tu consulta</label>
+      <textarea id="pregunta" name="pregunta" rows="1" autocomplete="off"
+                placeholder="Escribí lo que te está pasando…"
+                aria-describedby="pie-compositor"></textarea>
+      <button type="submit" class="btn principal" id="enviar">Enviar</button>
+      <button type="button" class="btn" id="cancelar" disabled>Cancelar</button>
+      <button type="button" class="btn" id="reintentar" hidden>Reintentar</button>
+    </div>
+    <p class="estado" id="estado" role="status" aria-live="polite" hidden></p>
+    <p class="pie" id="pie-compositor">
+      Enter envía · Shift+Enter hace un renglón nuevo. No hace falta tu nombre ni tu documento.
+      <span id="pie-version" class="mono"></span>
+    </p>
+  </div>
+</form>
 
 <script>
 "use strict";
 
-// --- utilidades ------------------------------------------------------------
 // Todo lo que viene de la API se escapa antes de entrar al DOM. Es texto
 // publicado, sí, pero es texto de terceros: se trata como dato, nunca como
 // marcado ni como instrucción.
@@ -258,8 +226,8 @@ function esc(valor){
 }
 function $(id){ return document.getElementById(id); }
 
-// Solo se abren enlaces a http(s). Un `javascript:` en un campo de la base no
-// se convierte en un enlace ejecutable por pasar por acá.
+// Sólo se abren enlaces http(s). Un `javascript:` guardado en la base no se
+// convierte en un enlace ejecutable por pasar por acá.
 function urlSegura(url){
   if(!url) return null;
   try{
@@ -282,14 +250,21 @@ const ESTADOS = {
   NO_PUBLICABLE: "Todavía no hay corte publicado"
 };
 const MODOS = {
-  GENERADA: ["Respuesta redactada", "Un modelo redactó esta explicación y cada afirmación quedó atada a una cita verificada."],
-  EXTRACTO: ["Texto de las normas, sin redactar", "No hay redacción automática disponible, así que se muestra el texto publicado tal como está. Es más incómodo de leer y es exactamente lo que dice la norma."],
-  ABSTENCION: ["Sin respuesta", "El sistema no encontró texto publicado que sostenga una respuesta. Que no haya respuesta no significa que no te corresponda."]
+  GENERADA: ["Esto dicen las normas", "Un modelo redactó esta explicación y cada afirmación quedó atada a una cita verificada."],
+  EXTRACTO: ["Esto dicen las normas, sin redactar", "No hay redacción automática disponible, así que te muestro el texto publicado tal como está. Es más incómodo de leer y es exactamente lo que dice la norma."],
+  ABSTENCION: ["No tengo con qué contestarte esto", "No encontré texto publicado que sostenga una respuesta. Que no haya respuesta no significa que no te corresponda."]
 };
 
-// --- estado de la pantalla --------------------------------------------------
+// --- estado de la conversación ---------------------------------------------
 let peticion = null;        // AbortController de la consulta en curso
 let ultimoEnvio = null;     // para «Reintentar»
+let nMensajes = 0;          // para que las notas al pie no se pisen entre respuestas
+let cobertura = [];         // qué normas cubre el corte publicado
+// Lo que el sistema está teniendo en cuenta. Vive a la vista y se puede quitar:
+// un chat que arrastra supuestos sin mostrarlos es donde estos sistemas empiezan
+// a mentir. Acá no hay nada inferido que la persona no pueda ver y borrar.
+const contexto = {jurisdiccion:null, jurisdiccionNombre:null, fecha:null};
+let jurisdicciones = [];
 
 function mostrarEstado(texto, ocupado){
   const nodo = $("estado");
@@ -302,43 +277,34 @@ function mostrarEstado(texto, ocupado){
 function trabajando(si){
   $("enviar").disabled = si;
   $("cancelar").disabled = !si;
-  $("enviar").textContent = si ? "Consultando…" : "Consultar";
+  $("pregunta").readOnly = si;
 }
 
-// --- vocabularios -----------------------------------------------------------
-async function cargarVocabularios(){
-  try{
-    const r = await fetch("/v1/vocabularios", {headers:{"Accept":"application/json"}});
-    if(!r.ok) throw new Error("HTTP " + r.status);
-    const cuerpo = await r.json();
-    const datos = cuerpo.data || {};
-    const selJ = $("jurisdiccion");
-    (datos.jurisdicciones || []).forEach(function(j){
-      const op = document.createElement("option");
-      op.value = j.id;
-      op.textContent = j.nombre + (j.nivel ? " (" + j.nivel.toLowerCase().replace(/_/g," ") + ")" : "");
-      selJ.appendChild(op);
-    });
-    const selB = $("beneficio");
-    (datos.lineas_de_beneficio || []).forEach(function(l){
-      const op = document.createElement("option");
-      op.value = l;
-      op.textContent = l.toLowerCase().replace(/_/g," ");
-      selB.appendChild(op);
-    });
-    $("pie-version").textContent = "schema " + (cuerpo.schema_version || "?");
-  }catch(_){
-    // Los selectores quedan con su opción neutra: se puede consultar igual.
-    // Un catálogo que no cargó no es motivo para no dejar preguntar.
-    $("jurisdiccion").insertAdjacentHTML("afterend",
-      '<p class="ayuda">No se pudo cargar la lista de jurisdicciones. Podés consultar sin filtrar.</p>');
-  }
+// --- mensajes ---------------------------------------------------------------
+function agregarMensaje(clase, quien, html, foco, desplazar){
+  nMensajes += 1;
+  const nodo = document.createElement("article");
+  nodo.className = "msj " + clase;
+  nodo.id = "msj-" + nMensajes;
+  nodo.innerHTML = '<p class="quien">' + esc(quien) + '</p><div class="burbuja">' + html + "</div>";
+  $("resultado").appendChild(nodo);
+  const cabeza = nodo.querySelector("h2");
+  if(foco && cabeza){ cabeza.focus(); }
+  // El saludo no se desplaza: no hay nada arriba de él, y `scrollIntoView`
+  // mueve el punto desde el que el navegador empieza a tabular. Con eso, el
+  // primer Tab de la página dejaba de llegar al salto de contenido y caía en la
+  // primera sugerencia. Lo encontró la prueba de teclado.
+  if(desplazar !== false){ nodo.scrollIntoView({block:"nearest", behavior:"smooth"}); }
+  return nodo;
 }
 
-// --- render -----------------------------------------------------------------
-// El texto trae las citas como [[chunk:uuid]]. Se cambian por una nota
-// numerada que lleva a la fuente: un uuid no lo verifica nadie.
-function conNotas(texto, indicePorChunk){
+function mensajeMio(texto){
+  agregarMensaje("mia", "Vos", "<p>" + esc(texto) + "</p>", false);
+}
+
+// El texto trae las citas como [[chunk:uuid]]. Se cambian por una nota numerada
+// que lleva a la fuente: un uuid no lo verifica nadie.
+function conNotas(texto, indicePorChunk, marca){
   const partes = esc(texto).split(/\[\[chunk:([0-9a-fA-F-]{36})\]\]/g);
   let salida = "";
   for(let i = 0; i < partes.length; i++){
@@ -349,131 +315,86 @@ function conNotas(texto, indicePorChunk){
         .replace(/^---$/gm, "</p><hr><p>");
     }else{
       const n = indicePorChunk[partes[i].toLowerCase()];
-      salida += n
-        ? '<a class="nota" href="#fuente-' + n + '">fuente ' + n + '</a>'
-        : "";
+      salida += n ? '<a class="nota" href="#fuente-' + marca + "-" + n + '">fuente ' + n + "</a>" : "";
     }
   }
   return "<p>" + salida + "</p>";
 }
 
-function fichaDeDatos(cuerpo){
-  const estado = ESTADOS[cuerpo.data_status] || cuerpo.data_status || "—";
-  return '<dl class="ficha-datos">' +
-    '<div><dt>Vale para el día:</dt><dd>' + esc(fechaLegible(cuerpo.as_of)) + '</dd></div>' +
-    '<div><dt>Con la información que el sistema tenía al:</dt><dd>' +
-      esc(fechaLegible(cuerpo.known_at)) + '</dd></div>' +
-    '<div><dt>Estado de la información:</dt><dd>' + esc(estado) + '</dd></div>' +
-    '<div><dt>Corte publicado:</dt><dd>' + esc(cuerpo.release_id || "ninguno") + '</dd></div>' +
-    '</dl>';
+// En un hilo de chat, cinco artículos completos son dos mil palabras que
+// entierran a quien pregunta. Se muestra el primero —el mejor puntuado— y el
+// resto queda a un clic, sin sacarlo: la evidencia no se recorta, se ordena.
+// `<details>` y no un acordeón propio porque ya es accesible con teclado y con
+// lector de pantalla sin que haya que construirlo.
+function textoPlegado(texto, indice, marca){
+  const partes = (texto || "").split(/\n\n---\n\n/);
+  if(partes.length <= 1) return conNotas(texto, indice, marca);
+  const primero = conNotas(partes[0], indice, marca);
+  const resto = partes.slice(1).map(function(p){
+    return conNotas(p, indice, marca);
+  }).join("<hr>");
+  const cuantos = partes.length - 1;
+  return primero +
+    '<details class="mas"><summary>Ver ' + cuantos + " texto" + (cuantos > 1 ? "s" : "") +
+    " más de la norma</summary>" + resto + "</details>";
 }
 
-function bloqueDeCobertura(cobertura){
-  if(!cobertura || !cobertura.length) return "";
-  const normas = cobertura.slice(0, 8).map(function(c){
-    return "<li>" + esc(c.norma) + (c.jurisdiccion ? " · " + esc(c.jurisdiccion) : "") +
-      (c.titulo ? "<br><span class=\"ayuda\">" + esc(c.titulo) + "</span>" : "") + "</li>";
-  }).join("");
-  const resto = cobertura.length > 8
-    ? "<li>y " + (cobertura.length - 8) + " norma(s) más</li>" : "";
-  return '<div class="cobertura"><b>Lo publicado hoy cubre:</b><ul>' + normas + resto +
-    '</ul><p class="ayuda">Si tu pregunta no es sobre esto, el sistema no tiene con qué ' +
-    'contestarla, aunque igual te muestre textos parecidos.</p></div>';
-}
-
-function listaDeFuentes(fuentes){
+function listaDeFuentes(fuentes, marca){
   if(!fuentes.length) return "";
-  let html = '<h3>Fuentes</h3><ol class="fuentes">';
+  let html = '<h3>De dónde sale</h3><ol class="fuentes">';
   fuentes.forEach(function(f, i){
     const url = urlSegura(f.url_fuente);
-    html += '<li id="fuente-' + (i+1) + '">' +
-      '<span class="norma">' + esc(f.norma) + '</span>' +
-      (f.unidad ? '<span class="unidad">' + esc(f.unidad) + '</span><br>' : "") +
+    html += '<li id="fuente-' + marca + "-" + (i+1) + '">' +
+      '<span class="norma">' + esc(f.norma) + "</span>" +
+      (f.unidad ? ' <span class="unidad">' + esc(f.unidad) + "</span><br>" : "") +
       (url
         ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' +
           'Abrir el texto oficial<span class="vr"> (se abre en una pestaña nueva)</span></a>'
-        : '<span class="sin-url">Sin URL oficial registrada para esta fuente. ' +
-          'Se puede pedir el texto en el organismo.</span>') +
-      '</li>';
+        : '<span class="sin-url">Sin URL oficial registrada. Se puede pedir el texto en el ' +
+          "organismo.</span>") +
+      "</li>";
   });
   return html + "</ol>";
-}
-
-function bloqueDeCoberturaTitulada(cobertura){
-  if(!cobertura || !cobertura.length) return "";
-  return "<h3>Qué hay publicado</h3>" + bloqueDeCobertura(cobertura);
 }
 
 function listaDeAvisos(cuerpo){
   const avisos = [];
   if(cuerpo.alternativa) avisos.push(cuerpo.alternativa);
   (cuerpo.avisos || []).forEach(function(a){ avisos.push(a); });
-  if(cuerpo.modo === "EXTRACTO" && cuerpo.motivo === "RESPUESTA_RECHAZADA"){
-    avisos.push("La redacción automática no pasó los controles de cita y se descartó.");
-  }
   if(!avisos.length) return "";
   return '<h3>Qué conviene saber</h3><ul class="avisos"><li>' +
     avisos.map(esc).join("</li><li>") + "</li></ul>";
 }
 
-function render(cuerpo, canales){
-  const modo = cuerpo.modo || "ERROR";
-  const titulo = (MODOS[modo] || ["Respuesta", ""])[0];
-  const explicacionModo = (MODOS[modo] || ["", ""])[1];
+function fichaDeDatos(cuerpo){
+  return '<div class="ficha">' +
+    "<span><b>Vale para:</b> " + esc(fechaLegible(cuerpo.as_of)) + "</span>" +
+    "<span><b>Con lo que el sistema sabía al:</b> " + esc(fechaLegible(cuerpo.known_at)) + "</span>" +
+    "<span><b>Estado:</b> " + esc(ESTADOS[cuerpo.data_status] || cuerpo.data_status || "—") +
+    "</span></div>";
+}
 
-  const indicePorChunk = {};
-  (cuerpo.fuentes || []).forEach(function(f, i){
-    indicePorChunk[String(f.chunk_id).toLowerCase()] = i + 1;
-  });
+function bloqueCobertura(lista){
+  if(!lista || !lista.length) return "";
+  const items = lista.slice(0, 6).map(function(c){
+    return "<li>" + esc(c.norma) + (c.jurisdiccion ? " · " + esc(c.jurisdiccion) : "") +
+      (c.titulo ? '<br><span class="ayuda">' + esc(c.titulo) + "</span>" : "") + "</li>";
+  }).join("");
+  const resto = lista.length > 6 ? "<li>y " + (lista.length - 6) + " norma(s) más</li>" : "";
+  return '<h3>Qué hay publicado hoy</h3><ul class="avisos">' + items + resto + "</ul>";
+}
 
-  let html = '<section class="tarjeta" aria-labelledby="titulo-respuesta">' +
-    '<h2 id="titulo-respuesta" tabindex="-1">' + esc(titulo) +
-    // El sello es una señal visual; el título ya dice el modo en palabras, así
-    // que anunciarlo otra vez —y en jerga— sólo agrega ruido en un lector de
-    // pantalla. Queda fuera del árbol accesible, no fuera de la pantalla.
-    ' <span class="sello s-' + esc(modo) + '" aria-hidden="true">' + esc(modo) + '</span></h2>' +
-    '<p class="ayuda">' + esc(explicacionModo) + '</p>' +
-    fichaDeDatos(cuerpo);
-
-  if(modo === "ABSTENCION"){
-    html += '<h3>Qué pasó</h3><div class="cuerpo"><p>' + esc(cuerpo.texto) + '</p></div>';
-    if(cuerpo.alternativa){
-      html += '<h3>Qué podés hacer</h3><div class="cuerpo"><p>' +
-        esc(cuerpo.alternativa) + '</p></div>';
-    }
-    html += bloqueDeCoberturaTitulada(cuerpo.cobertura);
-  }else{
-    // La diferencia entre «esto contesta tu pregunta» y «esto se le parece» es
-    // justamente lo que quien consulta no puede averiguar solo. Cuando ningún
-    // texto comparte una palabra con lo que preguntó, el encabezado no puede
-    // decir que las normas dicen esto: se eligieron por parecido y punto.
-    if(cuerpo.solo_parecidos){
-      html += '<div class="alerta"><b>Esto puede no tener que ver con tu pregunta.</b>' +
-        'Ninguno de los textos de abajo coincide en palabras con lo que escribiste: se ' +
-        'eligieron sólo porque el significado se parece. Leelos antes de darlos por buenos.' +
-        '</div>';
-      html += bloqueDeCobertura(cuerpo.cobertura);
-      html += '<h3>Textos parecidos a tu pregunta</h3><div class="cuerpo">' +
-        conNotas(cuerpo.texto || "", indicePorChunk) + '</div>';
-    }else{
-      html += '<h3>Lo que dicen las normas</h3><div class="cuerpo">' +
-        conNotas(cuerpo.texto || "", indicePorChunk) + '</div>';
-    }
-    html += listaDeFuentes(cuerpo.fuentes || []);
-    if(!cuerpo.solo_parecidos){ html += bloqueDeCoberturaTitulada(cuerpo.cobertura); }
-    html += listaDeAvisos(cuerpo);
-  }
-
-  html += '<h3>Canal oficial</h3>';
+function bloqueCanales(canales){
+  let html = "<h3>A dónde ir</h3>";
   if(canales && canales.length){
-    canales.slice(0, 3).forEach(function(p){
-      html += '<div class="canal"><span class="nombre">' + esc(p.nombre) + '</span>' +
-        '<span class="org">' + esc(p.organismo || "") + '</span>' +
+    canales.slice(0, 2).forEach(function(p){
+      html += '<div class="canal"><span class="nombre">' + esc(p.nombre) + "</span>" +
+        '<span class="org">' + esc(p.organismo || "") + "</span>" +
         (p.direccion ? '<span class="dir">' + esc(p.direccion) +
-          (p.localidad ? ", " + esc(p.localidad) : "") + '</span>' : "");
+          (p.localidad ? ", " + esc(p.localidad) : "") + "</span>" : "");
       const cs = (p.canales || []).filter(function(c){ return c && (c.valor || c.tipo); });
       if(cs.length){
-        html += "<ul>" + cs.slice(0, 4).map(function(c){
+        html += "<ul>" + cs.slice(0, 3).map(function(c){
           return "<li>" + esc((c.tipo || "") + ": " + (c.valor || "")) + "</li>";
         }).join("") + "</ul>";
       }
@@ -481,25 +402,205 @@ function render(cuerpo, canales){
     });
     html += '<p class="ayuda">Lo que decide sobre tu caso es el organismo, no esta pantalla.</p>';
   }else{
-    html += '<p class="ayuda">No hay un punto de atención publicado para esa jurisdicción. ' +
-      'No quiere decir que no exista: quiere decir que este sistema todavía no lo tiene cargado.</p>';
+    html += '<p class="ayuda">No tengo un punto de atención publicado para esa jurisdicción. ' +
+      "No quiere decir que no exista: quiere decir que este sistema todavía no lo tiene cargado.</p>";
   }
-
-  html += "</section>";
-  $("resultado").innerHTML = html;
-  const h2 = $("titulo-respuesta");
-  if(h2) h2.focus();
+  return html;
 }
 
-function renderError(titulo, detalle, reintentable){
-  $("resultado").innerHTML =
-    '<section class="tarjeta" aria-labelledby="titulo-respuesta">' +
+function responderEnElHilo(cuerpo, canales){
+  const modo = cuerpo.modo || "ERROR";
+  const marca = nMensajes + 1;
+  const titulo = (MODOS[modo] || ["Respuesta", ""])[0];
+  const explicacion = (MODOS[modo] || ["", ""])[1];
+
+  const indice = {};
+  (cuerpo.fuentes || []).forEach(function(f, i){
+    indice[String(f.chunk_id).toLowerCase()] = i + 1;
+  });
+
+  let html = '<h2 id="titulo-respuesta" tabindex="-1">' + esc(titulo) +
+    ' <span class="sello s-' + esc(modo) + '" aria-hidden="true">' + esc(modo) + "</span></h2>" +
+    '<p class="ayuda">' + esc(explicacion) + "</p>";
+
+  if(modo === "ABSTENCION"){
+    html += "<p>" + esc(cuerpo.texto) + "</p>";
+    if(cuerpo.alternativa) html += "<p>" + esc(cuerpo.alternativa) + "</p>";
+    html += bloqueCobertura(cuerpo.cobertura);
+  }else{
+    // La diferencia entre «esto contesta tu pregunta» y «esto se le parece» es
+    // justamente lo que quien consulta no puede averiguar solo.
+    if(cuerpo.solo_parecidos){
+      html += '<div class="alerta"><b>Esto puede no tener que ver con lo que preguntaste.</b>' +
+        "Ninguno de estos textos coincide en palabras con lo que escribiste: los elegí sólo " +
+        "porque el significado se parece. Leelos antes de darlos por buenos.</div>";
+      html += bloqueCobertura(cuerpo.cobertura);
+    }
+    html += textoPlegado(cuerpo.texto || "", indice, marca);
+    html += listaDeFuentes(cuerpo.fuentes || [], marca);
+    html += listaDeAvisos(cuerpo);
+  }
+  html += bloqueCanales(canales);
+  html += fichaDeDatos(cuerpo);
+
+  const nodo = agregarMensaje("suyo", "ACIJ Acceso", html, true);
+  nodo.appendChild(sugerenciasDeSeguimiento());
+}
+
+function errorEnElHilo(titulo, detalle, reintentable){
+  agregarMensaje("suyo", "ACIJ Acceso",
     '<h2 id="titulo-respuesta" tabindex="-1">' + esc(titulo) +
-    ' <span class="sello s-ERROR" aria-hidden="true">ERROR</span></h2>' +
-    '<div class="cuerpo"><p>' + esc(detalle) + '</p></div></section>';
+    ' <span class="sello s-ERROR" aria-hidden="true">ERROR</span></h2><p>' +
+    esc(detalle) + "</p>", true);
   $("reintentar").hidden = !reintentable;
-  const h2 = $("titulo-respuesta");
-  if(h2) h2.focus();
+}
+
+// --- lo que el sistema tiene en cuenta --------------------------------------
+function pintarContexto(){
+  const fichas = $("contexto-fichas");
+  fichas.innerHTML = "";
+  const puestas = [];
+  if(contexto.jurisdiccion){
+    puestas.push(["jurisdiccion", "Jurisdicción: " + contexto.jurisdiccionNombre]);
+  }
+  if(contexto.fecha){
+    puestas.push(["fecha", "Fecha: " + fechaLegible(contexto.fecha)]);
+  }
+  $("contexto").hidden = puestas.length === 0;
+  puestas.forEach(function(par){
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "ficha-btn puesta";
+    b.innerHTML = esc(par[1]) + '<span class="quitar" aria-hidden="true">×</span>';
+    b.setAttribute("aria-label", "Dejar de tener en cuenta " + par[1]);
+    b.addEventListener("click", function(){
+      if(par[0] === "jurisdiccion"){ contexto.jurisdiccion = null; contexto.jurisdiccionNombre = null; }
+      else { contexto.fecha = null; }
+      pintarContexto();
+      mostrarEstado("Listo, ya no lo tengo en cuenta. Volvé a preguntar si querés.");
+    });
+    fichas.appendChild(b);
+  });
+}
+
+function chip(texto, alPulsar){
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "ficha-btn";
+  b.textContent = texto;
+  b.addEventListener("click", alPulsar);
+  return b;
+}
+
+function sugerenciasDeSeguimiento(){
+  const caja = document.createElement("div");
+  caja.className = "fichas";
+  if(!contexto.jurisdiccion && jurisdicciones.length){
+    caja.appendChild(chip("Acotar a dónde vivo", function(){ pedirJurisdiccion(caja); }));
+  }
+  if(!contexto.fecha){
+    caja.appendChild(chip("Ver a otra fecha", function(){ pedirFecha(caja); }));
+  }
+  return caja;
+}
+
+function pedirJurisdiccion(caja){
+  caja.innerHTML = "";
+  const titulo = document.createElement("p");
+  titulo.className = "ayuda";
+  titulo.textContent = "¿Dónde vivís o dónde vas a hacer el trámite?";
+  caja.appendChild(titulo);
+  const fichas = document.createElement("div");
+  fichas.className = "fichas";
+  jurisdicciones.slice(0, 30).forEach(function(j){
+    fichas.appendChild(chip(j.nombre, function(){
+      contexto.jurisdiccion = j.id;
+      contexto.jurisdiccionNombre = j.nombre;
+      pintarContexto();
+      if(ultimoEnvio) consultar({texto: ultimoEnvio.texto});
+    }));
+  });
+  caja.appendChild(fichas);
+  const primera = fichas.querySelector("button");
+  if(primera) primera.focus();
+}
+
+function pedirFecha(caja){
+  caja.innerHTML = "";
+  const etiqueta = document.createElement("label");
+  etiqueta.className = "ayuda";
+  etiqueta.setAttribute("for", "fecha-otra");
+  etiqueta.textContent = "¿Para qué día querés saber qué decían las normas?";
+  const campo = document.createElement("input");
+  campo.type = "date";
+  campo.id = "fecha-otra";
+  campo.addEventListener("change", function(){
+    if(!campo.value) return;
+    contexto.fecha = campo.value;
+    pintarContexto();
+    if(ultimoEnvio) consultar({texto: ultimoEnvio.texto});
+  });
+  caja.appendChild(etiqueta);
+  caja.appendChild(campo);
+  campo.focus();
+}
+
+// --- apertura ---------------------------------------------------------------
+function saludar(){
+  let html = "<h2 tabindex=\"-1\">Hola. Contame qué necesitás averiguar.</h2>" +
+    "<p>Escribilo con tus palabras, como se lo contarías a alguien. Te voy a mostrar " +
+    "<b>qué dicen las normas publicadas</b> y de dónde sale cada cosa, para que puedas " +
+    "verificarlo y llevarlo al organismo.</p>" +
+    '<div class="alerta aviso-privacidad"><b>Esto no resuelve si te corresponde.</b>' +
+    "No otorga ni rechaza nada: eso lo decide el organismo. Y no hace falta que escribas tu " +
+    "nombre, tu documento, tu dirección exacta ni datos de otras personas — no los necesito y " +
+    "no los guardo. Lo que escribas queda en esta pestaña y se borra al salir.</div>";
+  html += bloqueCobertura(cobertura);
+  const nodo = agregarMensaje("suyo", "ACIJ Acceso", html, false, false);
+  nodo.appendChild(sugerenciasDeEjemplo());
+}
+
+function sugerenciasDeEjemplo(){
+  const caja = document.createElement("div");
+  caja.className = "fichas";
+  // Las sugerencias salen de lo que el corte realmente cubre, no de una lista
+  // escrita a mano: ofrecer ejemplos que el sistema no puede contestar es
+  // prometer algo que no tiene.
+  const ejemplos = cobertura.length
+    ? ["¿Quiénes pueden recibirlo?", "¿Qué requisitos piden?", "¿De cuánto es y por cuánto tiempo?"]
+    : ["¿Qué información tenés publicada?"];
+  ejemplos.forEach(function(texto){
+    caja.appendChild(chip(texto, function(){
+      $("pregunta").value = texto;
+      enviar();
+    }));
+  });
+  return caja;
+}
+
+// --- vocabularios y cobertura ----------------------------------------------
+async function cargarVocabularios(){
+  try{
+    const r = await fetch("/v1/vocabularios", {headers:{"Accept":"application/json"}});
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    const cuerpo = await r.json();
+    jurisdicciones = (cuerpo.data || {}).jurisdicciones || [];
+    $("pie-version").textContent = "· schema " + (cuerpo.schema_version || "?");
+  }catch(_){
+    jurisdicciones = [];   // se puede preguntar igual, sin acotar
+  }
+}
+
+async function cargarCobertura(){
+  try{
+    const r = await fetch("/v1/respuestas", {
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body: JSON.stringify({consulta:"qué hay publicado", limite:1})
+    });
+    if(!r.ok) return;
+    cobertura = (await r.json()).cobertura || [];
+  }catch(_){ cobertura = []; }
 }
 
 // --- canal oficial ----------------------------------------------------------
@@ -508,25 +609,11 @@ async function buscarCanales(jurisdiccion, senal){
     const q = jurisdiccion ? "?jurisdiccion=" + encodeURIComponent(jurisdiccion) : "";
     const r = await fetch("/v1/puntos-atencion" + q, {signal: senal});
     if(!r.ok) return [];
-    const cuerpo = await r.json();
-    return cuerpo.data || [];
-  }catch(_){
-    return [];  // el canal es un agregado: que falte no invalida la respuesta
-  }
+    return (await r.json()).data || [];
+  }catch(_){ return []; }
 }
 
-// --- envío ------------------------------------------------------------------
-function armarEnvio(){
-  const pregunta = $("pregunta").value.trim();
-  const hechos = $("hechos").value.trim();
-  return {
-    consulta: hechos ? pregunta + ". " + hechos : pregunta,
-    jurisdiccion: $("jurisdiccion").value || null,
-    beneficio: $("beneficio").value || null,
-    as_of: $("fecha").value || null
-  };
-}
-
+// --- enviar -----------------------------------------------------------------
 async function consultar(envio){
   ultimoEnvio = envio;
   $("reintentar").hidden = true;
@@ -534,43 +621,43 @@ async function consultar(envio){
   trabajando(true);
   mostrarEstado("Buscando en las normas publicadas…", true);
 
-  const cuerpo = {consulta: envio.consulta, limite: 5};
-  if(envio.jurisdiccion) cuerpo.jurisdiccion = envio.jurisdiccion;
-  if(envio.beneficio) cuerpo.beneficio = envio.beneficio;
-  const ruta = "/v1/respuestas" + (envio.as_of ? "?as_of=" + encodeURIComponent(envio.as_of) : "");
+  const cuerpo = {consulta: envio.texto, limite: 5};
+  if(contexto.jurisdiccion) cuerpo.jurisdiccion = contexto.jurisdiccion;
+  const ruta = "/v1/respuestas" +
+    (contexto.fecha ? "?as_of=" + encodeURIComponent(contexto.fecha) : "");
 
   try{
     const r = await fetch(ruta, {
-      method: "POST",
-      headers: {"Content-Type": "application/json", "Accept": "application/json"},
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
       body: JSON.stringify(cuerpo),
       signal: peticion.signal
     });
     if(r.status === 422){
-      renderError("La consulta no se pudo interpretar",
-        "Revisá el texto y la fecha, y probá de nuevo.", true);
+      errorEnElHilo("No pude interpretar eso",
+        "Probá escribirlo de otra manera, un poco más corto.", true);
       mostrarEstado("");
       return;
     }
     if(!r.ok){
-      renderError("El servicio no pudo responder",
+      errorEnElHilo("No pude contestarte ahora",
         "No es que la respuesta sea que no te corresponde: el sistema no pudo contestar " +
         "(error " + r.status + "). Podés reintentar en un momento.", true);
       mostrarEstado("");
       return;
     }
     const datos = await r.json();
-    const canales = await buscarCanales(envio.jurisdiccion, peticion.signal);
+    if(datos.cobertura && datos.cobertura.length) cobertura = datos.cobertura;
+    const canales = await buscarCanales(contexto.jurisdiccion, peticion.signal);
     mostrarEstado("");
-    render(datos, canales);
+    responderEnElHilo(datos, canales);
   }catch(error){
     if(error && error.name === "AbortError"){
       mostrarEstado("Consulta cancelada. No se envió nada más.");
       return;
     }
-    renderError("No se pudo llegar al servicio",
-      "Puede ser la conexión. Lo que escribiste sigue en el formulario; podés reintentar.",
-      true);
+    errorEnElHilo("No pude llegar al servicio",
+      "Puede ser la conexión. Lo que escribiste sigue acá; podés reintentar.", true);
     mostrarEstado("");
   }finally{
     peticion = null;
@@ -578,53 +665,78 @@ async function consultar(envio){
   }
 }
 
+function enviar(){
+  const texto = $("pregunta").value.trim();
+  if(!texto){
+    mostrarEstado("Escribí qué querés averiguar para poder buscar.");
+    $("pregunta").focus();
+    return;
+  }
+  mensajeMio(texto);
+  $("pregunta").value = "";
+  ajustarAlto();
+  consultar({texto: texto});
+}
+
+function ajustarAlto(){
+  const caja = $("pregunta");
+  caja.style.height = "auto";
+  caja.style.height = Math.min(180, caja.scrollHeight) + "px";
+}
+
 // --- borrado ----------------------------------------------------------------
-// El frente ciudadano no guarda credenciales, pero sí tiene a la vista lo que
-// la persona escribió sobre su situación. Salir lo borra de verdad: campos,
-// respuesta y cualquier cosa que haya quedado en el almacenamiento del
-// navegador. Una pantalla compartida es el caso normal, no el raro.
-function borrarTodo(mensaje){
+// El frente ciudadano no guarda credenciales, pero sí tiene a la vista lo que la
+// persona contó de su situación, y en un chat eso es más que en un formulario.
+// Salir lo borra de verdad: el hilo entero, lo que quedó escrito sin enviar y
+// cualquier cosa que haya quedado en el almacenamiento del navegador. Una
+// pantalla compartida es el caso normal, no el raro.
+function borrarTodo(mensaje, saludarDeNuevo){
   if(peticion) peticion.abort();
-  $("consulta").reset();
-  $("fecha").value = new Date().toISOString().slice(0, 10);
   $("resultado").innerHTML = "";
+  $("pregunta").value = "";
+  ajustarAlto();
   $("reintentar").hidden = true;
   ultimoEnvio = null;
+  nMensajes = 0;
+  contexto.jurisdiccion = null;
+  contexto.jurisdiccionNombre = null;
+  contexto.fecha = null;
+  pintarContexto();
   try{ sessionStorage.clear(); localStorage.clear(); }catch(_){}
   mostrarEstado(mensaje || "");
+  if(saludarDeNuevo) saludar();
   $("pregunta").focus();
 }
 
 // --- arranque ---------------------------------------------------------------
-document.addEventListener("DOMContentLoaded", function(){
-  $("fecha").value = new Date().toISOString().slice(0, 10);
-  cargarVocabularios();
+document.addEventListener("DOMContentLoaded", async function(){
+  await cargarVocabularios();
+  await cargarCobertura();
+  saludar();
+  pintarContexto();
 
   $("consulta").addEventListener("submit", function(evento){
     evento.preventDefault();
-    const envio = armarEnvio();
-    if(!envio.consulta){
-      mostrarEstado("Escribí qué querés averiguar para poder buscar.");
-      $("pregunta").focus();
-      return;
+    enviar();
+  });
+
+  $("pregunta").addEventListener("input", ajustarAlto);
+  $("pregunta").addEventListener("keydown", function(evento){
+    if(evento.key === "Enter" && !evento.shiftKey){
+      evento.preventDefault();
+      enviar();
     }
-    consultar(envio);
   });
 
-  $("cancelar").addEventListener("click", function(){
-    if(peticion) peticion.abort();
-  });
-
+  $("cancelar").addEventListener("click", function(){ if(peticion) peticion.abort(); });
   $("reintentar").addEventListener("click", function(){
     if(ultimoEnvio) consultar(ultimoEnvio);
   });
-
   $("limpiar").addEventListener("click", function(){
-    borrarTodo("Se borró la consulta anterior.");
+    borrarTodo("Empezamos de nuevo.", true);
   });
-
   $("salir").addEventListener("click", function(){
-    borrarTodo("Se borró lo que habías escrito y la respuesta que estaba en pantalla.");
+    borrarTodo("Se borró la conversación y lo que habías escrito.", false);
   });
 });
 </script>
