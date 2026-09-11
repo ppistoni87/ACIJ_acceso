@@ -1655,6 +1655,27 @@ def revision_aprobar_reglas(
     typer.echo(f"{len(aprobadas)} regla(s) de {beneficio} aprobadas por {actor}.")
 
 
+@revision.command("pendientes-de-firma")
+def revision_pendientes_de_firma(
+    salida: Path = typer.Option(
+        Path("docs/revision/pendientes.md"), help="Dónde escribir el informe."
+    ),
+) -> None:
+    """Qué decisiones humanas quedan, ordenadas por dónde conviene empezar.
+
+    «5.397 afirmaciones pendientes» no es una tarea: es un número que desalienta
+    y no dice por dónde agarrarlo. Son 54 versiones, y catorce respaldan los
+    beneficios que ya tienen sus reglas firmadas.
+    """
+    from backend_normativo.calidad.pendientes_de_firma import construir
+
+    with engine_migrador().connect() as conexion:
+        contenido = construir(conexion)
+    salida.parent.mkdir(parents=True, exist_ok=True)
+    salida.write_text(contenido, encoding="utf-8")
+    typer.echo(f"Informe escrito en {salida}.")
+
+
 @revision.command("aprobar-versiones")
 def revision_aprobar_versiones(
     tipo: list[str] = typer.Option(

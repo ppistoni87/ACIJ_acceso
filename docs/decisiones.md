@@ -2052,3 +2052,36 @@ sistema **se niega** a contestar cuando no tiene con qué, que es la propiedad d
 la que depende todo lo demás: decirle a alguien que no le corresponde algo,
 cuando el dato simplemente falta, es el daño más caro que este backend puede
 hacer.
+
+## D-100 · Un número que desalienta no es una tarea
+
+Cerrado P-016 y firmadas las reglas, lo que queda son decisiones humanas y se
+informaban como dos números: «5.397 afirmaciones pendientes» y «153 versiones sin
+vigencia». Ninguno de los dos dice por dónde empezar, y el primero suena a un mes
+de trabajo.
+
+Son **54 versiones**. `bn revision aprobar-campos` se invoca por versión, así que
+la unidad de trabajo no son miles de afirmaciones sino 54 decisiones —y **14** de
+ellas respaldan los beneficios cuyas reglas ya están firmadas. Ese subconjunto es
+el que convierte trabajo en corpus servible; el resto no bloquea nada.
+
+**Consecuencia:** `bn revision pendientes-de-firma` genera el informe desde la
+base, con el comando exacto al lado de cada versión y las prioritarias primero.
+
+Dos defectos propios en el camino, los dos encontrados verificando contra la base
+en vez de confiar en la salida:
+
+- **El conteo estaba inflado.** El `LEFT JOIN` a `beneficio_normas` multiplica
+  filas: una norma con veinte beneficios colgando informaba veinte veces sus
+  afirmaciones, y el informe decía 27.120 sobre un total real de 5.397. Un
+  informe que exagera el trabajo pendiente desalienta tanto como uno que lo
+  esconde. Hay prueba que suma las tablas del informe y las compara con la base.
+- **El comando pisaba otro.** `revision pendientes` ya existía para incidencias.
+  Quedó `pendientes-de-firma`.
+
+Y una comprobación que cambió el plan: las 5.397 afirmaciones candidatas son
+**todas sobre normas**, ninguna operativa. No hay en ellas un subconjunto
+mecánico como el que permitió aprobar los canales en bloque (D-97): aprobar una
+afirmación es decir que «esta norma establece X sobre la población Y» es una
+lectura correcta. Lo mismo con las vigencias: de las 153, sólo diez tienen fecha
+de inicio cargada, y aun esas necesitan que alguien diga si la norma tiene fin.
