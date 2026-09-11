@@ -81,10 +81,10 @@ una. Si no coinciden, mandan los comandos.
 
 | | | Se regenera con |
 | --- | ---: | --- |
-| Pruebas | 1.118, sin salteos sin declarar | `pytest -q -rs` |
+| Pruebas | 1.124, sin salteos sin declarar | `pytest -q -rs` |
 | Migraciones | 15, aplicadas también en Neon | `scripts/estado_neon.py` |
 | Sondas de permisos | 23, sin discrepancia | `scripts/verificar_permisos.py` |
-| Decisiones de dominio registradas | 82 | `docs/decisiones.md` |
+| Decisiones de dominio registradas | 85 | `docs/decisiones.md` |
 | Normas en el catálogo nacional | 423.718 | `bn calidad cobertura` |
 | Beneficios curados desde el texto | 16 | `bn curacion beneficios` |
 | Reglas extraídas con su artículo | 176 | `bn revision reglas` |
@@ -104,7 +104,7 @@ Y lo que el sistema **se niega** a hacer, que es la parte que más costó:
 
 ```bash
 bash scripts/corrida_limpia.sh      # base vacía -> corpus, con reporte
-pytest -q -rs                        # 1.118 pruebas, los salteos con motivo
+pytest -q -rs                        # 1.124 pruebas, los salteos con motivo
 bn calidad fuentes                   # cada fuente contra la historia que declara
 bn calidad backlog                   # cada historia contra su evidencia en el repo
 NEON_DSN=... python scripts/estado_neon.py       # la base gestionada contra el código
