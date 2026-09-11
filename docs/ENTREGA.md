@@ -137,6 +137,8 @@ backend lo diga en vez de devolver algo parecido.
 | Pantalla de consulta ciudadana | `GET /consulta` | Va en la imagen de la API |
 | Consola de revisión de reglas | `GET /backoffice/reglas` | Va en la imagen de la API |
 | Accesibilidad del frente | `docs/reportes/accesibilidad_frente_ciudadano.md` | — |
+| Carga y fallos inducidos | `docs/reportes/carga_y_fallos.md` | `bn calidad carga` |
+| Política de datos y retención | `docs/operacion/politica_de_datos.md` | — |
 
 El diccionario se genera desde los modelos: el propósito de cada tabla es el
 docstring de su modelo, así que vive junto a su definición y no en un documento

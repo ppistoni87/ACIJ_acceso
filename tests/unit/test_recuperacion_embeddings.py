@@ -74,3 +74,42 @@ def test_los_lotes_cubren_todo_sin_repetir() -> None:
     lotes = list(en_lotes(textos, 3))
     assert [len(x) for x in lotes] == [3, 3, 3, 1]
     assert [t for lote in lotes for t in lote] == textos
+
+
+def test_el_modelo_se_carga_una_sola_vez_aunque_lleguen_juntas() -> None:
+    """Veinte consultas concurrentes no pueden cargar veinte veces 220 MB.
+
+    Con `lru_cache` pasaba: la caché guarda el resultado **después** de que la
+    función termina, así que las veinte encuentran el hueco vacío y entran las
+    veinte. Lo encontró el ensayo de carga —las peticiones a `/v1/respuestas`
+    expiraban a los treinta segundos y arrastraban al resto de las rutas—, y por
+    eso la prueba está acá y no en la historia que lo descubrió.
+    """
+    import threading
+    import time
+
+    from backend_normativo.recuperacion import embeddings
+
+    cargas = []
+
+    class _Lento:
+        def __init__(self, modelo: str, **_kwargs) -> None:
+            self.modelo = modelo
+
+        def precargar(self) -> None:
+            cargas.append(1)
+            time.sleep(0.05)
+
+    embeddings.olvidar_embebedor()
+    original = embeddings.EmbebedorFastEmbed
+    embeddings.EmbebedorFastEmbed = _Lento  # type: ignore[misc]
+    try:
+        hilos = [threading.Thread(target=embeddings.embebedor_compartido) for _ in range(20)]
+        for hilo in hilos:
+            hilo.start()
+        for hilo in hilos:
+            hilo.join(timeout=10)
+        assert len(cargas) == 1, f"se cargó {len(cargas)} veces"
+    finally:
+        embeddings.EmbebedorFastEmbed = original  # type: ignore[misc]
+        embeddings.olvidar_embebedor()

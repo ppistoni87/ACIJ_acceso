@@ -1233,6 +1233,188 @@ def calidad_rendimiento(
         typer.echo(texto)
 
 
+@calidad.command("carga")
+def calidad_carga(
+    minutos: float = typer.Option(30.0, help="Duración del ensayo."),
+    conversaciones: int = typer.Option(20, help="Conversaciones concurrentes."),
+    limite: int = typer.Option(
+        120, help="Límite de consultas por minuto del servicio durante el ensayo."
+    ),
+    salida: Path = typer.Option(
+        None, help="Archivo donde escribir el informe. Por omisión, a la salida estándar."
+    ),
+    parar_base: str = typer.Option(
+        "pg_ctlcluster 16 main stop", help="Comando para apagar la base durante el fallo."
+    ),
+    arrancar_base: str = typer.Option(
+        "pg_ctlcluster 16 main start", help="Comando para volver a encenderla."
+    ),
+) -> None:
+    """Carga sostenida y fallos inducidos de proveedor, base y fuente (P-023, criterio 3).
+
+    Levanta un servidor de verdad en su propio proceso, un proveedor de modelo
+    de mentira y una fuente de mentira, y los rompe a propósito en ventanas
+    programadas. Simular un fallo con una bandera prueba la bandera.
+    """
+    import json as _json
+    import os as _os
+    import shlex
+    import socket
+    import subprocess
+    import sys
+    import time as _time
+
+    import httpx
+    from sqlalchemy import text as _text
+
+    from backend_normativo.calidad import carga as mod
+
+    consultas = _json.loads(
+        Path("docs/calidad/consultas_conversacionales.json").read_text(encoding="utf-8")
+    )["consultas"]
+
+    with engine_migrador().connect() as conexion:
+        release = conexion.execute(
+            _text(
+                "SELECT id FROM releases WHERE estado = 'PUBLICADO' "
+                " ORDER BY publicado_en DESC LIMIT 1"
+            )
+        ).scalar_one_or_none()
+        if release is None:
+            typer.echo("No hay corte publicado: el ensayo mediría abstenciones vacías.", err=True)
+            raise typer.Exit(code=1)
+        chunks = {
+            str(fila[0])
+            for fila in conexion.execute(
+                _text("SELECT id FROM chunks WHERE release_id = :r"), {"r": release}
+            ).all()
+        }
+
+    segundos = minutos * 60.0
+    with mod.ServidorDeMentira() as proveedor, mod.ServidorDeMentira() as fuente:
+        entorno = dict(_os.environ)
+        entorno["BN_MODELO_CLAVE"] = "clave-de-ensayo-sin-valor"
+        entorno["BN_MODELO_URL"] = f"{proveedor.url}/v1/messages"
+        entorno["BN_MODELO_NOMBRE"] = "modelo-de-ensayo"
+        entorno["BN_MODELO_TIMEOUT"] = "10"
+        entorno["BN_LIMITE_CONSULTAS_POR_MINUTO"] = str(limite)
+        # El generador de carga manda un origen por conversación; el servicio lo
+        # lee porque acá el «proxy» es el propio ensayo.
+        entorno["BN_PROXIES_CONFIABLES"] = "1"
+        # El modelo se carga al arrancar y no en medio de la primera consulta.
+        entorno["BN_PRECARGAR_MODELO"] = "1"
+
+        with socket.socket() as s:
+            s.bind(("127.0.0.1", 0))
+            puerto = s.getsockname()[1]
+        proceso = subprocess.Popen(
+            [
+                sys.executable,
+                "-m",
+                "uvicorn",
+                "backend_normativo.api.app:app",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                str(puerto),
+                "--log-level",
+                "warning",
+            ],
+            env=entorno,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        base = f"http://127.0.0.1:{puerto}"
+        limite_arranque = _time.monotonic() + 60
+        while _time.monotonic() < limite_arranque:
+            try:
+                if httpx.get(f"{base}/salud", timeout=2).status_code == 200:
+                    break
+            except Exception:
+                _time.sleep(0.4)
+        else:
+            proceso.terminate()
+            typer.echo("El servidor del ensayo no llegó a contestar.", err=True)
+            raise typer.Exit(code=1)
+
+        observaciones_fuente: list[str] = []
+
+        def fallo_de_fuente() -> None:
+            observaciones_fuente.extend(mod.probar_fuente(fuente))
+
+        # Tres ventanas, repartidas para que haya carga normal antes, entre y
+        # después de cada una. Con el ensayo corto se achican solas.
+        tercio = segundos / 4
+        fallos = [
+            mod.Fallo(
+                nombre="Proveedor de modelo caído (503)",
+                desde_s=tercio,
+                duracion_s=min(60.0, tercio / 2),
+                aplicar=proveedor.romper,
+                revertir=proveedor.arreglar,
+            ),
+            mod.Fallo(
+                nombre="Fuente caída (503 transitorio y 403 de acceso limitado)",
+                desde_s=tercio * 2,
+                duracion_s=min(30.0, tercio / 2),
+                aplicar=fallo_de_fuente,
+                revertir=fuente.arreglar,
+            ),
+            mod.Fallo(
+                nombre="Base de datos apagada",
+                desde_s=tercio * 3,
+                duracion_s=min(60.0, tercio / 2),
+                aplicar=lambda: mod.apagar_base(shlex.split(parar_base)),
+                revertir=lambda: mod.encender_base(shlex.split(arrancar_base)),
+                medir_recuperacion=True,
+            ),
+        ]
+
+        try:
+            reporte = mod.correr(
+                base=base,
+                consultas=consultas,
+                conversaciones=conversaciones,
+                segundos=segundos,
+                fallos=fallos,
+                chunks_del_corte=chunks,
+                limite_configurado=limite,
+            )
+            # Si el proceso de la API murió, el servicio no se recuperó solo.
+            for fallo in reporte.fallos:
+                fallo.reinicio_necesario = proceso.poll() is not None
+        finally:
+            proceso.terminate()
+            try:
+                proceso.wait(timeout=15)
+            except subprocess.TimeoutExpired:
+                proceso.kill()
+
+    if observaciones_fuente:
+        reporte.avisos.append(
+            "Fuente caída, con el cliente de ingesta de verdad: " + " · ".join(observaciones_fuente)
+        )
+    reporte.avisos.append(
+        "El proveedor de modelo es local y contesta al instante: lo que este ensayo mide de él "
+        "es el camino de fallo y el repliegue a extracto, no la latencia de un modelo real."
+    )
+    reporte.avisos.append(
+        "La carga se genera desde la misma máquina que sirve y que hospeda la base. Los números "
+        "de latencia incluyen esa contención y no son los de un despliegue con instancias "
+        "separadas."
+    )
+
+    texto = mod.formatear(reporte)
+    if salida:
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        salida.write_text(texto, encoding="utf-8")
+        typer.echo(f"Informe escrito en {salida}")
+    else:
+        typer.echo(texto)
+    if reporte.filtraciones:
+        raise typer.Exit(code=1)
+
+
 @calidad.command("consultas")
 def calidad_consultas(
     salida: Path | None = typer.Option(None, help="Archivo donde escribir el reporte."),

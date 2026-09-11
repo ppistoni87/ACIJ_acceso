@@ -16,9 +16,9 @@ lugar, y el esquema lo obliga.
 
 from __future__ import annotations
 
-import functools
 import hashlib
 import math
+import threading
 from collections.abc import Iterable, Sequence
 from typing import Protocol
 
@@ -128,21 +128,44 @@ class EmbebedorFastEmbed:
         return self.embeber([consulta])[0]
 
 
-@functools.lru_cache(maxsize=4)
+# El modelo cargado, con su candado. No alcanza con `lru_cache`: la caché
+# guarda el resultado **después** de que la función termina, así que veinte
+# consultas que llegan juntas y encuentran el hueco vacío entran las veinte a
+# cargar doscientos veinte megas cada una. Lo encontró el ensayo de carga: con
+# veinte conversaciones concurrentes, las peticiones a `/v1/respuestas`
+# expiraban a los treinta segundos y arrastraban al resto de las rutas.
+_cargado: dict[str, EmbebedorFastEmbed | None] = {}
+_candado_carga = threading.Lock()
+
+
 def embebedor_compartido(modelo: str = MODELO_POR_OMISION) -> EmbebedorFastEmbed | None:
     """El embebedor del proceso, o `None` si el extra no está instalado.
 
     Cargar el modelo cuesta segundos y unos cientos de megas: uno por proceso,
-    no uno por consulta. Y devuelve `None` en vez de levantar excepción porque
-    quien pregunta puede contestar igual con la mitad léxica y declararlo; caerse
-    sería contestar peor que no tener el modelo.
+    no uno por consulta y **no uno por hilo**. Devuelve `None` en vez de
+    levantar excepción porque quien pregunta puede contestar igual con la mitad
+    léxica y declararlo; caerse sería contestar peor que no tener el modelo.
     """
-    embebedor = EmbebedorFastEmbed(modelo)
-    try:
-        embebedor.precargar()
-    except (RuntimeError, OSError):
-        return None
-    return embebedor
+    if modelo in _cargado:
+        return _cargado[modelo]
+    with _candado_carga:
+        # Se vuelve a mirar adentro del candado: entre el primer vistazo y
+        # tomarlo, otro hilo pudo haberlo cargado.
+        if modelo in _cargado:
+            return _cargado[modelo]
+        embebedor: EmbebedorFastEmbed | None = EmbebedorFastEmbed(modelo)
+        try:
+            embebedor.precargar()
+        except (RuntimeError, OSError):
+            embebedor = None
+        _cargado[modelo] = embebedor
+        return embebedor
+
+
+def olvidar_embebedor() -> None:
+    """Descarta el modelo cargado. La usan las pruebas."""
+    with _candado_carga:
+        _cargado.clear()
 
 
 class EmbebedorDeterminista:

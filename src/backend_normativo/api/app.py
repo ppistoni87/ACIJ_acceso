@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import pathlib
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response, status
 from fastapi.responses import HTMLResponse, JSONResponse
+from sqlalchemy.exc import OperationalError
 
 from backend_normativo import SCHEMA_VERSION, __version__
 from backend_normativo.api.contratos import CodigoError, ErrorRespuesta
@@ -31,6 +33,28 @@ las normas publicadas, con la evidencia que lo sostiene y lo que falta averiguar
 """
 
 
+VARIABLE_PRECARGA = "BN_PRECARGAR_MODELO"
+
+
+@asynccontextmanager
+async def ciclo_de_vida(_app: FastAPI):
+    """Paga el costo del modelo al arrancar, si el despliegue lo pide.
+
+    Cargarlo cuesta segundos y unos cientos de megas. Si no se hace acá lo paga
+    la primera persona que pregunta, y con varias preguntando a la vez lo pagan
+    todas. No se hace siempre porque en desarrollo y en las pruebas ese costo es
+    puro estorbo: se enciende con `BN_PRECARGAR_MODELO=1` en el despliegue, que
+    es donde importa.
+    """
+    import os
+
+    if (os.environ.get(VARIABLE_PRECARGA) or "").strip().lower() in {"1", "true", "si", "sí"}:
+        from backend_normativo.recuperacion.embeddings import embebedor_compartido
+
+        embebedor_compartido()
+    yield
+
+
 def _demasiadas(detalle: str, espera_s: float) -> JSONResponse:
     """429 con cuerpo tipado y `Retry-After`.
 
@@ -54,6 +78,7 @@ def crear_app() -> FastAPI:
         title="Backend normativo de acceso a derechos",
         version=__version__,
         description=DESCRIPCION,
+        lifespan=ciclo_de_vida,
         openapi_tags=[
             {"name": "normas", "description": "Identidad, versiones y siete campos."},
             {"name": "operativo", "description": "Beneficios, valores, plazos y atención."},
@@ -238,6 +263,28 @@ def crear_app() -> FastAPI:
         if not estado.listo:
             respuesta.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return estado.a_dict()
+
+    @app.exception_handler(OperationalError)
+    def base_inalcanzable(_solicitud: Request, _excepcion: OperationalError) -> JSONResponse:
+        """La base caída es 503, no 500.
+
+        La diferencia no es cosmética: un 500 dice «esta petición salió mal» y
+        un balanceador la vuelve a mandar a la misma instancia; un 503 con
+        `Retry-After` dice «esta instancia no puede ahora», que es lo que
+        corresponde cuando lo que falta es la base y no la consulta. El detalle
+        del fallo no viaja: diría el host, el usuario y el motor.
+        """
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content=ErrorRespuesta(
+                codigo=CodigoError.SOURCE_UNAVAILABLE,
+                detalle=(
+                    "El servicio no puede consultar el corpus en este momento. No es que la "
+                    "respuesta sea que no corresponde: es que no se pudo averiguar."
+                ),
+            ).model_dump(mode="json"),
+            headers={"Retry-After": "5"},
+        )
 
     @app.exception_handler(Exception)
     def error_no_previsto(_solicitud: Request, excepcion: Exception) -> JSONResponse:

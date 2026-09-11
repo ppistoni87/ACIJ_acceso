@@ -92,6 +92,13 @@ def servidor(base_e2e: str) -> Iterator[str]:
     entorno["BN_DATABASE_URL"] = base_e2e
     entorno.pop("BN_DATABASE_URL_API", None)
     entorno["BN_ENTORNO"] = "local"
+    # Sin límite de consultas: los veintiún casos llegan desde el mismo origen
+    # y en menos de un minuto, así que compartirían un balde y el recorrido
+    # empezaría a fallar por el cupo que gastaron los casos anteriores. Eso
+    # sería un fallo que no dice nada de la pantalla. El límite se prueba en
+    # `tests/integracion/test_limites_de_uso.py` y bajo carga real en
+    # `bn calidad carga`.
+    entorno["BN_LIMITE_CONSULTAS_POR_MINUTO"] = "0"
     proceso = subprocess.Popen(
         [
             sys.executable,
