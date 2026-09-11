@@ -2372,3 +2372,78 @@ columna que se agregue mañana con otro nombre.
 Todo quedó escrito en `docs/operacion/politica_de_datos.md`, con el archivo y la
 prueba al lado de cada afirmación. Una política de retención que vive sólo en un
 documento es una política que nadie aplica.
+
+## D-112 · La carga y los fallos, inducidos de verdad
+
+P-023 criterio 3. `bn calidad carga` levanta un servidor en su propio proceso,
+un proveedor de modelo de mentira y una fuente de mentira, y los rompe en
+ventanas programadas. Simular un fallo con una bandera prueba la bandera.
+
+Treinta minutos, veinte conversaciones concurrentes, 56.547 peticiones. Con el
+proveedor caído: **cero errores**, 589 respuestas en extracto contra 3 generadas
+dentro de la ventana —el repliegue funciona y se declara—. Con la fuente caída:
+cero errores en el camino de consulta, porque no lo toca; la ingesta registró el
+503 como transitorio con tres intentos y el 403 como acceso limitado, sin rotar
+identidad. Con la base apagada: 3.525 respuestas **503 con cuerpo tipado**, y
+volvió en 0,2 s sin reiniciar el proceso. Al origen abusivo se le rechazaron
+14.031 peticiones; a las conversaciones legítimas, **cero**. Ninguna filtración
+en 56.547 cuerpos revisados.
+
+Tres cosas del sistema que sólo aparecieron acá:
+
+**El modelo se cargaba una vez por hilo.** `lru_cache` guarda el resultado
+después de que la función termina, así que veinte consultas simultáneas
+encuentran el hueco vacío y entran las veinte a cargar 220 MB. La primera
+corrida dio trescientas peticiones en dos minutos, casi todas expiradas.
+
+**La base caída devolvía 500.** Ahora 503 con `Retry-After`: un 500 hace que un
+balanceador reintente contra la misma instancia.
+
+**El informe decía «p50 0,0 ms» durante el apagón**, porque los percentiles
+excluían los 5xx. Medido sobre todo lo que recibió respuesta, el p50 es de
+milisegundos: el servicio rechaza rápido en vez de colgarse, y para quien
+pregunta esa es la diferencia entre un «ahora no puedo» inmediato y treinta
+segundos de espera.
+
+Y dos del propio ensayo: el servidor de mentira era secuencial —lo medido era el
+servidor de mentira— y el prompt viaja dentro de un JSON con las comillas
+escapadas, así que el proveedor devolvía texto sin citas, los validadores lo
+rechazaban con razón y el camino generado no se ejercitaba nunca.
+
+## D-113 · El vecino más cercano no es la respuesta, y ahora se dice
+
+Preguntando «asignación universal por hijo» —que este corte no contiene— el
+sistema devolvía cinco párrafos de una ley de vivienda de CABA bajo el título
+**«Lo que dicen las normas»**, sin una sola advertencia. Estaba anotado en el
+informe de recuperación como cuatro sondas que «no debían devolver ninguno»; como
+nota al pie parecía menor, y en el frente ciudadano es la pantalla entera.
+
+**Tres intentos de filtrarlo, los tres medidos contra el conjunto congelado, los
+tres descartados:**
+
+| Filtro | Recall@5 | Sondas que fugan (de 4) |
+| --- | ---: | ---: |
+| sin filtro | 74,1 % | 4 |
+| piso de distancia 0,90 | 74,1 % | 4 |
+| piso de distancia 0,75 | 66,7 % | 4 |
+| piso de distancia 0,60 | 59,3 % | 2 |
+| corroboración léxica por consulta | — | 3, y silencia 7 de 27 preguntas legítimas |
+| corroboración léxica por fragmento | 59,3 % | 1 |
+
+Ni destruyendo el recall se cortan. **La causa no es el ranking**: con una sola
+ley publicada, una pregunta sobre la asignación universal por hijo está
+genuinamente cerca de un texto sobre ingresos familiares y Canasta Básica. El
+modelo no se equivoca; se equivoca la premisa de que «el vecino más cercano» sea
+«la respuesta». El resultado negativo quedó escrito en `busqueda.py` para que
+nadie lo reintente a ciegas.
+
+**El arreglo es declarar, no filtrar.** Cuando ningún fragmento servido comparte
+una palabra con la consulta, la respuesta lleva `solo_parecidos` y el frente
+cambia el encabezado a «Textos parecidos a tu pregunta» y antepone un aviso:
+«Esto puede no tener que ver con tu pregunta». No cuesta un punto de recall, y
+convierte una respuesta equivocada silenciosa en una incertidumbre visible.
+
+**Y toda respuesta dice ahora qué hay publicado.** Si alguien pregunta por la AUH
+y lo único publicado es una ley de vivienda de CABA, decirle qué cubre el corte
+es más útil que devolverle los párrafos más parecidos y callarse. El dato estaba
+en la base desde siempre; lo que faltaba era decirlo.

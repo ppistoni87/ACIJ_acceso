@@ -133,6 +133,14 @@ ol.fuentes li:target{background:var(--papel-3); outline:2px solid var(--frio); o
 ul.avisos{margin:0; padding:0 0 0 1.2em; color:var(--tinta-2); font-size:.92rem}
 ul.avisos li{margin:0 0 6px}
 
+.alerta{
+  border-left:4px solid var(--espera); background:var(--papel-3); padding:12px 14px;
+  margin:0 0 14px; color:var(--tinta);
+}
+.alerta b{display:block; margin-bottom:4px}
+.cobertura{font-size:.88rem; color:var(--tinta-2); margin:0 0 14px}
+.cobertura ul{margin:6px 0 0; padding:0 0 0 1.2em}
+.cobertura li{margin:0 0 3px}
 .canal{border:1px solid var(--linea); padding:12px; margin:0 0 10px; background:var(--papel)}
 .canal .nombre{font-weight:600; display:block}
 .canal .org,.canal .dir{color:var(--tinta-2); font-size:.9rem; display:block}
@@ -360,6 +368,19 @@ function fichaDeDatos(cuerpo){
     '</dl>';
 }
 
+function bloqueDeCobertura(cobertura){
+  if(!cobertura || !cobertura.length) return "";
+  const normas = cobertura.slice(0, 8).map(function(c){
+    return "<li>" + esc(c.norma) + (c.jurisdiccion ? " · " + esc(c.jurisdiccion) : "") +
+      (c.titulo ? "<br><span class=\"ayuda\">" + esc(c.titulo) + "</span>" : "") + "</li>";
+  }).join("");
+  const resto = cobertura.length > 8
+    ? "<li>y " + (cobertura.length - 8) + " norma(s) más</li>" : "";
+  return '<div class="cobertura"><b>Lo publicado hoy cubre:</b><ul>' + normas + resto +
+    '</ul><p class="ayuda">Si tu pregunta no es sobre esto, el sistema no tiene con qué ' +
+    'contestarla, aunque igual te muestre textos parecidos.</p></div>';
+}
+
 function listaDeFuentes(fuentes){
   if(!fuentes.length) return "";
   let html = '<h3>Fuentes</h3><ol class="fuentes">';
@@ -376,6 +397,11 @@ function listaDeFuentes(fuentes){
       '</li>';
   });
   return html + "</ol>";
+}
+
+function bloqueDeCoberturaTitulada(cobertura){
+  if(!cobertura || !cobertura.length) return "";
+  return "<h3>Qué hay publicado</h3>" + bloqueDeCobertura(cobertura);
 }
 
 function listaDeAvisos(cuerpo){
@@ -415,10 +441,26 @@ function render(cuerpo, canales){
       html += '<h3>Qué podés hacer</h3><div class="cuerpo"><p>' +
         esc(cuerpo.alternativa) + '</p></div>';
     }
+    html += bloqueDeCoberturaTitulada(cuerpo.cobertura);
   }else{
-    html += '<h3>Lo que dicen las normas</h3><div class="cuerpo">' +
-      conNotas(cuerpo.texto || "", indicePorChunk) + '</div>';
+    // La diferencia entre «esto contesta tu pregunta» y «esto se le parece» es
+    // justamente lo que quien consulta no puede averiguar solo. Cuando ningún
+    // texto comparte una palabra con lo que preguntó, el encabezado no puede
+    // decir que las normas dicen esto: se eligieron por parecido y punto.
+    if(cuerpo.solo_parecidos){
+      html += '<div class="alerta"><b>Esto puede no tener que ver con tu pregunta.</b>' +
+        'Ninguno de los textos de abajo coincide en palabras con lo que escribiste: se ' +
+        'eligieron sólo porque el significado se parece. Leelos antes de darlos por buenos.' +
+        '</div>';
+      html += bloqueDeCobertura(cuerpo.cobertura);
+      html += '<h3>Textos parecidos a tu pregunta</h3><div class="cuerpo">' +
+        conNotas(cuerpo.texto || "", indicePorChunk) + '</div>';
+    }else{
+      html += '<h3>Lo que dicen las normas</h3><div class="cuerpo">' +
+        conNotas(cuerpo.texto || "", indicePorChunk) + '</div>';
+    }
     html += listaDeFuentes(cuerpo.fuentes || []);
+    if(!cuerpo.solo_parecidos){ html += bloqueDeCoberturaTitulada(cuerpo.cobertura); }
     html += listaDeAvisos(cuerpo);
   }
 

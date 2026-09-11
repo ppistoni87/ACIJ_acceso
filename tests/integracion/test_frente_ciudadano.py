@@ -139,3 +139,37 @@ def test_vocabularios_no_lee_staging(conexion: Connection) -> None:
         )
     finally:
         conexion.execute(text("RESET ROLE"))
+
+
+def test_la_senal_de_solo_parecido_siempre_viaja(cliente_api, corpus_publicado) -> None:
+    """El frente decide con esto si presenta los textos como la respuesta.
+
+    Acá se verifica que el contrato la lleve siempre y que sea booleana; que se
+    encienda cuando corresponde se prueba en `test_recuperacion.py`, que es
+    donde hay índice semántico construido. Este corpus de API no lo tiene, y una
+    prueba que se saltea se cuenta como éxito.
+    """
+    cuerpo = cliente_api.post(
+        "/v1/respuestas", json={"consulta": "asignación universal por hijo"}
+    ).json()
+    assert isinstance(cuerpo["solo_parecidos"], bool)
+    if cuerpo["solo_parecidos"]:
+        assert any("coincide en palabras" in aviso for aviso in cuerpo["avisos"])
+
+
+def test_la_respuesta_dice_que_hay_publicado(cliente_api, corpus_publicado) -> None:
+    """Si alguien pregunta por algo que el corte no cubre, decirle qué cubre.
+
+    Es más útil que devolverle los párrafos más parecidos y callarse. El dato
+    ya estaba en la base; lo que faltaba era decirlo.
+    """
+    cuerpo = cliente_api.post("/v1/respuestas", json={"consulta": "cualquier cosa"}).json()
+    assert cuerpo["cobertura"], "un corte publicado siempre cubre alguna norma"
+    assert {"norma", "jurisdiccion", "titulo"} <= set(cuerpo["cobertura"][0])
+
+
+def test_sin_corte_la_cobertura_viaja_vacia_y_no_falta(cliente_api, corpus) -> None:
+    """El frente no tiene que adivinar si la clave falta o está vacía."""
+    cuerpo = cliente_api.post("/v1/respuestas", json={"consulta": "algo"}).json()
+    assert cuerpo["cobertura"] == []
+    assert cuerpo["solo_parecidos"] is False

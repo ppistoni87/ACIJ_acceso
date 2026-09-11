@@ -30,6 +30,23 @@ from sqlalchemy import Connection, text
 
 from backend_normativo.recuperacion.embeddings import Embebedor
 
+# Por qué NO hay un piso de distancia en la mitad semántica.
+#
+# Se intentó y se midió: la distancia coseno no separa. Contra el conjunto
+# congelado, con piso 0,90 las cuatro sondas fuera del corte seguían fugando;
+# con 0,60 seguían fugando dos y el Recall@5 se caía de 74,1 % a 59,3 %. La
+# corroboración léxica tampoco: por consulta corta tres fugas y silencia siete
+# de veintisiete preguntas legítimas; por fragmento corta tres y deja el
+# Recall@5 en 59,3 %.
+#
+# La causa no es el ranking. Con una sola ley publicada, una pregunta sobre la
+# asignación universal por hijo está **genuinamente** cerca de un texto sobre
+# ingresos familiares y Canasta Básica: el modelo no se equivoca, se equivoca la
+# premisa de que «el vecino más cercano» sea «la respuesta». Por eso el arreglo
+# no es filtrar sino declarar, y está unas líneas más abajo en `AVISO_SOLO_PARECIDOS`.
+#
+# Queda escrito acá para que nadie vuelva a intentarlo a ciegas.
+
 # k de la fusión. 60 es el valor del trabajo original de RRF; lo que hace es
 # que la diferencia entre el puesto 1 y el 2 no aplaste al resto.
 K_RRF = 60
@@ -65,6 +82,9 @@ class ResultadoBusqueda:
     modelo: str | None = None
     indice_id: uuid.UUID | None = None
     solo_lexica: bool = False
+    # Ningún fragmento servido comparte una palabra con la consulta: los eligió
+    # sólo el parecido de significado.
+    solo_parecidos: bool = False
     avisos: list[str] = dataclasses.field(default_factory=list)
 
 
@@ -108,6 +128,12 @@ FILTROS = """
 # de nadie: entra por el mismo parámetro y sale del mismo analizador.
 TSQUERY_TODAS = "plainto_tsquery('spanish', :consulta)"
 TSQUERY_ALGUNA = "replace(plainto_tsquery('spanish', :consulta)::text, '&', '|')::tsquery"
+
+AVISO_SOLO_PARECIDOS = (
+    "Ninguno de estos textos coincide en palabras con lo que preguntaste: se eligieron sólo "
+    "por parecido de significado. Puede que no tengan que ver con tu caso. Conviene leerlos "
+    "antes de darlos por pertinentes, y mirar qué cubre lo publicado."
+)
 
 AVISO_AMPLIADA = (
     "Ningún fragmento publicado contiene todas las palabras de la consulta, así que se "
@@ -315,4 +341,13 @@ def buscar(
     # fragmento— y un aviso que aparece siempre no distingue nada.
     if amplia and any(f.puesto_lexico is not None for f in resultado.fragmentos):
         resultado.avisos.append(AVISO_AMPLIADA)
+    # Cuando **ningún** fragmento servido comparte una palabra con la consulta,
+    # lo único que los eligió fue el parecido de significado, y eso no alcanza
+    # para presentarlos como la respuesta. No se descartan —se midió y
+    # descartarlos cuesta quince puntos de Recall@5— pero sí se declara, porque
+    # la diferencia entre «esto contesta tu pregunta» y «esto se le parece» es
+    # justamente lo que quien consulta no puede averiguar solo.
+    if resultado.fragmentos and all(f.encontrado_por == "semantica" for f in resultado.fragmentos):
+        resultado.solo_parecidos = True
+        resultado.avisos.append(AVISO_SOLO_PARECIDOS)
     return resultado

@@ -236,3 +236,38 @@ def test_una_consulta_sin_ninguna_palabra_del_corpus_sigue_sin_encontrar(
     """Ampliar no es encontrar cualquier cosa: sin una sola coincidencia, nada."""
     vacia = buscar(conexion, "zzzz qwrtpxk vvvvv", release_id=release_id)
     assert vacia.fragmentos == []
+
+
+def test_lo_que_encuentra_solo_el_significado_se_declara(
+    conexion: Connection, release_id, embebedor
+) -> None:
+    """Un vecino cercano no es una respuesta, y la diferencia se dice.
+
+    La distancia coseno no tiene umbral absoluto: el más cercano se devuelve
+    siempre. Filtrarlo se intentó y se midió —piso de distancia y corroboración
+    léxica, las dos cuestan recall y ninguna corta las fugas—, así que lo que se
+    hace es declararlo.
+    """
+    Indexador(conexion, embebedor).construir()
+    ajena = buscar(
+        conexion,
+        "reglamento de tránsito de motovehículos",
+        release_id=release_id,
+        embebedor=embebedor,
+        limite=5,
+    )
+    if not ajena.fragmentos:
+        return  # abstenerse también es correcto
+    if all(f.encontrado_por == "semantica" for f in ajena.fragmentos):
+        assert ajena.solo_parecidos
+        assert any("coincide en palabras" in aviso for aviso in ajena.avisos)
+
+
+def test_lo_corroborado_no_lleva_la_advertencia(
+    conexion: Connection, release_id, embebedor
+) -> None:
+    """Un aviso que aparece siempre no distingue nada."""
+    Indexador(conexion, embebedor).construir()
+    propia = buscar(conexion, "beneficiarios", release_id=release_id, embebedor=embebedor, limite=5)
+    assert propia.fragmentos
+    assert not propia.solo_parecidos

@@ -75,8 +75,24 @@ def test_la_sonda_de_vida_sigue_en_pie(cliente_sin_base) -> None:
     assert cliente_sin_base.get("/salud").status_code == 200
 
 
-def test_la_sonda_de_servicio_dice_que_no(cliente_sin_base) -> None:
-    """Es lo que un orquestador lee para dejar de mandarle tráfico."""
-    respuesta = cliente_sin_base.get("/listo")
+def test_la_sonda_de_servicio_dice_que_no(monkeypatch) -> None:
+    """Es lo que un orquestador lee para dejar de mandarle tráfico.
+
+    Esta se arma aparte porque `/listo` **no** usa la dependencia de lectura:
+    abre su propia conexión, a propósito, para poder contestar cuando la base no
+    está en vez de caerse con ella. Así que simular la caída sustituyendo la
+    dependencia no la toca —se probó, y la sonda seguía diciendo que sí—: hay
+    que hacer fallar el motor.
+    """
+    from fastapi.testclient import TestClient
+
+    from backend_normativo.api import app as modulo_app
+
+    def sin_motor():
+        raise OperationalError("connect", {}, Exception("could not connect to server"))
+
+    monkeypatch.setattr(modulo_app, "engine_api", sin_motor)
+    with TestClient(modulo_app.crear_app(), raise_server_exceptions=False) as cliente:
+        respuesta = cliente.get("/listo")
     assert respuesta.status_code == 503
     assert respuesta.json()["listo"] is False

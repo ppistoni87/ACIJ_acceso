@@ -216,6 +216,39 @@ class FuenteCitada(BaseModel):
     encontrado_por: str = "lexica"
 
 
+# Qué normas cubre cada corte. Se calcula una vez por corte y se guarda: un
+# release es inmutable, así que volver a preguntarlo en cada consulta sería
+# pagar una consulta más para obtener siempre lo mismo.
+_cobertura_por_corte: dict[str, list[dict]] = {}
+
+
+def cobertura_del_corte(conexion, release_id) -> list[dict]:
+    """Las normas que el corte publicado contiene.
+
+    Sirve para algo que el sistema sabía y no estaba diciendo: si alguien
+    pregunta por la asignación universal por hijo y lo único publicado es una
+    ley de vivienda de CABA, decirle qué hay publicado es más útil que
+    devolverle los párrafos más parecidos y callarse.
+    """
+    clave = str(release_id)
+    if clave in _cobertura_por_corte:
+        return _cobertura_por_corte[clave]
+    filas = conexion.execute(
+        text(
+            "SELECT DISTINCT n.tipo || ' ' || coalesce(n.numero, '?') || '/' || "
+            "       coalesce(n.anio::text, '?') AS norma, n.jurisdiccion_id, n.titulo "
+            "  FROM chunks c "
+            "  JOIN norma_versiones nv ON nv.registro_version_id = c.registro_version_id "
+            "  JOIN normas n ON n.id = nv.norma_id "
+            " WHERE c.release_id = :r ORDER BY 1"
+        ),
+        {"r": release_id},
+    ).all()
+    cobertura = [{"norma": fila[0], "jurisdiccion": fila[1], "titulo": fila[2]} for fila in filas]
+    _cobertura_por_corte[clave] = cobertura
+    return cobertura
+
+
 @router.post("/respuestas")
 def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depends()) -> dict:
     """Recupera y arma la respuesta, declarando con qué se armó.
@@ -245,6 +278,8 @@ def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depen
             "known_at": contexto.known_at.isoformat(),
             "data_status": DataStatus.NO_PUBLICABLE.value,
             "fuentes": [],
+            "solo_parecidos": False,
+            "cobertura": [],
             **salida.a_dict(),
         }
 
@@ -296,6 +331,11 @@ def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depen
         "data_status": estado.value,
         "fuentes": fuentes,
         "avisos": hallazgo.avisos,
+        # Ningún fragmento servido comparte una palabra con la consulta: los
+        # eligió sólo el parecido de significado. El frente lo usa para no
+        # presentarlos como la respuesta.
+        "solo_parecidos": hallazgo.solo_parecidos,
+        "cobertura": cobertura_del_corte(contexto.conexion, contexto.release_id),
         **salida.a_dict(),
     }
 
