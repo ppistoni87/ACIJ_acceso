@@ -1750,3 +1750,25 @@ Y esto es lo que la corrida limpia existe para encontrar. El número de la base 
 desarrollo no estaba mal calculado: estaba calculado sobre restos de un extractor
 viejo. Ninguna prueba lo podía ver, porque las pruebas no arrastran ese resto y
 la base de desarrollo nunca empieza de cero.
+
+## D-89 · Idempotencia y punto fijo no son lo mismo
+
+Con D-84 y D-85 aplicados, la corrida limpia mide: **cero** versiones sobre
+documentos que ya existían, en la segunda pasada y en la tercera. El
+procedimiento es idempotente: reejecutarlo no duplica nada.
+
+Lo que sigue creciendo es otra cosa. La segunda pasada sumó 31 documentos que no
+existían y la tercera otros 20, todos primera versión de su documento.
+`descubrir_hojas()` promueve hasta veinte hojas por fuente y por pasada, y cada
+hoja nueva descubre las suyas: es un recorrido a lo ancho con tope, que crece
+hasta agotar el árbol.
+
+**Consecuencia:** el runbook distingue las dos propiedades y dice que la
+población se corre **hasta que deje de crecer**, no dos veces. El informe de la
+corrida las cuenta por separado y reserva el veredicto duro para las versiones
+repetidas.
+
+Confundirlas costó varias corridas. Mientras el informe llamaba «duplicada» a
+toda versión nueva, el número que importaba —uno, el de la DPN— estaba tapado
+por treinta y uno que no eran un defecto. Separar las dos cuentas fue lo que
+dejó ver el bug de D-85.

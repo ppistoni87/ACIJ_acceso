@@ -15,8 +15,8 @@ Generado por `scripts/corrida_limpia.sh`. La base se crea y se destruye en la
 misma corrida: si algo de acá se pudiera explicar por estado previo, no habría
 estado previo del que agarrarse.
 
-- Arranque: `2026-09-10T23:02:36+00:00`
-- Cierre: `2026-09-10T23:59:48+00:00`
+- Arranque: `2026-09-11T03:32:00+00:00`
+- Cierre: `2026-09-11T04:29:41+00:00`
 - Resultado: **completa**
 - Base: `backend_normativo_limpia`
 - Fuentes que el planificador deja pendientes al cerrar: `2`
@@ -28,11 +28,11 @@ corre acá. Lo que se mide es cuánto tarda entero y con qué queda.
 
 | Paso | Duración | Última línea |
 | --- | ---: | --- |
-| migraciones | 1.3 s | INFO  [alembic.runtime.migration] Running upgrade 0014_identidad_en_la_bitacora -> 0015_… |
-| población completa | 1061.9 s | Incidencias abiertas: 46 |
-| segunda pasada (idempotencia) | 1094.8 s | Incidencias abiertas: 0 |
-| tercera pasada (punto fijo) | 1269.7 s | Incidencias abiertas: 0 |
-| planificación al cierre (en seco) | 0.7 s | actualiza cuando alguien corre el comando. |
+| migraciones | 1.4 s | INFO  [alembic.runtime.migration] Running upgrade 0014_identidad_en_la_bitacora -> 0015_… |
+| población completa | 1079.0 s | Incidencias abiertas: 46 |
+| segunda pasada (idempotencia) | 1092.5 s | Incidencias abiertas: 0 |
+| tercera pasada (punto fijo) | 1283.7 s | Incidencias abiertas: 0 |
+| planificación al cierre (en seco) | 0.6 s | actualiza cuando alguien corre el comando. |
 
 ## Controles sobre el corpus recién construido
 
@@ -55,7 +55,7 @@ pasando por un resto de una corrida anterior.
 | Capturas | 541 |
 | Unidades documentales | 1721 |
 | Beneficios curados | 16 |
-| Incidencias abiertas | 5164 |
+| Incidencias abiertas | 5165 |
 
 Las incidencias abiertas no son un fallo de la corrida: son lo que el sistema
 encontró y no resolvió solo. Una corrida limpia que no abriera ninguna estaría
@@ -83,16 +83,16 @@ algo distinto de los datos.
 | C01 | COMPLETA | 1 | 1 | 0 |  |
 | C01 | COMPLETA | 1 | 1 | 0 |  |
 | C01 | COMPLETA | 1 | 1 | 0 |  |
+| D01 | COMPLETA | 3 | 3 | 0 |  |
+| D01 | COMPLETA | 3 | 3 | 0 |  |
+| D01 | COMPLETA | 3 | 3 | 0 |  |
 | D01 | COMPLETA | 1 | 1 | 0 |  |
 | D01 | COMPLETA | 3 | 3 | 0 |  |
 | D01 | COMPLETA | 3 | 3 | 0 |  |
-| D01 | COMPLETA | 3 | 3 | 0 |  |
-| D01 | COMPLETA | 3 | 3 | 0 |  |
-| D01 | COMPLETA | 3 | 3 | 0 |  |
-| D02 | COMPLETA | 2 | 2 | 0 |  |
 | D02 | COMPLETA | 2 | 2 | 0 |  |
 | D02 | COMPLETA | 2 | 2 | 0 |  |
 | D02 | COMPLETA | 1 | 1 | 0 |  |
+| D02 | COMPLETA | 2 | 2 | 0 |  |
 | D02 | COMPLETA | 2 | 2 | 0 |  |
 | D02 | COMPLETA | 2 | 2 | 0 |  |
 | D03 | COMPLETA | 1 | 1 | 0 |  |
@@ -141,9 +141,9 @@ algo distinto de los datos.
 | F07 | COMPLETA | 1 | 1 | 0 |  |
 | F07 | COMPLETA | 1 | 1 | 0 |  |
 | F07 | COMPLETA | 1 | 1 | 0 |  |
-| F11 | COMPLETA | 2 | 2 | 0 |  |
-| F11 | COMPLETA | 2 | 2 | 0 |  |
 | F11 | COMPLETA | 1 | 1 | 0 |  |
+| F11 | COMPLETA | 2 | 2 | 0 |  |
+| F11 | COMPLETA | 2 | 2 | 0 |  |
 | F11 | COMPLETA | 2 | 2 | 0 |  |
 | F12 | COMPLETA | 1 | 1 | 0 |  |
 | F16 | COMPLETA | 2 | 2 | 0 |  |
@@ -151,13 +151,13 @@ algo distinto de los datos.
 | F16 | COMPLETA | 2 | 2 | 0 |  |
 | F16 | COMPLETA | 2 | 2 | 0 |  |
 | F17 | COMPLETA | 2 | 2 | 0 |  |
+| F17 | COMPLETA | 2 | 2 | 0 |  |
+| F17 | COMPLETA | 2 | 2 | 0 |  |
 | F17 | COMPLETA | 1 | 1 | 0 |  |
-| F17 | COMPLETA | 2 | 2 | 0 |  |
-| F17 | COMPLETA | 2 | 2 | 0 |  |
+| F18 | COMPLETA | 7 | 7 | 0 |  |
 | F18 | COMPLETA | 7 | 7 | 0 |  |
 | F18 | COMPLETA | 7 | 7 | 0 |  |
 | F18 | COMPLETA | 1 | 1 | 0 |  |
-| F18 | COMPLETA | 7 | 7 | 0 |  |
 | F19 | COMPLETA | 1 | 1 | 0 |  |
 | F20 | COMPLETA | 1 | 1 | 0 |  |
 | F23 | COMPLETA | 1 | 1 | 0 |  |
@@ -170,27 +170,27 @@ algo distinto de los datos.
 | F31 | COMPLETA | 1 | 1 | 0 |  |
 | F31 | COMPLETA | 1 | 1 | 0 |  |
 | F31 | COMPLETA | 1 | 1 | 0 |  |
-| F32 | COMPLETA | 5 | 5 | 0 |  |
 | F32 | COMPLETA | 1 | 1 | 0 |  |
+| F32 | COMPLETA | 5 | 5 | 0 |  |
 | F33 | COMPLETA | 1 | 1 | 0 |  |
 | F33 | COMPLETA | 1 | 1 | 0 |  |
 | F33 | COMPLETA | 1 | 1 | 0 |  |
 | F33 | COMPLETA | 1 | 1 | 0 |  |
 | F33 | COMPLETA | 1 | 1 | 0 |  |
 | F33 | COMPLETA | 1 | 1 | 0 |  |
-| F36 | COMPLETA | 9 | 9 | 0 |  |
-| F36 | COMPLETA | 1 | 1 | 0 |  |
 | F36 | COMPLETA | 21 | 21 | 0 |  |
+| F36 | COMPLETA | 1 | 1 | 0 |  |
+| F36 | COMPLETA | 9 | 9 | 0 |  |
 | F36 | COMPLETA | 17 | 17 | 0 |  |
 | F39 | COMPLETA | 2 | 2 | 0 |  |
 | F39 | COMPLETA | 1 | 1 | 0 |  |
 | F39 | COMPLETA | 2 | 2 | 0 |  |
 | F39 | COMPLETA | 2 | 2 | 0 |  |
 | F40 | COMPLETA | 1 | 1 | 0 |  |
-| F43 | COMPLETA | 17 | 17 | 0 |  |
-| F43 | COMPLETA | 1 | 1 | 0 |  |
 | F43 | COMPLETA | 9 | 9 | 0 |  |
+| F43 | COMPLETA | 1 | 1 | 0 |  |
 | F43 | COMPLETA | 25 | 25 | 0 |  |
+| F43 | COMPLETA | 17 | 17 | 0 |  |
 | F44 | COMPLETA | 1 | 1 | 0 |  |
 | F44 | COMPLETA | 1 | 1 | 0 |  |
 | F44 | COMPLETA | 1 | 1 | 0 |  |
@@ -219,8 +219,8 @@ algo distinto de los datos.
 | F50 | COMPLETA | 1 | 1 | 0 |  |
 | F50 | COMPLETA | 1 | 1 | 0 |  |
 | F50 | COMPLETA | 1 | 1 | 0 |  |
-| F51 | COMPLETA | 17 | 17 | 0 |  |
 | F51 | COMPLETA | 1 | 1 | 0 |  |
+| F51 | COMPLETA | 17 | 17 | 0 |  |
 | F51 | COMPLETA | 9 | 9 | 0 |  |
 | F51 | COMPLETA | 25 | 25 | 0 |  |
 | F52 | COMPLETA | 1 | 1 | 0 |  |
@@ -229,8 +229,8 @@ algo distinto de los datos.
 | F52 | COMPLETA | 1 | 1 | 0 |  |
 | F53 | COMPLETA | 12 | 12 | 0 |  |
 | F53 | COMPLETA | 1 | 1 | 0 |  |
-| F53 | COMPLETA | 12 | 12 | 0 |  |
 | F53 | COMPLETA | 8 | 8 | 0 |  |
+| F53 | COMPLETA | 12 | 12 | 0 |  |
 | F54 | COMPLETA | 1 | 1 | 0 |  |
 | F54 | COMPLETA | 1 | 1 | 0 |  |
 | F54 | COMPLETA | 1 | 1 | 0 |  |
@@ -249,8 +249,8 @@ algo distinto de los datos.
 | F64 | COMPLETA | 1 | 1 | 0 |  |
 | F64 | COMPLETA | 1 | 1 | 0 |  |
 | F66 | COMPLETA | 4 | 4 | 0 |  |
-| F66 | COMPLETA | 4 | 4 | 0 |  |
 | F66 | COMPLETA | 1 | 1 | 0 |  |
+| F66 | COMPLETA | 4 | 4 | 0 |  |
 | F66 | COMPLETA | 4 | 4 | 0 |  |
 | F67 | COMPLETA | 2 | 2 | 0 |  |
 | M01 | COMPLETA | 1 | 1 | 0 |  |
@@ -292,19 +292,25 @@ estaba. Únicamente la segunda rompe la idempotencia. Se cuentan por separado.
 | Momento | Versiones de documento |
 | --- | ---: |
 | Después de la primera pasada | 140 |
-| Después de la segunda | 172 |
-| Después de la tercera | 193 |
+| Después de la segunda | 171 |
+| Después de la tercera | 191 |
 
-> **El procedimiento no es idempotente.** La segunda pasada creó
-> 1 versión(es) sobre documentos que ya tenían una.
-> Volver a pedir lo mismo no lo cambia, así que una segunda versión del
-> mismo documento es texto duplicado o extracción no determinista, y lo
-> que el procedimiento dice de sí mismo es falso. Por fuente:
-> F44 (1).
+Ningún documento se volvió a versionar: la segunda pasada no duplicó nada.
 
-> **La tercera pasada volvió a versionar documentos existentes**
-> (1). No hay punto fijo: cada pasada reescribe lo
-> mismo, y eso es no determinismo o contenido que cambia solo.
+Aparte de eso, la segunda pasada sumó 31 documento(s)
+que no existían. No son duplicados ni versiones de nada: son páginas que la
+primera pasada no llegó a capturar. `descubrir_hojas()` promueve hasta veinte
+hojas por fuente y por pasada, y cada hoja nueva descubre las suyas, así que el
+recorrido avanza a lo ancho y con tope: crece hasta agotar el árbol.
+
+Eso no es idempotencia rota —volver a pedir lo mismo no lo cambia— pero tampoco
+es un punto fijo. Una pasada sola no deja el corpus completo, y el procedimiento
+no debería decir que sí. Lo que falta medir no es si converge, sino en cuántas.
+
+> **La tercera pasada todavía encontró 20 documento(s) nuevos**,
+> y ninguno repetido. El recorrido no converge en tres pasadas —el tope de
+> veinte hojas por fuente y por pasada lo impide— pero no duplica: hay que
+> correrlo hasta que deje de crecer y decir cuántas pasadas hicieron falta.
 
 ## Lecturas curadas que no se pudieron cargar
 
@@ -319,7 +325,7 @@ Ninguna: las 22 lecturas curadas encontraron su norma en el corpus.
 | Tipo | Cuántas |
 | --- | ---: |
 | IDENTIDAD_AMBIGUA | 4506 |
-| COBERTURA_EXTRACCION | 431 |
+| COBERTURA_EXTRACCION | 432 |
 | DATO_FALTANTE_CRITICO | 120 |
 | VIGENCIA_INDETERMINADA | 65 |
 | ACCESO_BLOQUEADO | 23 |

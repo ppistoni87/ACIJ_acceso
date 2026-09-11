@@ -276,9 +276,23 @@ catálogo y antes de importarlo no encuentra nada.
 
 El motivo de la primera pasada sola: Cada pasada descubre citas
 nuevas en las normas que trajo la anterior, así que ampliar en cada población
-hace crecer el corpus un anillo por pasada y el procedimiento deja de ser
-idempotente. La primera trae el anillo; la segunda tiene que no agregar nada, y
-eso es lo que el reporte de la corrida limpia mide.
+hace crecer el corpus un anillo por pasada. La primera trae el anillo y la
+segunda no tiene que volver a versionar lo que ya está.
+
+Conviene ser preciso sobre qué mide la corrida limpia, porque son dos cosas y
+solo una se cumple hoy:
+
+- **Idempotencia** —reejecutar no duplica—: se cumple. La segunda y la tercera
+  pasada crean **cero** versiones sobre documentos que ya existían.
+- **Punto fijo** —una pasada deja el corpus completo—: no se cumple, y no por un
+  defecto. `descubrir_hojas()` promueve hasta veinte hojas por fuente y por
+  pasada, y cada hoja nueva descubre las suyas: la segunda pasada sumó 31
+  documentos nuevos y la tercera otros 20. El recorrido avanza a lo ancho y con
+  tope, así que hay que **correrlo hasta que deje de crecer**, no dos veces.
+
+No son lo mismo y confundirlas fue un error de este proyecto durante varias
+corridas: el informe llamaba «duplicada» a toda versión nueva, incluida la
+primera de una página recién descubierta.
 
 `bn ingesta ampliar --informe docs/operacion/normas_citadas.md` deja escrito qué
 normas se trajeron y cuáles tienen lectura curada: traer una norma no es leerla, y
