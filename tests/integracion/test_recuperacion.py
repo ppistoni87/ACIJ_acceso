@@ -198,3 +198,41 @@ def test_los_vectores_de_fragmentos_que_salieron_del_corte_se_van(
     )
     segunda = indexador.construir()
     assert segunda.fragmentos == primera.fragmentos - 1
+
+
+def test_una_pregunta_en_castellano_normal_encuentra_el_articulo(
+    conexion: Connection, release_id
+) -> None:
+    """`plainto_tsquery` exige todas las palabras, y eso rompe con quien pregunta.
+
+    «beneficiarios» encontraba el artículo; «quiénes son beneficiarios» no
+    encontraba nada, porque `quiénes` normaliza a `quien`, que PostgreSQL no
+    trata como palabra vacía y que el texto legal no usa. Cuanto más natural la
+    pregunta, peor funcionaba.
+    """
+    estricta = buscar(conexion, "beneficiarios", release_id=release_id)
+    assert estricta.fragmentos, "la consulta de una sola palabra ya encontraba"
+
+    natural = buscar(conexion, "quiénes son beneficiarios del programa", release_id=release_id)
+    assert natural.fragmentos, "una pregunta entera tiene que encontrar lo mismo"
+    assert {f.chunk_id for f in estricta.fragmentos} <= {f.chunk_id for f in natural.fragmentos}
+
+
+def test_la_busqueda_ampliada_se_declara(conexion: Connection, release_id) -> None:
+    """Aflojar el criterio cambia lo que significa el resultado, así que se dice."""
+    natural = buscar(conexion, "quiénes son beneficiarios del programa", release_id=release_id)
+    assert any("cualquiera de ellas" in aviso for aviso in natural.avisos)
+
+
+def test_no_se_afloja_cuando_no_hace_falta(conexion: Connection, release_id) -> None:
+    """Mientras la consulta estricta devuelva algo, ese algo es más pertinente."""
+    estricta = buscar(conexion, "beneficiarios", release_id=release_id)
+    assert not any("cualquiera de ellas" in aviso for aviso in estricta.avisos)
+
+
+def test_una_consulta_sin_ninguna_palabra_del_corpus_sigue_sin_encontrar(
+    conexion: Connection, release_id
+) -> None:
+    """Ampliar no es encontrar cualquier cosa: sin una sola coincidencia, nada."""
+    vacia = buscar(conexion, "zzzz qwrtpxk vvvvv", release_id=release_id)
+    assert vacia.fragmentos == []

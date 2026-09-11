@@ -95,16 +95,41 @@ FILTROS = """
                AND (rv.known_hasta IS NULL OR rv.known_hasta > cast(:known_at AS timestamptz))))
 """
 
-CONSULTA = f"""
+# `plainto_tsquery` une los lexemas con AND: pide que el fragmento tenga
+# **todas** las palabras. Es la consulta correcta cuando sirve, y deja de servir
+# en cuanto alguien pregunta en castellano normal. «beneficiarios» encuentra el
+# artículo; «quiénes son beneficiarios» no encuentra nada, porque `quiénes`
+# normaliza a `quien`, que no es palabra vacía para PostgreSQL y no aparece en
+# el texto legal. Cuanto más natural la pregunta, peor funciona: exactamente al
+# revés de lo que necesita quien consulta.
+#
+# La versión amplia cambia el operador —y sólo el operador— sobre la salida ya
+# normalizada de `plainto_tsquery`. No se arma una consulta a mano con el texto
+# de nadie: entra por el mismo parámetro y sale del mismo analizador.
+TSQUERY_TODAS = "plainto_tsquery('spanish', :consulta)"
+TSQUERY_ALGUNA = "replace(plainto_tsquery('spanish', :consulta)::text, '&', '|')::tsquery"
+
+AVISO_AMPLIADA = (
+    "Ningún fragmento publicado contiene todas las palabras de la consulta, así que se "
+    "buscó por cualquiera de ellas y se ordenó por cuántas coinciden. Conviene leer las "
+    "fuentes antes de darlas por pertinentes."
+)
+
+
+def _con_tsquery(plantilla: str, expresion: str) -> str:
+    return plantilla.replace("@TSQUERY@", expresion)
+
+
+PLANTILLA_HIBRIDA = f"""
 WITH lexica AS (
     SELECT c.id AS chunk_id,
-           row_number() OVER (ORDER BY ts_rank(c.tsv, plainto_tsquery('spanish', :consulta))
+           row_number() OVER (ORDER BY ts_rank(c.tsv, @TSQUERY@)
                               DESC, c.id) AS puesto
       FROM chunks c
       JOIN registro_versiones rv ON rv.id = c.registro_version_id
       JOIN norma_versiones nv ON nv.registro_version_id = c.registro_version_id
       JOIN normas n ON n.id = nv.norma_id
-     WHERE c.tsv @@ plainto_tsquery('spanish', :consulta)
+     WHERE c.tsv @@ @TSQUERY@
        AND {FILTROS}
      LIMIT :candidatos
 ),
@@ -156,12 +181,12 @@ SELECT r.chunk_id, r.puesto_lexico, r.puesto_semantico, r.puntaje,
 # Cuando no hay índice todavía, la mitad léxica se sirve sola. Se dice, no se
 # disimula: una respuesta peor que la que el sistema puede dar tiene que
 # declararse, porque si no parece la mejor posible.
-SOLO_LEXICA = f"""
+PLANTILLA_LEXICA = f"""
 SELECT c.id AS chunk_id,
-       row_number() OVER (ORDER BY ts_rank(c.tsv, plainto_tsquery('spanish', :consulta))
+       row_number() OVER (ORDER BY ts_rank(c.tsv, @TSQUERY@)
                           DESC, c.id)::int AS puesto_lexico,
        NULL::int AS puesto_semantico,
-       ts_rank(c.tsv, plainto_tsquery('spanish', :consulta))::float AS puntaje,
+       ts_rank(c.tsv, @TSQUERY@)::float AS puntaje,
        c.texto, u.ruta, c.url_fuente AS url, n.jurisdiccion_id,
        n.tipo || ' ' || coalesce(n.numero, '?') || '/' || coalesce(n.anio::text, '?') AS norma
   FROM chunks c
@@ -170,11 +195,28 @@ SELECT c.id AS chunk_id,
   JOIN normas n ON n.id = nv.norma_id
   JOIN unidades_documentales u ON u.id = c.unidad_id
   JOIN documento_versiones dv ON dv.id = u.doc_version_id
- WHERE c.tsv @@ plainto_tsquery('spanish', :consulta)
+ WHERE c.tsv @@ @TSQUERY@
    AND {FILTROS}
  ORDER BY puntaje DESC, c.id
  LIMIT :limite
 """
+
+
+SONDA_ESTRICTA = f"""
+SELECT 1
+  FROM chunks c
+  JOIN registro_versiones rv ON rv.id = c.registro_version_id
+  JOIN norma_versiones nv ON nv.registro_version_id = c.registro_version_id
+  JOIN normas n ON n.id = nv.norma_id
+ WHERE c.tsv @@ {TSQUERY_TODAS}
+   AND {FILTROS}
+ LIMIT 1
+"""
+
+CONSULTA = _con_tsquery(PLANTILLA_HIBRIDA, TSQUERY_TODAS)
+CONSULTA_AMPLIA = _con_tsquery(PLANTILLA_HIBRIDA, TSQUERY_ALGUNA)
+SOLO_LEXICA = _con_tsquery(PLANTILLA_LEXICA, TSQUERY_TODAS)
+SOLO_LEXICA_AMPLIA = _con_tsquery(PLANTILLA_LEXICA, TSQUERY_ALGUNA)
 
 
 def indice_del_corte(
@@ -213,6 +255,14 @@ def buscar(
         "limite": limite,
     }
 
+    # ¿Hay algún fragmento que tenga **todas** las palabras, bajo estos mismos
+    # filtros? Si no lo hay, la mitad léxica busca por cualquiera de ellas. La
+    # decisión se toma antes y no reintentando cuando el resultado sale vacío:
+    # con índice semántico el resultado casi nunca sale vacío, y la mitad léxica
+    # aportaría cero a la fusión sin que nada lo dijera. Se midió: contra el
+    # conjunto congelado, la léxica sola daba Recall@5 de 0,0 %.
+    amplia = conexion.execute(text(SONDA_ESTRICTA), parametros).first() is None
+
     indice = None
     if embebedor is not None:
         resultado.modelo = embebedor.modelo
@@ -228,14 +278,22 @@ def buscar(
             if embebedor is not None
             else "Esta búsqueda fue solo léxica: no se pidió modelo de embeddings."
         )
-        filas = conexion.execute(text(SOLO_LEXICA), parametros).mappings().all()
+        filas = (
+            conexion.execute(text(SOLO_LEXICA_AMPLIA if amplia else SOLO_LEXICA), parametros)
+            .mappings()
+            .all()
+        )
     else:
         resultado.indice_id = indice[0]
         assert embebedor is not None
         parametros["indice"] = indice[0]
         parametros["vector"] = str(embebedor.embeber_consulta(consulta))
         parametros["candidatos"] = limite * FACTOR_CANDIDATOS
-        filas = conexion.execute(text(CONSULTA), parametros).mappings().all()
+        filas = (
+            conexion.execute(text(CONSULTA_AMPLIA if amplia else CONSULTA), parametros)
+            .mappings()
+            .all()
+        )
 
     resultado.fragmentos = [
         FragmentoRecuperado(
@@ -251,4 +309,10 @@ def buscar(
         )
         for fila in filas
     ]
+    # El aviso se pone sólo si la búsqueda ampliada aportó algo a lo que se va a
+    # leer. Avisar siempre que se amplió sería avisar casi siempre —en un corpus
+    # grande casi ninguna pregunta entera tiene todas sus palabras en un mismo
+    # fragmento— y un aviso que aparece siempre no distingue nada.
+    if amplia and any(f.puesto_lexico is not None for f in resultado.fragmentos):
+        resultado.avisos.append(AVISO_AMPLIADA)
     return resultado

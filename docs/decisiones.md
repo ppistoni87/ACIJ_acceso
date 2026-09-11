@@ -2261,3 +2261,48 @@ Lo que esta prueba **no** cubre: que la página se entienda usando un lector de
 pantalla de verdad. Eso es una revisión manual con una persona y está declarada
 como pendiente en `docs/reportes/accesibilidad_frente_ciudadano.md`, no dada por
 hecha.
+
+## D-109 · La mitad léxica encontraba cero, y nadie lo había mirado
+
+Apareció sacando una captura del frente ciudadano para mostrarlo: «quiénes son
+beneficiarios del programa de apoyo» daba abstención, y «beneficiarios» daba el
+artículo. La misma pregunta, en castellano normal, dejaba de funcionar.
+
+`plainto_tsquery` une los lexemas con AND: pide que un mismo fragmento tenga
+**todas** las palabras. Y `quiénes` normaliza a `quien`, que PostgreSQL no trata
+como palabra vacía en español y que el texto legal no usa. Cuanto más natural la
+pregunta, peor funcionaba —justo al revés de lo que necesita quien consulta—.
+
+Medido contra el conjunto congelado de 27 preguntas, la búsqueda léxica sola
+daba **Recall@1, @3 y @5 de 0,0 %**. Cero, en las tres. Estaba en el informe
+desde que se midió, leído como «el léxico no alcanza, por eso está el semántico»
+cuando lo que decía era que el léxico no funcionaba. En cualquier despliegue sin
+índice semántico construido —o sin el extra `rag` instalado— el sistema no
+contestaba nada a nadie.
+
+**La corrección.** Una sonda barata pregunta primero si algún fragmento tiene
+todas las palabras, con los mismos filtros. Si no lo hay, la mitad léxica busca
+por cualquiera de ellas, ordenando por `ts_rank`, que ya premia al que coincide
+en más. El operador se cambia sobre la salida ya normalizada de
+`plainto_tsquery`: no se arma una consulta a mano con el texto de nadie.
+
+Resultado: léxica sola **18,5 / 51,9 / 55,6 %**; híbrida de 33,3 a **37,0** en @1
+y de 51,9 a **66,7** en @3. Recall@5 híbrido sigue en 74,1 %: ese techo es otro
+problema —el corte se armó con la extracción vieja— y no se tapa con esto.
+
+**Por qué la sonda y no un reintento.** Reintentar cuando el resultado sale
+vacío parece más simple y es peor: con índice semántico el resultado casi nunca
+sale vacío, así que la mitad léxica habría seguido aportando cero a la fusión
+sin que nada lo dijera. La sonda decide por la mitad léxica y no por el
+resultado final.
+
+**Por qué el aviso no aparece siempre.** Aflojar el criterio cambia lo que
+significa el resultado, así que se declara. Pero sólo cuando lo ampliado llegó a
+la respuesta: en un corpus grande casi ninguna pregunta entera tiene todas sus
+palabras en un mismo fragmento, y un aviso que aparece siempre no distingue
+nada.
+
+**Lo que no cambió.** Las cuatro consultas que devuelven fragmentos del corte
+para temas que el corte no publica siguen ahí: vienen de la mitad semántica, que
+siempre entrega sus vecinos más cercanos. Es un problema distinto, ya listado en
+`docs/reportes/recuperacion.md`, y esta corrección no lo toca ni lo empeora.
