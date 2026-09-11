@@ -73,6 +73,10 @@ class RespuestaGenerada:
     alternativa: str | None = None
     proveedor: str | None = None
     veredicto: Veredicto | None = None
+    # Lo que quien opera el servicio necesita saber y quien pregunta no: que no
+    # hay proveedor configurado, o con qué error se cayó. No se pierde, se manda
+    # por otro canal.
+    nota_operativa: str | None = None
 
     def a_dict(self) -> dict:
         return {
@@ -83,16 +87,19 @@ class RespuestaGenerada:
             "alternativa": self.alternativa,
             "proveedor": self.proveedor,
             "validacion": self.veredicto.a_dict() if self.veredicto else None,
+            "nota_operativa": self.nota_operativa,
         }
 
 
+# Lo que se le dice a una persona cuando el sistema no puede contestarle. No es
+# un mensaje de error: alguien que pregunta si lo pueden desalojar no necesita
+# enterarse de cómo funciona esto por dentro, necesita saber qué hacer ahora.
 ALTERNATIVA_SIN_EVIDENCIA = (
-    "Todavía no hay texto publicado que responda esto. Se puede consultar el punto de "
-    "atención del organismo, que sí está cargado con su teléfono y su dirección."
+    "No te quedes con esto: en el organismo te pueden contestar. Abajo te digo a dónde ir."
 )
 ALTERNATIVA_RECHAZADA = (
-    "La redacción automática no pasó los controles de cita, así que se muestran los "
-    "fragmentos tal como están publicados."
+    "Intenté explicártelo con mis palabras y no me quedó bien atado a las fuentes, así que "
+    "preferí copiarte el texto tal cual está."
 )
 
 
@@ -123,8 +130,9 @@ def responder(
         return RespuestaGenerada(
             modo=ModoRespuesta.ABSTENCION,
             texto=(
-                "No hay evidencia publicada para contestar esto. No es que la respuesta sea "
-                "que no corresponde: es que el sistema no tiene con qué afirmarlo."
+                "No tengo ninguna norma publicada que hable de esto. Ojo con la diferencia: "
+                "no te estoy diciendo que no te corresponda. Te estoy diciendo que yo no "
+                "tengo con qué contestarte."
             ),
             motivo=MotivoAbstencion.SIN_EVIDENCIA,
             alternativa=ALTERNATIVA_SIN_EVIDENCIA,
@@ -137,10 +145,11 @@ def responder(
             modo=ModoRespuesta.EXTRACTO,
             texto=extractar(fragmentos),
             citas=citas,
-            alternativa=(
-                "No hay proveedor de modelo configurado, así que esto es el texto publicado "
-                "tal como está, sin redactar."
-            ),
+            # Que no haya proveedor de modelo es un dato de operación, no algo
+            # que quien pregunta pueda usar: el modo de la respuesta ya le dice,
+            # en castellano, que está leyendo el texto de la ley tal cual.
+            alternativa=None,
+            nota_operativa="No hay proveedor de modelo configurado: se sirve el extracto.",
         )
 
     try:
@@ -151,10 +160,10 @@ def responder(
             texto=extractar(fragmentos),
             citas=citas,
             proveedor=getattr(proveedor, "nombre", None),
-            alternativa=(
-                f"El proveedor de modelo no contestó ({type(error).__name__}); se muestran "
-                "los fragmentos publicados tal como están."
-            ),
+            # Ídem: el nombre de la excepción no le sirve a nadie que esté
+            # preguntando por sus derechos. Va por el canal de operación.
+            alternativa=None,
+            nota_operativa=f"El proveedor de modelo no contestó ({type(error).__name__}).",
         )
 
     veredicto = verificar(redactado, fragmentos)

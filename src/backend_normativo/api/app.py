@@ -154,8 +154,8 @@ def crear_app() -> FastAPI:
         veredicto = limitador_de_consultas().permitir(clave)
         if not veredicto.permitido:
             return _demasiadas(
-                "Se alcanzó el límite de consultas por minuto para este origen. La consulta "
-                "no se resolvió; reintentarla en unos segundos sí sirve.",
+                "Estás preguntando muy seguido y tuve que frenarte un momento. Esperá unos "
+                "segundos y probá otra vez.",
                 veredicto.espera_s,
             )
 
@@ -279,8 +279,9 @@ def crear_app() -> FastAPI:
             content=ErrorRespuesta(
                 codigo=CodigoError.SOURCE_UNAVAILABLE,
                 detalle=(
-                    "El servicio no puede consultar el corpus en este momento. No es que la "
-                    "respuesta sea que no corresponde: es que no se pudo averiguar."
+                    "Ahora mismo no puedo entrar a consultar las normas. No es que la "
+                    "respuesta sea que no: es que no pude fijarme. Probá de nuevo en un "
+                    "minuto."
                 ),
             ).model_dump(mode="json"),
             headers={"Retry-After": "5"},
@@ -294,8 +295,8 @@ def crear_app() -> FastAPI:
             content=ErrorRespuesta(
                 codigo=CodigoError.SOURCE_UNAVAILABLE,
                 detalle=(
-                    "La consulta no se pudo resolver por un fallo del servicio. "
-                    "El detalle quedó en los registros."
+                    "Algo falló de mi lado y no pude contestarte. Ya quedó anotado para que "
+                    "lo revisen. Probá de nuevo en un rato."
                 ),
             ).model_dump(mode="json"),
         )

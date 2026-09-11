@@ -116,7 +116,7 @@ def recuperar(
 
     advertencias: list[Advertencia] = [
         Advertencia(codigo=CodigoError.INSUFFICIENT_EVIDENCE, detalle=aviso)
-        for aviso in hallazgo.avisos
+        for aviso in hallazgo.avisos_de_la_persona + hallazgo.avisos_de_quien_opera
     ]
     if conflictos:
         advertencias.append(
@@ -280,6 +280,7 @@ def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depen
             "fuentes": [],
             "solo_parecidos": False,
             "cobertura": [],
+            "notas_operativas": [],
             **salida.a_dict(),
         }
 
@@ -330,7 +331,11 @@ def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depen
         "known_at": contexto.known_at.isoformat(),
         "data_status": estado.value,
         "fuentes": fuentes,
-        "avisos": hallazgo.avisos,
+        # Lo que la persona puede leer y hacer algo con ello; lo demás viaja
+        # aparte, para quien opera el servicio.
+        "avisos": hallazgo.avisos_de_la_persona,
+        "notas_operativas": hallazgo.avisos_de_quien_opera
+        + ([salida.nota_operativa] if salida.nota_operativa else []),
         # Ningún fragmento servido comparte una palabra con la consulta: los
         # eligió sólo el parecido de significado. El frente lo usa para no
         # presentarlos como la respuesta.

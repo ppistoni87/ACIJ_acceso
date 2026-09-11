@@ -76,6 +76,24 @@ class FragmentoRecuperado:
         return "lexica" if self.puesto_lexico is not None else "semantica"
 
 
+@dataclasses.dataclass(frozen=True)
+class Aviso:
+    """Algo que hay que decir sobre esta búsqueda, y a quién.
+
+    Estaban mezclados, y eso puso un comando de terminal en la pantalla de
+    alguien que pregunta si lo pueden desalojar: «se construye con
+    `bn recuperacion indexar`». Quien opera el servicio necesita saber eso;
+    quien pregunta por sus derechos, no —y el plan lo prohíbe con todas las
+    letras: «sin nombres de tablas o detalles del modelo dentro del recorrido
+    ciudadano»—.
+
+    Nada se esconde: lo que no va a la persona sigue viajando para quien opera.
+    """
+
+    texto: str
+    para_la_persona: bool = True
+
+
 @dataclasses.dataclass
 class ResultadoBusqueda:
     fragmentos: list[FragmentoRecuperado] = dataclasses.field(default_factory=list)
@@ -85,7 +103,15 @@ class ResultadoBusqueda:
     # Ningún fragmento servido comparte una palabra con la consulta: los eligió
     # sólo el parecido de significado.
     solo_parecidos: bool = False
-    avisos: list[str] = dataclasses.field(default_factory=list)
+    avisos: list[Aviso] = dataclasses.field(default_factory=list)
+
+    @property
+    def avisos_de_la_persona(self) -> list[str]:
+        return [a.texto for a in self.avisos if a.para_la_persona]
+
+    @property
+    def avisos_de_quien_opera(self) -> list[str]:
+        return [a.texto for a in self.avisos if not a.para_la_persona]
 
 
 # El SQL vive entero acá y no armado por pedazos porque las dos mitades tienen
@@ -129,16 +155,30 @@ FILTROS = """
 TSQUERY_TODAS = "plainto_tsquery('spanish', :consulta)"
 TSQUERY_ALGUNA = "replace(plainto_tsquery('spanish', :consulta)::text, '&', '|')::tsquery"
 
-AVISO_SOLO_PARECIDOS = (
-    "Ninguno de estos textos coincide en palabras con lo que preguntaste: se eligieron sólo "
-    "por parecido de significado. Puede que no tengan que ver con tu caso. Conviene leerlos "
-    "antes de darlos por pertinentes, y mirar qué cubre lo publicado."
+AVISO_SOLO_PARECIDOS = Aviso(
+    "Ninguno de estos textos usa las palabras que escribiste. Los traje porque el tema se "
+    "parece, pero puede que no tengan nada que ver con lo tuyo. Leelos antes de darlos por "
+    "buenos."
 )
 
-AVISO_AMPLIADA = (
-    "Ningún fragmento publicado contiene todas las palabras de la consulta, así que se "
-    "buscó por cualquiera de ellas y se ordenó por cuántas coinciden. Conviene leer las "
-    "fuentes antes de darlas por pertinentes."
+AVISO_AMPLIADA = Aviso(
+    "No encontré nada que tuviera todas las palabras que escribiste, así que busqué con "
+    "algunas. Puede que haya traído cosas de más."
+)
+
+# Lo mismo, contado de los dos lados. La persona puede hacer algo con esto
+# —escribirlo de otra manera—; quien opera necesita el nombre del comando.
+AVISO_SIN_INDICE_PERSONA = Aviso(
+    "Estoy buscando sólo por las palabras exactas. Si algo está publicado pero escrito de "
+    "otra forma, puede que no lo encuentre: probá decirlo con otras palabras."
+)
+AVISO_SIN_INDICE_OPERACION = Aviso(
+    "El corte no tiene índice semántico construido para el modelo pedido. Se construye con "
+    "`bn recuperacion indexar`.",
+    para_la_persona=False,
+)
+AVISO_SIN_MODELO = Aviso(
+    "Búsqueda sólo léxica: no se pidió modelo de embeddings.", para_la_persona=False
 )
 
 
@@ -296,13 +336,9 @@ def buscar(
 
     if indice is None or indice[1] == 0:
         resultado.solo_lexica = True
+        resultado.avisos.append(AVISO_SIN_INDICE_PERSONA)
         resultado.avisos.append(
-            "Esta búsqueda fue solo léxica: el corte no tiene índice semántico construido "
-            "para el modelo pedido. Se construye con `bn recuperacion indexar`. Mientras "
-            "tanto, una consulta que no use las palabras del texto legal puede no encontrar "
-            "el artículo que la responde."
-            if embebedor is not None
-            else "Esta búsqueda fue solo léxica: no se pidió modelo de embeddings."
+            AVISO_SIN_INDICE_OPERACION if embebedor is not None else AVISO_SIN_MODELO
         )
         filas = (
             conexion.execute(text(SOLO_LEXICA_AMPLIA if amplia else SOLO_LEXICA), parametros)

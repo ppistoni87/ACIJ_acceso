@@ -154,7 +154,7 @@ def test_la_senal_de_solo_parecido_siempre_viaja(cliente_api, corpus_publicado) 
     ).json()
     assert isinstance(cuerpo["solo_parecidos"], bool)
     if cuerpo["solo_parecidos"]:
-        assert any("coincide en palabras" in aviso for aviso in cuerpo["avisos"])
+        assert any("usa las palabras que escribiste" in aviso for aviso in cuerpo["avisos"])
 
 
 def test_la_respuesta_dice_que_hay_publicado(cliente_api, corpus_publicado) -> None:
@@ -173,3 +173,34 @@ def test_sin_corte_la_cobertura_viaja_vacia_y_no_falta(cliente_api, corpus) -> N
     cuerpo = cliente_api.post("/v1/respuestas", json={"consulta": "algo"}).json()
     assert cuerpo["cobertura"] == []
     assert cuerpo["solo_parecidos"] is False
+
+
+def test_lo_que_es_de_la_cocina_no_llega_a_la_pantalla(cliente_api, corpus_publicado) -> None:
+    """El plan lo prohíbe con todas las letras: «sin nombres de tablas o
+    detalles del modelo dentro del recorrido ciudadano».
+
+    Antes de esto, alguien que preguntaba si lo podían desalojar podía leer
+    «se construye con `bn recuperacion indexar`». Quien opera el servicio
+    necesita eso; quien pregunta por sus derechos, no.
+    """
+    import re
+
+    cuerpo = cliente_api.post("/v1/respuestas", json={"consulta": "prestación"}).json()
+    # Las marcas `[[chunk:<id>]]` no se cuentan: son el formato de cita que el
+    # contrato exige, y el frente las convierte en «fuente 1». Nadie las ve.
+    texto = re.sub(r"\[\[chunk:[^\]]+\]\]", "", cuerpo.get("texto") or "")
+    de_la_persona = " ".join([texto, cuerpo.get("alternativa") or "", *cuerpo["avisos"]])
+    for jerga in (
+        "bn recuperacion",
+        "embeddings",
+        "índice semántico",
+        "proveedor de modelo",
+        "semántic",
+        "léxic",
+        "corpus",
+        "Error",
+        "None",
+    ):
+        assert jerga not in de_la_persona, f"«{jerga}» llegó a la pantalla de la persona"
+    # Y no se pierde: lo que no va a la persona viaja por su propio canal.
+    assert isinstance(cuerpo["notas_operativas"], list)

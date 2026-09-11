@@ -228,7 +228,7 @@ def test_se_puede_aclarar_la_jurisdiccion_dentro_de_la_conversacion(pagina) -> N
     sistemas empiezan a mentir.
     """
     _preguntar(pagina, "prestación económica")
-    pagina.get_by_role("button", name="Acotar a dónde vivo").click()
+    pagina.get_by_role("button", name="Buscar sólo donde vivo").click()
     pagina.get_by_role("button", name="Ciudad Autónoma de Buenos Aires").first.click()
     pagina.wait_for_selector("#contexto:not([hidden])", timeout=20_000)
     assert "Jurisdicción" in pagina.inner_text("#contexto")
@@ -271,7 +271,7 @@ def test_se_puede_empezar_una_conversacion_nueva(pagina) -> None:
 def test_una_consulta_sin_texto_no_se_manda_y_lo_dice(pagina) -> None:
     pagina.click("#enviar")
     assert pagina.is_visible("#estado")
-    assert "Escribí" in pagina.inner_text("#estado")
+    assert "querés saber" in pagina.inner_text("#estado")
 
 
 def test_se_puede_reintentar_cuando_el_servicio_falla(pagina) -> None:
@@ -299,7 +299,7 @@ def test_se_puede_cancelar_una_consulta_en_curso(pagina) -> None:
     pagina.wait_for_selector("#cancelar:not([disabled])", timeout=5_000)
     pagina.click("#cancelar")
     pagina.wait_for_function(
-        "() => document.getElementById('estado').textContent.includes('cancelada')",
+        "() => document.getElementById('estado').textContent.includes('cancel')",
         timeout=10_000,
     )
     assert not pagina.is_disabled("#enviar")
@@ -322,9 +322,11 @@ def test_la_respuesta_muestra_fuentes_abribles(pagina) -> None:
 
 def test_la_respuesta_declara_fecha_estado_y_modo(pagina) -> None:
     _preguntar(pagina, "prestación económica")
-    ficha = pagina.inner_text(".ficha")
-    assert "Vale para" in ficha
-    assert "Estado" in ficha
+    ficha = pagina.inner_text(".ficha").casefold()
+    assert "vale para el" in ficha
+    # La fecha es lo único de esto que le sirve a una persona. El identificador
+    # del corte no se muestra —es un uuid— pero queda para quien dé soporte.
+    assert pagina.get_attribute(".ficha", "data-corte")
     # Un extracto no se presenta como generación activa.
     assert pagina.locator(".sello").count() == 1
 
@@ -334,10 +336,10 @@ def test_una_abstencion_se_explica_y_ofrece_una_salida(pagina) -> None:
     # `inner_text` devuelve el texto **renderizado**, y los encabezados de
     # sección van en versalitas por CSS: se compara sin distinguir mayúsculas.
     texto = pagina.inner_text("#resultado").casefold()
-    assert "no tengo con qué" in pagina.inner_text("#titulo-respuesta").casefold()
-    assert "no significa que no te corresponda" in texto
+    assert "no lo sé" in pagina.inner_text("#titulo-respuesta").casefold()
+    assert "no te estoy diciendo que no te corresponda" in texto
     # Y le dice qué hay publicado, en vez de dejarla sin salida.
-    assert "qué hay publicado" in texto
+    assert "lo que tengo publicado" in texto
 
 
 def test_siempre_hay_canal_oficial_o_se_dice_que_no_lo_hay(pagina) -> None:
@@ -345,13 +347,53 @@ def test_siempre_hay_canal_oficial_o_se_dice_que_no_lo_hay(pagina) -> None:
     _preguntar(pagina, "prestación")
     texto = pagina.inner_text("#resultado").casefold()
     assert "a dónde ir" in texto
-    assert ("punto de atención" in texto) or pagina.locator(".canal").count() >= 1
+    assert ("lugar de atención" in texto) or pagina.locator(".canal").count() >= 1
+
+
+# Palabras nuestras, no de quien pregunta si lo pueden desalojar. El plan lo
+# pide con esas letras: «sin nombres de tablas o detalles del modelo dentro del
+# recorrido ciudadano». Hubo un momento en que la pantalla mostraba, textual,
+# «se construye con `bn recuperacion indexar`».
+JERGA_PROHIBIDA = (
+    "corte publicado",
+    "release",
+    "chunk",
+    "embedding",
+    "semántic",
+    "léxic",
+    "corpus",
+    "fragmento",
+    "índice",
+    "proveedor de modelo",
+    "extracto",
+    "abstención",
+    "schema",
+    "data_status",
+    "bn recuperacion",
+    "traceback",
+    "http 5",
+)
+
+
+def test_la_pantalla_no_habla_en_jerga(pagina) -> None:
+    """Cuatro recorridos distintos, y en ninguno aparece una palabra de la cocina."""
+    visto = [pagina.inner_text("body")]
+    for consulta in (
+        "me quedé sin casa después de un incendio",
+        "¿cuánto cobra la asignación universal por hijo?",
+        "zzzz qwrtpxk esto no existe",
+    ):
+        _preguntar(pagina, consulta)
+        visto.append(pagina.inner_text("body"))
+    entero = " ".join(visto).casefold()
+    colados = [jerga for jerga in JERGA_PROHIBIDA if jerga in entero]
+    assert colados == [], f"la pantalla habló en jerga: {colados}"
 
 
 def test_la_pantalla_no_afirma_elegibilidad(pagina) -> None:
     """Prohibido por la especificación, y es lo primero que se lee."""
     encabezado = pagina.inner_text("main")
-    assert "no resuelve" in encabezado
+    assert "no decide si te corresponde" in encabezado
     for prohibido in ("te corresponde el beneficio", "tenés derecho a", "fuiste aprobad"):
         assert prohibido not in encabezado.lower()
 

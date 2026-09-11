@@ -2514,3 +2514,56 @@ construir nada.
 mueve el punto desde el que el navegador empieza a tabular: el primer Tab dejaba
 de llegar al salto de contenido y caía en la primera sugerencia. El saludo ya no
 se desplaza, porque no hay nada arriba de él.
+
+## D-116 · Los avisos ahora dicen para quién son
+
+Humanizando el frente apareció esto, textual en la pantalla:
+
+> «Esta búsqueda fue solo léxica: el corte no tiene índice semántico construido
+> para el modelo pedido. **Se construye con `bn recuperacion indexar`**.»
+
+Un comando de terminal, en la pantalla de alguien que pregunta si lo pueden
+desalojar. El plan lo prohíbe con todas las letras —«sin nombres de tablas o
+detalles del modelo dentro del recorrido ciudadano»— y además no sirve: quien
+lee eso no puede hacer nada con eso.
+
+El arreglo no es reescribir la frase. Es que **cada aviso declare su público**.
+`Aviso(texto, para_la_persona)`; la respuesta viaja con `avisos` —lo que la
+persona puede leer y usar— y `notas_operativas` —lo que necesita quien opera—.
+Nada se esconde: cambia por dónde sale.
+
+El mismo hecho se cuenta dos veces cuando corresponde. Sin índice semántico, a
+quien opera se le dice el comando; a la persona, «estoy buscando sólo por las
+palabras exactas, probá decirlo con otras palabras», que es algo que sí puede
+hacer. Lo mismo con la caída del proveedor: el nombre de la excepción va a la
+nota operativa, y la persona ve el modo de la respuesta en castellano.
+
+## D-117 · Humanización del lenguaje del frente
+
+Todo lo que lee una persona, reescrito. Lo que se sacó:
+
+* **Los nombres de los enum.** El sello decía `EXTRACTO` y `ABSTENCION`. Ahora
+  dice «texto de la ley» y «sin respuesta». El plan pide que la salida se
+  identifique —explicación, extracto o abstención— y eso sigue estando: la
+  distinción está dicha en castellano, que es distinto de estar borrada.
+* **El uuid del corte.** «Corte publicado: 2a5d835f-c750-…» no le dice nada a
+  nadie. Queda en un atributo del documento, por si alguien de soporte necesita
+  reproducir la respuesta.
+* **`schema 1.0`** al pie, y los estados internos (`PUBLICADO`,
+  `SIN_RESULTADOS`). De la ficha quedó lo único que le sirve a una persona: para
+  cuándo vale lo que acaba de leer.
+* **El título oficial de la norma**, doscientos caracteres en mayúsculas, se
+  recorta a dos renglones por CSS. No se reescribe —es el título de un acto
+  publicado— y el texto completo sigue en el documento, copiable y legible por
+  un lector de pantalla.
+
+Y la voz. «No hay evidencia publicada para contestar esto» pasó a «No tengo
+ninguna norma publicada que hable de esto. Ojo con la diferencia: no te estoy
+diciendo que no te corresponda. Te estoy diciendo que yo no tengo con qué
+contestarte». La distinción que el sistema entero existe para sostener, dicha
+como se la diría una persona.
+
+Hay una prueba que recorre cuatro conversaciones y falla si aparece cualquiera
+de diecisiete palabras de la cocina —«corte publicado», «chunk», «embedding»,
+«abstención», «bn recuperacion»…—. Un criterio de estilo que nadie verifica se
+pierde en el tercer cambio.

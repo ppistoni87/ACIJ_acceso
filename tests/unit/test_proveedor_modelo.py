@@ -90,7 +90,11 @@ def test_un_error_del_proveedor_termina_en_extracto_y_no_en_500() -> None:
     f = _fragmento("El beneficio alcanza a trabajadores en relación de dependencia.")
     salida = responder("¿Quiénes cobran?", [f], proveedor=_proveedor(manejador))
     assert salida.modo is ModoRespuesta.EXTRACTO
-    assert "no contestó" in (salida.alternativa or "")
+    # La caída del proveedor se declara por el canal de quien opera: a quien
+    # pregunta por sus derechos no le sirve el nombre de la excepción, y el modo
+    # ya le dice en castellano que está leyendo el texto de la ley tal cual.
+    assert "no contestó" in (salida.nota_operativa or "")
+    assert "HTTPStatusError" not in salida.texto
 
 
 def test_una_redaccion_con_cita_valida_se_marca_generada() -> None:

@@ -122,7 +122,11 @@ def test_sin_indice_la_busqueda_avisa_que_fue_solo_lexica(
         conexion, "prestación económica", release_id=release_id, embebedor=embebedor, limite=5
     )
     assert resultado.solo_lexica
-    assert any("solo léxica" in a for a in resultado.avisos)
+    # El mismo hecho, contado de los dos lados: quien opera necesita el
+    # nombre del comando, quien pregunta necesita saber que puede reescribir.
+    assert any("bn recuperacion indexar" in a for a in resultado.avisos_de_quien_opera)
+    assert any("otras palabras" in a for a in resultado.avisos_de_la_persona)
+    assert not any("bn recuperacion" in a for a in resultado.avisos_de_la_persona)
 
 
 def test_la_fusion_no_devuelve_el_mismo_fragmento_dos_veces(
@@ -221,13 +225,13 @@ def test_una_pregunta_en_castellano_normal_encuentra_el_articulo(
 def test_la_busqueda_ampliada_se_declara(conexion: Connection, release_id) -> None:
     """Aflojar el criterio cambia lo que significa el resultado, así que se dice."""
     natural = buscar(conexion, "quiénes son beneficiarios del programa", release_id=release_id)
-    assert any("cualquiera de ellas" in aviso for aviso in natural.avisos)
+    assert any("busqué con algunas" in aviso for aviso in natural.avisos_de_la_persona)
 
 
 def test_no_se_afloja_cuando_no_hace_falta(conexion: Connection, release_id) -> None:
     """Mientras la consulta estricta devuelva algo, ese algo es más pertinente."""
     estricta = buscar(conexion, "beneficiarios", release_id=release_id)
-    assert not any("cualquiera de ellas" in aviso for aviso in estricta.avisos)
+    assert not any("busqué con algunas" in aviso for aviso in estricta.avisos_de_la_persona)
 
 
 def test_una_consulta_sin_ninguna_palabra_del_corpus_sigue_sin_encontrar(
@@ -260,7 +264,9 @@ def test_lo_que_encuentra_solo_el_significado_se_declara(
         return  # abstenerse también es correcto
     if all(f.encontrado_por == "semantica" for f in ajena.fragmentos):
         assert ajena.solo_parecidos
-        assert any("coincide en palabras" in aviso for aviso in ajena.avisos)
+        assert any(
+            "usa las palabras que escribiste" in aviso for aviso in ajena.avisos_de_la_persona
+        )
 
 
 def test_lo_corroborado_no_lleva_la_advertencia(

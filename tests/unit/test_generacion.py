@@ -142,7 +142,11 @@ def test_sin_proveedor_el_extracto_se_declara_como_extracto() -> None:
     salida = responder("¿Quiénes cobran?", [f])
     assert salida.modo is ModoRespuesta.EXTRACTO
     assert salida.modo is not ModoRespuesta.GENERADA
-    assert "sin redactar" in (salida.alternativa or "")
+    # Que no haya proveedor se declara, pero por el canal de quien opera: a
+    # quien pregunta por sus derechos no le sirve enterarse de eso, y el modo
+    # ya le dice en castellano que está leyendo el texto de la ley tal cual.
+    assert "proveedor" in (salida.nota_operativa or "")
+    assert "proveedor" not in (salida.alternativa or "")
 
 
 def test_si_el_proveedor_se_cae_hay_extracto_y_se_dice_que_se_cayo() -> None:
@@ -156,7 +160,11 @@ def test_si_el_proveedor_se_cae_hay_extracto_y_se_dice_que_se_cayo() -> None:
 
     salida = responder("¿Quiénes cobran?", [f], proveedor=ProveedorCaido())
     assert salida.modo is ModoRespuesta.EXTRACTO
-    assert "no contestó" in (salida.alternativa or "")
+    assert "no contestó" in (salida.nota_operativa or "")
+    assert "TimeoutError" in (salida.nota_operativa or "")
+    # El nombre de la excepción no aparece en nada que lea la persona.
+    assert "TimeoutError" not in (salida.alternativa or "")
+    assert "TimeoutError" not in salida.texto
     assert salida.proveedor == "caido"
 
 

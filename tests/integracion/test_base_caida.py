@@ -67,7 +67,7 @@ def test_el_cuerpo_es_tipado_y_no_cuenta_la_cocina(cliente_sin_base) -> None:
 def test_lo_dice_como_un_limite_del_servicio_y_no_como_una_respuesta(cliente_sin_base) -> None:
     """«No se pudo averiguar» no es «no te corresponde»."""
     detalle = cliente_sin_base.get("/v1/normas").json()["detalle"]
-    assert "no se pudo averiguar" in detalle.lower()
+    assert "no pude fijarme" in detalle.lower()
 
 
 def test_la_sonda_de_vida_sigue_en_pie(cliente_sin_base) -> None:

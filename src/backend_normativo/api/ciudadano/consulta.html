@@ -118,6 +118,15 @@ ol.fuentes li:target{background:var(--papel-3); outline:2px solid var(--frio); o
 ul.avisos{margin:0; padding:0 0 0 1.2em; color:var(--tinta-2); font-size:.93rem}
 ul.avisos li{margin:0 0 5px}
 .ayuda{font-size:.85rem; color:var(--tinta-3); margin:4px 0 0}
+/* El título oficial de una norma viene en mayúsculas y con doscientos
+   caracteres de descriptores. No se reescribe —es el título de un acto
+   publicado, no una frase nuestra— pero tampoco se vuelca entero encima de
+   quien pregunta: se recorta a dos renglones. El texto completo sigue en el
+   documento, así que se puede copiar y un lector de pantalla lo lee todo. */
+.titulo-norma{
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden; font-size:.82rem; color:var(--tinta-3); line-height:1.45;
+}
 
 details.mas{margin:10px 0 0; border-top:1px solid var(--linea); padding-top:8px}
 details.mas > summary{
@@ -190,7 +199,7 @@ textarea#pregunta{
 </main>
 
 <div class="contexto" id="contexto" hidden>
-  <span id="contexto-titulo">Lo que estoy teniendo en cuenta:</span>
+  <span id="contexto-titulo">Estoy teniendo en cuenta:</span>
   <div class="fichas" id="contexto-fichas"></div>
 </div>
 
@@ -199,7 +208,7 @@ textarea#pregunta{
     <div class="fila">
       <label class="vr" for="pregunta">Escribí tu consulta</label>
       <textarea id="pregunta" name="pregunta" rows="1" autocomplete="off"
-                placeholder="Escribí lo que te está pasando…"
+                placeholder="Contame qué te está pasando…"
                 aria-describedby="pie-compositor"></textarea>
       <button type="submit" class="btn principal" id="enviar">Enviar</button>
       <button type="button" class="btn" id="cancelar" disabled>Cancelar</button>
@@ -208,7 +217,6 @@ textarea#pregunta{
     <p class="estado" id="estado" role="status" aria-live="polite" hidden></p>
     <p class="pie" id="pie-compositor">
       Enter envía · Shift+Enter hace un renglón nuevo. No hace falta tu nombre ni tu documento.
-      <span id="pie-version" class="mono"></span>
     </p>
   </div>
 </form>
@@ -243,16 +251,19 @@ function fechaLegible(iso){
   return d.toLocaleDateString("es-AR", {day:"2-digit", month:"long", year:"numeric"});
 }
 
-const ESTADOS = {
-  PUBLICADO: "Información publicada",
-  PARCIAL: "Información parcial",
-  SIN_RESULTADOS: "Sin resultados para esta consulta",
-  NO_PUBLICABLE: "Todavía no hay corte publicado"
-};
+
+// El plan pide que la salida se identifique —explicación, extracto o
+// abstención— y también prohíbe «nombres de tablas o detalles del modelo dentro
+// del recorrido ciudadano». Las dos cosas se cumplen: la distinción está, dicha
+// en castellano. «EXTRACTO» y «ABSTENCION» son palabras nuestras, no de quien
+// pregunta si lo pueden desalojar.
 const MODOS = {
-  GENERADA: ["Esto dicen las normas", "Un modelo redactó esta explicación y cada afirmación quedó atada a una cita verificada."],
-  EXTRACTO: ["Esto dicen las normas, sin redactar", "No hay redacción automática disponible, así que te muestro el texto publicado tal como está. Es más incómodo de leer y es exactamente lo que dice la norma."],
-  ABSTENCION: ["No tengo con qué contestarte esto", "No encontré texto publicado que sostenga una respuesta. Que no haya respuesta no significa que no te corresponda."]
+  GENERADA: ["Esto dicen las normas", "explicado",
+    "Te lo explico yo, y cada cosa que digo va atada al texto del que sale."],
+  EXTRACTO: ["Esto dice la ley, con sus palabras", "texto de la ley",
+    "Te lo copio tal como está escrito. Se lee más pesado, y es exactamente lo que dice — sin nada mío en el medio."],
+  ABSTENCION: ["Esto no lo sé", "sin respuesta",
+    "Prefiero decirte que no sé antes que inventarte algo."]
 };
 
 // --- estado de la conversación ---------------------------------------------
@@ -335,13 +346,13 @@ function textoPlegado(texto, indice, marca){
   }).join("<hr>");
   const cuantos = partes.length - 1;
   return primero +
-    '<details class="mas"><summary>Ver ' + cuantos + " texto" + (cuantos > 1 ? "s" : "") +
-    " más de la norma</summary>" + resto + "</details>";
+    '<details class="mas"><summary>Ver ' + cuantos + " parte" + (cuantos > 1 ? "s" : "") +
+    " más de la ley</summary>" + resto + "</details>";
 }
 
 function listaDeFuentes(fuentes, marca){
   if(!fuentes.length) return "";
-  let html = '<h3>De dónde sale</h3><ol class="fuentes">';
+  let html = '<h3>De dónde lo saco</h3><ol class="fuentes">';
   fuentes.forEach(function(f, i){
     const url = urlSegura(f.url_fuente);
     html += '<li id="fuente-' + marca + "-" + (i+1) + '">' +
@@ -349,9 +360,9 @@ function listaDeFuentes(fuentes, marca){
       (f.unidad ? ' <span class="unidad">' + esc(f.unidad) + "</span><br>" : "") +
       (url
         ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' +
-          'Abrir el texto oficial<span class="vr"> (se abre en una pestaña nueva)</span></a>'
-        : '<span class="sin-url">Sin URL oficial registrada. Se puede pedir el texto en el ' +
-          "organismo.</span>") +
+          'Ver el texto oficial<span class="vr"> (se abre en una pestaña nueva)</span></a>'
+        : '<span class="sin-url">De esta no tengo el enlace oficial. En el organismo te ' +
+          "pueden dar el texto.</span>") +
       "</li>";
   });
   return html + "</ol>";
@@ -366,22 +377,24 @@ function listaDeAvisos(cuerpo){
     avisos.map(esc).join("</li><li>") + "</li></ul>";
 }
 
+// La fecha es lo único de esto que le sirve a una persona: para cuándo vale lo
+// que acaba de leer. El identificador del corte no se muestra —es un uuid, no
+// le dice nada a nadie— pero queda en el atributo por si alguien de soporte
+// necesita reproducir la respuesta.
 function fichaDeDatos(cuerpo){
-  return '<div class="ficha">' +
-    "<span><b>Vale para:</b> " + esc(fechaLegible(cuerpo.as_of)) + "</span>" +
-    "<span><b>Con lo que el sistema sabía al:</b> " + esc(fechaLegible(cuerpo.known_at)) + "</span>" +
-    "<span><b>Estado:</b> " + esc(ESTADOS[cuerpo.data_status] || cuerpo.data_status || "—") +
-    "</span></div>";
+  return '<div class="ficha" data-corte="' + esc(cuerpo.release_id || "") + '">' +
+    "Esto vale para el <b>" + esc(fechaLegible(cuerpo.as_of)) + "</b>, con la información " +
+    "que tenía cargada ese día. Si la norma cambió después, todavía no lo sé.</div>";
 }
 
 function bloqueCobertura(lista){
   if(!lista || !lista.length) return "";
   const items = lista.slice(0, 6).map(function(c){
     return "<li>" + esc(c.norma) + (c.jurisdiccion ? " · " + esc(c.jurisdiccion) : "") +
-      (c.titulo ? '<br><span class="ayuda">' + esc(c.titulo) + "</span>" : "") + "</li>";
+      (c.titulo ? '<span class="titulo-norma">' + esc(c.titulo) + "</span>" : "") + "</li>";
   }).join("");
   const resto = lista.length > 6 ? "<li>y " + (lista.length - 6) + " norma(s) más</li>" : "";
-  return '<h3>Qué hay publicado hoy</h3><ul class="avisos">' + items + resto + "</ul>";
+  return '<h3>Lo que tengo publicado</h3><ul class="avisos">' + items + resto + "</ul>";
 }
 
 function bloqueCanales(canales){
@@ -400,10 +413,10 @@ function bloqueCanales(canales){
       }
       html += "</div>";
     });
-    html += '<p class="ayuda">Lo que decide sobre tu caso es el organismo, no esta pantalla.</p>';
+    html += '<p class="ayuda">Quien decide sobre tu caso es el organismo, no esta pantalla.</p>';
   }else{
-    html += '<p class="ayuda">No tengo un punto de atención publicado para esa jurisdicción. ' +
-      "No quiere decir que no exista: quiere decir que este sistema todavía no lo tiene cargado.</p>";
+    html += '<p class="ayuda">No tengo cargado ningún lugar de atención para esa zona. ' +
+      "No quiere decir que no exista: quiere decir que yo todavía no lo tengo.</p>";
   }
   return html;
 }
@@ -411,8 +424,9 @@ function bloqueCanales(canales){
 function responderEnElHilo(cuerpo, canales){
   const modo = cuerpo.modo || "ERROR";
   const marca = nMensajes + 1;
-  const titulo = (MODOS[modo] || ["Respuesta", ""])[0];
-  const explicacion = (MODOS[modo] || ["", ""])[1];
+  const titulo = (MODOS[modo] || ["Respuesta", "", ""])[0];
+  const etiqueta = (MODOS[modo] || ["", "", ""])[1];
+  const explicacion = (MODOS[modo] || ["", "", ""])[2];
 
   const indice = {};
   (cuerpo.fuentes || []).forEach(function(f, i){
@@ -420,7 +434,7 @@ function responderEnElHilo(cuerpo, canales){
   });
 
   let html = '<h2 id="titulo-respuesta" tabindex="-1">' + esc(titulo) +
-    ' <span class="sello s-' + esc(modo) + '" aria-hidden="true">' + esc(modo) + "</span></h2>" +
+    ' <span class="sello s-' + esc(modo) + '" aria-hidden="true">' + esc(etiqueta) + "</span></h2>" +
     '<p class="ayuda">' + esc(explicacion) + "</p>";
 
   if(modo === "ABSTENCION"){
@@ -431,9 +445,9 @@ function responderEnElHilo(cuerpo, canales){
     // La diferencia entre «esto contesta tu pregunta» y «esto se le parece» es
     // justamente lo que quien consulta no puede averiguar solo.
     if(cuerpo.solo_parecidos){
-      html += '<div class="alerta"><b>Esto puede no tener que ver con lo que preguntaste.</b>' +
-        "Ninguno de estos textos coincide en palabras con lo que escribiste: los elegí sólo " +
-        "porque el significado se parece. Leelos antes de darlos por buenos.</div>";
+      html += '<div class="alerta"><b>Ojo: esto puede no tener nada que ver con lo tuyo.</b>' +
+        "Ninguno de estos textos usa las palabras que escribiste. Los traje porque el tema " +
+        "se parece, nada más. Leelos antes de darlos por buenos.</div>";
       html += bloqueCobertura(cuerpo.cobertura);
     }
     html += textoPlegado(cuerpo.texto || "", indice, marca);
@@ -450,7 +464,7 @@ function responderEnElHilo(cuerpo, canales){
 function errorEnElHilo(titulo, detalle, reintentable){
   agregarMensaje("suyo", "ACIJ Acceso",
     '<h2 id="titulo-respuesta" tabindex="-1">' + esc(titulo) +
-    ' <span class="sello s-ERROR" aria-hidden="true">ERROR</span></h2><p>' +
+    ' <span class="sello s-ERROR" aria-hidden="true">no anduvo</span></h2><p>' +
     esc(detalle) + "</p>", true);
   $("reintentar").hidden = !reintentable;
 }
@@ -477,7 +491,7 @@ function pintarContexto(){
       if(par[0] === "jurisdiccion"){ contexto.jurisdiccion = null; contexto.jurisdiccionNombre = null; }
       else { contexto.fecha = null; }
       pintarContexto();
-      mostrarEstado("Listo, ya no lo tengo en cuenta. Volvé a preguntar si querés.");
+      mostrarEstado("Listo, ya no lo tengo en cuenta.");
     });
     fichas.appendChild(b);
   });
@@ -496,10 +510,10 @@ function sugerenciasDeSeguimiento(){
   const caja = document.createElement("div");
   caja.className = "fichas";
   if(!contexto.jurisdiccion && jurisdicciones.length){
-    caja.appendChild(chip("Acotar a dónde vivo", function(){ pedirJurisdiccion(caja); }));
+    caja.appendChild(chip("Buscar sólo donde vivo", function(){ pedirJurisdiccion(caja); }));
   }
   if(!contexto.fecha){
-    caja.appendChild(chip("Ver a otra fecha", function(){ pedirFecha(caja); }));
+    caja.appendChild(chip("Ver qué decía antes", function(){ pedirFecha(caja); }));
   }
   return caja;
 }
@@ -508,7 +522,7 @@ function pedirJurisdiccion(caja){
   caja.innerHTML = "";
   const titulo = document.createElement("p");
   titulo.className = "ayuda";
-  titulo.textContent = "¿Dónde vivís o dónde vas a hacer el trámite?";
+  titulo.textContent = "¿Dónde vivís, o dónde vas a hacer el trámite?";
   caja.appendChild(titulo);
   const fichas = document.createElement("div");
   fichas.className = "fichas";
@@ -530,7 +544,7 @@ function pedirFecha(caja){
   const etiqueta = document.createElement("label");
   etiqueta.className = "ayuda";
   etiqueta.setAttribute("for", "fecha-otra");
-  etiqueta.textContent = "¿Para qué día querés saber qué decían las normas?";
+  etiqueta.textContent = "¿Para qué día querés saber qué decía la norma?";
   const campo = document.createElement("input");
   campo.type = "date";
   campo.id = "fecha-otra";
@@ -547,14 +561,15 @@ function pedirFecha(caja){
 
 // --- apertura ---------------------------------------------------------------
 function saludar(){
-  let html = "<h2 tabindex=\"-1\">Hola. Contame qué necesitás averiguar.</h2>" +
-    "<p>Escribilo con tus palabras, como se lo contarías a alguien. Te voy a mostrar " +
-    "<b>qué dicen las normas publicadas</b> y de dónde sale cada cosa, para que puedas " +
-    "verificarlo y llevarlo al organismo.</p>" +
-    '<div class="alerta aviso-privacidad"><b>Esto no resuelve si te corresponde.</b>' +
-    "No otorga ni rechaza nada: eso lo decide el organismo. Y no hace falta que escribas tu " +
-    "nombre, tu documento, tu dirección exacta ni datos de otras personas — no los necesito y " +
-    "no los guardo. Lo que escribas queda en esta pestaña y se borra al salir.</div>";
+  let html = "<h2 tabindex=\"-1\">Hola. Contame qué te está pasando.</h2>" +
+    "<p>Escribilo como se lo contarías a alguien. No hace falta que sepas cómo se llama el " +
+    "trámite ni qué ley es.</p>" +
+    "<p>Te voy a mostrar qué dicen las normas que tengo publicadas y de dónde sale cada " +
+    "cosa, para que puedas llevárselo a quien te atienda.</p>" +
+    '<div class="alerta aviso-privacidad"><b>Esto no decide si te corresponde.</b>' +
+    "No te lo doy ni te lo niego: eso lo resuelve el organismo. Y no necesito tu nombre, tu " +
+    "documento, tu dirección exacta ni datos de otra persona. Nada de lo que escribas se " +
+    "guarda, y al salir se borra todo.</div>";
   html += bloqueCobertura(cobertura);
   const nodo = agregarMensaje("suyo", "ACIJ Acceso", html, false, false);
   nodo.appendChild(sugerenciasDeEjemplo());
@@ -567,8 +582,8 @@ function sugerenciasDeEjemplo(){
   // escrita a mano: ofrecer ejemplos que el sistema no puede contestar es
   // prometer algo que no tiene.
   const ejemplos = cobertura.length
-    ? ["¿Quiénes pueden recibirlo?", "¿Qué requisitos piden?", "¿De cuánto es y por cuánto tiempo?"]
-    : ["¿Qué información tenés publicada?"];
+    ? ["¿Quién puede pedirlo?", "¿Qué papeles piden?", "¿De cuánto es?"]
+    : ["¿Qué tenés publicado?"];
   ejemplos.forEach(function(texto){
     caja.appendChild(chip(texto, function(){
       $("pregunta").value = texto;
@@ -585,7 +600,7 @@ async function cargarVocabularios(){
     if(!r.ok) throw new Error("HTTP " + r.status);
     const cuerpo = await r.json();
     jurisdicciones = (cuerpo.data || {}).jurisdicciones || [];
-    $("pie-version").textContent = "· schema " + (cuerpo.schema_version || "?");
+    // La versión del contrato no se muestra: no le dice nada a quien pregunta.
   }catch(_){
     jurisdicciones = [];   // se puede preguntar igual, sin acotar
   }
@@ -619,7 +634,7 @@ async function consultar(envio){
   $("reintentar").hidden = true;
   peticion = new AbortController();
   trabajando(true);
-  mostrarEstado("Buscando en las normas publicadas…", true);
+  mostrarEstado("Buscando en las normas…", true);
 
   const cuerpo = {consulta: envio.texto, limite: 5};
   if(contexto.jurisdiccion) cuerpo.jurisdiccion = contexto.jurisdiccion;
@@ -634,15 +649,15 @@ async function consultar(envio){
       signal: peticion.signal
     });
     if(r.status === 422){
-      errorEnElHilo("No pude interpretar eso",
+      errorEnElHilo("No te entendí",
         "Probá escribirlo de otra manera, un poco más corto.", true);
       mostrarEstado("");
       return;
     }
     if(!r.ok){
       errorEnElHilo("No pude contestarte ahora",
-        "No es que la respuesta sea que no te corresponde: el sistema no pudo contestar " +
-        "(error " + r.status + "). Podés reintentar en un momento.", true);
+        "Ojo: no es que la respuesta sea que no te corresponde. Es que no pude fijarme. " +
+        "Probá de nuevo en un momento.", true);
       mostrarEstado("");
       return;
     }
@@ -653,11 +668,11 @@ async function consultar(envio){
     responderEnElHilo(datos, canales);
   }catch(error){
     if(error && error.name === "AbortError"){
-      mostrarEstado("Consulta cancelada. No se envió nada más.");
+      mostrarEstado("Listo, lo cancelé.");
       return;
     }
-    errorEnElHilo("No pude llegar al servicio",
-      "Puede ser la conexión. Lo que escribiste sigue acá; podés reintentar.", true);
+    errorEnElHilo("No llegué a conectarme",
+      "Puede ser la conexión. Lo que escribiste sigue acá; probá de nuevo.", true);
     mostrarEstado("");
   }finally{
     peticion = null;
@@ -668,7 +683,7 @@ async function consultar(envio){
 function enviar(){
   const texto = $("pregunta").value.trim();
   if(!texto){
-    mostrarEstado("Escribí qué querés averiguar para poder buscar.");
+    mostrarEstado("Escribime qué querés saber y lo busco.");
     $("pregunta").focus();
     return;
   }
@@ -733,10 +748,10 @@ document.addEventListener("DOMContentLoaded", async function(){
     if(ultimoEnvio) consultar(ultimoEnvio);
   });
   $("limpiar").addEventListener("click", function(){
-    borrarTodo("Empezamos de nuevo.", true);
+    borrarTodo("", true);
   });
   $("salir").addEventListener("click", function(){
-    borrarTodo("Se borró la conversación y lo que habías escrito.", false);
+    borrarTodo("Listo. Borré la conversación y todo lo que habías escrito.", false);
   });
 });
 </script>
