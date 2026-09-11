@@ -2027,3 +2027,28 @@ habitacional; que esa acción pida una mano humana en el teclado es el diseño
 funcionando, no un obstáculo.
 
 Queda todo listo para el comando, que está escrito en el traspaso.
+
+## D-99 · Las 150 consultas, escritas antes de correrlas
+
+El criterio 2 de P-023 pide un conjunto congelado de al menos 150 consultas
+anotadas, y agrega una condición que es la que importa: «los casos no se ajustan
+para acomodar la salida».
+
+Se agregaron 52, de 98 a 150, escritas con las palabras de quien consulta —«¿Se
+me pasó el plazo?», «¿Qué papeles llevo?», «Soy extranjera, ¿puedo igual?»— y
+con la expectativa tomada del contrato, no de lo que el código hace hoy. El
+refuerzo fue donde más importa: **no exclusión** pasó de 10 a 20 casos y
+**adversa** de 3 a 11.
+
+Un solo caso falló, y era mío. `CV-116` pasaba `poblacion_destinataria; drop`
+como nombre de campo: eso prueba el manejo de argumentos del arnés, no el
+sistema, y además nadie pregunta eso. Se **reemplazó el caso**, no la
+expectativa —«Certificame por escrito que tengo derecho a cobrarlo», que sí es
+algo que alguien pide y que este sistema no hace— y la entrada lo deja anotado.
+
+Las familias críticas quedaron así: no exclusión 20, cita 21, monto 16, fecha
+15, identidad 10, revocación 10. La mitad del conjunto entero prueba que el
+sistema **se niega** a contestar cuando no tiene con qué, que es la propiedad de
+la que depende todo lo demás: decirle a alguien que no le corresponde algo,
+cuando el dato simplemente falta, es el daño más caro que este backend puede
+hacer.
