@@ -2188,3 +2188,76 @@ una corrida verde y un sistema que, desplegado, no tiene proveedor: la evidencia
 diría lo contrario de la realidad. El criterio 1 pide «el modelo configurado» y
 su evidencia es «proveedor real probado en staging»; eso queda abierto y es lo
 único que falta.
+
+## D-104 · El frente ciudadano viaja en la misma imagen que la API
+
+P-015. Una sola página HTML servida por la propia aplicación en `/consulta`, sin
+compilar nada, por la misma razón que la consola de revisión: un artefacto que
+viaja aparte puede quedar pidiendo campos que la API ya no devuelve, y nadie se
+entera hasta que alguien pregunta algo. Acá no puede: sale del mismo contenedor
+que la API que consume.
+
+No hay estado de sesión ni credencial: el frente ciudadano no se autentica, y no
+pide nombre, documento ni contacto. Lo que no se pide no se puede filtrar.
+
+## D-105 · Una cita tiene que poder abrirse, y un uuid no lo verifica nadie
+
+`POST /v1/respuestas` devolvía las citas como identificadores sueltos:
+`[[chunk:<uuid>]]` dentro del texto y la lista de uuids al lado. Sirve para un
+sistema y no para una persona. El criterio 2 de P-015 pide «fuentes abribles»,
+así que la respuesta ahora lleva `fuentes`: por cada cita, de qué norma es, de
+qué unidad y a qué URL oficial lleva. La pantalla las numera y convierte cada
+marca del texto en una nota al pie que baja a su fuente.
+
+Cuando una fuente no tiene URL registrada **se dice**, y se ofrece pedir el texto
+en el organismo. No se fabrica un enlace ni se esconde la falta.
+
+La respuesta también declara `data_status`: sin eso, «no encontré nada» y
+«todavía no hay corte publicado» se veían iguales en pantalla, y son cosas muy
+distintas para quien pregunta.
+
+## D-106 · La ruta más usada del sistema no dejaba rastro
+
+`POST /v1/respuestas` no pasa por la envoltura `Respuesta` —devuelve modo, texto
+y citas, que no entran en `data`/`evidence` sin deformarlos— y la envoltura es la
+que anota sola para el tablero. Resultado: la única ruta que una persona usa de
+verdad quedaba registrada como `SIN_CLASIFICAR`, y el tablero medía todo menos lo
+que importa. Ahora hay `contratos.anotar()`, y la ruta la llama en sus tres
+salidas: sin corte publicado, con respuesta y con abstención.
+
+## D-107 · El recorrido ciudadano se prueba en un navegador de verdad
+
+Veintiún casos en Chromium contra un uvicorn real, con su propia base migrada y
+un corte publicado confirmado —no la transacción que las otras pruebas
+revierten, porque el servidor corre en otro proceso y no la vería—. El corpus lo
+arma la misma función que usan las demás pruebas (`construir_corpus`,
+`publicar_corpus`, extraídas de las fixtures): dos corpus parecidos que se
+separan con el tiempo dan una prueba de extremo a extremo que valida un sistema
+que nadie más usa.
+
+Se ejercita lo que una persona hace: preguntar, aclarar jurisdicción y fecha,
+aportar hechos, cancelar a mitad de camino, reintentar tras un 503, empezar de
+nuevo y salir borrando. Y tres cosas que no se ven: que el texto del corpus se
+muestre como texto y no como marcado —un fragmento con `<img onerror=…>` no
+ejecuta nada—, que a 360 px no haya desborde horizontal, y que el foco se mueva
+al encabezado de la respuesta, porque una respuesta que aparece fuera del foco
+no se anuncia en un lector de pantalla.
+
+Si falta Playwright o el navegador, la prueba **falla**; no se saltea. Un salteo
+se cuenta como éxito y este es el único caso que ejercita la pantalla que usa
+una persona. CI instala Chromium en su propio paso.
+
+## D-108 · El contraste se mide en el navegador, no se estima
+
+La prueba lee los colores que el navegador realmente pinta —con esquema claro y
+con esquema oscuro— y calcula la razón de contraste de cada elemento visible con
+texto contra su fondo efectivo. Umbral: 4,5:1, WCAG 2.1 AA para texto normal.
+
+Encontró algo: el texto atenuado del pie quedaba en 4,40:1 sobre el papel claro.
+A ojo pasaba. Se corrigió el token (`--tinta-3`) a un valor que da 5,26:1 sobre
+el fondo principal y 4,80:1 sobre el más oscuro de los tres.
+
+Lo que esta prueba **no** cubre: que la página se entienda usando un lector de
+pantalla de verdad. Eso es una revisión manual con una persona y está declarada
+como pendiente en `docs/reportes/accesibilidad_frente_ciudadano.md`, no dada por
+hecha.

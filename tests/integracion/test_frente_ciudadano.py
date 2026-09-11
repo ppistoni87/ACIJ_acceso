@@ -1,0 +1,141 @@
+"""P-015: lo que el frente ciudadano necesita de la API para ser honesto.
+
+El recorrido completo en un navegador está en `tests/aceptacion`. Acá se prueba
+el contrato del que ese recorrido depende: que una cita se pueda abrir, que la
+respuesta diga para cuándo vale y con qué estado, que los selectores tengan de
+dónde salir, y que la consulta —la única ruta que una persona usa de verdad—
+deje rastro medible.
+"""
+
+from __future__ import annotations
+
+import pytest
+from sqlalchemy import Connection, text
+
+pytestmark = pytest.mark.integracion
+
+
+def test_la_pantalla_se_sirve_desde_la_misma_imagen(cliente_api) -> None:
+    """Un frente que viaja aparte puede quedar pidiendo campos que ya no existen."""
+    respuesta = cliente_api.get("/consulta")
+    assert respuesta.status_code == 200
+    assert "text/html" in respuesta.headers["content-type"]
+    cuerpo = respuesta.text
+    assert '<html lang="es">' in cuerpo
+    # Consume estas dos rutas y ninguna de administración.
+    assert "/v1/respuestas" in cuerpo
+    assert "/v1/vocabularios" in cuerpo
+    assert "/v1/admin/" not in cuerpo
+
+
+def test_los_selectores_salen_de_la_base_y_no_del_html(cliente_api, corpus) -> None:
+    """Una jurisdicción que se agrega al corpus no puede quedar invisible."""
+    cuerpo = cliente_api.get("/v1/vocabularios").json()
+    jurisdicciones = cuerpo["data"]["jurisdicciones"]
+    assert jurisdicciones, "el catálogo cargado tiene jurisdicciones"
+    assert {"id", "nombre", "nivel"} <= set(jurisdicciones[0])
+    # Y no están escritas en el HTML: el único <option> que trae es el neutro.
+    html = cliente_api.get("/consulta").text
+    for j in jurisdicciones:
+        assert f'value="{j["id"]}"' not in html
+
+
+def test_la_respuesta_dice_para_cuando_vale_y_con_que_estado(cliente_api, corpus_publicado) -> None:
+    cuerpo = cliente_api.post("/v1/respuestas", json={"consulta": "apoyo"}).json()
+    assert cuerpo["as_of"]
+    assert cuerpo["known_at"]
+    assert cuerpo["data_status"] in {"PUBLICADO", "SIN_RESULTADOS", "NO_PUBLICABLE"}
+    assert cuerpo["modo"] in {"GENERADA", "EXTRACTO", "ABSTENCION"}
+    # `fuentes` siempre viaja, aunque esté vacía: el frente no tiene que
+    # adivinar si la clave falta porque no hay o porque la ruta no la manda.
+    assert isinstance(cuerpo["fuentes"], list)
+
+
+def test_la_cita_se_puede_abrir(cliente_api, corpus_publicado) -> None:
+    """Un uuid no lo verifica nadie: la cita viaja con norma y con URL."""
+    cuerpo = cliente_api.post("/v1/respuestas", json={"consulta": "beneficiarios"}).json()
+    if cuerpo["modo"] == "ABSTENCION":
+        pytest.skip("sin fragmentos recuperados no hay cita que abrir")
+    assert cuerpo["fuentes"], "una respuesta no abstenida trae sus fuentes"
+    fuente = cuerpo["fuentes"][0]
+    assert {"chunk_id", "norma", "unidad", "url_fuente", "jurisdiccion"} <= set(fuente)
+    assert fuente["norma"]
+    # Y cada cita del texto tiene su fuente en la lista: una nota al pie que no
+    # lleva a ningún lado es peor que no ponerla.
+    citados = {str(f["chunk_id"]) for f in cuerpo["fuentes"]}
+    for cita in cuerpo["citas"]:
+        assert str(cita) in citados
+
+
+def test_sin_evidencia_se_abstiene_con_motivo_y_alternativa(cliente_api, corpus_publicado) -> None:
+    """Una abstención tiene que poder distinguirse de un «no te corresponde».
+
+    Con corte publicado: sin él la respuesta sería NO_PUBLICABLE, que es otra
+    cosa —no es que no haya evidencia, es que no hay corpus servible— y no
+    probaría lo que este caso quiere probar.
+    """
+    cuerpo = cliente_api.post(
+        "/v1/respuestas", json={"consulta": "zzzz qwrtpxk nada de esto existe"}
+    ).json()
+    assert cuerpo["modo"] == "ABSTENCION"
+    assert cuerpo["motivo"] == "SIN_EVIDENCIA"
+    assert cuerpo["alternativa"], "una abstención sin alternativa deja a la persona sin salida"
+    assert cuerpo["data_status"] == "SIN_RESULTADOS"
+
+
+def test_sin_corte_publicado_no_se_confunde_con_una_abstencion(cliente_api, corpus) -> None:
+    """«No tengo con qué» y «no hay nada publicado todavía» no son lo mismo."""
+    cuerpo = cliente_api.post("/v1/respuestas", json={"consulta": "apoyo"}).json()
+    assert cuerpo["data_status"] == "NO_PUBLICABLE"
+    assert cuerpo["release_id"] is None
+
+
+def test_la_consulta_del_frente_deja_rastro(conexion: Connection, engine_pruebas) -> None:
+    """Sin esto la ruta más usada del sistema quedaba como SIN_CLASIFICAR.
+
+    No pasa por la envoltura `Respuesta`, que es la que anota sola; se probó
+    contra la anotación directa, que es lo que la ruta hace.
+    """
+    from backend_normativo.api.contratos import abrir_anotacion, anotar, ultima_respuesta
+
+    hueco = abrir_anotacion()
+    anotar(data_status="PUBLICADO", release_id=None, motivo=None, evidencias=3)
+    assert ultima_respuesta() is hueco
+    assert hueco["data_status"] == "PUBLICADO"
+    assert hueco["evidencias"] == 3
+    assert hueco["motivo"] is None
+
+
+def test_el_frente_no_pide_datos_de_identidad(cliente_api) -> None:
+    """Lo que no se pide no se puede filtrar."""
+    html = cliente_api.get("/consulta").text
+    for prohibido in ('type="email"', 'type="tel"', 'name="dni"', 'name="cuil"'):
+        assert prohibido not in html
+
+
+def test_la_jurisdiccion_del_selector_filtra_de_verdad(cliente_api, corpus_publicado) -> None:
+    """Un filtro que se ofrece y no se aplica es peor que no ofrecerlo."""
+    propia = cliente_api.post(
+        "/v1/respuestas", json={"consulta": "beneficiarios", "jurisdiccion": "AR-C"}
+    ).json()
+    for fuente in propia["fuentes"]:
+        assert fuente["jurisdiccion"] == "AR-C"
+
+    # Y pedir otra jurisdicción no devuelve la de al lado como equivalente.
+    ajena = cliente_api.post(
+        "/v1/respuestas", json={"consulta": "beneficiarios", "jurisdiccion": "AR-B"}
+    ).json()
+    assert ajena["fuentes"] == []
+    assert ajena["modo"] == "ABSTENCION"
+
+
+def test_vocabularios_no_lee_staging(conexion: Connection) -> None:
+    """El lector conversacional accede solo a proyecciones servibles."""
+    conexion.execute(text("SET ROLE bn_lector_api"))
+    try:
+        conexion.execute(text("EXPLAIN SELECT id, nombre, nivel FROM jurisdicciones"))
+        conexion.execute(
+            text("EXPLAIN SELECT DISTINCT linea FROM beneficios WHERE linea IS NOT NULL")
+        )
+    finally:
+        conexion.execute(text("RESET ROLE"))

@@ -118,8 +118,8 @@ cobertura inexistente.
 bn calidad consultas --salida docs/calidad/consultas_conversacionales.md
 ```
 
-98 consultas del conjunto experto —las 80 del paquete más 18 ambiguas,
-históricas y adversas—, todas pasan, incluidas las 59 críticas. Una abstención
+150 consultas del conjunto experto —las 80 del paquete más 70 ambiguas,
+históricas y adversas—, todas pasan. Una abstención
 esperada que se cumple es un caso que pasa: la mayoría de estas consultas
 preguntan por datos que el corpus no tiene, y lo que se verifica es que el
 backend lo diga en vez de devolver algo parecido.
@@ -132,8 +132,11 @@ backend lo diga en vez de devolver algo parecido.
 | Diccionario de datos | `docs/operacion/diccionario_de_datos.md` | `bn calidad diccionario` |
 | Runbook | `docs/operacion/runbook.md` | — |
 | Criterios de arquitectura | `docs/adr/` (11 ADR) | — |
-| Decisiones de dominio | `docs/decisiones.md` (12 decisiones) | — |
+| Decisiones de dominio | `docs/decisiones.md` (108 decisiones) | — |
 | Backlog con evidencia | `docs/calidad/estado_backlog.md` | `bn calidad backlog` |
+| Pantalla de consulta ciudadana | `GET /consulta` | Va en la imagen de la API |
+| Consola de revisión de reglas | `GET /backoffice/reglas` | Va en la imagen de la API |
+| Accesibilidad del frente | `docs/reportes/accesibilidad_frente_ciudadano.md` | — |
 
 El diccionario se genera desde los modelos: el propósito de cada tabla es el
 docstring de su modelo, así que vive junto a su definición y no en un documento

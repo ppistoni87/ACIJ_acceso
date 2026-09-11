@@ -61,6 +61,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
+      - name: Navegador para el recorrido ciudadano
+        # El caso de extremo a extremo de P-015 corre en Chromium. Si el
+        # navegador no está, la prueba falla en vez de saltearse: es el único
+        # caso que ejercita la pantalla que usa una persona, y un salteo se
+        # cuenta como éxito.
+        run: playwright install --with-deps chromium
+
       - name: Ruff
         run: |
           ruff check .

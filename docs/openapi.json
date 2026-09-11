@@ -1123,8 +1123,196 @@
           "recuperación"
         ],
         "summary": "Cobertura",
-        "description": "Denominadores y pendientes, separados de lo validado y publicable.",
+        "description": "Denominadores y pendientes, separados de lo validado y publicable.\n\nVa con credencial de auditoría porque `medir()` lee el estado operativo\n—fuentes, capturas, incidencias— y no una proyección publicada. El contrato\nya lo declaraba de «alcance autorizado»; la implementación lo servía abierto\ny con la conexión del lector, que no tiene permiso sobre `capturas`: en\ncualquier despliegue con roles de verdad esto devolvía 500, y darle el\npermiso al lector hubiera consagrado que el lector lea staging.",
         "operationId": "cobertura_v1_cobertura_get",
+        "parameters": [
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha para la que se consulta. Por omisión, hoy.",
+              "title": "As Of"
+            },
+            "description": "Fecha para la que se consulta. Por omisión, hoy."
+          },
+          {
+            "name": "known_at",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada.",
+              "title": "Known At"
+            },
+            "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada."
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Respuesta_dict_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/respuestas": {
+      "post": {
+        "tags": [
+          "recuperación"
+        ],
+        "summary": "Responder Consulta",
+        "description": "Recupera y arma la respuesta, declarando con qué se armó.\n\nTres modos y la diferencia no se borra: `GENERADA` si un proveedor redactó y\nlos validadores aprobaron, `EXTRACTO` si no hubo proveedor o lo que devolvió\nno se sostiene, `ABSTENCION` si no hay evidencia. El plan lo pide con esas\npalabras: «un extracto de respaldo no se presenta como generación activa».\n\nHoy no hay proveedor configurado, así que contesta en modo extracto: texto\npublicado, literal y citado. No puede alucinar, y se declara.",
+        "operationId": "responder_consulta_v1_respuestas_post",
+        "parameters": [
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha para la que se consulta. Por omisión, hoy.",
+              "title": "As Of"
+            },
+            "description": "Fecha para la que se consulta. Por omisión, hoy."
+          },
+          {
+            "name": "known_at",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada.",
+              "title": "Known At"
+            },
+            "description": "Instante de conocimiento: qué sabía el sistema en ese momento. Permite reproducir una respuesta pasada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudRespuesta"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Responder Consulta V1 Respuestas Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/vocabularios": {
+      "get": {
+        "tags": [
+          "recuperación"
+        ],
+        "summary": "Vocabularios",
+        "description": "Jurisdicciones y líneas de beneficio para los selectores del frente.",
+        "operationId": "vocabularios_v1_vocabularios_get",
         "parameters": [
           {
             "name": "as_of",
@@ -1171,7 +1359,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Respuesta_dict_"
+                  "$ref": "#/components/schemas/Respuesta_Vocabularios_"
                 }
               }
             }
@@ -1208,22 +1396,6 @@
             }
           },
           {
-            "name": "X-Actor",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Actor"
-            }
-          },
-          {
             "name": "Authorization",
             "in": "header",
             "required": false,
@@ -1237,6 +1409,22 @@
                 }
               ],
               "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor"
             }
           }
         ],
@@ -1276,17 +1464,28 @@
         }
       }
     },
-    "/v1/admin/releases": {
-      "post": {
+    "/v1/admin/reglas": {
+      "get": {
         "tags": [
           "administración"
         ],
-        "summary": "Crear Release",
-        "operationId": "crear_release_v1_admin_releases_post",
+        "summary": "Listar Reglas",
+        "description": "La cola de revisión: qué falta decidir y en qué pila cae cada una.\n\nLas pilas no son decoración. Una regla sin condición ejecutable y una con\ncondición esperando confirmación no plantean lo mismo, y mandarlas a la\nmisma cola hace que la segunda se apruebe sin mirar y la primera se apruebe\nsin poder. Vienen ordenadas por beneficio y por su ubicación en el texto,\nporque revisar un articulado salteado es cómo se aprueban contradicciones.",
+        "operationId": "listar_reglas_v1_admin_reglas_get",
         "parameters": [
           {
-            "name": "X-Actor",
-            "in": "header",
+            "name": "estado",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "CANDIDATE",
+              "title": "Estado"
+            }
+          },
+          {
+            "name": "beneficio",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -1297,7 +1496,23 @@
                   "type": "null"
                 }
               ],
-              "title": "X-Actor"
+              "title": "Beneficio"
+            }
+          },
+          {
+            "name": "clase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Clase"
             }
           },
           {
@@ -1314,6 +1529,323 @@
                 }
               ],
               "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Listar Reglas V1 Admin Reglas Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/reglas/{regla_id}": {
+      "get": {
+        "tags": [
+          "administración"
+        ],
+        "summary": "Ver Regla",
+        "description": "El expediente de una regla: todo lo que hace falta para decidirla.\n\nLiteral, interpretación, condición, dependencias, parámetros, vigencia y\ncontroles, juntos. Una condición se aprueba o no según de qué depende y\nsobre qué versión rige; pedirle a quien revisa que cruce seis pantallas es\npedirle que no las cruce.",
+        "operationId": "ver_regla_v1_admin_reglas__regla_id__get",
+        "parameters": [
+          {
+            "name": "regla_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Regla Id"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Ver Regla V1 Admin Reglas  Regla Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/reglas/{regla_id}/decidir": {
+      "post": {
+        "tags": [
+          "administración"
+        ],
+        "summary": "Decidir Regla",
+        "description": "Aprueba, rechaza o marca en revisión, con actor y fundamento.\n\nAprobar no publica: la regla queda aprobada y recién el corte de release la\nvuelve servible. Son dos decisiones distintas y las toma gente distinta.",
+        "operationId": "decidir_regla_v1_admin_reglas__regla_id__decidir_post",
+        "parameters": [
+          {
+            "name": "regla_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Regla Id"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudDecisionRegla"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Decidir Regla V1 Admin Reglas  Regla Id  Decidir Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/releases/propuesta": {
+      "get": {
+        "tags": [
+          "administración"
+        ],
+        "summary": "Propuesta De Release",
+        "description": "Qué publicaría un corte ahora, con sus controles y lo que quedaría afuera.\n\nP-016 criterio 2. Publicar es irreversible en el sentido que importa —lo\npublicado se sirve, y quien consulta lo lee como el derecho vigente— así que\nquien firma tiene que poder ver antes qué entra, qué controles pasan y qué\nqueda en cuarentena. Sin esto, confirmar es firmar a ciegas.\n\nEs una lectura: no crea nada. La ruta de creación es otra y exige el mismo\nrol.",
+        "operationId": "propuesta_de_release_v1_admin_releases_propuesta_get",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Propuesta De Release V1 Admin Releases Propuesta Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/releases": {
+      "post": {
+        "tags": [
+          "administración"
+        ],
+        "summary": "Crear Release",
+        "operationId": "crear_release_v1_admin_releases_post",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor"
             }
           }
         ],
@@ -1353,12 +1885,422 @@
         }
       }
     },
+    "/v1/admin/calidad": {
+      "get": {
+        "tags": [
+          "administración"
+        ],
+        "summary": "Tablero De Calidad",
+        "description": "Los indicadores con su número, consultados a la base.\n\nNinguno sale de una constante: el criterio lo pide con esas palabras, y es\nel mismo principio que el resto del proyecto —una cifra escrita a mano\nenvejece en silencio y nadie se entera—.",
+        "operationId": "tablero_de_calidad_v1_admin_calidad_get",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Tablero De Calidad V1 Admin Calidad Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/calidad/{clave}": {
+      "get": {
+        "tags": [
+          "administración"
+        ],
+        "summary": "Registros Del Indicador",
+        "description": "Las filas que componen un indicador.\n\n`cuantos` es la cantidad total y no la de esta página: un tablero que dijera\n«200» porque mostró doscientas estaría midiendo su propia paginación.",
+        "operationId": "registros_del_indicador_v1_admin_calidad__clave__get",
+        "parameters": [
+          {
+            "name": "clave",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clave"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 200,
+              "title": "Limite"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Registros Del Indicador V1 Admin Calidad  Clave  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/normas": {
+      "get": {
+        "tags": [
+          "administración"
+        ],
+        "summary": "Buscar Normas",
+        "description": "Busca normas por su identidad o su título.\n\nQuien revisa llega con una cita —«la 24.714», «decreto 1382»— y no con un\nidentificador interno, así que se busca por tipo, número, año y título a la\nvez. Sin texto devuelve las más recientes, que es mejor que una pantalla en\nblanco pidiendo que adivinen.",
+        "operationId": "buscar_normas_v1_admin_normas_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 30,
+              "title": "Limite"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Buscar Normas V1 Admin Normas Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/normas/{norma_id}/versiones": {
+      "get": {
+        "tags": [
+          "administración"
+        ],
+        "summary": "Versiones De Una Norma",
+        "description": "Las versiones documentales de una norma, para poder elegir dos.\n\nCada una dice si está publicada y desde cuándo vale: comparar dos versiones\nsin saber cuál se está sirviendo es comparar a ciegas.",
+        "operationId": "versiones_de_una_norma_v1_admin_normas__norma_id__versiones_get",
+        "parameters": [
+          {
+            "name": "norma_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Norma Id"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Versiones De Una Norma V1 Admin Normas  Norma Id  Versiones Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/comparacion": {
+      "get": {
+        "tags": [
+          "administración"
+        ],
+        "summary": "Comparar Dos Versiones",
+        "description": "Qué cambió entre dos versiones documentales.\n\nLos desplazamientos se cuentan aparte: cuando se inserta un párrafo, todas\nlas rutas posteriores corren un lugar, y contar eso como texto modificado\nllenaría la comparación de cambios falsos por cada inserción real.",
+        "operationId": "comparar_dos_versiones_v1_admin_comparacion_get",
+        "parameters": [
+          {
+            "name": "a",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "A"
+            }
+          },
+          {
+            "name": "b",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "B"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Comparar Dos Versiones V1 Admin Comparacion Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/salud": {
       "get": {
         "tags": [
           "operativo"
         ],
         "summary": "Salud",
+        "description": "Liveness: si el proceso sigue en pie. No toca la base, a propósito.\n\nSi esta sonda dependiera de la base, una base momentáneamente\ninalcanzable reiniciaría procesos sanos y convertiría una caída parcial\nen una total. Para saber si la instancia puede **servir** está `/listo`.",
         "operationId": "salud_salud_get",
         "responses": {
           "200": {
@@ -1369,6 +2311,30 @@
                   "additionalProperties": true,
                   "type": "object",
                   "title": "Response Salud Salud Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/listo": {
+      "get": {
+        "tags": [
+          "operativo"
+        ],
+        "summary": "Listo",
+        "description": "Readiness: si esta instancia puede contestar.\n\nVerifica conexión y que el esquema aplicado sea el que este código\nespera. En producción exige además un corte publicado: sin release la\nAPI contesta abstenciones correctas y vacías, lo que está bien en\ndesarrollo y no está bien recibiendo gente que pregunta por sus\nderechos.\n\nDevuelve 503 cuando no está lista, que es lo que un orquestador lee para\nno mandarle tráfico. El cuerpo dice cuál verificación falló: una sonda\nque solo dice «no» obliga a entrar al contenedor a averiguar por qué.",
+        "operationId": "listo_listo_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Listo Listo Get"
                 }
               }
             }
@@ -1799,6 +2765,11 @@
           "relevancia": {
             "type": "number",
             "title": "Relevancia"
+          },
+          "encontrado_por": {
+            "type": "string",
+            "title": "Encontrado Por",
+            "default": "lexica"
           }
         },
         "type": "object",
@@ -2627,6 +3598,72 @@
         ],
         "title": "Respuesta[ResultadoRecuperacion]"
       },
+      "Respuesta_Vocabularios_": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "release_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At"
+          },
+          "data_status": {
+            "$ref": "#/components/schemas/DataStatus"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Vocabularios"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidencia"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Advertencia"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "known_at",
+          "data_status",
+          "data"
+        ],
+        "title": "Respuesta[Vocabularios]"
+      },
       "Respuesta_dict_": {
         "properties": {
           "schema_version": {
@@ -3068,6 +4105,38 @@
         "type": "object",
         "title": "ResultadoRecuperacion"
       },
+      "SolicitudDecisionRegla": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Decision"
+          },
+          "fundamento": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Fundamento"
+          },
+          "estado_esperado": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estado Esperado"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision",
+          "fundamento"
+        ],
+        "title": "SolicitudDecisionRegla"
+      },
       "SolicitudEvaluacion": {
         "properties": {
           "beneficio_id": {
@@ -3116,6 +4185,17 @@
               }
             ],
             "title": "Jurisdiccion"
+          },
+          "beneficio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Beneficio"
           },
           "limite": {
             "type": "integer",
@@ -3203,6 +4283,49 @@
           "decision"
         ],
         "title": "SolicitudResolucion"
+      },
+      "SolicitudRespuesta": {
+        "properties": {
+          "consulta": {
+            "type": "string",
+            "title": "Consulta"
+          },
+          "jurisdiccion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jurisdiccion"
+          },
+          "beneficio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Beneficio"
+          },
+          "limite": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Limite",
+            "default": 5
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "consulta"
+        ],
+        "title": "SolicitudRespuesta"
       },
       "ValidationError": {
         "properties": {
@@ -3517,6 +4640,28 @@
           "valid_tipo"
         ],
         "title": "Vigencia"
+      },
+      "Vocabularios": {
+        "properties": {
+          "jurisdicciones": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Jurisdicciones"
+          },
+          "lineas_de_beneficio": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Lineas De Beneficio"
+          }
+        },
+        "type": "object",
+        "title": "Vocabularios",
+        "description": "Las opciones que una persona puede elegir, tal como están cargadas.\n\nEl frente no las puede tener escritas adentro: una jurisdicción que se\nagrega al corpus quedaría invisible, y una que se saca seguiría ofreciéndose\npara filtrar por algo que no existe. Salen de la base, que es donde están."
       }
     }
   },

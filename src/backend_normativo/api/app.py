@@ -64,6 +64,18 @@ def crear_app() -> FastAPI:
             )
         )
 
+    # El frente ciudadano (P-015) va por el mismo camino y por la misma razón:
+    # consume `POST /v1/respuestas` y `GET /v1/vocabularios`, y si viajara por
+    # separado podría quedar pidiendo campos que la API ya no devuelve. Acá no
+    # puede: sale de la misma imagen que la API que consume.
+    @app.get("/consulta", tags=["recuperación"], include_in_schema=False)
+    def frente_ciudadano() -> HTMLResponse:
+        return HTMLResponse(
+            (pathlib.Path(__file__).parent / "ciudadano" / "consulta.html").read_text(
+                encoding="utf-8"
+            )
+        )
+
     @app.middleware("http")
     async def registrar_consulta(solicitud: Request, siguiente):
         """Correlación y medición de cada consulta de lectura.

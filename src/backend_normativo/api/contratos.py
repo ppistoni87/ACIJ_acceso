@@ -100,6 +100,34 @@ def ultima_respuesta() -> dict | None:
     return _anotacion.get()
 
 
+def anotar(
+    *,
+    data_status: str,
+    release_id: uuid.UUID | str | None,
+    motivo: str | None = None,
+    evidencias: int = 0,
+) -> None:
+    """Anota el resultado desde una ruta que no usa la envoltura `Respuesta`.
+
+    La envoltura anota sola, y casi todas las rutas la usan. `POST /v1/respuestas`
+    no: devuelve el modo, el texto y las citas, que no entran en `data`/`evidence`
+    sin deformarlos. Sin esto, cada consulta del frente ciudadano —que es la
+    única ruta que una persona usa de verdad— quedaba registrada como
+    SIN_CLASIFICAR, y el tablero medía todo menos lo que importa.
+    """
+    hueco = _anotacion.get()
+    if hueco is None:
+        return
+    hueco.update(
+        {
+            "data_status": data_status,
+            "release_id": str(release_id) if release_id else None,
+            "motivo": motivo,
+            "evidencias": evidencias,
+        }
+    )
+
+
 class Respuesta(BaseModel, Generic[T]):
     """Envoltura común de toda respuesta."""
 

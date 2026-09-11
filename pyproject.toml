@@ -39,6 +39,8 @@ dev = [
     "ruff>=0.8",
     "mypy>=1.13",
     "types-python-dateutil",
+    # El recorrido ciudadano (P-015) se prueba en un navegador de verdad.
+    "playwright>=1.49",
 ]
 
 [project.scripts]

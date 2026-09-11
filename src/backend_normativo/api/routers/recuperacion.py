@@ -11,6 +11,7 @@ import uuid
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import text
 
 from backend_normativo.api.contratos import (
     Advertencia,
@@ -197,6 +198,24 @@ class SolicitudRespuesta(BaseModel):
     limite: int = Field(default=5, ge=1, le=10)
 
 
+class FuenteCitada(BaseModel):
+    """Una cita que se puede abrir.
+
+    El endpoint devolvía las citas como identificadores sueltos —`[[chunk:uuid]]`
+    en el texto y la lista de uuids al lado—, que sirve para un sistema y no para
+    una persona: nadie verifica un uuid. El criterio 2 de P-015 pide «fuentes
+    abribles», así que la cita viaja con de qué norma es, de qué unidad y a qué
+    URL oficial lleva. Cuando no hay URL se dice; no se fabrica una.
+    """
+
+    chunk_id: uuid.UUID
+    norma: str
+    unidad: str | None = None
+    url_fuente: str | None = None
+    jurisdiccion: str | None = None
+    encontrado_por: str = "lexica"
+
+
 @router.post("/respuestas")
 def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depends()) -> dict:
     """Recupera y arma la respuesta, declarando con qué se armó.
@@ -209,15 +228,23 @@ def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depen
     Hoy no hay proveedor configurado, así que contesta en modo extracto: texto
     publicado, literal y citado. No puede alucinar, y se declara.
     """
+    from backend_normativo.api.contratos import anotar
     from backend_normativo.generacion.proveedores import configurado as proveedor_configurado
-    from backend_normativo.generacion.respuesta import responder
+    from backend_normativo.generacion.respuesta import ModoRespuesta, responder
 
     if not contexto.hay_release:
         salida = responder(solicitud.consulta, [])
+        anotar(
+            data_status=DataStatus.NO_PUBLICABLE.value,
+            release_id=None,
+            motivo=salida.motivo.value if salida.motivo else None,
+        )
         return {
             "release_id": None,
             "as_of": contexto.as_of.isoformat(),
             "known_at": contexto.known_at.isoformat(),
+            "data_status": DataStatus.NO_PUBLICABLE.value,
+            "fuentes": [],
             **salida.a_dict(),
         }
 
@@ -237,9 +264,76 @@ def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depen
     # validadores ni la política de modo, que es lo que protege a quien
     # consulta.
     salida = responder(solicitud.consulta, hallazgo.fragmentos, proveedor=proveedor_configurado())
+
+    fuentes = [
+        FuenteCitada(
+            chunk_id=fragmento.chunk_id,
+            norma=fragmento.norma,
+            unidad=fragmento.unidad,
+            url_fuente=fragmento.url_fuente,
+            jurisdiccion=fragmento.jurisdiccion,
+            encontrado_por=fragmento.encontrado_por,
+        ).model_dump(mode="json")
+        for fragmento in hallazgo.fragmentos
+    ]
+    estado = (
+        DataStatus.SIN_RESULTADOS
+        if salida.modo is ModoRespuesta.ABSTENCION
+        else DataStatus.PUBLICADO
+    )
+    # Sin esto la ruta más usada del sistema no dejaba rastro medible: no pasa
+    # por la envoltura `Respuesta`, que es la que anota sola.
+    anotar(
+        data_status=estado.value,
+        release_id=contexto.release_id,
+        motivo=salida.motivo.value if salida.motivo else None,
+        evidencias=len(fuentes),
+    )
     return {
         "release_id": str(contexto.release_id),
         "as_of": contexto.as_of.isoformat(),
         "known_at": contexto.known_at.isoformat(),
+        "data_status": estado.value,
+        "fuentes": fuentes,
+        "avisos": hallazgo.avisos,
         **salida.a_dict(),
     }
+
+
+# --- P-015: lo que el frente necesita para dejar elegir ----------------------
+
+
+class Vocabularios(BaseModel):
+    """Las opciones que una persona puede elegir, tal como están cargadas.
+
+    El frente no las puede tener escritas adentro: una jurisdicción que se
+    agrega al corpus quedaría invisible, y una que se saca seguiría ofreciéndose
+    para filtrar por algo que no existe. Salen de la base, que es donde están.
+    """
+
+    jurisdicciones: list[dict] = Field(default_factory=list)
+    lineas_de_beneficio: list[str] = Field(default_factory=list)
+
+
+@router.get("/vocabularios", response_model=Respuesta[Vocabularios])
+def vocabularios(contexto: Contexto = Depends()) -> Respuesta[Vocabularios]:
+    """Jurisdicciones y líneas de beneficio para los selectores del frente."""
+    jurisdicciones = [
+        {"id": fila.id, "nombre": fila.nombre, "nivel": fila.nivel}
+        for fila in contexto.conexion.execute(
+            text("SELECT id, nombre, nivel FROM jurisdicciones ORDER BY nivel, nombre")
+        ).all()
+    ]
+    lineas = [
+        fila[0]
+        for fila in contexto.conexion.execute(
+            text("SELECT DISTINCT linea FROM beneficios WHERE linea IS NOT NULL ORDER BY linea")
+        ).all()
+    ]
+    return Respuesta(
+        release_id=contexto.release_id,
+        as_of=contexto.as_of,
+        known_at=contexto.known_at,
+        data_status=DataStatus.PUBLICADO if jurisdicciones else DataStatus.SIN_RESULTADOS,
+        data=Vocabularios(jurisdicciones=jurisdicciones, lineas_de_beneficio=lineas),
+    )

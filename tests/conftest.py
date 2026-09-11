@@ -226,8 +226,15 @@ def cliente_api(engine_pruebas: Engine, conexion: Connection):
 # por error.
 
 
-@pytest.fixture
-def corpus(conexion: Connection):
+# Son funciones y no solo fixtures porque el recorrido ciudadano (P-015) corre
+# contra un servidor de verdad en otro proceso, que no puede ver la transacción
+# que una fixture revierte. Necesita el mismo corpus confirmado en su base, y
+# «el mismo» tiene que ser literalmente el mismo código: dos corpus parecidos
+# que se separan con el tiempo dan una prueba de extremo a extremo que valida un
+# sistema que nadie más usa.
+
+
+def construir_corpus(conexion: Connection):
     from backend_normativo.catalogo.carga import cargar_catalogo
     from backend_normativo.curacion.campos import EvaluadorDeCampos
     from backend_normativo.curacion.identidad import ResolutorIdentidad
@@ -272,8 +279,7 @@ def corpus(conexion: Connection):
     ).one()
 
 
-@pytest.fixture
-def corpus_publicado(conexion: Connection, corpus):
+def publicar_corpus(conexion: Connection, corpus):
     from backend_normativo.curacion.campos import EvaluadorDeCampos
     from backend_normativo.curacion.revision import Revisor
     from backend_normativo.curacion.vigencia import ResolutorVigencia
@@ -302,6 +308,16 @@ def corpus_publicado(conexion: Connection, corpus):
     EvaluadorDeCampos(conexion).evaluar()
     Publicador(conexion).publicar(actor="publicador:equipo", motivo="Primer corte.")
     return corpus
+
+
+@pytest.fixture
+def corpus(conexion: Connection):
+    return construir_corpus(conexion)
+
+
+@pytest.fixture
+def corpus_publicado(conexion: Connection, corpus):
+    return publicar_corpus(conexion, corpus)
 
 
 @pytest.fixture
