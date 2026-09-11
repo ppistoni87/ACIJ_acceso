@@ -491,9 +491,15 @@ def _medir_recuperacion(base: str, *, limite_s: float = 120.0) -> float | None:
 
 
 def _tabla_de_fases(reporte: ReporteCarga) -> list[str]:
+    # Los percentiles se calculan sobre **todo lo que recibió una respuesta**,
+    # incluidos los 503 de la base apagada. Excluirlos daba «p50 0,0 ms» en la
+    # fase del fallo, que no dice nada; y sin embargo ahí hay algo que importa:
+    # si el servicio rechaza rápido en vez de colgarse, quien pregunta recibe un
+    # «ahora no puedo» en milisegundos en vez de esperar treinta segundos. Lo
+    # que sí se cuenta aparte es lo que nunca recibió nada.
     lineas = [
-        "| Fase | Peticiones | Fallidas | p50 | p95 | p99 |",
-        "| --- | ---: | ---: | ---: | ---: | ---: |",
+        "| Fase | Peticiones | 5xx | Sin respuesta | p50 | p95 | p99 |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     vistas: list[str] = []
     for peticion in reporte.peticiones:
@@ -503,12 +509,13 @@ def _tabla_de_fases(reporte: ReporteCarga) -> list[str]:
         peticiones = reporte.de_fase(fase)
         if not peticiones:
             continue
-        exitosas = [p.ms for p in peticiones if not p.fallo and p.estado]
-        fallidas = sum(1 for p in peticiones if p.fallo)
+        contestadas = [p.ms for p in peticiones if p.estado]
+        cinco_xx = sum(1 for p in peticiones if p.estado >= 500)
+        sin_respuesta = sum(1 for p in peticiones if not p.estado)
         lineas.append(
-            f"| {fase} | {len(peticiones)} | {fallidas} | "
-            f"{percentil(exitosas, 0.50)} ms | {percentil(exitosas, 0.95)} ms | "
-            f"{percentil(exitosas, 0.99)} ms |"
+            f"| {fase} | {len(peticiones)} | {cinco_xx} | {sin_respuesta} | "
+            f"{percentil(contestadas, 0.50)} ms | {percentil(contestadas, 0.95)} ms | "
+            f"{percentil(contestadas, 0.99)} ms |"
         )
     return lineas
 
@@ -569,6 +576,12 @@ def formatear(reporte: ReporteCarga) -> str:
         "mal» y un balanceador la vuelve a mandar a la misma instancia; un 503 dice «esta "
         "instancia no puede ahora». Y con el proveedor de modelo caído no hay error ninguno: "
         "la respuesta repliega a extracto, que es texto publicado y citado."
+    )
+    partes.append("")
+    partes.append(
+        "Las pocas respuestas generadas que aparecen dentro de la ventana del proveedor caído "
+        "son las que ya estaban en vuelo cuando se lo rompió: se pidieron antes y se "
+        "contestaron después. No son un repliegue que no ocurrió."
     )
 
     partes += ["", "## Fallos inducidos", ""]
