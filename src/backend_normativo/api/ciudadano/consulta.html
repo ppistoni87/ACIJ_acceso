@@ -25,10 +25,16 @@
 html{-webkit-text-size-adjust:100%; height:100%}
 body{
   margin:0; background:var(--papel); color:var(--tinta); min-height:100%;
-  font:16px/1.6 "Source Sans 3",-apple-system,"Segoe UI",system-ui,sans-serif;
+  /* Pila del sistema, a propósito y sin excepción. Cargar una tipografía de
+     un servicio externo le cuenta a ese servicio quién entró a preguntar por
+     sus derechos, y además hace que la pantalla dependa de que ese servicio
+     esté vivo y de que la conexión alcance. Antes acá decía «Source Sans 3»,
+     que no se carga en ningún lado: nombrar una familia que nunca llega
+     significa que cada navegador elige otra cosa. */
+  font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   display:flex; flex-direction:column;
 }
-.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 button{font:inherit;cursor:pointer}
 :focus-visible{outline:3px solid var(--frio); outline-offset:2px}
 .vr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -67,7 +73,7 @@ main{flex:1; width:100%; max-width:760px; margin:0 auto; padding:16px 16px 8px}
   padding:10px 14px; overflow-wrap:anywhere;
 }
 .msj .quien{
-  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.06em;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:10.5px; letter-spacing:.06em;
   color:var(--tinta-3); margin:0 0 4px;
 }
 .msj.mia .quien{text-align:right}
@@ -78,7 +84,7 @@ main{flex:1; width:100%; max-width:760px; margin:0 auto; padding:16px 16px 8px}
 .msj h2{margin:0 0 4px; font-size:1.02rem; font-weight:600; scroll-margin-top:70px}
 .msj h3{
   margin:16px 0 6px; font-size:.84rem; letter-spacing:.04em; color:var(--tinta-2);
-  font-family:"IBM Plex Mono",monospace; font-weight:600;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-weight:600;
 }
 .msj p{margin:0 0 10px; overflow-wrap:anywhere}
 .msj p:last-child{margin-bottom:0}
@@ -86,7 +92,7 @@ main{flex:1; width:100%; max-width:760px; margin:0 auto; padding:16px 16px 8px}
 .norma{font-weight:600}
 
 .sello{
-  display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:.68rem;
+  display:inline-block; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.68rem;
   letter-spacing:.06em; padding:1px 6px; border:1px solid; border-radius:2px; vertical-align:middle;
 }
 .s-GENERADA{color:var(--ok); border-color:var(--ok)}
@@ -102,7 +108,7 @@ main{flex:1; width:100%; max-width:760px; margin:0 auto; padding:16px 16px 8px}
 .aviso-privacidad{border-left-color:var(--frio)}
 
 a.nota{
-  font-family:"IBM Plex Mono",monospace; font-size:.72rem; text-decoration:none;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.72rem; text-decoration:none;
   color:var(--frio); border:1px solid var(--frio); border-radius:2px; padding:0 4px;
   margin-left:3px; white-space:nowrap;
 }
@@ -139,7 +145,7 @@ details.mas[open] > summary::before{content:"▾ "; }
 
 .ficha{
   margin:12px 0 0; padding:8px 10px; background:var(--papel-3);
-  font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--tinta-2); line-height:1.7;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:11px; color:var(--tinta-2); line-height:1.7;
 }
 .ficha b{color:var(--tinta-2); font-weight:600}
 .ficha span{display:block; overflow-wrap:anywhere}
@@ -581,8 +587,22 @@ function sugerenciasDeEjemplo(){
   // Las sugerencias salen de lo que el corte realmente cubre, no de una lista
   // escrita a mano: ofrecer ejemplos que el sistema no puede contestar es
   // prometer algo que no tiene.
+  // Estas tres están **medidas**: las tres vuelven con textos que además
+  // coinciden en palabras con lo publicado. Las anteriores —«¿Quién puede
+  // pedirlo?», «¿Qué papeles piden?»— volvían con el aviso de «esto puede no
+  // tener nada que ver», o sea que la pantalla sugería una pregunta y después
+  // se desdecía de la respuesta. Una sugerencia que el sistema no puede
+  // contestar bien es peor que no sugerir nada.
+  //
+  // Están escritas acá porque hoy lo publicado es una sola ley. Con más normas
+  // esto tiene que salir del corpus, y verificarse igual: la regla no es la
+  // lista, es que se prueben antes de ofrecerlas.
   const ejemplos = cobertura.length
-    ? ["¿Quién puede pedirlo?", "¿Qué papeles piden?", "¿De cuánto es?"]
+    ? [
+        "Me quedé sin casa después de un incendio",
+        "Estoy durmiendo en la calle",
+        "¿Tengo que rendir cuentas de lo que gasté?"
+      ]
     : ["¿Qué tenés publicado?"];
   ejemplos.forEach(function(texto){
     caja.appendChild(chip(texto, function(){

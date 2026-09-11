@@ -2567,3 +2567,38 @@ Hay una prueba que recorre cuatro conversaciones y falla si aparece cualquiera
 de diecisiete palabras de la cocina —«corte publicado», «chunk», «embedding»,
 «abstención», «bn recuperacion»…—. Un criterio de estilo que nadie verifica se
 pierde en el tercer cambio.
+
+## D-118 · Las preguntas sugeridas se miden antes de ofrecerlas
+
+Sacando la demostración se vio algo incómodo: las tres preguntas que la pantalla
+sugería —«¿Quién puede pedirlo?», «¿Qué papeles piden?», «¿De cuánto es?»—
+volvían las tres con la advertencia de «esto puede no tener nada que ver con lo
+tuyo». O sea: el sistema proponía una pregunta y después se desdecía de su
+propia respuesta.
+
+La causa es la misma de siempre. Son preguntas cortas cuyas palabras —«pedirlo»,
+«papeles», «cuánto»— no están en el texto legal, así que la mitad léxica no
+encuentra nada y lo que queda son vecinos semánticos sueltos.
+
+Se reemplazaron por tres que **se midieron**: «Me quedé sin casa después de un
+incendio», «Estoy durmiendo en la calle», «¿Tengo que rendir cuentas de lo que
+gasté?». Las tres vuelven corroboradas. Y de paso suenan a alguien contando lo
+que le pasa, que es como se va a usar esto.
+
+La regla no es la lista —hoy lo publicado es una sola ley y con más normas esto
+tiene que salir del corpus—: la regla es que una sugerencia se prueba antes de
+ofrecerse. Una que el sistema no puede contestar bien es peor que no sugerir
+nada.
+
+## D-119 · Tipografía del sistema, a propósito
+
+El CSS nombraba «Source Sans 3» e «IBM Plex Mono», y ninguna de las dos se
+cargaba en ningún lado: nombrar una familia que nunca llega significa que cada
+navegador elige otra cosa y la pantalla se ve distinta en cada máquina.
+
+Se podría haber agregado el enlace a un servicio de tipografías. No se hizo, y
+conviene que quede escrito por qué: **cargar una tipografía de un servicio
+externo le cuenta a ese servicio quién entró a preguntar por sus derechos**, y
+además ata la pantalla a que ese servicio esté vivo y a que la conexión alcance.
+Para esta gente, ninguna de las dos cosas es aceptable a cambio de una letra más
+linda. Queda la pila del sistema, declarada entera.
