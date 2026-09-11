@@ -88,7 +88,7 @@ una. Si no coinciden, mandan los comandos.
 | Normas en el catálogo nacional | 423.718 | `bn calidad cobertura` |
 | Beneficios curados desde el texto | 16 | `bn curacion beneficios` |
 | Reglas extraídas con su artículo | 176 | `bn revision reglas` |
-| Fuentes que sirven | 44 de 55 ingestables | `bn calidad fuentes` |
+| Fuentes que sirven | 40 de 55 ingestables | `bn calidad fuentes` sobre una base limpia |
 
 Y lo que el sistema **se niega** a hacer, que es la parte que más costó:
 
@@ -146,3 +146,35 @@ lo tiene» decide si esto es trabajo de ingesta o una corrección del catálogo,
 esa es una revisión de las seis, una por una, con la página al lado. Dejarlas
 visibles y mal atribuidas cuesta una revisión; esconderlas detrás de un estado
 nuevo que yo inventara cuesta no volver a mirarlas.
+
+
+## Por qué la cifra de fuentes bajó de 44 a 40
+
+Sobre la base de desarrollo, `bn calidad fuentes` cuenta 44. Sobre una base
+construida desde cero, 40. La diferencia no es ruido: son F12, F67, M02 y M04,
+cuatro fuentes que en desarrollo tienen filas porque se extrajeron con
+`extraccion@10`, cuando el adaptador de páginas institucionales decidía si le
+correspondía una captura mirando el dominio y no lo que la fuente declara ser.
+
+Con eso aceptaba boletines y datasets, y lo que sacaba de ellos era el andamio
+del sitio:
+
+- **F12** es un DATASET —el salario vital y móvil— y su texto extraído empieza
+  «Inicio Ministerio de Capital Humano Trabajo, Empleo y Seguri…»: la miga de
+  navegación, no la tabla de salarios.
+- **M02** es un BOLETÍN y quedó «Descargas Descargas Boletín Descargas Separatas
+  Buscador His…»: el menú.
+- **M04**, otro boletín, quedó «BIENVENIDOS AL DE LA PROVINCIA DE BUENOS
+  AIRES…».
+
+Desde que el adaptador decide por la clase declarada en el catálogo, esas cuatro
+dejaron de extraerse y pasaron a figurar como capturadas y nunca extraídas, que
+es lo que son: no hay adaptador de boletines ni las está leyendo el de datasets.
+
+**40 es el número honesto.** El 44 contaba cuatro fuentes cuyo contenido era el
+menú de su propio sitio. Una fuente que figura servida con el andamio del portal
+es peor que una que figura pendiente: la pendiente se ve y se trabaja.
+
+Por eso la cifra de esta tabla dice «sobre una base limpia». La base de
+desarrollo arrastra filas de extractores viejos, y esa es justamente la clase de
+resto que la corrida limpia existe para no dejar pasar.

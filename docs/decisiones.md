@@ -1723,3 +1723,30 @@ corrección de D-86: con el código viejo, la prueba falla en `/v1/cobertura`.
 El verificador de permisos ya declaraba `DENEGADO: leer capturas` para la API y
 daba 23 sondas sin discrepancia. No mentía: los `GRANT` estaban bien. Lo que
 nadie comprobaba era si el código respetaba esa frontera.
+
+## D-88 · La base de desarrollo contaba cuatro fuentes de más
+
+`bn calidad fuentes` da 44 sobre la base de desarrollo y 40 sobre una construida
+desde cero. La diferencia son F12, F67, M02 y M04, y no es ruido: tienen filas en
+desarrollo porque se extrajeron con `extraccion@10`, cuando el adaptador de
+páginas institucionales decidía si le tocaba una captura mirando el dominio en
+vez de la clase que el catálogo declara.
+
+Con ese criterio aceptaba boletines y datasets, y lo que producía era el andamio
+del sitio. F12 es el dataset del salario vital y móvil y su texto extraído
+arranca «Inicio Ministerio de Capital Humano Trabajo, Empleo y Seguri…»: la miga
+de navegación. M02 quedó como «Descargas Descargas Boletín Descargas Separatas
+Buscador His…». M04, «BIENVENIDOS AL DE LA PROVINCIA DE BUENOS AIRES…».
+
+Desde que el adaptador decide por clase, esas cuatro dejaron de extraerse y
+figuran como capturadas y nunca extraídas, que es lo que son: no hay adaptador de
+boletines y el de datasets no las toma.
+
+**Consecuencia:** el traspaso dice 40 de 55 y aclara que la cifra se mide sobre
+una base limpia. Una fuente que figura servida con el menú de su propio sitio es
+peor que una que figura pendiente, porque la pendiente se ve y se trabaja.
+
+Y esto es lo que la corrida limpia existe para encontrar. El número de la base de
+desarrollo no estaba mal calculado: estaba calculado sobre restos de un extractor
+viejo. Ninguna prueba lo podía ver, porque las pruebas no arrastran ese resto y
+la base de desarrollo nunca empieza de cero.
