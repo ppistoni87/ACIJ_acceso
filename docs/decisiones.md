@@ -1699,3 +1699,27 @@ Y un error propio en el camino: el ayudante que emite la credencial atrapaba
 `Exception` y devolvía «falta el secreto». Con eso, una llamada mal escrita
 —faltaba un argumento— se presentó durante dos intentos como un problema de
 configuración. Ahora pregunta `secreto() is None` y cualquier otro error rompe.
+
+## D-87 · Una prueba que no puede fallar no prueba nada
+
+D-86 se encontró desplegando, no probando, y la razón estaba en la fixture: las
+pruebas de API sustituyen `conexion_lectura` por la conexión del caso, que es de
+superusuario. Con eso, ninguna prueba puede notar que una ruta lee una tabla que
+el lector de producción no alcanza.
+
+**Consecuencia:** `tests/integracion/test_permisos_de_la_api.py` recorre cada
+`GET` público con una conexión que hace `SET ROLE bn_lector_api` —el rol real del
+despliegue— y falla si alguna devuelve 500. No prepara corpus: lo que se mira no
+son los datos sino que ninguna ruta se caiga por permisos. Un 200 vacío está
+bien.
+
+Dos cuidados que la prueba lleva escritos. Las rutas salen del contrato OpenAPI
+y no de `app.routes`, porque ahí varias quedan sin `path` y la lista vacía habría
+dejado la prueba pasando sin comprobar nada —pasó en el primer intento, ocho
+rutas se volvieron cero y el resultado fue «1 skipped» en verde—; ahora hay un
+`assert` que exige que la lista no esté vacía. Y se verificó revirtiendo la
+corrección de D-86: con el código viejo, la prueba falla en `/v1/cobertura`.
+
+El verificador de permisos ya declaraba `DENEGADO: leer capturas` para la API y
+daba 23 sondas sin discrepancia. No mentía: los `GRANT` estaban bien. Lo que
+nadie comprobaba era si el código respetaba esa frontera.
