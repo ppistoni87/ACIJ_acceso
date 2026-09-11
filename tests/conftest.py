@@ -209,12 +209,31 @@ def cliente_api(engine_pruebas: Engine, conexion: Connection):
 
     from backend_normativo.api.app import crear_app
     from backend_normativo.api.dependencias import conexion_administracion, conexion_lectura
+    from backend_normativo.api.limites import VARIABLE_LIMITE, reiniciar_limitadores
+
+    # El límite de consultas queda desactivado para el resto de la suite, a
+    # propósito y con nombre. Todas las pruebas comparten el mismo origen
+    # («testclient») y el mismo proceso, así que compartirían un solo balde:
+    # bastaría con que la suite creciera para que una prueba empezara a fallar
+    # por el cupo que gastaron las anteriores, y eso es un fallo que no dice
+    # nada de lo que la prueba quería verificar. El límite se prueba donde
+    # corresponde, en `tests/integracion/test_limites_de_uso.py`, encendiéndolo.
+    anterior = os.environ.get(VARIABLE_LIMITE)
+    os.environ[VARIABLE_LIMITE] = "0"
+    reiniciar_limitadores()
 
     app = crear_app()
     app.dependency_overrides[conexion_lectura] = lambda: conexion
     app.dependency_overrides[conexion_administracion] = lambda: conexion
-    with TestClient(app) as cliente:
-        yield cliente
+    try:
+        with TestClient(app) as cliente:
+            yield cliente
+    finally:
+        if anterior is None:
+            os.environ.pop(VARIABLE_LIMITE, None)
+        else:
+            os.environ[VARIABLE_LIMITE] = anterior
+        reiniciar_limitadores()
 
 
 # --- Corpus compartido -------------------------------------------------------

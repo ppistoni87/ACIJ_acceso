@@ -2306,3 +2306,69 @@ nada.
 para temas que el corte no publica siguen ahí: vienen de la mitad semántica, que
 siempre entrega sus vecinos más cercanos. Es un problema distinto, ya listado en
 `docs/reportes/recuperacion.md`, y esta corrección no lo toca ni lo empeora.
+
+## D-110 · Límites de uso: dos baldes, y ninguno guarda una dirección
+
+P-017 criterio 3. Hasta ahora no había ninguno: una sola dirección podía ocupar
+toda la capacidad, y probar mil credenciales costaba lo mismo que probar una.
+
+Dos límites por origen, ambos de balde de fichas —y no contador por ventana
+fija, que deja gastar el cupo entero al final de una ventana y el cupo entero al
+principio de la siguiente—: consultas por minuto (120) y autenticaciones
+administrativas fallidas (10 cada cinco minutos). Al alcanzarlos, **429** con
+cuerpo tipado `RATE_LIMITED` y `Retry-After`.
+
+**La clave del balde no es una dirección**, es un hash con sal aleatoria del
+proceso. Sirve para contar, no para saber de quién, y la sal muere con el
+proceso. `X-Forwarded-For` no se cree por omisión: la pone quien llama, y
+creerle convierte el límite en un adorno porque cualquiera cambia de identidad
+escribiendo otro número. Se usa sólo si el despliegue declara cuántos proxies
+propios hay delante, y se lee el salto que corresponde a ese número.
+
+**Los límites van adentro de la observabilidad, no afuera.** El middleware se
+registra antes para quedar envuelto por el de medición, así que un 429 se mide
+como cualquier otra respuesta. Un límite que frena sin dejar rastro no se puede
+ajustar: no hay forma de saber si está frenando abuso o gente.
+
+**Lo que no hace y hay que decir al desplegar:** el balde no se comparte entre
+procesos, así que con cuatro instancias el límite efectivo es cuatro veces el
+configurado. Un límite compartido necesita un almacén común que este despliegue
+todavía no tiene.
+
+**Un fallo que la prueba encontró.** El barrido de baldes ociosos miraba también
+las fichas (`fichas >= cupo`), lo que parece más prolijo y está mal: las fichas
+se reponen recién cuando el balde se usa, así que un balde ocioso figura con las
+de la última vez y no se barre nunca. Con seiscientos orígenes no se barrió
+ninguno —una fuga de memoria en el componente que defiende del abuso—. Alcanza
+con la inactividad: pasada una ventana entera la reposición llega al cupo por
+aritmética.
+
+**Y uno de configuración.** Una variable mal escrita —`BN_LIMITE_CONSULTAS_POR_MINUTO=sesenta`—
+no puede dejar el servicio sin límite en silencio. Se vuelve al valor por
+omisión; el modo sin límite se pide a propósito poniendo 0, que es lo que
+necesita una medición de caudal.
+
+## D-111 · La traza de consultas caduca aunque no identifique a nadie
+
+P-017 criterio 2. `consultas_auditadas` guarda la **forma** de la consulta —ruta,
+corte, resultado, causa tipada, latencia— y nunca su contenido. Aun así se borra
+a los 90 días (`bn operacion purgar-consultas`).
+
+Dos razones. Un registro que no caduca crece para siempre y termina respaldado,
+replicado y consultado por gente que no sabe qué está mirando. Y «no identifica
+a nadie» es una afirmación sobre hoy: un conjunto grande de formas de consulta,
+con sus horarios y sus jurisdicciones, se vuelve más identificante cuanto más
+largo es.
+
+El purgado corre con el rol de administración. El lector de la API inserta su
+traza y no puede borrar la de nadie, y eso está probado con `SET ROLE`: esa
+separación es lo que hace que el registro sirva como registro.
+
+La prueba de privacidad se endureció de paso. Verificaba que no existiera una
+columna llamada `consulta_texto`; ahora fija el **conjunto entero** de columnas
+de la tabla. Prohibir los nombres que se nos ocurran hoy no protege de la
+columna que se agregue mañana con otro nombre.
+
+Todo quedó escrito en `docs/operacion/politica_de_datos.md`, con el archivo y la
+prueba al lado de cada afirmación. Una política de retención que vive sólo en un
+documento es una política que nadie aplica.

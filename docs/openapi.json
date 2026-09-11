@@ -2588,7 +2588,8 @@
           "UNSUPPORTED_SCOPE",
           "INVALID_REQUEST",
           "NOT_AUTHORIZED",
-          "VERSION_CONFLICT"
+          "VERSION_CONFLICT",
+          "RATE_LIMITED"
         ],
         "title": "CodigoError",
         "description": "Errores tipados del contrato.\n\nInformación insuficiente es un estado de dominio, no un fallo del servidor:\nnunca se disfraza de 500."

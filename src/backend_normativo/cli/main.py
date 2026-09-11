@@ -2296,6 +2296,34 @@ def operacion_credenciales_revocadas() -> None:
         )
 
 
+@operacion.command("purgar-consultas")
+def operacion_purgar_consultas(
+    dias: int = typer.Option(
+        None,
+        help="Días de retención. Por omisión, los de BN_RETENCION_CONSULTAS_DIAS.",
+    ),
+    simular: bool = typer.Option(
+        False, "--simular", help="Cuenta lo que borraría y no borra nada."
+    ),
+) -> None:
+    """Aplica la retención de la traza de consultas (P-017, criterio 2).
+
+    Va con el rol de administración: el lector de la API puede insertar su
+    traza y no puede borrar la de nadie.
+    """
+    from backend_normativo.api.observabilidad import purgar
+
+    with engine_migrador().begin() as conexion:
+        resultado = purgar(conexion, dias=dias, simular=simular)
+    verbo = "se borrarían" if resultado.simulada else "borradas"
+    typer.echo(
+        f"Retención: {resultado.dias} días · {verbo} {resultado.candidatas} · "
+        f"quedan {resultado.quedan}"
+    )
+    if resultado.mas_antigua:
+        typer.echo(f"La más antigua que queda es del {resultado.mas_antigua.date().isoformat()}.")
+
+
 @curacion.command("canales")
 def curacion_canales(
     fuente: str | None = typer.Argument(None, help="Una fuente en particular. Por omisión, todas."),

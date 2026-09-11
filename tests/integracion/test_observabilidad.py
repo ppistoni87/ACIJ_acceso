@@ -39,6 +39,25 @@ def _registrada(conexion: Connection, request_id: str) -> dict:
     )
 
 
+# Lo que la traza de una consulta puede contener. Ninguna de estas columnas
+# identifica a una persona: son la **forma** de la consulta —qué ruta, contra qué
+# corte, cuánto tardó, si se contestó o se abstuvo y por qué— y no su contenido.
+COLUMNAS_DE_LA_TRAZA = {
+    "id",
+    "release_id",
+    "intencion",
+    "fecha_consulta",
+    "jurisdiccion_id",
+    "resultado_tipo",
+    "evidencias_usadas",
+    "reglas_versiones",
+    "latencia_ms",
+    "ocurrido_en",
+    "request_id",
+    "motivo_abstencion",
+}
+
+
 def test_no_se_guarda_el_texto_de_la_consulta(conexion: Connection) -> None:
     """`intencion` recibe la ruta, nunca lo que la persona escribió."""
     observabilidad.registrar(
@@ -52,15 +71,19 @@ def test_no_se_guarda_el_texto_de_la_consulta(conexion: Connection) -> None:
     )
     fila = _registrada(conexion, "r1")
     assert fila["intencion"] == "/v1/beneficios"
-    columnas = conexion.execute(
-        text(
-            "SELECT column_name FROM information_schema.columns "
-            " WHERE table_name = 'consultas_auditadas'"
-        )
-    ).scalars()
-    # Ninguna columna guarda texto libre de la persona: si alguna vez se agrega
-    # una, esta prueba obliga a decidirlo a propósito.
-    assert "consulta_texto" not in set(columnas)
+    columnas = set(
+        conexion.execute(
+            text(
+                "SELECT column_name FROM information_schema.columns "
+                " WHERE table_name = 'consultas_auditadas'"
+            )
+        ).scalars()
+    )
+    # El conjunto entero, y no una lista de prohibidas. Prohibir nombres que se
+    # nos ocurran hoy no protege de la columna que se agregue mañana con otro
+    # nombre; fijar el conjunto sí: cualquier columna nueva rompe esta prueba y
+    # obliga a decidir a propósito si lo que va a guardar puede guardarse.
+    assert columnas == COLUMNAS_DE_LA_TRAZA
 
 
 def test_una_abstencion_se_registra_con_su_causa(conexion: Connection) -> None:

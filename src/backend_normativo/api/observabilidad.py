@@ -13,9 +13,14 @@ pidió, contra qué corte, cuánto tardó, si se contestó o se abstuvo y por qu
 Con eso se puede medir todo lo que el criterio pide y no queda escrito qué
 preguntó nadie.
 
-`tokens` y `costo` no se registran porque no hay generación: P-013 no está
-construido y no hay proveedor de modelo. Inventar columnas en cero mostraría un
-tablero que dice que el gasto es nulo, cuando lo que pasa es que no se mide.
+`tokens` y `costo` no se registran mientras no haya un proveedor de modelo
+configurado: en modo extracto no se gasta nada. Inventar columnas en cero
+mostraría un tablero que dice que el gasto es nulo, cuando lo que pasa es que no
+se mide.
+
+La retención vive acá abajo, en `purgar()`. Está en el mismo módulo que lo que
+escribe a propósito: una política de retención que vive sólo en un documento es
+una política que nadie aplica.
 """
 
 from __future__ import annotations
@@ -126,3 +131,94 @@ def resumen(conexion: Connection, *, desde_horas: int = 24) -> dict:
             for f in filas
         ],
     }
+
+
+# --- Retención (P-017, criterio 2) -------------------------------------------
+#
+# Lo que se guarda de una consulta no tiene identidad —ni texto, ni dirección,
+# ni quién— y aun así se borra. Dos razones. La primera es que un registro que
+# no caduca crece para siempre y termina respaldado, replicado y consultado por
+# gente que no sabe qué está mirando. La segunda es que «no identifica a nadie»
+# es una afirmación sobre hoy: un conjunto grande de formas de consulta, con sus
+# horarios y sus jurisdicciones, se vuelve más identificante cuanto más largo
+# es.
+
+VARIABLE_RETENCION = "BN_RETENCION_CONSULTAS_DIAS"
+RETENCION_DIAS_DEFECTO = 90
+
+
+def retencion_configurada() -> int:
+    import os
+
+    crudo = (os.environ.get(VARIABLE_RETENCION) or "").strip()
+    if not crudo:
+        return RETENCION_DIAS_DEFECTO
+    try:
+        dias = int(crudo)
+    except ValueError:
+        return RETENCION_DIAS_DEFECTO
+    # Cero o negativo sería «borrar todo, siempre». No se acepta por variable de
+    # entorno mal escrita: para no guardar nada hay que no registrar, que es
+    # otra decisión y se toma en otro lado.
+    return max(1, dias)
+
+
+@dataclass(frozen=True)
+class Purga:
+    dias: int
+    # Cuántas caen bajo la retención. En una simulación es lo que se borraría;
+    # en una corrida de verdad es lo que se borró. Separarlo de `borradas` evita
+    # el informe que dice «borradas 0» después de contar mil.
+    candidatas: int
+    borradas: int
+    quedan: int
+    mas_antigua: object | None = None
+    simulada: bool = False
+
+    def a_dict(self) -> dict:
+        return {
+            "dias_de_retencion": self.dias,
+            "candidatas": self.candidatas,
+            "borradas": self.borradas,
+            "quedan": self.quedan,
+            "mas_antigua": self.mas_antigua.isoformat() if self.mas_antigua else None,
+            "simulada": self.simulada,
+        }
+
+
+def purgar(conexion: Connection, *, dias: int | None = None, simular: bool = False) -> Purga:
+    """Borra las consultas auditadas más viejas que la retención configurada.
+
+    Corre con el rol de administración y no con el de la API: el lector puede
+    insertar su traza y no puede borrar la de nadie, que es exactamente la
+    separación que hace que el registro sirva como registro.
+    """
+    dias = retencion_configurada() if dias is None else max(1, dias)
+    parametros = {"d": dias}
+    cuantas = conexion.execute(
+        text(
+            "SELECT count(*) FROM consultas_auditadas "
+            " WHERE ocurrido_en < now() - make_interval(days => :d)"
+        ),
+        parametros,
+    ).scalar_one()
+    if not simular and cuantas:
+        conexion.execute(
+            text(
+                "DELETE FROM consultas_auditadas "
+                " WHERE ocurrido_en < now() - make_interval(days => :d)"
+            ),
+            parametros,
+        )
+    quedan = conexion.execute(text("SELECT count(*) FROM consultas_auditadas")).scalar_one()
+    mas_antigua = conexion.execute(
+        text("SELECT min(ocurrido_en) FROM consultas_auditadas")
+    ).scalar_one()
+    return Purga(
+        dias=dias,
+        candidatas=int(cuantas),
+        borradas=0 if simular else int(cuantas),
+        quedan=int(quedan),
+        mas_antigua=mas_antigua,
+        simulada=simular,
+    )

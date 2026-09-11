@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 
 from backend_normativo import SCHEMA_VERSION, __version__
 from backend_normativo.api.contratos import CodigoError, ErrorRespuesta
+from backend_normativo.api.limites import VENTANA_AUTENTICACION_S
 from backend_normativo.api.routers import admin, evaluaciones, normas, operativo, recuperacion
 from backend_normativo.api.sondas import verificar_abriendo
 from backend_normativo.config import get_settings
@@ -28,6 +29,24 @@ nunca se disfraza de 500.
 Esta API no otorga, no rechaza y no revoca prestaciones. Devuelve lo que dicen
 las normas publicadas, con la evidencia que lo sostiene y lo que falta averiguar.
 """
+
+
+def _demasiadas(detalle: str, espera_s: float) -> JSONResponse:
+    """429 con cuerpo tipado y `Retry-After`.
+
+    Un límite que contesta con una página de error no le sirve a un cliente
+    automático, y uno que no dice cuánto esperar invita a reintentar en un
+    bucle apretado, que es peor que el problema original.
+    """
+    import math
+
+    return JSONResponse(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content=ErrorRespuesta(codigo=CodigoError.RATE_LIMITED, detalle=detalle).model_dump(
+            mode="json"
+        ),
+        headers={"Retry-After": str(max(1, math.ceil(espera_s)))},
+    )
 
 
 def crear_app() -> FastAPI:
@@ -75,6 +94,52 @@ def crear_app() -> FastAPI:
                 encoding="utf-8"
             )
         )
+
+    # El orden importa y es al revés de como se lee: el último middleware
+    # registrado es el más externo. Los límites se registran **antes** que la
+    # observabilidad para que queden adentro, y así un 429 se mide como
+    # cualquier otra respuesta. Un límite que frena sin dejar rastro no se puede
+    # ajustar: no hay forma de saber si está frenando abuso o gente.
+    @app.middleware("http")
+    async def aplicar_limites(solicitud: Request, siguiente):
+        """Cuántas consultas por minuto, y cuántos intentos de credencial (P-017)."""
+        from backend_normativo.api.limites import (
+            clave_de,
+            limitador_de_autenticaciones,
+            limitador_de_consultas,
+        )
+
+        ruta = solicitud.url.path
+        if not ruta.startswith("/v1"):
+            return await siguiente(solicitud)
+
+        clave = clave_de(solicitud)
+        autenticaciones = limitador_de_autenticaciones()
+        es_admin = "/admin/" in ruta or "/revisiones/" in ruta
+
+        # El cupo de autenticación se mira antes de trabajar: frenar después de
+        # verificar la credencial es hacer justo el trabajo que el ataque busca.
+        if es_admin and not autenticaciones.hay_cupo(clave):
+            return _demasiadas(
+                "Demasiados intentos de credencial fallidos desde este origen. El cupo se "
+                "repone solo; no hace falta pedir nada.",
+                VENTANA_AUTENTICACION_S,
+            )
+
+        veredicto = limitador_de_consultas().permitir(clave)
+        if not veredicto.permitido:
+            return _demasiadas(
+                "Se alcanzó el límite de consultas por minuto para este origen. La consulta "
+                "no se resolvió; reintentarla en unos segundos sí sirve.",
+                veredicto.espera_s,
+            )
+
+        respuesta = await siguiente(solicitud)
+        # Una credencial rechazada gasta cupo del segundo balde. El primero ya se
+        # gastó arriba: un intento fallido cuesta las dos cosas.
+        if es_admin and respuesta.status_code in (401, 403):
+            autenticaciones.permitir(clave)
+        return respuesta
 
     @app.middleware("http")
     async def registrar_consulta(solicitud: Request, siguiente):

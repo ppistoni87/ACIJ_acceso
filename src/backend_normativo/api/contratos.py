@@ -50,6 +50,10 @@ class CodigoError(StrEnum):
     INVALID_REQUEST = "INVALID_REQUEST"
     NOT_AUTHORIZED = "NOT_AUTHORIZED"
     VERSION_CONFLICT = "VERSION_CONFLICT"
+    # Un límite alcanzado no es un fallo del servicio ni un problema de la
+    # consulta: es una decisión del servicio, y se dice con su propio código
+    # para que quien llama sepa que reintentar más tarde sirve.
+    RATE_LIMITED = "RATE_LIMITED"
 
 
 class Evidencia(BaseModel):
