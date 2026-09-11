@@ -41,6 +41,8 @@ MARCA=""
 SEGUNDAS_SOBRE_EXISTENTE=""
 PRIMERAS_DE_DOCUMENTO_NUEVO=""
 DETALLE_NO_IDEMPOTENTE=""
+EVIDENCIA_NO_IDEMPOTENTE=""
+TEXTOS_DIFERIDOS="${TEXTOS_DIFERIDOS:-docs/reportes/no_idempotencia}"
 MARCA2=""
 TRAS_TERCERA=""
 TERCERA_SOBRE_EXISTENTE=""
@@ -207,6 +209,16 @@ escribir_reporte() {
         echo "> que el procedimiento dice de sí mismo es falso. Por fuente:"
         echo "> ${DETALLE_NO_IDEMPOTENTE:-sin detalle}."
         echo
+        if [ -n "${EVIDENCIA_NO_IDEMPOTENTE}" ]; then
+          echo "Qué documento y cuánto cambió. Los textos completos de las dos versiones"
+          echo "quedan en \`${TEXTOS_DIFERIDOS}/\` para poder diferenciarlos: la base se"
+          echo "destruye al terminar la corrida y sin eso la evidencia se pierde con ella."
+          echo
+          echo "| Fuente | Documento | Versión | Caracteres |"
+          echo "| --- | --- | ---: | --- |"
+          echo "${EVIDENCIA_NO_IDEMPOTENTE}"
+          echo
+        fi
       elif [ "${PRIMERAS_DE_DOCUMENTO_NUEVO:-0}" -gt 0 ] 2>/dev/null; then
         echo "> **Ningún documento se duplicó**, y aun así el total subió de ${ANTES} a"
         echo "> ${DESPUES}: las ${PRIMERAS_DE_DOCUMENTO_NUEVO} versiones nuevas son todas la"
@@ -370,6 +382,46 @@ if [ -n "${MARCA}" ]; then
         FROM documento_versiones dv JOIN documentos d ON d.id = dv.documento_id \
        WHERE dv.creado_en > '${MARCA}' AND dv.version > 1 \
        GROUP BY d.source_id ORDER BY count(*) DESC) x" 2>/dev/null || echo "")
+  # La base se destruye al terminar, así que la evidencia se junta ahora o no se
+  # junta nunca. Sin esto, cada intento de explicar una versión de más empieza
+  # por reconstruir a mano una base que ya no está, y se termina adivinando.
+  EVIDENCIA_NO_IDEMPOTENTE=$(sql "SELECT string_agg(l, E'\n') FROM ( \
+      SELECT '| ' || d.source_id || ' | ' || replace(coalesce(d.external_id,'?'),'|','/') \
+             || ' | ' || nueva.version || ' | ' || length(previa.texto_extraido) \
+             || ' → ' || length(nueva.texto_extraido) || ' |' AS l \
+        FROM documento_versiones nueva \
+        JOIN documentos d ON d.id = nueva.documento_id \
+        JOIN LATERAL (SELECT * FROM documento_versiones p \
+                       WHERE p.documento_id = nueva.documento_id \
+                         AND p.version < nueva.version \
+                       ORDER BY p.version DESC LIMIT 1) previa ON true \
+       WHERE nueva.creado_en > '${MARCA}' AND nueva.version > 1 \
+       ORDER BY d.source_id LIMIT 20) y" 2>/dev/null || echo "")
+  # Y los textos completos a disco: comparar 7.978 caracteres a ojo dentro de una
+  # celda de tabla no se puede, y el diff real es lo único que dice si cambió una
+  # fecha, un teléfono o el orden de una lista.
+  if [ -n "${EVIDENCIA_NO_IDEMPOTENTE}" ]; then
+    mkdir -p "${TEXTOS_DIFERIDOS}"
+    sql "COPY (SELECT d.source_id || '~' || nueva.version || '~' ||
+                      translate(coalesce(d.external_id,'x'), '/:?&', '____')
+                      || E'\t' || replace(nueva.texto_extraido, E'\n', '\\n')
+                 FROM documento_versiones nueva
+                 JOIN documentos d ON d.id = nueva.documento_id
+                WHERE nueva.creado_en > '${MARCA}' AND nueva.version > 1)
+          TO STDOUT" >"${TEXTOS_DIFERIDOS}/nuevas.tsv" 2>/dev/null || true
+    sql "COPY (SELECT d.source_id || '~' || previa.version || '~' ||
+                      translate(coalesce(d.external_id,'x'), '/:?&', '____')
+                      || E'\t' || replace(previa.texto_extraido, E'\n', '\\n')
+                 FROM documento_versiones nueva
+                 JOIN documentos d ON d.id = nueva.documento_id
+                 JOIN LATERAL (SELECT * FROM documento_versiones p
+                                WHERE p.documento_id = nueva.documento_id
+                                  AND p.version < nueva.version
+                                ORDER BY p.version DESC LIMIT 1) previa ON true
+                WHERE nueva.creado_en > '${MARCA}' AND nueva.version > 1)
+          TO STDOUT" >"${TEXTOS_DIFERIDOS}/previas.tsv" 2>/dev/null || true
+    echo "Evidencia de no idempotencia en ${TEXTOS_DIFERIDOS}" >&2
+  fi
 fi
 
 # Si la segunda pasada solo terminó lo que la primera dejó a medias, la tercera
