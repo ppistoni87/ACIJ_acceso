@@ -1655,6 +1655,74 @@ def revision_aprobar_reglas(
     typer.echo(f"{len(aprobadas)} regla(s) de {beneficio} aprobadas por {actor}.")
 
 
+@revision.command("plantilla-decisiones")
+def revision_plantilla_decisiones(
+    salida: Path = typer.Option(Path("docs/revision/decisiones.csv"), help="Dónde escribirla."),
+    limite: int = typer.Option(0, help="Cuántas reglas incluir. 0 son todas las pendientes."),
+) -> None:
+    """Genera el CSV que completa quien revisa: una fila por regla pendiente.
+
+    Los identificadores salen de la base y no se escriben a mano, que es de
+    donde salen los errores de transcripción. La columna `fundamento` viene
+    vacía a propósito: es lo que tiene que escribir la persona que decide.
+    """
+    from backend_normativo.curacion.transcripcion import plantilla
+
+    with engine_migrador().begin() as conexion:
+        contenido = plantilla(conexion, limite or None)
+    salida.parent.mkdir(parents=True, exist_ok=True)
+    salida.write_text(contenido, encoding="utf-8")
+    filas = max(0, contenido.count("\n") - 1)
+    typer.echo(f"{filas} regla(s) pendientes escritas en {salida}.")
+
+
+@revision.command("registrar-decisiones")
+def revision_registrar_decisiones(
+    archivo: Path = typer.Argument(..., help="CSV o JSON con las decisiones ya tomadas."),
+    actor: str = typer.Option(..., help="Quién revisó y firma. Queda en cada evento."),
+    confirmar: bool = typer.Option(
+        False, "--confirmar", help="Aplicar de verdad. Sin esto solo se valida el archivo."
+    ),
+) -> None:
+    """Registra decisiones que **ya tomó una persona**, una por una.
+
+    No decide nada: transcribe. La firma jurídica ocurre fuera del sistema y
+    esto la deja asentada sin deformarla, con el nombre de quien revisó en cada
+    evento de la bitácora.
+
+    Sin `--confirmar` solo valida, que es lo que conviene hacer primero: el
+    archivo se revisa entero antes de escribir nada, porque media transcripción
+    deja el expediente en un estado que nadie sabe leer.
+    """
+    from backend_normativo.curacion.transcripcion import (
+        ArchivoInvalido,
+        aplicar,
+        desde_archivo,
+        formatear,
+    )
+
+    try:
+        filas = desde_archivo(archivo)
+    except ArchivoInvalido as error:
+        typer.echo(str(error))
+        raise typer.Exit(1) from error
+
+    if not confirmar:
+        typer.echo(
+            f"{len(filas)} decisión(es) listas para registrar a nombre de {actor}. "
+            "Nada se escribió todavía: volvé a correrlo con --confirmar."
+        )
+        return
+
+    try:
+        with engine_migrador().begin() as conexion:
+            resultado = aplicar(conexion, filas, actor=actor, fuente=str(archivo))
+    except ArchivoInvalido as error:
+        typer.echo(str(error))
+        raise typer.Exit(1) from error
+    typer.echo(formatear(resultado))
+
+
 @revision.command("rechazar-regla")
 def revision_rechazar_regla(
     regla: str = typer.Argument(..., help="Id de la regla."),

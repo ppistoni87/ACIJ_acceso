@@ -1772,3 +1772,34 @@ Confundirlas costó varias corridas. Mientras el informe llamaba «duplicada» a
 toda versión nueva, el número que importaba —uno, el de la DPN— estaba tapado
 por treinta y uno que no eran un defecto. Separar las dos cuentas fue lo que
 dejó ver el bug de D-85.
+
+## D-90 · Transcribir una firma no es firmar
+
+Se pidió aprobar las 166 reglas candidatas desde esta sesión. No se hizo, y no
+por formalismo: el criterio 2 de P-010 dice textual que no se aprueban en lote
+por un agente, y aprobar es afirmar que lo que el backend contesta sobre
+vivienda, discapacidad y beneficios es lo que dice el derecho. Firmadas desde
+acá, la bitácora quedaría con un actor que no leyó ninguna norma.
+
+Se verificaron las dos bases antes de responder: local, 166 en `CANDIDATE` y
+ninguna decisión de regla en la bitácora; Neon, la tabla `reglas` vacía. La
+firma no estaba registrada en ningún lado.
+
+**Consecuencia:** lo que faltaba no era permiso sino camino. `bn revision
+plantilla-decisiones` genera el CSV con una fila por regla pendiente —los
+identificadores salen de la base, que es de donde no salen los errores de
+transcripción— y `bn revision registrar-decisiones` aplica las decisiones ya
+tomadas, cada una con su fundamento y todas a nombre de quien revisó.
+
+Tres negativas escritas en el cargador, cada una con su prueba:
+
+- **No completa un fundamento.** Una fila sin fundamento se rechaza; no hay
+  texto genérico que distinga, dentro de seis meses, una regla revisada de una
+  firmada de apuro.
+- **No aplica medio archivo.** Se valida entero antes de escribir: media
+  transcripción deja el expediente en un estado que nadie sabe leer.
+- **`PUBLICAR` no es una decisión de revisión.** Firmar una regla no la pone a
+  contestar; publicar es del corte, donde se verifica que las dependencias estén
+  aprobadas. Admitirla acá salteaba ese control.
+
+Sin `--confirmar` el comando solo valida. Es lo que conviene correr primero.
