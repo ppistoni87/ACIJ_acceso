@@ -1885,3 +1885,28 @@ Tres cosas que costaron:
   identidad. La fila no lleva actor, IP ni sesión: es un contador anónimo. Sin la
   segunda mitad, alguien podría agregar mañana una columna `actor` y la prueba
   seguiría pasando.
+
+## D-93 · Un número que no se puede abrir es un número que hay que creer
+
+El tablero de calidad (P-016, criterio 3) pide que cada indicador permita abrir
+los registros que lo componen y que los conteos salgan de la base «y no de
+constantes de demostración».
+
+**Consecuencia:** cada indicador declara **una** consulta. El conteo es la
+cantidad de filas de esa misma consulta, no un `COUNT(*)` parecido escrito al
+lado. Con dos consultas, el día que alguien toque una y no la otra el tablero
+dice doce, la lista muestra nueve y no hay forma de saber cuál miente; con una
+sola no puede pasar, y hay una prueba que lo fija: abrir un indicador sin límite
+da exactamente tantas filas como dice su número.
+
+El límite recorta lo mostrado y nunca lo contado. Un tablero que dijera «200»
+porque mostró doscientas estaría midiendo su propia paginación.
+
+Cinco indicadores, cada uno con una línea que dice por qué importa: reglas sin
+firmar (166), incidencias abiertas (5.072), fuentes con acceso bloqueado (17),
+abstenciones de las últimas 24 horas y versiones publicadas (1). Los dos
+primeros marcan alarma cuando crecen; los otros no, porque una fuente bloqueada
+es el sistema comportándose bien.
+
+Va con rol `auditor`, como la cobertura: lee estado operativo, no proyecciones
+servibles.

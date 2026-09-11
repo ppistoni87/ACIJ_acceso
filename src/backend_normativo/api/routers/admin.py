@@ -35,7 +35,11 @@ from backend_normativo.curacion.revision_reglas import (
 )
 from backend_normativo.publicacion.gates import evaluar_gates
 from backend_normativo.publicacion.release import PublicacionRechazada, Publicador
-from backend_normativo.seguridad.credenciales import ROL_PUBLICADOR, ROL_REVISOR
+from backend_normativo.seguridad.credenciales import (
+    ROL_AUDITOR,
+    ROL_PUBLICADOR,
+    ROL_REVISOR,
+)
 
 router = APIRouter(prefix="/v1/admin", tags=["administración"])
 
@@ -413,4 +417,57 @@ def crear_release(
             for g in (resultado.gates.gates if resultado.gates else [])
         ],
         "aprobado_por": actor,
+    }
+
+
+# --- P-016 criterio 3: el tablero de calidad ----------------------------------
+
+
+@router.get("/calidad")
+def tablero_de_calidad(
+    admin: Administracion = Depends(exigir_rol(ROL_AUDITOR)),
+) -> dict:
+    """Los indicadores con su número, consultados a la base.
+
+    Ninguno sale de una constante: el criterio lo pide con esas palabras, y es
+    el mismo principio que el resto del proyecto —una cifra escrita a mano
+    envejece en silencio y nadie se entera—.
+    """
+    from backend_normativo.calidad.tablero import resumen
+
+    return {"indicadores": resumen(admin.conexion)}
+
+
+@router.get("/calidad/{clave}")
+def registros_del_indicador(
+    clave: str,
+    limite: int = 200,
+    admin: Administracion = Depends(exigir_rol(ROL_AUDITOR)),
+) -> dict:
+    """Las filas que componen un indicador.
+
+    `cuantos` es la cantidad total y no la de esta página: un tablero que dijera
+    «200» porque mostró doscientas estaría midiendo su propia paginación.
+    """
+    from backend_normativo.calidad.tablero import POR_CLAVE, medir
+
+    indicador = POR_CLAVE.get(clave)
+    if indicador is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "codigo": CodigoError.UNSUPPORTED_SCOPE.value,
+                "detalle": (
+                    f"No hay un indicador «{clave}». Los que hay: {', '.join(sorted(POR_CLAVE))}."
+                ),
+            },
+        )
+    medicion = medir(admin.conexion, indicador, limite=max(0, min(limite, 1000)))
+    return {
+        "clave": indicador.clave,
+        "titulo": indicador.titulo,
+        "porque": indicador.porque,
+        "cuantos": medicion.cuantos,
+        "mostrados": len(medicion.filas),
+        "registros": medicion.filas,
     }
