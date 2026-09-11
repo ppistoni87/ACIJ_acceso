@@ -178,8 +178,24 @@ def test_plazos_exige_decir_de_que_se_pregunta(cliente_api, corpus_publicado) ->
     assert respuesta.json()["detail"]["codigo"] == "INVALID_REQUEST"
 
 
-def test_cobertura_separa_evaluado_de_sustantivo(cliente_api, corpus_publicado) -> None:
-    cuerpo = cliente_api.get("/v1/cobertura").json()
+def test_cobertura_exige_credencial_de_auditoria(cliente_api, corpus_publicado) -> None:
+    """La cobertura mide el estado operativo, no una proyección publicada.
+
+    `medir()` lee `fuentes`, `capturas` e `incidencias_revision`. El lector de la
+    API no tiene permiso sobre esas tablas —no debe tenerlo: la invariante es que
+    el lector accede solo a proyecciones servibles— así que servir esto abierto
+    daba 500 en cualquier despliegue con roles de verdad. Las pruebas no lo veían
+    porque corren con un rol que puede leer todo; se vio al desplegar.
+    """
+    assert cliente_api.get("/v1/cobertura").status_code == 401
+
+
+def test_cobertura_separa_evaluado_de_sustantivo(
+    cliente_api, corpus_publicado, credencial: str
+) -> None:
+    cuerpo = cliente_api.get(
+        "/v1/cobertura", headers={"Authorization": f"Bearer {credencial}"}
+    ).json()
     campos = cuerpo["data"]["campos"]
     assert campos["porcentaje_evaluado"] == 100.0
     assert "con_valor_sustantivo" in campos

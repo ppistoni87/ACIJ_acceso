@@ -184,7 +184,25 @@ def _ejecutar(cliente, consulta: dict, norma_id: uuid.UUID | None) -> tuple[str,
         return _clasificar_envoltura(cuerpo, len(cuerpo["data"]))
 
     if operacion == "cobertura":
-        cuerpo = cliente.get("/v1/cobertura").json()
+        # Las once consultas de esta familia son de operación, no de una
+        # ciudadana: «estado de la carga masiva», «¿qué fuentes faltan
+        # identificar?», «¿la base está completa?». Se responden con credencial
+        # de auditoría porque la cobertura mide el estado operativo —fuentes,
+        # capturas, incidencias— y el lector de la API no accede a eso: la
+        # invariante es que el lector solo llega a proyecciones servibles.
+        #
+        # La alternativa era sacarlas del conjunto. No se sacaron porque cubren
+        # once casos de aceptación reales; lo que cambia es quién pregunta, y
+        # ahora está dicho. Sin credencial, este endpoint responde 401 y así
+        # tiene que seguir.
+        respuesta = cliente.get("/v1/cobertura", headers=_cabecera_de_auditoria())
+        if respuesta.status_code == 401:
+            return (
+                "SIN_CLASIFICAR",
+                "HTTP 401: la cobertura pide credencial de auditoría y el arnés no la tiene "
+                "configurada (BN_CREDENCIAL_SECRETO).",
+            )
+        cuerpo = respuesta.json()
         return ("RESPONDE_CON_EVIDENCIA", f"Métricas: {', '.join(sorted(cuerpo['data']))}.")
 
     raise ConjuntoInsuficiente(f"Operación desconocida en el conjunto: {operacion!r}.")
@@ -282,3 +300,23 @@ def formatear(reporte: ReporteConversacional) -> str:
                     f"dio {r.observado}. {r.detalle}"
                 )
     return "\n".join(lineas)
+
+
+def _cabecera_de_auditoria() -> dict[str, str]:
+    """Credencial de solo lectura operativa para las consultas de cobertura.
+
+    Se emite acá y no se recibe de afuera para que el arnés no dependa de que
+    alguien recuerde pasarla, y con un solo rol: `auditor` no puede decidir una
+    regla ni publicar un corte.
+    """
+    import datetime as dt
+
+    from backend_normativo.seguridad.credenciales import ROL_AUDITOR, emitir, secreto
+
+    # Se pregunta en vez de atrapar: un `except Exception` acá convirtió una
+    # llamada mal escrita en «falta el secreto», que es un diagnóstico falso.
+    # Sin secreto configurado no hay credencial posible y arriba sale como 401.
+    if secreto() is None:
+        return {}
+    token, _ = emitir("evaluacion-conversacional", {ROL_AUDITOR}, duracion=dt.timedelta(minutes=10))
+    return {"Authorization": f"Bearer {token}"}

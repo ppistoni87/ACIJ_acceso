@@ -21,7 +21,13 @@ RAIZ = pathlib.Path(__file__).resolve().parents[2]
 
 
 @pytest.fixture
-def reporte(conexion: Connection, cliente_api, corpus_publicado):
+def reporte(conexion: Connection, cliente_api, corpus_publicado, monkeypatch):
+    # Las once consultas de la familia «cobertura» son de operación y piden
+    # credencial de auditoría: el arnés la emite solo si hay secreto de firma
+    # configurado. Sin esto quedarían en SIN_CLASIFICAR por 401, que es un
+    # resultado honesto pero no el que se quiere medir acá.
+    monkeypatch.setenv("BN_CREDENCIAL_SECRETO", "secreto-de-prueba-conversacional")
+    monkeypatch.delenv("BN_IDENTIDAD_MODO", raising=False)
     return conversacional.correr(conexion, cliente_api, raiz=RAIZ)
 
 

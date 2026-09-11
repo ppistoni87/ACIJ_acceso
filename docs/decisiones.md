@@ -1666,3 +1666,36 @@ el número que importaba estaba tapado por treinta y uno que no eran nada. La
 segunda: perseguí esto cuatro veces reconstruyendo a mano una base que la
 corrida destruye al terminar. La evidencia ahora se junta mientras la base
 existe. Sin eso, el quinto intento hubiera sido igual que los cuatro anteriores.
+
+## D-86 · Lo que las pruebas no ven porque corren como dueñas
+
+Al desplegar local con los roles de verdad —la API contra `bn_lector_api` y no
+contra `postgres`— `GET /v1/cobertura` devolvió 500:
+
+    permission denied for table capturas
+
+No era un permiso que faltara. `medir()` lee `fuentes`, `capturas`,
+`fuente_urls` e `incidencias_revision`: estado operativo, no una proyección
+publicada. El lector de la API no tiene permiso sobre esas tablas y **no debe
+tenerlo**, porque la invariante dice que el lector accede únicamente a
+proyecciones servibles. Dárselo hubiera consagrado que el lector lea staging.
+El contrato ya declaraba este endpoint de «alcance autorizado»; la
+implementación lo servía abierto.
+
+**Consecuencia:** `/v1/cobertura` exige rol `auditor` y usa la conexión de
+administración. Sin credencial responde 401, que es lo que corresponde.
+
+Las once consultas de la familia «cobertura» del conjunto congelado son de
+operación —«estado de la carga masiva», «¿la base está completa?»— así que el
+arnés las responde con una credencial de auditoría de diez minutos y un solo
+rol. Se consideró sacarlas del conjunto; cubren once casos de aceptación reales,
+y lo que cambiaba era quién pregunta, no si la pregunta vale.
+
+Lo que hay que retener: **ninguna prueba encontró esto en 1.124 corridas**,
+porque todas corren con un rol que puede leer todo. Un permiso solo se prueba
+desplegando con el rol que va a usarse. La suite no puede sustituir eso.
+
+Y un error propio en el camino: el ayudante que emite la credencial atrapaba
+`Exception` y devolvía «falta el secreto». Con eso, una llamada mal escrita
+—faltaba un argumento— se presentó durante dos intentos como un problema de
+configuración. Ahora pregunta `secreto() is None` y cualquier otro error rompe.

@@ -19,10 +19,11 @@ from backend_normativo.api.contratos import (
     DataStatus,
     Respuesta,
 )
-from backend_normativo.api.dependencias import Contexto
+from backend_normativo.api.dependencias import Administracion, Contexto, exigir_rol
 from backend_normativo.calidad.cobertura import medir
 from backend_normativo.recuperacion.busqueda import buscar as buscar_fragmentos
 from backend_normativo.recuperacion.embeddings import embebedor_compartido
+from backend_normativo.seguridad.credenciales import ROL_AUDITOR
 
 router = APIRouter(prefix="/v1", tags=["recuperación"])
 
@@ -157,9 +158,20 @@ def recuperar(
 
 
 @router.get("/cobertura", response_model=Respuesta[dict])
-def cobertura(contexto: Contexto = Depends()) -> Respuesta[dict]:
-    """Denominadores y pendientes, separados de lo validado y publicable."""
-    metricas = medir(contexto.conexion)
+def cobertura(
+    contexto: Contexto = Depends(),
+    admin: Administracion = Depends(exigir_rol(ROL_AUDITOR)),
+) -> Respuesta[dict]:
+    """Denominadores y pendientes, separados de lo validado y publicable.
+
+    Va con credencial de auditoría porque `medir()` lee el estado operativo
+    —fuentes, capturas, incidencias— y no una proyección publicada. El contrato
+    ya lo declaraba de «alcance autorizado»; la implementación lo servía abierto
+    y con la conexión del lector, que no tiene permiso sobre `capturas`: en
+    cualquier despliegue con roles de verdad esto devolvía 500, y darle el
+    permiso al lector hubiera consagrado que el lector lea staging.
+    """
+    metricas = medir(admin.conexion)
     return Respuesta(
         release_id=contexto.release_id,
         as_of=contexto.as_of,
