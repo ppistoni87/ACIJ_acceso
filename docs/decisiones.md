@@ -2447,3 +2447,32 @@ convierte una respuesta equivocada silenciosa en una incertidumbre visible.
 y lo único publicado es una ley de vivienda de CABA, decirle qué cubre el corte
 es más útil que devolverle los párrafos más parecidos y callarse. El dato estaba
 en la base desde siempre; lo que faltaba era decirlo.
+
+## D-114 · Lo construido para P-015 no es todavía una conversación
+
+Conviene que quede escrito, porque la historia se llama «Completar el front
+conversacional» y lo que hay es **un formulario que devuelve una respuesta**.
+Cada consulta es independiente: no hay historial, no hay turnos, no se puede
+repreguntar. Si alguien pregunta «¿cumplo?» y le falta un dato, el sistema no se
+lo pide: contesta con lo que tiene.
+
+El plan pide, con esas palabras, «historial de ocho turnos, contexto acotado» y
+«mensajes, carga, cancelación, reintento y **nueva conversación**». Están las
+tres últimas; «nueva conversación» supone una en curso, y no la hay. Faltan
+también las preguntas sugeridas del inicio y el escenario «¿cumplo?» con datos
+faltantes y excepciones.
+
+Sí cumple el resto del recorrido: consulta anónima sin formulario de identidad,
+aclaraciones de jurisdicción, fecha, beneficio y hechos con controles adecuados a
+su tipo, cancelar, reintentar y empezar de nuevo, citas abribles con norma,
+artículo y fecha, y ningún nombre de tabla ni detalle del modelo a la vista. La
+latencia también: el plan pide p95 ≤ 2 s para respuestas estructuradas y el
+ensayo de carga midió 880 ms.
+
+**Por qué la parte conversacional no es un agregado menor.** Un historial de
+turnos es donde este tipo de sistemas empieza a mentir: arrastra un supuesto de
+un turno anterior —una jurisdicción, una edad, un beneficio que la persona nunca
+confirmó— y lo usa como si fuera un hecho establecido. El plan ya lo acota
+—ocho turnos, contexto acotado, retención de conversaciones desactivada por
+omisión—, y cuando se construya, cada hecho arrastrado tiene que seguir siendo
+visible y editable por quien pregunta, igual que hoy lo es el campo de hechos.
