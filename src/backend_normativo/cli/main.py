@@ -1655,6 +1655,47 @@ def revision_aprobar_reglas(
     typer.echo(f"{len(aprobadas)} regla(s) de {beneficio} aprobadas por {actor}.")
 
 
+@revision.command("aprobar-versiones")
+def revision_aprobar_versiones(
+    tipo: list[str] = typer.Option(
+        None, "--tipo", help="Tipos de entidad a aprobar. Sin esto, todos los aprobables."
+    ),
+    actor: str = typer.Option(..., help="Quién aprueba. Queda en un evento por versión."),
+    fundamento: str = typer.Option(..., help="Por qué. Queda en cada evento."),
+    confirmar: bool = typer.Option(
+        False, "--confirmar", help="Aplicar de verdad. Sin esto solo se muestra qué pasaría."
+    ),
+) -> None:
+    """Aprueba versiones de dato operativo en bloque.
+
+    Un canal es un teléfono y una dirección transcriptos de un directorio
+    oficial, con evidencia al fragmento exacto: no afirma qué le corresponde a
+    nadie, y por eso se puede aprobar en bloque. Las reglas no.
+
+    Nunca toca una versión con incidencia abierta ni una sin intervalo de
+    aplicación, y deja un evento por versión. Sin `--confirmar` solo informa.
+    """
+    from backend_normativo.curacion.aprobacion_operativa import (
+        AprobacionInvalida,
+        aprobar,
+        formatear,
+        revisar,
+    )
+
+    tipos = list(tipo) if tipo else None
+    try:
+        if not confirmar:
+            with engine_migrador().connect() as conexion:
+                typer.echo(formatear(revisar(conexion, tipos=tipos), aplicado=False))
+            return
+        with engine_migrador().begin() as conexion:
+            seleccion = aprobar(conexion, actor=actor, fundamento=fundamento, tipos=tipos)
+    except AprobacionInvalida as error:
+        typer.echo(str(error))
+        raise typer.Exit(1) from error
+    typer.echo(formatear(seleccion, aplicado=True))
+
+
 @revision.command("plantilla-decisiones")
 def revision_plantilla_decisiones(
     salida: Path = typer.Option(Path("docs/revision/decisiones.csv"), help="Dónde escribirla."),

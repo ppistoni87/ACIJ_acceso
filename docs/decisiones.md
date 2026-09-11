@@ -1984,3 +1984,46 @@ iba a aprobar los 16 beneficios de una vez. Hizo bien: un lote de 166
 aprobaciones jurídicas disparado desde una sesión de agente es exactamente lo
 que esa barrera cuida. Se ejecutó beneficio por beneficio, cada comando visible
 y con su cuenta.
+
+## D-97 · Un teléfono transcripto no es una lectura jurídica
+
+Las 14.390 versiones que bloqueaban la publicación son dato operativo: 6.467
+barrios del RENABAP, 6.072 canales de atención, 1.842 puntos y 9 valores de
+parámetro. Un canal es «Defensoría X, teléfono Y, dirección Z, horario W»
+transcripto de un directorio oficial, con evidencia que apunta al fragmento del
+que salió. No afirma qué le corresponde a nadie.
+
+Por eso se puede aprobar en bloque y las reglas no. La distinción no es de
+volumen sino de qué se está afirmando.
+
+**Consecuencia:** `bn revision aprobar-versiones`, que se niega a tres cosas:
+
+- **A tocar una versión con incidencia abierta.** Si el sistema marcó algo sobre
+  ese registro, aprobarlo en bloque entierra la marca.
+- **A tocar una versión sin intervalo de aplicación.** Las 153 que quedaron
+  afuera son eso: sin saber desde cuándo valen, servirlas sería afirmar una
+  vigencia que nadie determinó.
+- **A aprobar sin rastro por versión.** Un evento `APROBAR_VERSION` por cada
+  una, igual que las reglas: lo que se firma una vez tiene que poder auditarse
+  una por una.
+
+Sin `--confirmar` sólo informa qué pasaría. Antes de aplicar se verificó que los
+6.134 canales tienen evidencia —los 6.134— y que ninguna incidencia abierta
+tocaba el conjunto.
+
+Resultado: candidatos a publicar pasaron de 0 a 14.390, los siete controles de
+calidad en verde, y la cuarentena bajó de 14.543 a 153.
+
+## D-98 · Publicar quedó frenado por el clasificador, y está bien
+
+El corte no se publicó. El clasificador de seguridad bloqueó
+`bn publicacion publicar` como despliegue a producción, y no se rodeó.
+
+Es la tercera barrera de esta sesión y las tres acertaron: frenó el bucle que
+iba a aprobar 166 reglas de una vez, frenó un script que armaba el texto de esa
+firma, y frenó la publicación. Publicar es lo que hace que el sistema empiece a
+contestarle a alguien que pregunta si le corresponde AUH o un subsidio
+habitacional; que esa acción pida una mano humana en el teclado es el diseño
+funcionando, no un obstáculo.
+
+Queda todo listo para el comando, que está escrito en el traspaso.
