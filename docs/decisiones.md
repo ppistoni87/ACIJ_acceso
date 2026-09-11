@@ -1840,3 +1840,48 @@ Y un error propio, el mismo de siempre: atrapar `Exception` al leer la migració
 hizo que «no pude leer cuál hay» se informara como «no hay ninguna». Dos
 diagnósticos opuestos con el mismo síntoma, y el mensaje mandaba a revisar la
 base cuando el problema era un permiso.
+
+## D-92 · La tabla de mediciones existía y nadie escribía en ella
+
+`consultas_auditadas` está en el esquema desde la migración 0001 y
+`bn_lector_api` tiene `INSERT` concedido desde la 0002. Ningún código escribía
+ahí. La tabla, el permiso y el índice estaban; el código que los usara, no. Otra
+falla que no falla: no hay error, simplemente no hay datos, y sólo se nota
+cuando alguien pregunta cuántas abstenciones hubo y la respuesta es cero filas.
+
+**Consecuencia (P-021, criterio 1 y 3):** un middleware registra cada consulta de
+`/v1` con `request_id`, latencia, resultado y —cuando se abstuvo— la causa
+tipada. La medición va en su propia conexión y su propia transacción: si
+escribirla fallara, la respuesta ya está dada y no tiene por qué caerse por eso.
+Medir no puede romper lo medido.
+
+Lo que **no** se registra, y por qué:
+
+- **El texto de la consulta, nunca.** `intencion` recibe la ruta. Quien consulta
+  este sistema pregunta si le corresponde una pensión por discapacidad o si la
+  pueden desalojar; guardar esa pregunta crea un registro de la situación
+  personal de alguien, que después se respalda y se replica.
+- **Tokens y costo, tampoco.** No hay generación: P-013 no existe. Columnas en
+  cero mostrarían un tablero diciendo que el gasto es nulo cuando lo que pasa es
+  que no se mide.
+- **Una respuesta resuelta no lleva causa de abstención**, aunque traiga
+  advertencias informativas. Guardarlas como motivo haría que el tablero cuente
+  como abstención algo que sí se contestó, que es justo la distinción que pide
+  el criterio 3.
+
+Tres cosas que costaron:
+
+- **`release_id` era obligatorio**, así que una consulta sin corte publicado no
+  se podía registrar. Esa es la abstención más importante —el sistema no puede
+  contestar nada— y era la única medición que no entraba. La migración 0017 lo
+  hace opcional.
+- **El `ContextVar` no cruzaba el límite de tarea.** Starlette corre la ruta en
+  otra tarea, así que un `set()` hecho adentro no vuelve al middleware: todas las
+  consultas quedaban como `SIN_CLASIFICAR`. Se arregló compartiendo un
+  diccionario que el middleware crea y la respuesta muta.
+- **Una prueba de privacidad preexistente exigía que la tabla quedara vacía.** Se
+  reemplazó por una más exigente en lo que importa: que ningún hecho declarado
+  aparezca en ninguna columna, y que la tabla no tenga dónde guardar una
+  identidad. La fila no lleva actor, IP ni sesión: es un contador anónimo. Sin la
+  segunda mitad, alguien podría agregar mañana una columna `actor` y la prueba
+  seguiría pasando.

@@ -360,7 +360,12 @@ def test_afirmar_una_vigencia_sin_evidencia_se_rechaza(
 def test_el_cuerpo_de_una_evaluacion_no_se_persiste(
     cliente_api, corpus_publicado, conexion: Connection
 ) -> None:
-    """Los hechos que declara una persona no forman parte del corpus."""
+    """Los hechos que declara una persona no forman parte del corpus.
+
+    La medición de P-021 registra la **forma** de la consulta —qué ruta, con qué
+    resultado, cuánto tardó— y nunca su contenido. La fila no lleva actor, ni IP,
+    ni sesión: es un contador anónimo, no un registro de que alguien preguntó.
+    """
     beneficio_id = conexion.execute(
         text("INSERT INTO beneficios (codigo, nombre) VALUES ('B_PII', 'Beneficio') RETURNING id")
     ).scalar_one()
@@ -371,8 +376,37 @@ def test_el_cuerpo_de_una_evaluacion_no_se_persiste(
             "hechos": {"edad": 34, "ingreso_hogar_mensual_bruto": "250000"},
         },
     )
-    almacenado = conexion.execute(text("SELECT count(*) FROM consultas_auditadas")).scalar_one()
-    assert almacenado == 0
+    # Hasta P-021 esto exigía que la tabla quedara vacía. Ahora se mide cada
+    # consulta —el plan lo pide: abstenciones por causa, con request_id y sin
+    # conversación sensible— así que lo que hay que comprobar no es que no haya
+    # fila sino que la fila no diga nada de la persona.
+    #
+    # Se verifica por los dos lados: que ningún hecho declarado aparezca en
+    # ninguna columna, y que la tabla no tenga dónde guardar una identidad. Sin
+    # la segunda mitad, alguien podría agregar mañana una columna `actor` y esta
+    # prueba seguiría pasando.
+    filas = conexion.execute(
+        text("SELECT * FROM consultas_auditadas WHERE intencion = :r"),
+        {"r": "/v1/evaluaciones-preliminares"},
+    ).mappings()
+    for fila in filas:
+        texto = " ".join(str(v) for v in fila.values())
+        assert "250000" not in texto, "El ingreso declarado quedó registrado."
+        assert "34" not in texto.split(), "La edad declarada quedó registrada."
+
+    columnas = set(
+        conexion.execute(
+            text(
+                "SELECT column_name FROM information_schema.columns "
+                " WHERE table_name = 'consultas_auditadas'"
+            )
+        ).scalars()
+    )
+    identificatorias = {"actor", "ip", "direccion_ip", "sesion", "usuario", "persona", "hechos"}
+    assert not (columnas & identificatorias), (
+        f"La medición ganó una columna que identifica a quien consulta: "
+        f"{sorted(columnas & identificatorias)}."
+    )
 
 
 # --- P-009: el circuito de revisión de reglas ----------------------------------

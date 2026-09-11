@@ -64,6 +64,75 @@ def crear_app() -> FastAPI:
             )
         )
 
+    @app.middleware("http")
+    async def registrar_consulta(solicitud: Request, siguiente):
+        """Correlación y medición de cada consulta de lectura.
+
+        El registro va en su propia conexión y su propia transacción: si
+        escribir la medición fallara, la respuesta ya está dada y no tiene por
+        qué caerse por eso. Medir no puede romper lo medido.
+        """
+        import time
+        import uuid as _uuid
+
+        from backend_normativo.api.contratos import abrir_anotacion
+        from backend_normativo.api.observabilidad import (
+            CABECERA_REQUEST_ID,
+            RESUELTA,
+            Anotacion,
+            registrar,
+            request_id_de,
+        )
+
+        anotado = abrir_anotacion()
+        rid = request_id_de(solicitud.headers)
+        solicitud.state.request_id = rid
+        comenzo = time.perf_counter()
+        respuesta = await siguiente(solicitud)
+        latencia = int((time.perf_counter() - comenzo) * 1000)
+        respuesta.headers[CABECERA_REQUEST_ID] = rid
+
+        ruta = solicitud.url.path
+        # Solo las lecturas de `/v1` que no son de administración: las sondas y
+        # la consola no son consultas de nadie, y registrarlas ensucia el
+        # denominador con tráfico de infraestructura.
+        if not ruta.startswith("/v1") or "/admin/" in ruta:
+            return respuesta
+
+        estado = anotado.get("data_status")
+        motivo = anotado.get("motivo")
+        if respuesta.status_code >= 400:
+            resultado, motivo = "ERROR", motivo or f"HTTP {respuesta.status_code}"
+        else:
+            resultado = RESUELTA if estado == "PUBLICADO" else (estado or "SIN_CLASIFICAR")
+            # Una respuesta resuelta no lleva causa de abstención aunque traiga
+            # advertencias: las hay informativas —«los campos evaluados y los que
+            # tienen valor se informan por separado»— y guardarlas como motivo
+            # haría que el tablero cuente como abstención algo que sí se
+            # contestó, que es exactamente la distinción que hay que preservar.
+            if resultado == RESUELTA:
+                motivo = None
+
+        release = anotado.get("release_id")
+        try:
+            with engine_api().begin() as conexion:
+                registrar(
+                    conexion,
+                    Anotacion(
+                        request_id=rid,
+                        ruta=ruta,
+                        resultado=resultado,
+                        latencia_ms=latencia,
+                        release_id=_uuid.UUID(str(release)) if release else None,
+                        motivo=motivo,
+                        evidencias=int(anotado.get("evidencias") or 0),
+                    ),
+                )
+        except Exception:
+            # Nunca convertir un fallo de medición en un fallo de respuesta.
+            pass
+        return respuesta
+
     @app.get("/salud", tags=["operativo"])
     def salud() -> dict:
         """Liveness: si el proceso sigue en pie. No toca la base, a propósito.

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import datetime as dt
 import uuid
+from contextvars import ContextVar
 from enum import StrEnum
 from typing import Generic, TypeVar
 
@@ -72,6 +73,33 @@ class Advertencia(BaseModel):
     detalle: str
 
 
+# Dónde queda anotado el resultado de la respuesta, para que el middleware de
+# observabilidad sepa si la consulta se resolvió o se abstuvo, y por qué.
+#
+# Va por acá y no por diecisiete rutas anotando a mano: toda respuesta pasa por
+# esta envoltura, así que es el único lugar donde no se puede olvidar.
+#
+# El contenedor es un **diccionario que el middleware crea y la respuesta
+# muta**, y no un valor que la respuesta asigna. La diferencia importa: Starlette
+# corre la ruta en otra tarea, así que un `ContextVar.set()` hecho adentro no
+# vuelve al middleware —se probó, y todas las consultas quedaban registradas como
+# SIN_CLASIFICAR—. La identidad del objeto sí viaja, y mutarlo se ve de los dos
+# lados. Es una variable de contexto y no un global porque el servidor atiende
+# consultas en paralelo y mezclarlas daría la medición de otra persona.
+_anotacion: ContextVar[dict | None] = ContextVar("bn_anotacion_respuesta", default=None)
+
+
+def abrir_anotacion() -> dict:
+    """Reserva el lugar donde la respuesta de esta consulta va a anotarse."""
+    hueco: dict = {}
+    _anotacion.set(hueco)
+    return hueco
+
+
+def ultima_respuesta() -> dict | None:
+    return _anotacion.get()
+
+
 class Respuesta(BaseModel, Generic[T]):
     """Envoltura común de toda respuesta."""
 
@@ -84,6 +112,27 @@ class Respuesta(BaseModel, Generic[T]):
     evidence: list[Evidencia] = Field(default_factory=list)
     missing_fields: list[str] = Field(default_factory=list)
     warnings: list[Advertencia] = Field(default_factory=list)
+
+    def model_post_init(self, _contexto: object) -> None:
+        """Deja anotado el resultado sin que la ruta tenga que acordarse.
+
+        El motivo de una abstención sale de la primera advertencia: son códigos
+        tipados —`INSUFFICIENT_EVIDENCE`, `STALE_DATA`, `CONFLICT`— y es
+        exactamente lo que el criterio 3 pide para distinguir una abstención
+        correcta de una respuesta resuelta. No se guarda el detalle en prosa:
+        puede nombrar lo que la persona preguntó.
+        """
+        hueco = _anotacion.get()
+        if hueco is None:
+            return
+        hueco.update(
+            {
+                "data_status": self.data_status.value,
+                "release_id": str(self.release_id) if self.release_id else None,
+                "motivo": self.warnings[0].codigo.value if self.warnings else None,
+                "evidencias": len(self.evidence),
+            }
+        )
 
 
 class ErrorRespuesta(BaseModel):
