@@ -94,9 +94,14 @@ class RespuestaGenerada:
 # Lo que se le dice a una persona cuando el sistema no puede contestarle. No es
 # un mensaje de error: alguien que pregunta si lo pueden desalojar no necesita
 # enterarse de cómo funciona esto por dentro, necesita saber qué hacer ahora.
-ALTERNATIVA_SIN_EVIDENCIA = (
-    "No te quedes con esto: en el organismo te pueden contestar. Abajo te digo a dónde ir."
-)
+# Decía «abajo te digo a dónde ir», y abajo la pantalla decía «no tengo cargado
+# ningún lugar de atención»: prometía y se desdecía en el mismo mensaje. Con cero
+# puntos de atención publicados, eso le pasaba a **toda** conversación que no
+# encontraba respuesta. En un servicio público, una promesa incumplida gasta la
+# confianza que hace falta para que la persona vuelva.
+#
+# Ahora no promete: el frente agrega el dato concreto sólo cuando lo tiene.
+ALTERNATIVA_SIN_EVIDENCIA = "Igual no te quedes con esto: en el organismo pueden contestarte."
 ALTERNATIVA_RECHAZADA = (
     "Intenté explicártelo con mis palabras y no me quedó bien atado a las fuentes, así que "
     "preferí copiarte el texto tal cual está."

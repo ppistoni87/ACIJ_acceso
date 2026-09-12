@@ -2628,3 +2628,56 @@ simular un trabajo que no está haciendo.
 El streaming de verdad va cuando haya proveedor: ahí los tokens tardan segundos
 y transmitirlos es información, no adorno. Queda anotado como lo próximo de
 P-013, junto con la clave.
+
+## D-121 · Marcado que viaja dentro del texto, no alrededor
+
+Análisis del flujo conversacional, hallazgo 3. Tres de cada trece respuestas
+mostraban etiquetas `<p>` **literales** dentro del texto de la ley, en la
+pantalla de quien pregunta.
+
+**Causa raíz, y no era la obvia.** El adaptador HTML usa `nodo.text()` de
+selectolax, que quita etiquetas correctamente. El problema es que la fuente
+publica su **HTML escapado dentro de la propia página**: la captura de D10 tiene
+catorce `&lt;p&gt;` contra diez `<p>` reales. El extractor hace lo correcto
+—decodifica la entidad, porque eso es texto visible— y el resultado es que el
+marcado queda como contenido. No es un extractor que no limpia: limpia la capa
+que le toca, y faltaba mirar la segunda.
+
+Medido antes de tocar nada: **47 unidades de 2.317**, en **diez fuentes
+distintas**. Que sean diez descarta que sea un adaptador en particular, y por eso
+el arreglo va en la extracción, por donde pasan todos.
+
+Las etiquetas que aparecen son `p`, `br`, `details` y `style`. La última importa:
+puede meter una hoja de estilo entera adentro de un artículo, así que se saca con
+su contenido y no sólo la etiqueta.
+
+**Lo que el arreglo no hace:** pasarle un parser de HTML a todo el texto legal.
+Una norma puede decir «el monto debe ser < 3 salarios», y eso no es marcado. El
+reconocimiento exige un nombre de etiqueta conocido, y hay pruebas con «a < b»
+que verifican que no se toca.
+
+**Y se declara.** Cuando limpia, la corrida lo dice: «la fuente publica su HTML
+escapado dentro de la propia página». Una limpieza silenciosa escondería que el
+origen es así, que es justamente lo que hay que poder ver si mañana cambia la
+maquetación.
+
+La red de seguridad es **DQ10**: ninguna unidad con marcado se publica. El
+extractor pasó a `extraccion@15`, así que las versiones ya extraídas quedan
+marcadas para reprocesar.
+
+## D-122 · La promesa que el sistema no podía cumplir
+
+Hallazgo 2. La abstención decía, textual: «No te quedes con esto: en el organismo
+te pueden contestar. **Abajo te digo a dónde ir**». Y abajo la pantalla decía:
+«No tengo cargado ningún lugar de atención para esa zona».
+
+Con **cero** puntos de atención publicados, eso le pasaba a *toda* conversación
+que no encontraba respuesta: prometía y se desdecía en el mismo mensaje. En un
+servicio público una promesa incumplida gasta la confianza que hace falta para
+que la persona vuelva.
+
+Dos cambios, y el segundo importa más. La copia dejó de prometer: el frente
+agrega el dato concreto sólo cuando lo tiene. Y el hueco pasó a ser **un número
+en el tablero** —`puntos_de_atencion_publicados`, hoy en cero— en vez de una
+disculpa en la pantalla. El final más frecuente de una consulta era el que menos
+se miraba.

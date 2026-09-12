@@ -140,6 +140,36 @@ def evaluar_gates(conexion: Connection, candidatos: list[uuid.UUID]) -> Resultad
         )
     )
 
+    # DQ10: nada se publica con marcado HTML metido dentro del texto.
+    #
+    # La red de seguridad del arreglo de la extracción. Hay fuentes que publican
+    # su HTML escapado dentro de la propia página, así que el texto visible trae
+    # etiquetas como contenido; el extractor ahora las saca, y esto se asegura
+    # de que si alguna se le escapa —una etiqueta nueva, una fuente nueva— no
+    # llegue a la pantalla de nadie. Se mira la unidad, que es de donde sale el
+    # fragmento que se cita.
+    con_marcado = conexion.execute(
+        text(
+            "SELECT count(*) FROM unidades_documentales u "
+            "  JOIN documento_versiones dv ON dv.id = u.doc_version_id "
+            "  JOIN norma_versiones nv ON nv.doc_version_id = dv.id "
+            " WHERE nv.registro_version_id = ANY(:v) "
+            "   AND u.texto ~ '</?(p|br|div|span|style|script|details|summary|ul|ol|li|"
+            "table|tr|td|th|b|i|em|strong|a|h1|h2|h3|h4|h5|h6|blockquote|pre|hr|img)"
+            "( [^<>]*)?/?>'"
+        ),
+        {"v": candidatos},
+    ).scalar_one()
+    resultado.gates.append(
+        ResultadoGate(
+            id="DQ10",
+            descripcion="Ninguna unidad publicada trae marcado HTML dentro del texto.",
+            pasa=con_marcado == 0,
+            observado={"unidades_con_marcado": con_marcado},
+            esperado={"unidades_con_marcado": 0},
+        )
+    )
+
     # DQ01: sin duplicados canónicos indebidos.
     duplicados = conexion.execute(
         text(

@@ -145,6 +145,24 @@ INDICADORES: tuple[Indicador, ...] = (
         ),
     ),
     Indicador(
+        clave="puntos_de_atencion_publicados",
+        titulo="Lugares de atención publicados",
+        porque=(
+            "A dónde derivar a alguien cuando el corpus no tiene la respuesta. Si es cero, "
+            "toda conversación sin respuesta termina en un callejón: el sistema dice que no "
+            "sabe y no puede decir a quién preguntarle. Es el final más frecuente de una "
+            "consulta y el que menos se mira."
+        ),
+        consulta=(
+            "SELECT p.id, p.nombre, p.tipo, p.jurisdiccion_id, p.alcance "
+            "  FROM puntos_atencion p "
+            "  JOIN punto_versiones pv ON pv.punto_id = p.id "
+            "  JOIN registro_versiones rv ON rv.id = pv.registro_version_id "
+            " WHERE rv.estado_revision = 'PUBLISHED' "
+            " ORDER BY p.jurisdiccion_id, p.nombre"
+        ),
+    ),
+    Indicador(
         clave="versiones_publicadas",
         titulo="Versiones normativas publicadas",
         porque="Lo único que el lector puede servir. Si es cero, la API no contesta nada.",

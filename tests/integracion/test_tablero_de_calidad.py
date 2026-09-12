@@ -106,3 +106,18 @@ def test_abrir_un_indicador_devuelve_sus_registros(
     ).json()
     assert cuerpo["cuantos"] >= cuerpo["mostrados"]
     assert len(cuerpo["registros"]) == cuerpo["mostrados"]
+
+
+def test_se_mide_a_donde_derivar_cuando_no_hay_respuesta(conexion: Connection) -> None:
+    """El final más frecuente de una consulta, y el que menos se miraba.
+
+    Con cero lugares de atención publicados, toda conversación que no encuentra
+    respuesta termina en un callejón: el sistema dice que no sabe y no puede
+    decir a quién preguntarle. Antes eso era una disculpa en la pantalla; ahora
+    es un número en el tablero de quien opera.
+    """
+    medicion = tablero.medir(conexion, tablero.POR_CLAVE["puntos_de_atencion_publicados"])
+    assert medicion.cuantos >= 0
+    assert "callejón" in medicion.indicador.porque
+    # Y cuenta lo mismo que muestra, como todos los demás.
+    assert len(medicion.filas) == medicion.cuantos

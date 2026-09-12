@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import uuid
 from dataclasses import dataclass, field
 
@@ -48,12 +49,63 @@ from backend_normativo.ingesta.almacen import AlmacenObjetos
 # leía `tipo_documento` de un diccionario que nadie llenaba y caía en OTRO
 # —dejando cada PDF normativo fuera de la resolución de identidad—. Cambió lo
 # que la extracción produce con las mismas capturas, y por eso cambia el número.
-VERSION_EXTRACTOR = "extraccion@14"
+VERSION_EXTRACTOR = "extraccion@15"
 
 # Cobertura mínima para no marcar la extracción como sospechosa. Es una señal
 # técnica: por debajo de esto hay texto que no quedó en ninguna unidad, y
 # publicar sobre esa versión sería publicar sobre un texto incompleto.
 COBERTURA_MINIMA = 0.60
+
+
+# --- Marcado que viaja dentro del texto -------------------------------------
+#
+# Una fuente publica su HTML **escapado dentro de la propia página**: la captura
+# de D10 tiene catorce `&lt;p&gt;` contra diez `<p>` reales. El extractor hace lo
+# correcto —decodifica la entidad, porque eso es texto visible— y el resultado
+# es que el marcado queda como contenido y termina en la pantalla de alguien que
+# pregunta si lo pueden desalojar:
+#
+#     <p>CLÁUSULA TRANSITORIA de la Ley 6935: establece que…</p>
+#
+# No es que el extractor no limpie: limpia la capa que le toca. Faltaba mirar la
+# segunda. Se hace acá, en la extracción, y no en cada adaptador: aparecieron
+# diez fuentes distintas afectadas, así que el problema no es de un adaptador.
+#
+# El reconocimiento exige un **nombre de etiqueta conocido**, no cualquier cosa
+# entre signos. Una norma puede decir «el monto debe ser < 3 salarios», y
+# pasarle un parser de HTML a todo el texto legal rompería justo lo que hay que
+# cuidar.
+ETIQUETAS_CONOCIDAS = (
+    "p|br|div|span|style|script|details|summary|ul|ol|li|table|tr|td|th|"
+    "b|i|em|strong|a|h1|h2|h3|h4|h5|h6|blockquote|pre|hr|img"
+)
+RE_MARCADO = re.compile(rf"</?(?:{ETIQUETAS_CONOCIDAS})(?:\s[^<>]*)?/?>", re.IGNORECASE)
+RE_ESPACIOS = re.compile(r"\s+")
+# Lo que va entre estas etiquetas no es texto de la norma: es hoja de estilo o
+# código. Se saca con su contenido, no sólo la etiqueta.
+RE_CON_CONTENIDO = re.compile(
+    r"<(style|script)(?:\s[^<>]*)?>.*?</\1\s*>", re.IGNORECASE | re.DOTALL
+)
+
+
+def hay_marcado(texto: str) -> bool:
+    """Si el texto trae etiquetas HTML como contenido. No modifica nada."""
+    return bool(texto) and bool(RE_MARCADO.search(texto))
+
+
+def limpiar_marcado(texto: str) -> tuple[str, bool]:
+    """Saca el marcado incrustado. Devuelve el texto y si hubo que tocarlo.
+
+    Se informa si tocó, para que la corrida lo pueda declarar: una limpieza
+    silenciosa esconde que la fuente publica así, y eso es justamente lo que hay
+    que poder ver en el informe.
+    """
+    if not hay_marcado(texto):
+        return texto, False
+    sin_bloques = RE_CON_CONTENIDO.sub(" ", texto)
+    limpio = RE_MARCADO.sub(" ", sin_bloques)
+    limpio = RE_ESPACIOS.sub(" ", limpio).strip()
+    return limpio, True
 
 
 @dataclass
@@ -295,7 +347,7 @@ class Extractor:
         resultado.versiones_creadas += 1
         resultado.version_ids.append(version_id)
 
-        resultado.unidades_creadas += self._persistir_unidades(version_id, documento)
+        resultado.unidades_creadas += self._persistir_unidades(version_id, documento, resultado)
         self._controlar_cobertura(captura, documento, version_id, resultado)
 
     def _reprocesar_version(
@@ -370,7 +422,7 @@ class Extractor:
                 "dv": version_id,
             },
         )
-        resultado.unidades_creadas += self._persistir_unidades(version_id, documento)
+        resultado.unidades_creadas += self._persistir_unidades(version_id, documento, resultado)
         resultado.versiones_creadas += 1
 
     def _documento_id(
@@ -436,10 +488,22 @@ class Extractor:
                 "identidad; se corrige."
             )
 
-    def _persistir_unidades(self, version_id: uuid.UUID, documento: DocumentoExtraido) -> int:
+    def _persistir_unidades(
+        self,
+        version_id: uuid.UUID,
+        documento: DocumentoExtraido,
+        resultado: ResultadoPersistencia | None = None,
+    ) -> int:
         ids: dict[int, uuid.UUID] = {}
+        limpiadas = 0
         for indice, unidad in enumerate(documento.unidades):
             padre = ids.get(unidad.padre_indice) if unidad.padre_indice is not None else None
+            # Segunda capa de marcado: hay fuentes que publican su HTML escapado
+            # dentro de la página, así que el texto visible —el que el extractor
+            # toma, bien— trae etiquetas como contenido. Se limpia acá, que es
+            # por donde pasan todos los adaptadores.
+            texto_unidad, se_limpio = limpiar_marcado(unidad.texto)
+            limpiadas += int(se_limpio)
             nuevo = self.conexion.execute(
                 text(
                     "INSERT INTO unidades_documentales ("
@@ -457,7 +521,7 @@ class Extractor:
                     "rotulo": unidad.rotulo,
                     "ruta": unidad.ruta,
                     "orden": unidad.orden,
-                    "texto": unidad.texto,
+                    "texto": texto_unidad,
                     "inicio": unidad.inicio,
                     "fin": unidad.fin,
                     "pd": unidad.pagina_desde,
@@ -466,6 +530,14 @@ class Extractor:
                 },
             ).scalar_one()
             ids[indice] = nuevo
+        # Se declara. Una limpieza silenciosa esconde que la fuente publica así,
+        # y eso es justamente lo que hay que ver en el informe de la corrida.
+        if limpiadas and resultado is not None:
+            resultado.avisos.append(
+                f"La versión {version_id} traía marcado HTML dentro del texto en {limpiadas} "
+                "unidad(es): la fuente publica su HTML escapado dentro de la propia página. Se "
+                "sacó al guardar. Si el número crece, cambió la maquetación del origen."
+            )
         return len(ids)
 
     def _controlar_cobertura(
