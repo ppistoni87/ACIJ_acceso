@@ -238,6 +238,14 @@ class Orientacion(BaseModel):
     condiciones_no_cumplidas: list[dict] = Field(default_factory=list)
     condiciones_desconocidas: list[dict] = Field(default_factory=list)
     salvaguardas: list[dict] = Field(default_factory=list)
+    # Los bloqueos con la salida que la norma prevé para cada uno. Va antes que
+    # la pregunta a propósito: una condición que deja a alguien afuera y una
+    # excepción que podría levantarla no se leen bien por separado.
+    subsanaciones: list[dict] = Field(default_factory=list)
+    # Qué puede hacer ahora. Una orientación que termina en «estas son las
+    # condiciones» deja a la persona donde estaba: sabiendo más y sin saber qué
+    # hacer.
+    proximos_pasos: dict | None = None
     pregunta: dict | None = None
     # Requisitos que siguen sin saberse y que todavía no se pueden preguntar:
     # su texto en la norma exige varias cosas a la vez y no hay forma de saber
@@ -313,8 +321,9 @@ def _leer_sesion(sesion_id: uuid.UUID | None, abrir):
     return sesion, sesion is None
 
 
-def _orientacion(turno, sesion) -> Orientacion:
+def _orientacion(turno, sesion, conexion, release_id) -> Orientacion:
     from backend_normativo.api.routers.evaluaciones import _condiciones
+    from backend_normativo.conversacion import pasos as pas
 
     dictamen = turno.dictamen
     if dictamen is None:
@@ -336,6 +345,24 @@ def _orientacion(turno, sesion) -> Orientacion:
             for c in _condiciones(dictamen.desconocidas + dictamen.no_ejecutables)
         ],
         salvaguardas=[c.model_dump(mode="json") for c in _condiciones(dictamen.salvaguardas)],
+        subsanaciones=[
+            {
+                "condicion": s.condicion,
+                "categoria": s.categoria.value,
+                "excepciones": [
+                    {"texto_literal": texto, "estado": estado.value}
+                    for texto, estado in s.excepciones
+                ],
+            }
+            for s in dictamen.subsanaciones
+        ],
+        proximos_pasos=pas.armar(
+            conexion,
+            beneficio_id=turno.beneficio_id,
+            release_id=release_id,
+            pregunta=turno.pregunta,
+            subsanaciones=dictamen.subsanaciones,
+        ).a_dict(),
         pregunta=turno.pregunta.a_dict() if turno.pregunta else None,
         sin_preguntar=turno.sin_preguntar,
         motivo_sin_evaluar=turno.motivo_sin_evaluar,
@@ -472,10 +499,93 @@ def responder_consulta(
         "cobertura": cobertura_del_corte(contexto.conexion, contexto.release_id),
         "sesion_vencida": sesion_vencida,
         "orientacion": (
-            _orientacion(turno, sesion_actual).model_dump(mode="json") if sesion_actual else None
+            _orientacion(
+                turno, sesion_actual, contexto.conexion, contexto.release_id
+            ).model_dump(mode="json")
+            if sesion_actual
+            else None
         ),
         **salida.a_dict(),
     }
+
+
+# --- P-030: orientar desde la situación --------------------------------------
+
+
+class NoEsTodo(BaseModel):
+    """La advertencia que acompaña a toda lista de opciones.
+
+    `exhaustivo` es `False` y no es un campo defensivo: es la parte más
+    importante de la respuesta. Lo publicado es una parte chica de lo que
+    existe, y presentarlo como el catálogo completo haría que alguien deje de
+    buscar donde sí lo hay.
+    """
+
+    exhaustivo: bool = False
+    aclaracion: str = (
+        "Esto es lo que tengo publicado, no todo lo que existe. Que algo no esté acá "
+        "no quiere decir que no te corresponda."
+    )
+
+
+class NecesidadesServidas(NoEsTodo):
+    necesidades: list[dict] = Field(default_factory=list)
+
+
+class OpcionesDeLaNecesidad(NoEsTodo):
+    rotulo: str | None = None
+    detalle: str | None = None
+    opciones: list[dict] = Field(default_factory=list)
+
+
+@router.get("/necesidades", response_model=Respuesta[NecesidadesServidas])
+def necesidades_servidas(contexto: Contexto = Depends()) -> Respuesta[NecesidadesServidas]:
+    """Qué situaciones puede mirar el corte publicado.
+
+    La persona elige una. No se deduce de lo que escribió: deducir que alguien
+    tiene una discapacidad o está embarazada a partir de un mensaje es inferir
+    información sensible, y el criterio lo prohíbe con todas las letras.
+    """
+    from backend_normativo.conversacion import necesidades as nec
+
+    disponibles = nec.disponibles(contexto.conexion, contexto.release_id)
+    return Respuesta(
+        release_id=contexto.release_id,
+        as_of=contexto.as_of,
+        known_at=contexto.known_at,
+        data_status=DataStatus.PUBLICADO if disponibles else DataStatus.SIN_RESULTADOS,
+        data=NecesidadesServidas(necesidades=[n.a_dict() for n in disponibles]),
+    )
+
+
+@router.get("/necesidades/{familia}/opciones", response_model=Respuesta[OpcionesDeLaNecesidad])
+def opciones_de_la_necesidad(
+    familia: str,
+    jurisdiccion: str | None = None,
+    contexto: Contexto = Depends(),
+) -> Respuesta[OpcionesDeLaNecesidad]:
+    """Los programas del corte para esa situación, con por qué están en la lista.
+
+    La jurisdicción marca, no filtra: esconder un programa de otra jurisdicción
+    le saca a la persona la chance de ver que existe algo parecido donde vive.
+    """
+    from backend_normativo.conversacion import necesidades as nec
+
+    rotulo, detalle = nec.nombrar(familia)
+    encontradas = nec.opciones(
+        contexto.conexion, contexto.release_id, familia=familia, jurisdiccion=jurisdiccion
+    )
+    return Respuesta(
+        release_id=contexto.release_id,
+        as_of=contexto.as_of,
+        known_at=contexto.known_at,
+        data_status=DataStatus.PUBLICADO if encontradas else DataStatus.SIN_RESULTADOS,
+        data=OpcionesDeLaNecesidad(
+            rotulo=rotulo,
+            detalle=detalle,
+            opciones=[o.a_dict() for o in encontradas],
+        ),
+    )
 
 
 # --- P-015: lo que el frente necesita para dejar elegir ----------------------

@@ -3366,3 +3366,107 @@ condición confirmada como que no se cumple y otra todavía sin saber, el
 resultado es «me falta un dato», no «no cumplís». Es del motor y está bien:
 decirle «no» a alguien es lo más dañino que este sistema puede hacer, y no lo
 dice mientras le falte algo por saber. La pantalla lo dice con esas palabras.
+
+## D-138 · Se orienta desde la situación, y la necesidad la elige la persona
+
+Alguien que se quedó sin casa no sabe que lo que busca se llama «Programa de
+apoyo para personas en situación de vulnerabilidad habitacional». Sabe que no
+tiene dónde vivir. P-030 pide ir de lo segundo a lo primero, y la decisión
+central es **cómo** se llega a la necesidad.
+
+**Se ofrece, no se infiere.** El criterio prohíbe inferir información sensible, y
+deducir de un mensaje que alguien tiene una discapacidad o está embarazada es
+exactamente eso. Las situaciones se muestran como botones y la persona toca uno.
+Lo único que el sistema deduce de esa elección es qué programas mirar.
+
+**Las situaciones salen del corte publicado.** Ofrecer «vivienda» cuando no hay
+ninguna norma de vivienda publicada es prometer algo que no se tiene. Lo único
+escrito a mano es cómo se dice cada familia en castellano —`SEGURIDAD_SOCIAL` es
+vocabulario nuestro, no de quien pregunta—, y una familia que no esté en esa
+tabla viaja con su propio texto en vez de un nombre inventado. Hay una prueba
+que falla cuando el corte publica una familia que nadie nombró: no obliga a
+adivinarla de antemano, obliga a enterarse.
+
+**La jurisdicción marca, no filtra.** Esconder un programa de otra jurisdicción
+«por si acaso» le saca a la persona la chance de ver que existe algo parecido
+donde vive. Se ordena poniendo primero lo que coincide y se dice cuál es cuál.
+
+**Ninguna lista se presenta como completa, y eso es lo más importante de la
+respuesta.** `exhaustivo` es `False` siempre. Lo publicado es una parte chica de
+lo que existe; presentarlo como el catálogo haría que alguien deje de buscar
+donde sí lo hay.
+
+## D-139 · Las vías de subsanación: el motor ya lo sabía y no lo decía
+
+El resolvedor de reglas se negaba —desde antes— a informar una negativa sin
+haber evaluado las excepciones que la norma prevé. Eso estaba bien y estaba
+probado. Lo que hacía mal era **no decir cuál es la excepción**: salía como una
+advertencia en prosa, «hay una excepción prevista que no se pudo evaluar», y
+quien preguntaba no se enteraba de cuál. Esa excepción es, muchas veces,
+exactamente la vía que le queda.
+
+Ahora cada bloqueo viaja con sus excepciones y el estado de cada una, y la
+pantalla las muestra con las palabras de la norma. Tres cosas que no son lo
+mismo y ahora se distinguen:
+
+- **La excepción te alcanza**: el bloqueo no aplica.
+- **No se sabe todavía**: no se informa ninguna negativa hasta resolverla.
+- **No te alcanza**: se muestra igual. Saber que la vía existe y no sirve es
+  distinto de no saber que existe: quien lo lee puede darse cuenta de que
+  contestó mal, o llevarla al organismo.
+
+**La lista vacía es una afirmación sobre el corpus, no sobre la ley.** Que no
+haya ninguna excepción registrada no significa que la norma no prevea ninguna:
+significa que no está curada. La pantalla lo dice con esas palabras —«no tengo
+cargada ninguna excepción para esto; eso no quiere decir que la norma no prevea
+ninguna»— porque la diferencia entre «la ley no te deja salida» y «yo no tengo
+la salida cargada» es la diferencia entre cerrarle a alguien una puerta y
+avisarle que hay una que no miramos.
+
+También se distingue qué tipo de bloqueo es: «la norma pide esto y no se cumple»
+y «esto que me contaste te deja afuera» se leen distinto y llevan a hacer cosas
+distintas.
+
+## D-140 · Próximos pasos: sólo los que se pueden sostener, y ninguno inicia nada
+
+Una orientación que termina en «estas son las condiciones» deja a la persona
+donde estaba: sabiendo más y sin saber qué hacer.
+
+**Cada paso sale de algo, y se dice de qué.** Hay tres orígenes y ninguno más: un
+dato que la conversación necesita, una excepción que la norma prevé y podría
+cambiar el resultado, o un trámite publicado con sus pasos curados. No hay
+consejos generales.
+
+**Primero lo que no obliga a moverse.** Contestar un dato es gratis; hacer una
+cola no. Poner el trámite antes que la pregunta manda a alguien a hacer un
+trámite que a lo mejor no le hace falta.
+
+**Una excepción ya resuelta no es un paso.** Si se sabe que no alcanza, mandar a
+alguien a averiguarla es hacerle perder el día; sólo entran las que siguen sin
+saberse.
+
+**Nada de esto inicia nada, y se repite en pantalla.** Un sistema que le hace
+creer a alguien que ya hizo el trámite le hace perder el plazo.
+
+**Lo que falta se declara.** Los seis trámites cargados siguen en `CANDIDATE` y
+sin beneficio asociado, así que hoy `sin_tramite_publicado` es verdadero para
+todos y la pantalla dice «los pasos que pide el organismo todavía no los tengo
+cargados; preguntá ahí cuáles son: no son estos». Callarlo haría pasar por «no
+hay nada que hacer» lo que en realidad es «no lo tengo».
+
+### Dos cosas más que cerró este cambio
+
+**El canal dice cuándo se verificó.** La API ya devolvía `verificado_en` y la
+pantalla no lo mostraba. Un teléfono verificado hace dos años y uno de la semana
+pasada no son lo mismo, y quien está por llamar es quien tiene que saber cuál de
+los dos es. Cuando no hay fecha, se dice que no la hay.
+
+**El resumen descargable se arma en el navegador.** Es voluntario y sale sólo si
+alguien lo pide. No hay ruta en el servidor que lo genere: eso obligaría a
+mandar de vuelta lo que la persona leyó, y no hace falta porque está todo en la
+pantalla. Hay una prueba que falla si armarlo dispara una sola petición de red.
+La primera línea dice que no es una constancia, que no inicia trámite y que no
+crea expediente —un resumen que se ve como constancia es un resumen que alguien
+va a presentar creyendo que vale—, y lo que quedó sin efecto por una corrección
+sale marcado: llevarse al organismo una conclusión que ya no vale es peor que no
+llevarse nada.

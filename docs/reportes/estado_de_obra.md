@@ -31,11 +31,11 @@ actualiza es la forma más barata de mentir sin querer.
 | G4 | Backoffice, cierre jurídico, scheduler, alertas, restauración | Abierto |
 | G5 | Evaluación independiente, piloto, traspaso | Abierto |
 
-## Las seis causas
+## Las siete causas
 
-Los pendientes no son un problema distinto cada uno. Hoy **ninguna de las seis
+Los pendientes no son un problema distinto cada uno. Hoy **ninguna de las siete
 causas se resuelve escribiendo código**: cinco esperan una decisión o un permiso
-y la sexta espera curación.
+y dos esperan curación.
 
 **A · Falta una firma jurídica. Cerrada por decisión, no por firma.** El
 12/09/2026 Pedro Pistoni decidió que el proyecto no va a contar con un
@@ -88,6 +88,16 @@ pediría a la persona que adivine cuál le están preguntando. Decisión tomada:
 se pregunta, se declara cuántas quedaron y por qué (D-136). De 93 reglas
 ejecutables publicadas, **62 se pueden preguntar y 31 no**. Levantarlo es
 trabajo de curación —un rótulo por hoja, tomado de la norma—, no del frente.
+
+**G · Los trámites están cargados y no llegan a nadie.** Hay seis trámites
+curados con veinte pasos —CUD, las cuatro modalidades de DNI, un reclamo ante
+Defensa del Consumidor— y ninguno llega a la pantalla, por dos razones que se
+arreglan distinto. Una: siguen en `CANDIDATE` y sin fecha de verificación, igual
+que el resto del corpus operativo (causa E). Dos: los seis tienen
+`beneficio_id` en nulo, así que aunque se publicaran no se sabría de qué
+programa son los pasos. Atarlos es una decisión de curación —cuál trámite sirve
+a cuál beneficio— y hasta que se tome, la pantalla dice «los pasos que pide el
+organismo todavía no los tengo cargados» (D-140). Afecta al criterio 3 de P-030.
 
 ## Historia por historia
 

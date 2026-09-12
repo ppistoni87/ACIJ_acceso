@@ -76,6 +76,36 @@ class CondicionEvaluada:
 
 
 @dataclass
+class Subsanacion:
+    """Un bloqueo y las excepciones que la norma prevé para levantarlo.
+
+    Existe porque el motor ya sabía esto y no lo decía. Cuando una condición
+    bloquea, el resolvedor mira las excepciones para no informar una negativa
+    sin haberlas evaluado —eso ya estaba—, pero el resultado sólo salía como una
+    advertencia en prosa: «hay una excepción prevista que no se pudo evaluar».
+    Quien pregunta no se enteraba de **cuál**, y esa excepción es, muchas veces,
+    exactamente la vía que le queda.
+
+    `excepciones` puede venir vacía. No significa que la norma no prevea
+    ninguna: significa que en el corpus no hay ninguna registrada para esta
+    condición, que es una afirmación sobre lo curado y no sobre la ley. Se
+    distinguen porque la diferencia importa.
+    """
+
+    condicion: str
+    categoria: CategoriaRegla
+    excepciones: list[tuple[str, Ternario]] = field(default_factory=list)
+
+    @property
+    def alcanza_alguna(self) -> bool:
+        return any(estado is Ternario.TRUE for _, estado in self.excepciones)
+
+    @property
+    def falta_saber(self) -> bool:
+        return any(estado is Ternario.UNKNOWN for _, estado in self.excepciones)
+
+
+@dataclass
 class DictamenBeneficio:
     resultado: ResultadoBeneficio
     cumplidas: list[CondicionEvaluada] = field(default_factory=list)
@@ -85,6 +115,10 @@ class DictamenBeneficio:
     salvaguardas: list[CondicionEvaluada] = field(default_factory=list)
     posteriores: list[CondicionEvaluada] = field(default_factory=list)
     preguntas_faltantes: list[str] = field(default_factory=list)
+    # Los bloqueos, con la salida que la norma prevé para cada uno. Se llena
+    # siempre que haya un bloqueo, alcance o no la excepción: que no alcance
+    # también es algo que la persona tiene derecho a leer.
+    subsanaciones: list[Subsanacion] = field(default_factory=list)
     advertencias: list[str] = field(default_factory=list)
 
     @property
@@ -184,9 +218,22 @@ def _resolver(
 
     bloqueantes_firmes: list[CondicionEvaluada] = []
     for bloqueante in bloqueantes:
-        estado = _estado_de_las_excepciones(
-            excepciones_por_regla.get(bloqueante.regla_id, []), evaluadas
+        excepciones = excepciones_por_regla.get(bloqueante.regla_id, [])
+        # Antes de decidir nada: qué salida prevé la norma para este bloqueo.
+        # Se registra siempre, con el estado de cada excepción, para que la
+        # respuesta pueda decir cuál es la vía en vez de sólo que existe una.
+        dictamen.subsanaciones.append(
+            Subsanacion(
+                condicion=bloqueante.texto_literal,
+                categoria=por_id[bloqueante.regla_id].categoria,
+                excepciones=[
+                    (e.texto_literal, evaluadas[e.id].resultado)
+                    for e in excepciones
+                    if e.id in evaluadas
+                ],
+            )
         )
+        estado = _estado_de_las_excepciones(excepciones, evaluadas)
         if estado is Ternario.TRUE:
             # Hay una excepción que se cumple: el bloqueo no aplica.
             dictamen.advertencias.append(

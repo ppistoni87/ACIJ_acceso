@@ -48,14 +48,16 @@ button{font:inherit;cursor:pointer;color:inherit}
 
 /* --- barra --- */
 header.barra{
-  display:flex; align-items:center; gap:10px; padding:10px 18px;
+  /* Envuelve. Con tres acciones y un teléfono de 360 px no entran en una fila,
+     y una barra que no envuelve empuja la página entera hacia el costado. */
+  display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:10px 18px;
   border-bottom:1px solid var(--linea); background:var(--papel);
   position:sticky; top:0; z-index:10;
 }
 header.barra h1{
   font-size:.95rem; margin:0; font-weight:600; letter-spacing:-.01em; color:var(--tinta-2);
 }
-header.barra .acciones{margin-left:auto; display:flex; gap:6px}
+header.barra .acciones{margin-left:auto; display:flex; flex-wrap:wrap; gap:6px}
 
 .btn{
   padding:9px 16px; border:1px solid transparent; border-radius:8px;
@@ -263,6 +265,45 @@ textarea#pregunta{
 .orienta .r-no{color:var(--sello)}
 .orienta .r-falta{color:var(--espera)}
 
+/* Próximos pasos: lo único accionable de toda la respuesta. */
+.pasos{margin:0 0 10px}
+.pasos ol{margin:6px 0 0; padding:0 0 0 1.3em; font-size:.94rem}
+.pasos li{margin:0 0 8px}
+.pasos .respaldo{
+  display:block; font-size:.87rem; color:var(--tinta-3);
+  border-left:2px solid var(--linea); padding-left:10px; margin:4px 0 0;
+}
+.pasos .no-inicia{
+  margin:10px 0 0; font-size:.87rem; color:var(--tinta-2);
+  border-left:3px solid var(--frio); padding-left:10px;
+}
+.canal .verificado{display:block; font-size:.82rem; color:var(--tinta-3); margin-top:4px}
+
+/* Las opciones de una necesidad: qué hay publicado para esa situación. */
+.opcion{
+  border:1px solid var(--linea); border-radius:10px; padding:12px 14px; margin:0 0 8px;
+  background:var(--papel-2);
+}
+.opcion .nombre{font-weight:600; display:block; margin:0 0 4px}
+.opcion .porque{font-size:.87rem; color:var(--tinta-3); margin:6px 0 0}
+.opcion .lejos{color:var(--espera)}
+.opcion p{margin:0; font-size:.93rem; color:var(--tinta-2)}
+.opcion .fichas{margin:10px 0 0}
+
+/* Las salidas que la norma prevé para lo que bloquea. Se ven distinto de una
+   condición más: son lo único accionable de un resultado desfavorable. */
+.salida{
+  border:1px solid var(--espera); border-left-width:4px; border-radius:10px;
+  padding:12px 14px; margin:0 0 10px; background:var(--papel-2);
+}
+.salida .bloqueo{margin:0 0 8px; font-size:.93rem; color:var(--tinta-2)}
+.salida .bloqueo b{color:var(--tinta)}
+.salida ul{margin:6px 0 0; padding:0 0 0 1.1em; font-size:.93rem}
+.salida .alcanza{color:var(--ok); font-weight:600}
+.salida .falta{color:var(--espera); font-weight:600}
+.salida .no-alcanza{color:var(--tinta-3)}
+.salida .sin-salida{margin:0; font-size:.93rem; color:var(--tinta-2)}
+
 /* La pregunta: una por vez, con el texto de la norma arriba y el control abajo. */
 .pregunta{
   border:1px solid var(--linea-fuerte); border-radius:12px; padding:14px 16px; margin:16px 0 0;
@@ -321,6 +362,7 @@ textarea#pregunta{
 <header class="barra">
   <h1>ACIJ Acceso · consulta de derechos</h1>
   <div class="acciones">
+    <button type="button" class="btn tenue" id="bajar-resumen" hidden>Descargar lo que leí</button>
     <button type="button" class="btn tenue" id="limpiar">Nueva conversación</button>
     <button type="button" class="btn tenue" id="salir">Salir y borrar</button>
   </div>
@@ -441,6 +483,12 @@ function trabajando(si){
 }
 
 // --- mensajes ---------------------------------------------------------------
+function hayQueOfrecerElResumen(){
+  // Sólo cuando hay conversación: un botón para descargar una pantalla vacía es
+  // una promesa de que algo pasó.
+  $("bajar-resumen").hidden = $("resultado").querySelectorAll(".msj:not(.bienvenida)").length === 0;
+}
+
 function agregarMensaje(clase, quien, html, foco, desplazar){
   nMensajes += 1;
   const nodo = document.createElement("article");
@@ -448,6 +496,7 @@ function agregarMensaje(clase, quien, html, foco, desplazar){
   nodo.id = "msj-" + nMensajes;
   nodo.innerHTML = '<p class="quien">' + esc(quien) + '</p><div class="burbuja">' + html + "</div>";
   $("resultado").appendChild(nodo);
+  hayQueOfrecerElResumen();
   const cabeza = nodo.querySelector("h2");
   if(foco && cabeza){ cabeza.focus(); }
   // El saludo no se desplaza: no hay nada arriba de él, y `scrollIntoView`
@@ -609,6 +658,12 @@ function bloqueCanales(canales){
           return "<li>" + esc((c.tipo || "") + ": " + (c.valor || "")) + "</li>";
         }).join("") + "</ul>";
       }
+      // Cuándo se verificó, o que no consta. Un teléfono verificado hace dos
+      // años y uno de la semana pasada no son lo mismo, y quien está por
+      // llamar es quien tiene que saber cuál de los dos es.
+      html += '<span class="verificado">' + (p.verificado_en
+        ? "Lo verifiqué el " + esc(fechaLegible(p.verificado_en))
+        : "No tengo fecha de cuándo se verificó esto. Confirmalo antes de ir.") + "</span>";
       html += "</div>";
     });
     html += '<p class="ayuda">Quien decide sobre tu caso es el organismo, no esta pantalla.</p>';
@@ -1203,6 +1258,89 @@ function cajaDePregunta(pregunta){
   return caja;
 }
 
+// Lo que una condición bloqueante significa según de qué tipo sea. La
+// diferencia no es un detalle: «no cumplís esto» y «esto que cumplís te deja
+// afuera» se leen distinto y llevan a hacer cosas distintas.
+const BLOQUEO = {
+  APLICABILIDAD: "La norma pide esto y, con lo que me contaste, no se cumple:",
+  EXCLUSION: "Esto que me contaste es, según la norma, algo que deja afuera:"
+};
+
+const ESTADO_EXCEPCION = {
+  TRUE: ["alcanza", "Y por lo que me contaste, esta excepción te alcanza."],
+  UNKNOWN: ["falta", "No sé todavía si esta excepción te alcanza."],
+  FALSE: ["no-alcanza", "Por lo que me contaste, esta excepción no te alcanza."]
+};
+
+// Las vías de subsanación: lo que la norma prevé para levantar un bloqueo.
+//
+// Es la parte de la pantalla que más puede cambiarle el día a alguien. El motor
+// ya se negaba a informar una negativa sin evaluar las excepciones; lo que no
+// hacía era **decir cuál**, y esa excepción suele ser la vía que le queda.
+function bloqueDeSalidas(subsanaciones){
+  if(!subsanaciones || !subsanaciones.length) return "";
+  let html = '<div class="grupo"><span class="rotulo r-falta">Lo que te frena, y qué prevé la norma</span>';
+  subsanaciones.forEach(function(s){
+    html += '<div class="salida"><p class="bloqueo">' +
+      esc(BLOQUEO[s.categoria] || "Con lo que me contaste, esto te frena:") +
+      " <b>" + esc(s.condicion) + "</b></p>";
+    const excepciones = s.excepciones || [];
+    if(!excepciones.length){
+      // Que no haya ninguna registrada no es que la norma no la prevea. La
+      // diferencia entre «la ley no deja salida» y «yo no tengo la salida
+      // cargada» es enorme, y decir la primera cuando pasa la segunda sería
+      // cerrarle a alguien una puerta que está abierta.
+      html += '<p class="sin-salida">No tengo cargada ninguna excepción para esto. Eso no ' +
+        "quiere decir que la norma no prevea ninguna: quiere decir que yo no la tengo. " +
+        "Preguntá en el organismo antes de darlo por cerrado.</p>";
+    }else{
+      html += "<p class=\"sin-salida\">La norma prevé estas excepciones:</p><ul>";
+      excepciones.forEach(function(e){
+        const par = ESTADO_EXCEPCION[e.estado] || ESTADO_EXCEPCION.UNKNOWN;
+        html += "<li>" + esc(e.texto_literal) +
+          ' <span class="' + par[0] + '">' + esc(par[1]) + "</span></li>";
+      });
+      html += "</ul>";
+    }
+    html += "</div>";
+  });
+  return html + "</div>";
+}
+
+// Los próximos pasos. Es lo único accionable de toda la respuesta, así que va
+// al final y con el aviso de que no inicia nada: un sistema que le hace creer a
+// alguien que ya hizo el trámite le hace perder el plazo.
+const ORIGEN_DEL_PASO = {
+  conversacion: "Acá mismo",
+  norma: "Lo dice la norma",
+  tramite: "Lo pide el organismo"
+};
+
+function bloqueDePasos(pp){
+  if(!pp) return "";
+  const pasos = pp.pasos || [];
+  let html = '<div class="grupo pasos"><span class="rotulo">Qué podés hacer ahora</span>';
+  if(pasos.length){
+    html += "<ol>";
+    pasos.forEach(function(p){
+      html += "<li>" + esc(p.accion) +
+        (p.respaldo ? '<span class="respaldo">' + esc(ORIGEN_DEL_PASO[p.origen] || "") +
+          ": «" + esc(p.respaldo) + "»</span>" : "") + "</li>";
+    });
+    html += "</ol>";
+  }else{
+    html += "<p>No tengo ningún paso concreto para darte todavía.</p>";
+  }
+  if(pp.sin_tramite_publicado){
+    // Callarlo haría pasar por «no hay nada que hacer» lo que en realidad es
+    // «no lo tengo cargado».
+    html += "<p class=\"respaldo\">Los pasos que pide el organismo para este programa " +
+      "todavía no los tengo cargados. Preguntá ahí cuáles son: no son estos.</p>";
+  }
+  html += '<p class="no-inicia">' + esc(pp.aclaracion || "") + "</p>";
+  return html + "</div>";
+}
+
 function bloqueOrientacion(o){
   const caja = document.createElement("div");
   caja.className = "orienta";
@@ -1225,6 +1363,7 @@ function bloqueOrientacion(o){
   html += listaDeCondiciones("Se cumple con lo que me contaste", "r-cumple", o.condiciones_cumplidas);
   html += listaDeCondiciones("No se cumple con lo que me contaste", "r-no", o.condiciones_no_cumplidas);
   html += listaDeCondiciones("Todavía no lo sé", "r-falta", o.condiciones_desconocidas);
+  html += bloqueDeSalidas(o.subsanaciones);
   html += listaDeCondiciones("A tener en cuenta igual", "r-falta", o.salvaguardas);
   if(o.sin_preguntar > 0){
     html += '<div class="alerta"><b>Hay ' + o.sin_preguntar + " requisito(s) que no te puedo " +
@@ -1232,6 +1371,7 @@ function bloqueOrientacion(o){
       "tengo forma de saber cuál te estaría preguntando. Prefiero no preguntar mal: quedan " +
       "como desconocidos y por eso la orientación es incompleta.</div>";
   }
+  html += bloqueDePasos(o.proximos_pasos);
   html += '<p class="ayuda">' + esc(o.aclaracion || "") + "</p>";
   caja.innerHTML = html;
   return caja;
@@ -1336,6 +1476,17 @@ function saludar(){
     bloqueCobertura(cobertura) +
     "</div>";
   $("resultado").appendChild(nodo);
+  // Primero las situaciones, después los ejemplos escritos. Quien no sabe cómo
+  // se llama lo que busca —que es casi todo el mundo— puede empezar por acá sin
+  // tener que acertarle a una palabra.
+  const porSituacion = bloqueDeNecesidades();
+  if(porSituacion){
+    const rotulo = document.createElement("p");
+    rotulo.className = "ayuda";
+    rotulo.textContent = "O contame en qué andás:";
+    nodo.appendChild(rotulo);
+    nodo.appendChild(porSituacion);
+  }
   nodo.appendChild(sugerenciasDeEjemplo());
   document.body.classList.add("sin-conversacion");
 }
@@ -1370,6 +1521,109 @@ function sugerenciasDeEjemplo(){
       enviar();
     }));
   });
+  return caja;
+}
+
+// --- orientar desde la situación (P-030) ------------------------------------
+//
+// Alguien que se quedó sin casa no sabe que lo que busca se llama «Programa de
+// apoyo para personas en situación de vulnerabilidad habitacional». Sabe que no
+// tiene dónde vivir.
+//
+// La necesidad la **elige** la persona: no se deduce de lo que escribió.
+// Deducir de un mensaje que alguien tiene una discapacidad o está embarazada es
+// inferir información sensible, y eso no se hace acá.
+let necesidades = [];
+
+async function cargarNecesidades(){
+  try{
+    const r = await fetch("/v1/necesidades", {headers:{"Accept":"application/json"}});
+    if(!r.ok) return;
+    necesidades = ((await r.json()).data || {}).necesidades || [];
+  }catch(_){ necesidades = []; }
+}
+
+function bloqueDeNecesidades(){
+  if(!necesidades.length) return null;
+  const caja = document.createElement("div");
+  caja.className = "fichas";
+  necesidades.forEach(function(n){
+    const b = chip(n.rotulo, function(){ mostrarOpciones(n); });
+    if(n.detalle) b.title = n.detalle;
+    caja.appendChild(b);
+  });
+  return caja;
+}
+
+async function mostrarOpciones(necesidad){
+  mensajeMio(necesidad.rotulo);
+  const portada = document.querySelector(".bienvenida");
+  if(portada){ portada.remove(); }
+  document.body.classList.remove("sin-conversacion");
+  mostrarPensando();
+  let datos = null;
+  try{
+    const q = contexto.jurisdiccion ? "?jurisdiccion=" + encodeURIComponent(contexto.jurisdiccion) : "";
+    const r = await fetch("/v1/necesidades/" + encodeURIComponent(necesidad.familia) + "/opciones" + q,
+      {headers:{"Accept":"application/json"}});
+    if(r.ok) datos = (await r.json()).data;
+  }catch(_){}
+  sacarPensando();
+  if(!datos){
+    errorEnElHilo("No pude traer las opciones",
+      "Ojo: no es que no haya nada. Es que no pude fijarme. Probá de nuevo.", true);
+    return;
+  }
+  const nodo = agregarMensaje("suyo", "ACIJ Acceso",
+    '<h2 tabindex="-1">' + esc(datos.rotulo || necesidad.rotulo) + "</h2>" +
+    (datos.detalle ? '<p class="ayuda">' + esc(datos.detalle) + "</p>" : ""), true);
+  const burbuja = nodo.querySelector(".burbuja");
+
+  if(!(datos.opciones || []).length){
+    const p = document.createElement("p");
+    p.textContent = "No tengo nada publicado para esto todavía. Que no esté acá no quiere " +
+      "decir que no te corresponda: preguntá igual en el organismo.";
+    burbuja.appendChild(p);
+    return;
+  }
+  datos.opciones.forEach(function(o){ burbuja.appendChild(cajaDeOpcion(o)); });
+
+  // Siempre, y sin excepción: esto no es el catálogo completo. Presentarlo como
+  // si lo fuera haría que alguien deje de buscar donde sí lo hay.
+  const aviso = document.createElement("div");
+  aviso.className = "alerta";
+  aviso.innerHTML = "<b>Esto no es todo lo que existe.</b>" + esc(datos.aclaracion || "");
+  burbuja.appendChild(aviso);
+}
+
+function cajaDeOpcion(o){
+  const caja = document.createElement("div");
+  caja.className = "opcion";
+  let html = '<span class="nombre">' + esc(o.nombre) + "</span>";
+  if(o.descripcion) html += "<p>" + esc(o.descripcion) + "</p>";
+  // Por qué está en la lista. Nada de esto afirma nada sobre la persona: dice
+  // de qué norma sale el programa y dónde rige.
+  const partes = [];
+  if(o.norma) partes.push("Sale de la " + o.norma);
+  if(o.jurisdiccion) partes.push("rige en " + o.jurisdiccion);
+  if(o.condiciones) partes.push(o.condiciones + " condición(es) para mirar");
+  html += '<p class="porque">' + esc(partes.join(" · ")) + "</p>";
+  if(o.coincide_jurisdiccion === false){
+    html += '<p class="porque lejos">No es de donde me dijiste que vivís. Te lo muestro igual ' +
+      "por si te sirve, o por si hay algo parecido donde estás.</p>";
+  }
+  caja.innerHTML = html;
+  const fichas = document.createElement("div");
+  fichas.className = "fichas";
+  fichas.appendChild(chip("Ver mis condiciones para este", async function(){
+    await abrirSesion();
+    await elegirBeneficio(o.codigo);
+    contexto.programa = o.codigo;
+    contexto.programaNombre = o.nombre;
+    pintarContexto();
+    consultar({texto: o.nombre});
+  }));
+  caja.appendChild(fichas);
   return caja;
 }
 
@@ -1497,6 +1751,70 @@ function ajustarAlto(){
   caja.style.height = Math.min(180, caja.scrollHeight) + "px";
 }
 
+// --- el resumen para llevar --------------------------------------------------
+//
+// La pantalla promete desde la portada que lo que leyó se lo pueda llevar «a
+// quien te atienda». Esto lo cumple.
+//
+// **Se arma en el navegador y no sale de la máquina.** No hay una ruta que
+// genere el resumen en el servidor: eso obligaría a mandar de vuelta lo que la
+// persona leyó, y no hace falta —está todo en la pantalla—. Es voluntario: sale
+// sólo si alguien lo pide.
+//
+// **No parece un papel oficial y lo dice en la primera línea.** Un resumen que
+// se ve como una constancia es un resumen que alguien va a presentar creyendo
+// que vale, y no vale: no inicia trámite ni crea expediente.
+function textoDelResumen(){
+  const lineas = [];
+  lineas.push("LO QUE LEÍ EN ACIJ ACCESO");
+  lineas.push("");
+  lineas.push("Esto NO es una constancia, NO inicia ningún trámite y NO crea expediente.");
+  lineas.push("Es una copia de lo que leí en pantalla, para poder mostrarlo.");
+  lineas.push("Quien decide sobre mi caso es el organismo.");
+  lineas.push("");
+  lineas.push("Lo bajé el " + fechaLegible(new Date().toISOString().slice(0, 10)) + ".");
+  if(contexto.programaNombre) lineas.push("Programa: " + contexto.programaNombre);
+  if(contexto.jurisdiccionNombre) lineas.push("Jurisdicción: " + contexto.jurisdiccionNombre);
+  lineas.push("");
+
+  const hechos = (sesion && sesion.hechos) || {};
+  const claves = Object.keys(hechos);
+  if(claves.length){
+    lineas.push("LO QUE CONFIRMÉ");
+    claves.forEach(function(clave){
+      const d = hechos[clave];
+      lineas.push("- " + valorLegible(d) + " — " + (d.texto || "un dato"));
+    });
+    lineas.push("");
+  }
+  lineas.push("LA CONVERSACIÓN");
+  document.querySelectorAll("#resultado .msj").forEach(function(nodo){
+    const quien = nodo.classList.contains("mia") ? "Yo" : "ACIJ Acceso";
+    const marca = nodo.classList.contains("reemplazada") ? " [esto quedó sin efecto]" : "";
+    const cuerpo = nodo.querySelector(".burbuja");
+    if(!cuerpo) return;
+    lineas.push("");
+    lineas.push("[" + quien + marca + "]");
+    lineas.push(cuerpo.innerText.trim());
+  });
+  return lineas.join("\n");
+}
+
+function bajarResumen(){
+  const texto = textoDelResumen();
+  const url = URL.createObjectURL(new Blob([texto], {type: "text/plain;charset=utf-8"}));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "acij-acceso-lo-que-lei.txt";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // Se libera enseguida: el resumen puede tener lo que la persona contó y no
+  // tiene por qué seguir vivo en memoria después de guardarlo.
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 0);
+  mostrarEstado("Lo bajé como archivo de texto. No es una constancia y no inicia ningún trámite.");
+}
+
 // --- borrado ----------------------------------------------------------------
 // El frente ciudadano no guarda credenciales, pero sí tiene a la vista lo que la
 // persona contó de su situación, y en un chat eso es más que en un formulario.
@@ -1531,6 +1849,7 @@ function borrarTodo(mensaje, saludarDeNuevo){
   mostrarEstado(mensaje || "");
   document.body.classList.add("sin-conversacion");
   if(saludarDeNuevo) saludar();
+  hayQueOfrecerElResumen();
   $("pregunta").focus();
 }
 
@@ -1538,6 +1857,7 @@ function borrarTodo(mensaje, saludarDeNuevo){
 document.addEventListener("DOMContentLoaded", async function(){
   await cargarVocabularios();
   await cargarCobertura();
+  await cargarNecesidades();
   saludar();
   pintarContexto();
 
@@ -1562,6 +1882,7 @@ document.addEventListener("DOMContentLoaded", async function(){
   $("limpiar").addEventListener("click", function(){
     borrarTodo("", true);
   });
+  $("bajar-resumen").addEventListener("click", bajarResumen);
   $("borrar-conversacion").addEventListener("click", borrarLosDatos);
   $("salir").addEventListener("click", function(){
     borrarTodo("Listo. Borré la conversación y todo lo que habías escrito.", false);

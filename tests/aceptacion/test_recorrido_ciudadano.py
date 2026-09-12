@@ -162,10 +162,11 @@ def _beneficio_con_reglas_publicado(conexion, corpus) -> None:
             "INSERT INTO registro_versiones (entidad_tipo, entidad_id, numero_version, "
             " estado_revision, valid_tipo, valid_desde, release_id, verificado_en) "
             "SELECT 'beneficio', :b, 1, 'PUBLISHED', 'ABIERTO_FIN', DATE '2025-12-23', "
-            "       rv.release_id, now() "
-            "  FROM registro_versiones rv WHERE rv.id = :rv RETURNING id"
+            "       r.id, now() "
+            "  FROM releases r WHERE r.estado = 'PUBLICADO' "
+            " ORDER BY r.publicado_en DESC LIMIT 1 RETURNING id"
         ),
-        {"b": beneficio, "rv": corpus.registro_version_id},
+        {"b": beneficio},
     ).scalar_one()
     conexion.execute(
         text(
@@ -1090,3 +1091,109 @@ def test_los_controles_de_una_respuesta_reemplazada_dejan_de_andar(pagina) -> No
     assert controles.count() > 0
     for i in range(controles.count()):
         assert controles.nth(i).is_disabled()
+
+
+# --- P-030: orientar desde la situación, y salir con algo que hacer -----------
+
+
+def test_la_portada_ofrece_situaciones_y_no_solo_palabras_para_adivinar(pagina) -> None:
+    """Quien no sabe cómo se llama lo que busca —casi todo el mundo— tiene que
+    poder empezar igual."""
+    apertura = pagina.inner_text(".bienvenida")
+    assert "en qué andás" in apertura
+    assert "Dónde vivir" in apertura
+
+
+def test_elegir_una_situacion_lleva_a_las_opciones_con_por_que_estan(pagina) -> None:
+    pagina.locator(".bienvenida").get_by_text("Dónde vivir", exact=True).click()
+    pagina.wait_for_selector(".opcion", timeout=20_000)
+
+    opcion = pagina.inner_text(".opcion")
+    assert "Apoyo habitacional" in opcion
+    # Las razones de pertinencia son sobre la norma, nunca sobre la persona.
+    assert "LEY 6935/2025" in opcion
+    assert "Ciudad Autónoma de Buenos Aires" in opcion
+
+
+def test_ninguna_lista_de_opciones_se_presenta_como_el_catalogo_completo(pagina) -> None:
+    """Presentarla como completa haría que alguien deje de buscar donde sí lo hay."""
+    pagina.locator(".bienvenida").get_by_text("Dónde vivir", exact=True).click()
+    pagina.wait_for_selector(".opcion", timeout=20_000)
+
+    texto = pagina.locator(".msj.suyo").last.inner_text()
+    assert "no es todo lo que existe" in texto.lower()
+
+
+def test_desde_la_opcion_se_llega_a_las_condiciones_propias(pagina) -> None:
+    """El puente entre «no sé cómo se llama» y «qué me piden a mí»."""
+    pagina.locator(".bienvenida").get_by_text("Dónde vivir", exact=True).click()
+    pagina.wait_for_selector(".opcion", timeout=20_000)
+
+    pagina.locator(".opcion").get_by_text("Ver mis condiciones para este").click()
+    pagina.wait_for_selector(".pregunta", timeout=20_000)
+
+    assert "Programa: Apoyo habitacional" in pagina.inner_text("#contexto")
+    assert CONDICION_PREGUNTABLE in pagina.inner_text(".pregunta")
+
+
+def test_la_respuesta_termina_en_algo_que_hacer_y_avisa_que_no_inicia_nada(pagina) -> None:
+    """Un sistema que le hace creer a alguien que ya hizo el trámite le hace
+    perder el plazo."""
+    _orientar(pagina)
+
+    pasos = pagina.locator(".pasos").last.inner_text().lower()
+    assert "qué podés hacer ahora" in pasos
+    assert "inicia un trámite ni crea un expediente" in pasos
+    # Y declara lo que no tiene, en vez de dejarlo pasar por «no hay nada que hacer».
+    assert "todavía no los tengo cargados" in pasos
+
+
+def test_el_canal_dice_cuando_se_verifico(pagina) -> None:
+    """Un teléfono verificado hace dos años y uno de la semana pasada no son lo
+    mismo, y quien está por llamar es quien tiene que saber cuál de los dos es."""
+    _preguntar(pagina, "vulnerabilidad habitacional")
+    pagina.wait_for_selector(".canal", timeout=20_000)
+
+    canal = pagina.inner_text(".canal")
+    assert "verifiqué el" in canal or "No tengo fecha de cuándo se verificó" in canal
+
+
+def test_el_resumen_es_voluntario_y_no_aparece_sobre_una_pantalla_vacia(pagina) -> None:
+    assert pagina.locator("#bajar-resumen").is_hidden()
+    _preguntar(pagina, "vulnerabilidad habitacional")
+    assert pagina.locator("#bajar-resumen").is_visible()
+
+
+def test_el_resumen_dice_en_la_primera_linea_que_no_es_una_constancia(pagina) -> None:
+    """Un resumen que se ve como una constancia es un resumen que alguien va a
+    presentar creyendo que vale."""
+    _preguntar(pagina, "vulnerabilidad habitacional")
+    texto = pagina.evaluate("() => textoDelResumen()")
+
+    encabezado = texto.split("\n\n")[1]
+    assert "NO es una constancia" in encabezado
+    assert "NO inicia ningún trámite" in encabezado
+    assert "NO crea expediente" in encabezado
+
+
+def test_el_resumen_se_arma_en_el_navegador_y_no_sale_de_la_maquina(pagina) -> None:
+    """Generarlo en el servidor obligaría a mandar de vuelta lo que la persona
+    leyó, y no hace falta: está todo en la pantalla."""
+    _preguntar(pagina, "vulnerabilidad habitacional")
+
+    pedidos: list[str] = []
+    pagina.on("request", lambda p: pedidos.append(p.url))
+    pagina.evaluate("() => textoDelResumen()")
+
+    assert pedidos == [], f"armar el resumen no puede pedirle nada a nadie: {pedidos}"
+
+
+def test_el_resumen_marca_lo_que_quedo_sin_efecto(pagina) -> None:
+    """Llevarse al organismo una conclusión que ya no vale es peor que no
+    llevarse nada."""
+    _orientar(pagina)
+    _contestar(pagina, "Sí")
+    pagina.locator("#repaso").get_by_text("Cambiar", exact=True).click()
+    pagina.wait_for_selector(".msj.reemplazada", timeout=20_000)
+
+    assert "[esto quedó sin efecto]" in pagina.evaluate("() => textoDelResumen()")

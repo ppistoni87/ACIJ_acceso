@@ -82,6 +82,7 @@ class Turno:
     hallazgo: Any = None
     fragmentos: list = field(default_factory=list)
     avisos: list[str] = field(default_factory=list)
+    beneficio_id: uuid.UUID | None = None
     beneficio_codigo: str | None = None
     beneficio_nombre: str | None = None
     dictamen: Any = None
@@ -392,6 +393,7 @@ def correr(
         hallazgo=salida.get("hallazgo"),
         fragmentos=salida.get("fragmentos") or [],
         avisos=salida.get("avisos") or [],
+        beneficio_id=salida.get("beneficio_id"),
         beneficio_codigo=salida.get("beneficio_codigo"),
         beneficio_nombre=salida.get("beneficio_nombre"),
         dictamen=salida.get("dictamen"),
