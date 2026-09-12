@@ -2051,7 +2051,20 @@ def publicacion_estado() -> None:
         marca = "ok " if gate.pasa else "FALLA"
         typer.echo(f"  [{marca}] {gate.id}: {gate.descripcion} · {gate.observado}")
     typer.echo(f"En cuarentena: {len(cuarentena)}")
-    for fila in cuarentena[:15]:
+    # Primero el resumen y después los ejemplos. Con catorce mil versiones
+    # retenidas, quince identificadores sueltos no dicen qué hay que hacer;
+    # «14.390 sin fecha de verificación» sí, y es una sola línea.
+    from collections import Counter
+
+    por_motivo: Counter[tuple[str, str]] = Counter()
+    for fila in cuarentena:
+        for motivo_cuarentena in fila["motivos"]:
+            por_motivo[(fila["entidad_tipo"], motivo_cuarentena)] += 1
+    for (tipo, motivo_cuarentena), cuantas in por_motivo.most_common():
+        typer.echo(f"  {cuantas:>6}  {tipo}: {motivo_cuarentena}")
+    if cuarentena:
+        typer.echo("Algunas, con nombre y apellido:")
+    for fila in cuarentena[:5]:
         typer.echo(
             f"  {fila['entidad_tipo']} {fila['registro_version_id']}: {', '.join(fila['motivos'])}"
         )
@@ -2074,7 +2087,9 @@ def publicacion_publicar(
     typer.echo(
         f"Release {resultado.release_id}\n"
         f"Versiones publicadas: {resultado.versiones_publicadas}\n"
-        f"Fragmentos citables: {resultado.chunks_creados}\n"
+        f"Fragmentos citables: {resultado.chunks_creados} nuevos"
+        f" · {resultado.chunks_heredados} heredados del corte anterior"
+        f" ({resultado.vectores_heredados} con su vector)\n"
         f"Eventos en outbox: {resultado.eventos_emitidos}\n"
         f"En cuarentena: {len(resultado.en_cuarentena)}"
     )

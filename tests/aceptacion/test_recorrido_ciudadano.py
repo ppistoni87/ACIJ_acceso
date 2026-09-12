@@ -71,6 +71,7 @@ def base_e2e() -> str:
     with motor.begin() as conexion:
         conexion.execute(text("SET CONSTRAINTS ALL IMMEDIATE"))
         publicar_corpus(conexion, construir_corpus(conexion))
+        _punto_de_atencion_publicado(conexion)
     motor.dispose()
 
     yield _url_e2e()
@@ -80,6 +81,51 @@ def base_e2e() -> str:
     else:
         os.environ["BN_DATABASE_URL"] = anterior
     get_settings.cache_clear()
+
+
+def _punto_de_atencion_publicado(conexion) -> None:
+    """Un lugar de atención de verdad en el corte del recorrido.
+
+    Sin esto, «A dónde ir» sólo se probaba vacío: los treinta y pico de casos
+    corrían contra un corpus sin un solo punto publicado, que es justo la mitad
+    que el frente muestra mal si se descuida. Va con fecha de verificación
+    porque la base no publica nada sin ella.
+    """
+    from backend_normativo.publicacion.release import Publicador
+
+    organismo = conexion.execute(
+        text(
+            "INSERT INTO organismos (jurisdiccion_id, nombre, tipo) "
+            "VALUES ('AR-C', 'Comuna de prueba', 'PRESTADOR') RETURNING id"
+        )
+    ).scalar_one()
+    punto = conexion.execute(
+        text(
+            "INSERT INTO puntos_atencion (organismo_id, jurisdiccion_id, nombre, tipo, alcance) "
+            "VALUES (:o, 'AR-C', 'Sede Comunal de prueba', 'SEDE', 'PROVINCIAL') RETURNING id"
+        ),
+        {"o": organismo},
+    ).scalar_one()
+    version = conexion.execute(
+        text(
+            "INSERT INTO registro_versiones (entidad_tipo, entidad_id, numero_version, "
+            "  estado_revision, valid_tipo, valid_desde, verificado_en) "
+            "VALUES ('punto_atencion', :p, 1, 'APPROVED', 'ABIERTO_FIN', DATE '2025-01-01', "
+            "        now()) RETURNING id"
+        ),
+        {"p": punto},
+    ).scalar_one()
+    conexion.execute(
+        text(
+            "INSERT INTO punto_versiones (registro_version_id, punto_id, direccion_legible, "
+            "  localidad, es_presencial) "
+            "VALUES (:v, :p, 'Humberto 1° 250', 'San Telmo', true)"
+        ),
+        {"v": version, "p": punto},
+    )
+    Publicador(conexion).publicar(
+        actor="publicador:recorrido", motivo="Un lugar de atención en el corte."
+    )
 
 
 @pytest.fixture(scope="module")
@@ -448,7 +494,7 @@ def test_lo_urgente_va_arriba_de_la_norma(pagina) -> None:
 
     texto = pagina.inner_text(".urgente").casefold()
     assert "no reemplaza pedir ayuda" in texto
-    assert "no tengo cargado a quién derivarte" in texto
+    assert "no tengo cargado a quién llamar para una emergencia" in texto
     for inventado in ("911", "147", "144", "llamá al"):
         assert inventado not in texto, f"apareció un canal que nadie curó: {inventado}"
 
@@ -696,3 +742,39 @@ def test_apretar_dos_veces_no_cuenta_dos_veces(pagina) -> None:
     pagina.locator('.cierre button[data-senal="SIRVIO"]').click()
     pagina.wait_for_selector(".cierre-gracias", timeout=10_000)
     assert pagina.locator('.cierre button[data-senal="SIRVIO"]').count() == 0
+
+
+# --- lo urgente y lo que hay: no son lo mismo --------------------------------
+
+
+def test_a_donde_ir_muestra_el_lugar_publicado(pagina) -> None:
+    """La otra mitad del frente, que hasta ahora sólo se probaba vacía."""
+    _preguntar(pagina, "prestación económica")
+    assert pagina.locator(".canal").count() >= 1
+    texto = pagina.inner_text(".canal")
+    assert "Sede Comunal de prueba" in texto
+    assert "Humberto 1° 250" in texto
+
+
+def test_una_oficina_con_horario_no_se_ofrece_como_canal_de_emergencia(pagina) -> None:
+    """Lo que hay cargado son sedes con horario, no guardias.
+
+    Mandar a alguien cuyo hijo está en riesgo esta noche a una comuna que abre a
+    las nueve es peor que decirle que no tengo: parece una respuesta y no lo es.
+    El corpus todavía no distingue un canal de emergencia de una mesa de
+    entradas —no hay campo que lo diga—, así que el bloque de urgencia no ofrece
+    ninguno.
+    """
+    _preguntar(pagina, "estoy durmiendo en la calle con mi bebé")
+    urgente = pagina.locator(".urgente")
+    assert urgente.count() == 1
+    texto = urgente.inner_text()
+    assert "No tengo cargado a quién llamar para una emergencia" in texto
+    assert "Sede Comunal de prueba" not in texto, (
+        "el bloque de urgencia está ofreciendo una oficina con horario como si fuera "
+        "un canal para esta noche"
+    )
+    for inventado in ("911", "147", "144", "llamá al"):
+        assert inventado not in texto
+    # Y el lugar sigue estando donde corresponde: más abajo, como lo que es.
+    assert "Sede Comunal de prueba" in pagina.inner_text(".canal")

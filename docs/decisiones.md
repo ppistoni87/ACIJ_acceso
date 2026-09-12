@@ -2809,3 +2809,110 @@ Otra falla que no falla: nada se rompe, el comando simplemente no está, y la
 respuesta que se recibe es la misma que si nunca se hubiera escrito. Se movió el
 bloque al final y quedó una prueba que compara, para cada grupo, los comandos
 registrados en el módulo contra los que aparecen al correrlo con `python -m`.
+
+## D-127 · Un corte es una foto completa, no el delta de la corrida
+
+`release_vigente` devuelve el corte publicado más reciente y la búsqueda filtra
+los fragmentos por ese corte. La publicación, en cambio, sólo construía
+fragmentos para las versiones **candidatas de esa corrida**.
+
+Las dos cosas juntas hacen esto: publicar un segundo corte —por ejemplo, uno que
+incorporara los 1.842 puntos de atención ya aprobados— dejaba a la API sirviendo
+un corte sin una sola unidad normativa. El frente contestaba «no tengo nada
+publicado» sobre un corpus que seguía entero.
+
+Y no fallaba nada. `bn publicacion publicar` terminaba bien, con los ocho gates
+en verde y un recuento de versiones publicadas en pantalla. La única señal
+habría sido que la gente dejaba de recibir respuestas.
+
+Ahora el corte hereda lo que el anterior servía y sigue vigente. Dos detalles
+que no son detalles:
+
+* **Lo que la corrida reemplaza no viaja.** Si entre los candidatos viene una
+  versión nueva de la misma entidad, la vieja se queda afuera. Heredar todo
+  serviría el texto viejo y el nuevo de la misma norma dentro del mismo corte, y
+  una respuesta podría citar los dos como si dijeran lo mismo.
+* **El índice semántico viaja con los fragmentos heredados.** El vector es una
+  función del texto y del modelo: si el fragmento viaja con el mismo hash, su
+  vector sigue siendo el suyo. Recalcularlos exigiría cargar el modelo dentro de
+  la transacción de publicación; no copiarlos dejaría el corte nuevo con
+  búsqueda sólo léxica, que tampoco falla —devuelve lo que encuentra la mitad
+  que quedó— y se nota semanas después, midiendo la recuperación.
+
+La prueba que lo fija reproduce el caso real: publicar un punto de atención
+después de un corte con normas. Antes decía «el corte nuevo sirve 0 fragmentos y
+el anterior servía 2».
+
+## D-128 · El estado de publicación decía que sí y la base decía que no
+
+Desde la primera migración, `registro_versiones` exige que nada llegue a
+`PUBLISHED` sin `release_id` **y sin `verificado_en`**. Es una invariante buena:
+una dirección o un teléfono que nadie confirmó contra su fuente no debería
+llegar a la pantalla de alguien que los va a usar hoy.
+
+El publicador no la conocía. `bn publicacion estado` contaba **14.390
+candidatos** con los ocho gates en verde, y publicar habría reventado con una
+violación de CHECK a mitad de la transacción. Lo grave no es el error: es que el
+informe afirmaba que se podía publicar un corpus que la base no iba a aceptar, y
+nadie podía saberlo leyendo el estado.
+
+Se respeta la invariante en vez de relajarla: `candidatos()` exige fecha de
+verificación y la cuarentena lo dice con esas palabras. El estado real del
+corpus pasó a ser el que es:
+
+```
+Candidatos a publicar: 0
+En cuarentena: 14543
+    6467  barrio_renabap: sin fecha de verificación
+    6134  canal: sin fecha de verificación
+    1842  punto_atencion: sin fecha de verificación
+      62  canal: estado de revisión CANDIDATE
+      ...
+```
+
+El resumen por motivo se agregó junto con esto: con catorce mil versiones
+retenidas, quince identificadores sueltos no dicen qué hay que hacer y una línea
+por motivo sí.
+
+**Lo que esto deja a la vista.** Todo el corpus operativo —los puntos de
+atención, sus canales, los barrios, los montos— está aprobado y ninguno tiene
+fecha de verificación, porque nada en la curación se la pone: sólo la ponen
+`Revisor.resolver` y `ResolutorVigencia`, que trabajan sobre normas. Es la razón
+por la que el frente dice «no tengo cargado a quién derivarte» teniendo 1.842
+lugares en la base.
+
+Qué cuenta como verificar un directorio importado —si alcanza la fecha de la
+captura oficial, que es cuándo se vio lo que la fuente publicaba, o hace falta
+que alguien lo confirme uno por uno— es una decisión de ACIJ y no se toma acá.
+Es lo que decide si esos 1.842 lugares llegan a la pantalla de alguien que
+esta noche no tiene dónde dormir.
+
+## D-129 · Una oficina con horario no es un canal de emergencia
+
+El bloque de urgencia ofrecía, bajo «Podés ir o llamar acá», los puntos de
+atención que devolviera el corpus. Mientras hubo cero publicados no se notó.
+Alcanzó con publicar tres en un ensayo sobre una copia de la base real para que
+apareciera esto, arriba de todo, a alguien que escribió «estoy durmiendo en la
+calle con mi bebé»:
+
+> Si hay chicos o chicas en riesgo ahora, esto no reemplaza pedir ayuda.
+> Podés ir o llamar acá: **Sede Comunal 3** · Sarandi 1273
+
+Una sede comunal abre a las nueve. Mandar ahí a alguien cuyo hijo está en riesgo
+esta noche es peor que decirle que no tengo a quién derivarlo, porque **parece
+una respuesta**: la persona deja de buscar. Es el mismo daño que inventar un
+teléfono (D-123), sólo que con un dato verdadero puesto donde no corresponde.
+
+Un canal de emergencia es otra cosa —24 horas, con guardia— y el corpus todavía
+no distingue una cosa de la otra: `puntos_atencion.tipo` tiene SEDE,
+DELEGACION, OFICINA_MOVIL, CENTRO_COMUNITARIO, JUZGADO y OTRO, y ninguno de esos
+dice si atiende una urgencia. Mientras no haya un campo que lo diga, el bloque
+de urgencia no ofrece ninguno: reconoce lo que pasa, dice que no tiene canal de
+emergencia cargado —y que eso es una falla del sistema, no de la persona— y, si
+hay lugares publicados, aclara que son oficinas con horario, que están más
+abajo y que sirven para el trámite y no para esta noche.
+
+El recorrido de aceptación pasó a publicar un punto de atención de verdad. Sin
+eso, «A dónde ir» sólo se probaba vacío: treinta y pico de casos corrían contra
+un corpus sin un solo lugar, que es exactamente la mitad que el frente muestra
+mal si se descuida.

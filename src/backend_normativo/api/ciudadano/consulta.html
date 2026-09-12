@@ -501,20 +501,18 @@ function bloqueUrgencia(urgencia, canales){
   if(!urgencia || !urgencia.clase) return "";
   const linea = URGENCIA[urgencia.clase] || URGENCIA.CALLE;
   let html = '<div class="urgente"><h3>Antes que nada</h3><p>' + esc(linea) + "</p>";
+  // Acá **no** se ofrecen los puntos de atención del corpus, y es a propósito.
+  // Lo que hay cargado son sedes comunales y oficinas con horario: mandar ahí a
+  // alguien cuyo hijo está en riesgo esta noche es peor que decirle que no
+  // tengo, porque parece una respuesta y no lo es. Un canal de emergencia es
+  // otra cosa —24 horas, con guardia— y el corpus todavía no distingue una cosa
+  // de la otra: no hay campo que lo diga.
+  html += "<p><b>No tengo cargado a quién llamar para una emergencia, y eso es una falla " +
+    "de este sistema, no tuya.</b> Si podés, preguntá en el municipio o en una " +
+    "organización del barrio.</p>";
   if(canales && canales.length){
-    html += "<p>Podés ir o llamar acá:</p>";
-    canales.slice(0, 2).forEach(function(p){
-      html += '<p><b>' + esc(p.nombre) + "</b>" +
-        (p.direccion ? " · " + esc(p.direccion) : "") +
-        ((p.canales || []).filter(function(c){ return c && c.valor; }).slice(0, 2)
-          .map(function(c){ return " · " + esc(c.valor); }).join("")) + "</p>";
-    });
-  }else{
-    // Feo, y verdadero. Improvisar un teléfono sería peor: si está mal o no
-    // corresponde a esa jurisdicción, el daño es inmediato.
-    html += "<p><b>No tengo cargado a quién derivarte, y eso es una falla de este " +
-      "sistema, no tuya.</b> Si podés, preguntá en el municipio o en una " +
-      "organización del barrio. Abajo te dejo lo que sí tengo publicado.</p>";
+    html += "<p>Los lugares que sí tengo son oficinas de atención con horario: están " +
+      "más abajo, y sirven para el trámite, no para esta noche.</p>";
   }
   return html + "</div>";
 }

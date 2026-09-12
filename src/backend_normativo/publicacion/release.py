@@ -62,6 +62,11 @@ class ResultadoPublicacion:
     release_id: uuid.UUID
     versiones_publicadas: int = 0
     chunks_creados: int = 0
+    # Lo que este corte hereda del anterior. Un corte es una foto completa de lo
+    # servible, no el delta de esta corrida: si fuera el delta, publicar los
+    # puntos de atención dejaría a la API sin una sola norma que citar.
+    chunks_heredados: int = 0
+    vectores_heredados: int = 0
     eventos_emitidos: int = 0
     en_cuarentena: list[dict] = field(default_factory=list)
     gates: ResultadoGates | None = None
@@ -78,12 +83,26 @@ class Publicador:
         self.conexion = conexion
 
     def candidatos(self) -> list[uuid.UUID]:
-        """Versiones aprobadas, con vigencia resuelta y sin conflictos abiertos."""
+        """Versiones aprobadas, verificadas, con vigencia resuelta y sin conflictos.
+
+        La fecha de verificación no es un requisito de este método: es una
+        invariante de la base —`estado_revision <> 'PUBLISHED' OR (release_id IS
+        NOT NULL AND verificado_en IS NOT NULL)`, desde la primera migración— y
+        acá no se conocía. El resultado era que `bn publicacion estado` contaba
+        14.390 candidatos con los ocho gates en verde y publicar reventaba con
+        una violación de CHECK a mitad de la transacción. Peor que el error: el
+        informe afirmaba que se podía publicar un corpus que no se podía servir.
+
+        La invariante es buena y por eso se respeta en vez de relajarse. Una
+        dirección o un teléfono que nadie confirmó contra la fuente no debería
+        llegar a la pantalla de alguien que los va a usar hoy.
+        """
         return list(
             self.conexion.execute(
                 text(
                     "SELECT rv.id FROM registro_versiones rv "
                     " WHERE rv.estado_revision = 'APPROVED' "
+                    "   AND rv.verificado_en IS NOT NULL "
                     "   AND rv.valid_tipo NOT IN ('DESCONOCIDO', 'CONDICIONADO') "
                     "   AND NOT EXISTS ("
                     "     SELECT 1 FROM incidencias_revision i "
@@ -131,6 +150,7 @@ class Publicador:
             self.conexion.execute(
                 text(
                     "SELECT rv.id, rv.entidad_tipo, rv.estado_revision, rv.valid_tipo, "
+                    "       rv.verificado_en, "
                     "       (SELECT count(*) FROM incidencias_revision i "
                     "         WHERE i.registro_version_id = rv.id "
                     "           AND i.estado IN ('ABIERTA','EN_REVISION') "
@@ -150,6 +170,11 @@ class Publicador:
                 motivos.append(f"estado de revisión {fila['estado_revision']}")
             if fila["valid_tipo"] in ("DESCONOCIDO", "CONDICIONADO"):
                 motivos.append(f"intervalo de aplicación {fila['valid_tipo']}")
+            if fila["verificado_en"] is None:
+                # Con el motivo escrito, y no sólo ausente de la lista de
+                # candidatos: quien lee el estado tiene que poder saber qué
+                # falta hacer, que acá es verificar contra la fuente.
+                motivos.append("sin fecha de verificación")
             if fila["conflictos"]:
                 motivos.append(f"{fila['conflictos']} conflicto(s) abiertos de severidad alta")
             if motivos:
@@ -219,6 +244,10 @@ class Publicador:
             {"v": candidatos},
         )
 
+        anterior = self._corte_anterior(release_id)
+        if anterior is not None:
+            resultado.chunks_heredados = self._heredar_fragmentos(release_id, anterior, candidatos)
+            resultado.vectores_heredados = self._heredar_vectores(release_id, anterior)
         resultado.chunks_creados = self._construir_chunks(release_id, candidatos)
         resultado.eventos_emitidos = self._emitir_eventos(release_id, candidatos, manifiesto)
         resultado.en_cuarentena = self.cuarentena()
@@ -321,6 +350,110 @@ class Publicador:
                         "ahora": ahora,
                     },
                 )
+
+    def _corte_anterior(self, release_id: uuid.UUID) -> uuid.UUID | None:
+        """El último corte publicado antes de éste, si lo hay."""
+        return self.conexion.execute(
+            text(
+                "SELECT id FROM releases "
+                " WHERE estado = 'PUBLICADO' AND id <> :r "
+                " ORDER BY publicado_en DESC LIMIT 1"
+            ),
+            {"r": release_id},
+        ).scalar_one_or_none()
+
+    def _heredar_fragmentos(
+        self, release_id: uuid.UUID, anterior: uuid.UUID, candidatos: list[uuid.UUID]
+    ) -> int:
+        """Trae al corte nuevo lo que el anterior servía y sigue vigente.
+
+        Un corte es la foto completa de lo servible en un momento, no el delta
+        de esta corrida. La diferencia no era teórica: `release_vigente`
+        devuelve el corte publicado más reciente y la búsqueda filtra los
+        fragmentos por ese corte, así que un segundo corte armado sólo con sus
+        candidatos —por ejemplo, uno que incorporara los puntos de atención—
+        dejaba a la API contestando «no hay nada publicado» sobre un corpus que
+        seguía entero. Sin error, sin gate en rojo y sin una línea en los logs.
+
+        No se arrastra lo que esta corrida reemplaza: si entre los candidatos
+        viene una versión nueva de la misma entidad, la vieja no viaja. Servir
+        las dos sería mezclar dos textos de la misma norma en la misma
+        respuesta.
+        """
+        heredados = (
+            self.conexion.execute(
+                text(
+                    "INSERT INTO chunks (unidad_id, registro_version_id, release_id, texto, "
+                    "                    hash, tipo, url_fuente) "
+                    "SELECT c.unidad_id, c.registro_version_id, :nuevo, c.texto, c.hash, "
+                    "       c.tipo, c.url_fuente "
+                    "  FROM chunks c "
+                    "  JOIN registro_versiones rv ON rv.id = c.registro_version_id "
+                    " WHERE c.release_id = :anterior "
+                    "   AND rv.estado_revision = 'PUBLISHED' "
+                    "   AND NOT EXISTS ("
+                    "     SELECT 1 FROM registro_versiones nueva "
+                    "      WHERE nueva.id = ANY(:v) "
+                    "        AND nueva.entidad_tipo = rv.entidad_tipo "
+                    "        AND nueva.entidad_id = rv.entidad_id) "
+                    "ON CONFLICT (release_id, unidad_id, hash) DO NOTHING "
+                    "RETURNING id"
+                ),
+                {"nuevo": release_id, "anterior": anterior, "v": candidatos},
+            )
+            .scalars()
+            .all()
+        )
+        return len(heredados)
+
+    def _heredar_vectores(self, release_id: uuid.UUID, anterior: uuid.UUID) -> int:
+        """Y el índice semántico de lo heredado, sin volver a embeber nada.
+
+        El vector es una función del texto y del modelo: si el fragmento viaja
+        con el mismo hash, su vector sigue siendo el suyo. Recalcularlos exigiría
+        cargar el modelo dentro de la transacción de publicación, que es lo
+        último que uno quiere ahí; no copiarlos dejaría el corte nuevo con
+        búsqueda sólo léxica y nadie lo notaría hasta medir la recuperación.
+        """
+        self.conexion.execute(
+            text(
+                "INSERT INTO indices_semanticos (release_id, modelo, dimension, normalizacion) "
+                "SELECT :nuevo, i.modelo, i.dimension, i.normalizacion "
+                "  FROM indices_semanticos i WHERE i.release_id = :anterior "
+                "ON CONFLICT (release_id, modelo) DO NOTHING"
+            ),
+            {"nuevo": release_id, "anterior": anterior},
+        )
+        copiados = (
+            self.conexion.execute(
+                text(
+                    "INSERT INTO fragmento_vectores (indice_id, chunk_id, hash_texto, vector) "
+                    "SELECT ni.id, nc.id, v.hash_texto, v.vector "
+                    "  FROM fragmento_vectores v "
+                    "  JOIN indices_semanticos oi ON oi.id = v.indice_id "
+                    "   AND oi.release_id = :anterior "
+                    "  JOIN indices_semanticos ni ON ni.release_id = :nuevo "
+                    "   AND ni.modelo = oi.modelo "
+                    "  JOIN chunks oc ON oc.id = v.chunk_id "
+                    "  JOIN chunks nc ON nc.release_id = :nuevo "
+                    "   AND nc.unidad_id = oc.unidad_id AND nc.hash = oc.hash "
+                    "ON CONFLICT DO NOTHING "
+                    "RETURNING chunk_id"
+                ),
+                {"nuevo": release_id, "anterior": anterior},
+            )
+            .scalars()
+            .all()
+        )
+        self.conexion.execute(
+            text(
+                "UPDATE indices_semanticos i SET fragmentos = ("
+                "  SELECT count(*) FROM fragmento_vectores v WHERE v.indice_id = i.id) "
+                " WHERE i.release_id = :nuevo"
+            ),
+            {"nuevo": release_id},
+        )
+        return len(copiados)
 
     def _construir_chunks(self, release_id: uuid.UUID, candidatos: list[uuid.UUID]) -> int:
         """Fragmentos citables de lo publicado.

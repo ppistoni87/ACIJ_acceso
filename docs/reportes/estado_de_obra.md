@@ -31,9 +31,9 @@ actualiza es la forma más barata de mentir sin querer.
 | G4 | Backoffice, cierre jurídico, scheduler, alertas, restauración | Abierto |
 | G5 | Evaluación independiente, piloto, traspaso | Abierto |
 
-## Las cuatro causas
+## Las cinco causas
 
-Los pendientes no son un problema distinto cada uno. Hoy **ninguna de las cuatro
+Los pendientes no son un problema distinto cada uno. Hoy **ninguna de las cinco
 causas se resuelve escribiendo código**: la que lo era se agotó.
 
 **A · Falta una firma jurídica.** El criterio 2 de P-010 lo prohíbe
@@ -57,6 +57,20 @@ aplicó a Neon por su endpoint HTTPS oficial —TLS validado, sin túneles—, p
 carga del corpus y la medición de conexiones contra la base remota no se
 pudieron ejercitar acá. Afecta a P-002 y P-005.
 
+**E · Falta decidir qué cuenta como verificar un directorio.** La base exige
+desde la primera migración que nada llegue a `PUBLISHED` sin fecha de
+verificación, y ninguna de las 14.390 versiones operativas aprobadas la tiene:
+1.842 puntos de atención, 6.134 canales, 6.467 barrios y 9 valores. Nada en la
+curación se la pone —sólo la ponen `Revisor.resolver` y `ResolutorVigencia`, que
+trabajan sobre normas—. Es la razón por la que el frente dice «no tengo cargado
+a quién derivarte» teniendo 1.842 lugares cargados. Si alcanza la fecha de la
+captura oficial, que es cuándo se vio lo que la fuente publicaba, o hace falta
+confirmarlos uno por uno, lo decide ACIJ: es lo que define si esos lugares
+llegan a la pantalla de alguien que esta noche no tiene dónde dormir. Afecta a
+todo el corpus operativo y, por dependencia, a P-023 y P-024. Hasta la
+publicación de este informe la causa estaba oculta: `bn publicacion estado`
+contaba los 14.390 como publicables y con los ocho gates en verde (D-128).
+
 ## Historia por historia
 
 | # | Historia | Estado | Qué falta y por qué |
@@ -75,7 +89,7 @@ pudieron ejercitar acá. Afecta a P-002 y P-005.
 | P-012 | Implementar recuperación híbrida trazable | Parcial | Construida y medida: Recall@5 híbrido **74,1 %**, sin llegar al umbral de 90 %. La mitad léxica daba **0,0 % en los tres k**: `plainto_tsquery` exige todas las palabras y ninguna pregunta entera las tiene. Con la ampliación por sonda pasó a 18,5 / 51,9 / 55,6 %, y la híbrida subió de 33,3 a 37,0 en @1 y de 51,9 a 66,7 en @3. El techo de @5 es otro: el corte publicado se armó con la extracción vieja, y volver a medir sobre un corte limpio exige re-curar las citas (trabajo jurídico). |
 | P-013 | Generar respuestas con citas y abstención | Parcial | Construido: tres modos declarados —generada, extracto, abstención—, cuatro validadores de cita y un proveedor HTTP configurable por entorno, probado entero con `httpx.MockTransport`. Sin `BN_MODELO_CLAVE` contesta en modo extracto, que no puede alucinar. Falta la evidencia del criterio 1, «proveedor real probado en staging»: necesita una clave del proyecto (causa B). |
 | P-014 | Evaluar condiciones con lógica tipada | Parcial | El criterio 1 dice «reglas publicadas» y no hay ninguna. Causa A. |
-| P-015 | Completar el front conversacional | Parcial | Construido y probado: una pantalla en `/consulta`, servida por la misma imagen que la API, con jurisdicción y fecha elegibles dentro del diálogo, cancelar, reintentar, empezar de nuevo y salir borrando. La respuesta muestra explicación, fuentes abribles, fecha, estado de la información, advertencias y canal oficial; errores y abstenciones tienen mensajes en castellano llano. 33 casos de extremo a extremo en Chromium, nueve de ellos de accesibilidad. Es un **chat**: un hilo de mensajes donde la persona escribe con sus palabras y sigue preguntando. Las aclaraciones —jurisdicción, fecha— pasan dentro del diálogo y lo que el sistema termina teniendo en cuenta queda a la vista y se puede quitar. El ciclo cierra: al pie de cada respuesta hay tres botones —«Sí», «No», «Quiero hablar con una persona»— y **ninguna caja de texto**, la señal se cruza con la traza por `request_id` y se lee con `bn operacion devoluciones`. Pedir una persona no abre un canal de vuelta y la pantalla lo dice: como no se piden datos, no hay a dónde escribirle a quien lo pidió. Falta todavía el escenario «¿cumplo?» con datos faltantes, que exige que el sistema repregunte y depende de las reglas firmadas (causa A). Faltan además las dos evidencias que no dependen de código: **URL de staging integrada** (causa B) y **revisión manual de accesibilidad** con personas usando lector de pantalla, declarada abierta en `docs/reportes/accesibilidad_frente_ciudadano.md`. |
+| P-015 | Completar el front conversacional | Parcial | Construido y probado: una pantalla en `/consulta`, servida por la misma imagen que la API, con jurisdicción y fecha elegibles dentro del diálogo, cancelar, reintentar, empezar de nuevo y salir borrando. La respuesta muestra explicación, fuentes abribles, fecha, estado de la información, advertencias y canal oficial; errores y abstenciones tienen mensajes en castellano llano. 36 casos de extremo a extremo en Chromium, nueve de ellos de accesibilidad, sobre un corte que ahora incluye un lugar de atención publicado. Es un **chat**: un hilo de mensajes donde la persona escribe con sus palabras y sigue preguntando. Las aclaraciones —jurisdicción, fecha— pasan dentro del diálogo y lo que el sistema termina teniendo en cuenta queda a la vista y se puede quitar. El ciclo cierra: al pie de cada respuesta hay tres botones —«Sí», «No», «Quiero hablar con una persona»— y **ninguna caja de texto**, la señal se cruza con la traza por `request_id` y se lee con `bn operacion devoluciones`. Pedir una persona no abre un canal de vuelta y la pantalla lo dice: como no se piden datos, no hay a dónde escribirle a quien lo pidió. Falta todavía el escenario «¿cumplo?» con datos faltantes, que exige que el sistema repregunte y depende de las reglas firmadas (causa A). Faltan además las dos evidencias que no dependen de código: **URL de staging integrada** (causa B) y **revisión manual de accesibilidad** con personas usando lector de pantalla, declarada abierta en `docs/reportes/accesibilidad_frente_ciudadano.md`. |
 | P-016 | Completar el backoffice de datos y revisión | Hecha | Consola de revisión de reglas con cola clasificada y firma con fundamento obligatorio; búsqueda de normas por número y por título; comparación de dos versiones cualesquiera; tablero de calidad con siete indicadores que abren el registro que cuentan. |
 | P-017 | Identidad, privacidad y protección | Parcial | **Criterios 1 y 2 cerrados, 3 casi.** El actor sale de una credencial firmada por persona, con roles, vencimiento y revocación. La consulta ciudadana no pide DNI, domicilio ni datos de contacto —no existe el campo—, la traza guarda la forma de la consulta y nunca su texto, y caduca a los 90 días con `bn operacion purgar-consultas`. Hay límites en servidor: dos baldes por origen, 429 tipado con `Retry-After`, y el 429 queda medido. Todo en `docs/operacion/politica_de_datos.md`. Falta un proveedor de identidad (OIDC) y el modelo de amenazas escrito como tal. |
 | P-018 | Hacer obligatoria la integración continua | Parcial | Criterio 3: la protección de rama necesita permisos de administración del repositorio. |
