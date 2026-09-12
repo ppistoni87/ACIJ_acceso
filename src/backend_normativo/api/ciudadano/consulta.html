@@ -658,12 +658,16 @@ function bloqueCanales(canales){
           return "<li>" + esc((c.tipo || "") + ": " + (c.valor || "")) + "</li>";
         }).join("") + "</ul>";
       }
-      // Cuándo se verificó, o que no consta. Un teléfono verificado hace dos
-      // años y uno de la semana pasada no son lo mismo, y quien está por
-      // llamar es quien tiene que saber cuál de los dos es.
+      // Qué dice la fecha, exactamente. «Lo verifiqué» sería mentira: nadie
+      // llamó ni fue. Lo que hay es una captura de la página oficial en esa
+      // fecha, y eso es lo que se dice. Un teléfono que el organismo publicaba
+      // hace dos años y uno de la semana pasada no son lo mismo, y quien está
+      // por salir de su casa es quien tiene que saber cuál de los dos es.
       html += '<span class="verificado">' + (p.verificado_en
-        ? "Lo verifiqué el " + esc(fechaLegible(p.verificado_en))
-        : "No tengo fecha de cuándo se verificó esto. Confirmalo antes de ir.") + "</span>";
+        ? "Lo saqué de la página oficial del organismo el " +
+          esc(fechaLegible(p.verificado_en)) + ". Que lo publicaran ese día no quiere decir " +
+          "que hoy esté abierto: confirmá antes de ir."
+        : "No sé de cuándo es este dato. Confirmalo antes de ir.") + "</span>";
       html += "</div>";
     });
     html += '<p class="ayuda">Quien decide sobre tu caso es el organismo, no esta pantalla.</p>';

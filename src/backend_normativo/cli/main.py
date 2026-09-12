@@ -2662,6 +2662,47 @@ def operacion_devoluciones(
         typer.echo(f"  {fila['senal']:<15} {fila['resultado']}{motivo}: {fila['cuantas']}")
 
 
+@curacion.command("fechar-verificacion")
+def curacion_fechar_verificacion(
+    actor: str = typer.Option(..., help="Quién queda registrado en cada versión."),
+    tipo: list[str] = typer.Option(
+        None, "--tipo", help="Limitar a estas familias. Por omisión, las cuatro."
+    ),
+    simular: bool = typer.Option(False, "--simular", help="Cuenta y no escribe nada."),
+) -> None:
+    """Sella `verificado_en` con la fecha de la captura que respalda cada dato.
+
+    Es lo que le falta al dato operativo para poder publicarse: está aprobado
+    desde hace tiempo y sin fecha de verificación, y la base se niega —con
+    razón— a servir algo cuyo respaldo nadie fechó.
+
+    La fecha significa que **en esa fecha la fuente oficial publicaba esto**. No
+    significa que la oficina esté abierta ni que el teléfono atienda, y la
+    pantalla lo dice con esas palabras. Lo que no llega a una captura no se
+    sella: se cuenta y se informa.
+    """
+    from sqlalchemy import text as _text
+
+    from backend_normativo.curacion.verificacion import fechar_desde_la_captura
+
+    with engine_migrador().begin() as conexion:
+        resultado = fechar_desde_la_captura(
+            conexion, actor=actor, tipos=list(tipo) if tipo else None, simular=simular
+        )
+        if simular:
+            conexion.execute(_text("ROLLBACK"))
+
+    typer.echo("Simulación: no se escribió nada." if simular else "Hecho.")
+    for familia in sorted(resultado.sellados):
+        typer.echo(f"  {familia:<18} {resultado.sellados[familia]:>6} con fecha de captura")
+    sin = {k: v for k, v in resultado.sin_captura.items() if v}
+    if sin:
+        typer.echo("Sin captura que las respalde, no se sellaron:")
+        for familia, cuantas in sorted(sin.items()):
+            typer.echo(f"  {familia:<18} {cuantas:>6}")
+    typer.echo(f"Total: {resultado.total}")
+
+
 @curacion.command("limpiar-marcado")
 def curacion_limpiar_marcado(
     actor: str = typer.Option(..., help="Quién queda registrado en cada unidad."),

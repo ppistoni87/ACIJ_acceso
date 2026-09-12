@@ -3470,3 +3470,63 @@ crea expediente —un resumen que se ve como constancia es un resumen que alguie
 va a presentar creyendo que vale—, y lo que quedó sin efecto por una corrección
 sale marcado: llevarse al organismo una conclusión que ya no vale es peor que no
 llevarse nada.
+
+## D-141 · Qué cuenta como verificar un directorio, y qué no
+
+**Decisión tomada.** El 12/09/2026 Pedro Pistoni autorizó aprobar y avanzar
+(«continua y aprueba»). Queda escrito qué se aprobó exactamente, porque la
+palabra «verificado» puede significar dos cosas muy distintas y de la que se
+elija depende que alguien salga o no de su casa a una puerta cerrada.
+
+**Lo que se decidió que significa.** Que en una fecha concreta la fuente oficial
+publicaba ese dato. Hay una captura inmutable de la página del organismo, con su
+`sha256`, y `verificado_en` es la fecha de esa captura.
+
+**Lo que no significa, y por eso la pantalla cambió de frase.** No significa que
+la oficina esté abierta, que el teléfono atienda, ni que el organismo tuviera
+razón. Nadie llamó y nadie fue. La pantalla decía «Lo verifiqué el …», que una
+persona lee como «alguien comprobó que esto funciona»; ahora dice **«Lo saqué de
+la página oficial del organismo el …. Que lo publicaran ese día no quiere decir
+que hoy esté abierto: confirmá antes de ir»**. Hay una prueba que falla si vuelve
+a aparecer «lo verifiqué».
+
+**Por qué se aprueba y no se espera.** La alternativa era seguir mostrando «no
+tengo cargado ningún lugar de atención» teniendo 1.842 lugares cargados con su
+respaldo oficial. Para alguien que esta noche no tiene dónde dormir, un teléfono
+de hace cuatro días con su fecha a la vista es mejor que un silencio. El riesgo
+—una puerta cerrada— se acota diciendo de cuándo es el dato y pidiendo que lo
+confirme, no escondiéndolo.
+
+### Tres protecciones que van en el código, no en la buena intención
+
+**La fecha sale de la captura y nunca de `now()`.** Sellar con la hora de la
+corrida convertiría un dato de hace dos años en uno de hoy con una sola
+ejecución. Es exactamente la clase de fallo que no falla: todo verde, todo
+servido, todo viejo. Hay una prueba con una captura de 2024 que verifica que la
+fecha sellada sea la de 2024.
+
+**El horizonte de refrescado también sale de la captura.** `reverificar_antes_de`
+es la captura más treinta días, no hoy más treinta, así una captura vieja **nace
+vencida** —que es lo que es— en vez de estrenarse fresca.
+
+**Lo que no llega a una captura no se sella.** Se cuenta y se informa. Un canal
+no puede quedar huérfano —el esquema le exige evidencia—, pero un punto de
+atención llega a la captura por sus canales y puede no tener ninguno: ese queda
+sin fecha y fuera del corte.
+
+### Qué se selló
+
+14.452 versiones, todas con cadena hasta una captura del 08/09/2026 y **ninguna
+huérfana**: 6.467 barrios del RENABAP, 6.134 canales, 1.842 puntos de atención y
+9 valores de parámetro. La cuarentena pasó de 14.520 a 130. Cada versión dejó su
+evento `FECHAR_VERIFICACION` con actor y con el motivo escrito, que dice qué
+significa la fecha: lo que se sella de a miles tiene que poder auditarse de a
+una.
+
+**Lo que queda en cuarentena son 130 y no son de esta clase**: 46 normas, 62
+canales, 13 plazos y 6 trámites con intervalo de aplicación `DESCONOCIDO`. Eso
+no se arregla con una fecha: son determinaciones de vigencia, y cada una es una
+lectura jurídica.
+
+**El corte todavía no está publicado.** El sellado corrió sobre la base local;
+publicar el nuevo corte quedó pendiente de una autorización explícita.

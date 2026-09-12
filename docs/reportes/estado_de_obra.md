@@ -33,9 +33,9 @@ actualiza es la forma más barata de mentir sin querer.
 
 ## Las siete causas
 
-Los pendientes no son un problema distinto cada uno. Hoy **ninguna de las siete
-causas se resuelve escribiendo código**: cinco esperan una decisión o un permiso
-y dos esperan curación.
+Los pendientes no son un problema distinto cada uno. Hoy **ninguna se resuelve
+escribiendo código**: dos se cerraron por decisión (A y E), cuatro esperan una
+decisión o un permiso, y una espera curación.
 
 **A · Falta una firma jurídica. Cerrada por decisión, no por firma.** El
 12/09/2026 Pedro Pistoni decidió que el proyecto no va a contar con un
@@ -64,7 +64,15 @@ aplicó a Neon por su endpoint HTTPS oficial —TLS validado, sin túneles—, p
 carga del corpus y la medición de conexiones contra la base remota no se
 pudieron ejercitar acá. Afecta a P-002 y P-005.
 
-**E · Falta decidir qué cuenta como verificar un directorio.** La base exige
+**E · Qué cuenta como verificar un directorio. Cerrada por decisión.** El
+12/09/2026 se decidió que `verificado_en` es la fecha de la captura oficial que
+respalda el dato, y que la pantalla diga exactamente eso —«lo saqué de la página
+oficial el …, confirmá antes de ir»— en vez de «lo verifiqué», que sería otra
+cosa (D-141). Se sellaron 14.452 versiones, ninguna huérfana, y la cuarentena
+bajó de 14.520 a 130. Falta publicar el corte. El texto que sigue es el
+diagnóstico original.
+
+**E (diagnóstico original) · Falta decidir qué cuenta como verificar un directorio.** La base exige
 desde la primera migración que nada llegue a `PUBLISHED` sin fecha de
 verificación, y ninguna de las 14.390 versiones operativas aprobadas la tiene:
 1.842 puntos de atención, 6.134 canales, 6.467 barrios y 9 valores. Nada en la

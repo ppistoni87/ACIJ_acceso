@@ -1148,14 +1148,22 @@ def test_la_respuesta_termina_en_algo_que_hacer_y_avisa_que_no_inicia_nada(pagin
     assert "todavía no los tengo cargados" in pasos
 
 
-def test_el_canal_dice_cuando_se_verifico(pagina) -> None:
-    """Un teléfono verificado hace dos años y uno de la semana pasada no son lo
-    mismo, y quien está por llamar es quien tiene que saber cuál de los dos es."""
+def test_el_canal_dice_de_cuando_es_el_dato_y_no_afirma_haberlo_comprobado(pagina) -> None:
+    """La fecha dice que la fuente publicaba eso ese día. Nada más.
+
+    Nadie llamó ni fue: lo que hay es una captura de la página oficial. Decir
+    «lo verifiqué» mandaría a alguien a una puerta cerrada creyendo que alguien
+    la comprobó.
+    """
     _preguntar(pagina, "vulnerabilidad habitacional")
     pagina.wait_for_selector(".canal", timeout=20_000)
 
     canal = pagina.inner_text(".canal")
-    assert "verifiqué el" in canal or "No tengo fecha de cuándo se verificó" in canal
+    assert "Lo saqué de la página oficial" in canal or "No sé de cuándo es este dato" in canal
+    assert "confirmá antes de ir" in canal.lower()
+    assert "lo verifiqué" not in canal.lower(), (
+        "nadie verificó nada: hay una captura de la página, que es otra cosa"
+    )
 
 
 def test_el_resumen_es_voluntario_y_no_aparece_sobre_una_pantalla_vacia(pagina) -> None:
