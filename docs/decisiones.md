@@ -3049,3 +3049,48 @@ todas lo están por la misma razón: **124 de 142 documentos no tienen fecha
 capturada**. No es una cuestión jurídica —la regla para determinarlas es la de
 arriba— sino un dato que la ingesta no extrajo. El cuello de botella del corpus
 volvió a ser código.
+
+## D-132 · La fecha en que una norma empieza a regir es una determinación
+
+Al ir a destrabar las 127 versiones sin intervalo apareció que el problema no
+era sólo la fecha que falta, sino la que había.
+
+**La ingesta escribía la sanción como comienzo de vigencia.** En
+`curacion/identidad.py` la línea era `fechas.get("PUBLICACION") or
+fechas.get("SANCION")`, y ese valor entraba directo en `valid_desde`. Una norma
+sancionada y no publicada quedaba rigiendo desde su sanción, que es falso: sin
+publicación oficial no rige. No fallaba nada; la fecha quedaba unos días antes.
+
+**Y aun con la publicación correcta, el comienzo estaba mal.** El art. 5 del
+Código Civil y Comercial —y el art. 2 del Código Civil, t.o. Ley 16.504, para
+las anteriores a 2015— dicen que la norma rige a los ocho días corridos de su
+publicación si no designa otro tiempo. La publicación no es el comienzo: es el
+hecho desde el que se cuenta. Escribir una como el otro adelanta la vigencia
+ocho días, y con eso cambia lo que contesta una consulta con `as_of` en esa
+ventana.
+
+Ahora la ingesta no escribe `valid_desde`: nace en `NULL`, como ya nacía
+`valid_tipo = DESCONOCIDO`, y por la misma razón que el módulo ya tenía escrita
+—«resolver la vigencia es otro paso, con su evidencia»—. El cómputo vive en la
+política, en un solo lugar, y el fundamento que queda registrado dice las dos
+fechas y la regla: «Rige desde el 2025-12-27: 8 días corridos después de su
+publicación del 2025-12-19, por el art. 5 del Código Civil y Comercial».
+
+La política pasó a `vigencia-declarada@2` y ya no recibe un booleano sino la
+**fecha de publicación**, y sólo esa: si el documento trae una fecha de sanción
+o de firma, para esta política es como si no tuviera. El mensaje de la
+incidencia lo dice con esas palabras, así que quien la lea sabe qué falta
+buscar.
+
+**Un caso que la fixture escondía.** El helper de pruebas insertaba documentos
+con `tipo_fecha = 'PUBLICACION'` y `fecha_documento` en `NULL`: un tipo de fecha
+sin fecha, un documento que no existe. Mientras nadie leyera la fecha, no
+molestaba. Ahora la fixture la toma de la identidad, como hace la ingesta real.
+
+**Lo que esto no arregla.** Sigue faltando la fecha de publicación de 124 de 142
+documentos. Para los 38 de InfoLeg la causa está identificada: se capturó la
+página del anexo y nunca la ficha, que es donde esa fuente publica la fecha de
+B.O. —el propio adaptador lo dice—. Lo que la página capturada sí trae es la
+línea «Bs. As., dd/mm/aaaa», que es la fecha de firma y no la de publicación:
+extraerla sirve para tenerla tipada como `FIRMA`, y no para fundar una vigencia.
+Capturar la ficha es el paso que destraba de verdad.

@@ -428,9 +428,6 @@ class ResolutorIdentidad:
             {"n": norma_id},
         ).scalar_one()
 
-        fechas = candidata.get("fechas") or {}
-        publicacion = fechas.get("PUBLICACION") or fechas.get("SANCION")
-
         registro_id = self.conexion.execute(
             text(
                 "INSERT INTO registro_versiones "
@@ -445,7 +442,10 @@ class ResolutorIdentidad:
                 # Conocer la publicación no dice hasta cuándo rige: el intervalo
                 # queda sin resolver hasta que alguien lo fundamente.
                 "vt": ValidTipo.DESCONOCIDO.value,
-                "desde": publicacion,
+                # Ni desde cuándo. La fecha de publicación no es la de comienzo:
+                # el art. 5 la corre ocho días. `valid_desde` lo escribe quien
+                # resuelve la vigencia, no la ingesta.
+                "desde": None,
             },
         ).scalar_one()
 

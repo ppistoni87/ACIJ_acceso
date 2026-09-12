@@ -31,11 +31,24 @@ Lo que esta política **no** habilita:
 
 from __future__ import annotations
 
+import datetime as dt
 from dataclasses import dataclass
 
 from backend_normativo.db.vocabularios import EstadoLegal, ValidTipo
 
-VERSION = "vigencia-declarada@1"
+VERSION = "vigencia-declarada@2"
+
+# Art. 5 del Código Civil y Comercial —y art. 2 del Código Civil, t.o. Ley
+# 16.504, para las normas anteriores a 2015, de idéntico contenido en cuanto al
+# plazo—: la norma rige a los ocho días corridos de su publicación oficial si no
+# designa otro tiempo. El cómputo se hace acá, en un solo lugar, y no en la
+# ingesta: la fecha en que una norma empieza a regir es una determinación, no un
+# dato capturado.
+#
+# La norma que fija su propia entrada en vigencia es la excepción y esta política
+# no la puede ver: por eso el automático se limita a los casos en que la fuente
+# declara el estado con evidencia, y todo lo demás va a revisión.
+DIAS_PARA_REGIR = 8
 
 # Relaciones que, aprobadas y en contra de la norma, cierran su vigencia.
 RELACIONES_QUE_CIERRAN = ("DEROGA", "ABROGA")
@@ -53,17 +66,27 @@ class Dictamen:
     automatica: bool
     fundamento: str
     requiere_revision: bool = False
+    # Cuándo empieza a regir, ya computado. `None` cuando no se puede afirmar.
+    valid_desde: dt.date | None = None
 
 
 def dictaminar(
     *,
     estado_declarado: str | None,
-    tiene_fecha_inicio: bool,
+    fecha_publicacion: dt.date | None,
     cierres_aprobados: int,
     reaperturas_aprobadas: int,
     tiene_evidencia_de_estado: bool,
 ) -> Dictamen:
-    """Aplica la política a los hechos observados de una versión."""
+    """Aplica la política a los hechos observados de una versión.
+
+    `fecha_publicacion` es la fecha de **publicación oficial** y ninguna otra.
+    Antes acá llegaba un booleano y la fecha de inicio salía de la ingesta, que
+    tomaba la publicación «o la sanción» y la escribía tal cual como comienzo de
+    vigencia. Dos errores encadenados y silenciosos: la sanción no es la
+    publicación —una norma sancionada y no publicada no rige— y la publicación
+    tampoco es el comienzo, porque el plazo del art. 5 corre después.
+    """
 
     if cierres_aprobados and reaperturas_aprobadas:
         # El caso de la Ley 24.714: abrogada y con la vigencia restablecida
@@ -93,23 +116,31 @@ def dictaminar(
             ),
         )
 
-    if not tiene_fecha_inicio:
+    if fecha_publicacion is None:
         return Dictamen(
             valid_tipo=ValidTipo.DESCONOCIDO,
             estado_legal=EstadoLegal.NO_DETERMINADA,
             automatica=False,
             requiere_revision=True,
-            fundamento="No se conoce la fecha desde la que rige.",
+            fundamento=(
+                "No se conoce la fecha de publicación oficial, así que no se puede computar "
+                "desde cuándo rige. Una fecha de sanción o de firma no la reemplaza."
+            ),
         )
 
     if estado_declarado == EstadoLegal.VIGENTE.value and tiene_evidencia_de_estado:
+        desde = fecha_publicacion + dt.timedelta(days=DIAS_PARA_REGIR)
         return Dictamen(
             valid_tipo=ValidTipo.ABIERTO_FIN,
             estado_legal=EstadoLegal.VIGENTE,
             automatica=True,
+            valid_desde=desde,
             fundamento=(
                 f"La fuente oficial declara la norma vigente y la evidencia de esa "
-                f"declaración está registrada. Política {VERSION}."
+                f"declaración está registrada. Rige desde el {desde.isoformat()}: "
+                f"{DIAS_PARA_REGIR} días corridos después de su publicación del "
+                f"{fecha_publicacion.isoformat()}, por el art. 5 del Código Civil y "
+                f"Comercial. Política {VERSION}."
             ),
         )
 

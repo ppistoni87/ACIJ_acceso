@@ -75,16 +75,25 @@ def _documento_norma(
         ),
         {"s": source_id, "e": external_id},
     ).scalar_one()
+    # La fecha del documento sale de la identidad, como en la ingesta real. El
+    # tipo la acompaña: marcar PUBLICACION sin fecha —que es lo que hacía esta
+    # fixture— describe un documento que no existe, y desde que la política de
+    # vigencia computa el comienzo a partir de la publicación, la diferencia se
+    # nota.
+    publicacion = (identidad.get("fechas") or {}).get("PUBLICACION")
     version = conexion.execute(
         text(
             "INSERT INTO documento_versiones (documento_id, captura_id, version, tipo_version, "
-            " tipo_fecha, hash_texto, modo_extraccion, extractor_version, identidad_candidata) "
-            "VALUES (:d, :c, 1, :tv, 'PUBLICACION', :h, 'HTML', 'prueba', :i) RETURNING id"
+            " fecha_documento, tipo_fecha, hash_texto, modo_extraccion, extractor_version, "
+            " identidad_candidata) "
+            "VALUES (:d, :c, 1, :tv, :fecha, :tf, :h, 'HTML', 'prueba', :i) RETURNING id"
         ),
         {
             "d": documento,
             "c": captura,
             "tv": tipo_version,
+            "fecha": publicacion,
+            "tf": "PUBLICACION" if publicacion else "DESCONOCIDA",
             "h": uuid.uuid4().hex + uuid.uuid4().hex,
             "i": json.dumps(identidad, ensure_ascii=False),
         },
@@ -297,7 +306,12 @@ def test_una_version_nace_sin_vigencia_resuelta(conexion: Connection, catalogo) 
         )
     ).one()
     assert version.valid_tipo == "DESCONOCIDO"
-    assert str(version.valid_desde) == "2020-05-01"
+    # Tampoco nace con fecha de comienzo. La publicación del 01/05/2020 quedó
+    # registrada en el documento, que es donde corresponde; escribirla acá sería
+    # decir que la norma rige desde el día que se publicó, y el art. 5 del
+    # Código Civil y Comercial corre ese comienzo ocho días. Lo computa la
+    # política de vigencia, con su fundamento.
+    assert version.valid_desde is None
     assert version.valid_hasta is None
     assert version.estado_revision == "CANDIDATE"
     assert version.estado_legal_validado == "NO_DETERMINADA"

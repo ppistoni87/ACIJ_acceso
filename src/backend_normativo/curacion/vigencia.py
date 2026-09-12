@@ -48,6 +48,11 @@ class ResolutorVigencia:
                     "SELECT nv.registro_version_id, nv.norma_id, nv.estado_legal_declarado, "
                     "       nv.fundamento_estado_evidencia_id, rv.valid_desde, rv.valid_tipo, "
                     "       rv.estado_revision, d.source_id, "
+                    # Sólo cuenta la fecha de publicación oficial. Una de sanción
+                    # o de firma no la reemplaza: una norma sancionada y no
+                    # publicada no rige.
+                    "       CASE WHEN dv.tipo_fecha = 'PUBLICACION' THEN dv.fecha_documento END "
+                    "         AS fecha_publicacion, "
                     "       (SELECT c.ttl_defecto FROM fuente_config_versiones c "
                     "         WHERE c.source_id = d.source_id "
                     "         ORDER BY c.version DESC LIMIT 1) AS ttl "
@@ -77,7 +82,7 @@ class ResolutorVigencia:
 
         dictamen = politica.dictaminar(
             estado_declarado=version["estado_legal_declarado"],
-            tiene_fecha_inicio=version["valid_desde"] is not None,
+            fecha_publicacion=version["fecha_publicacion"],
             cierres_aprobados=cierres,
             reaperturas_aprobadas=reaperturas,
             tiene_evidencia_de_estado=evidencia_estado is not None,
@@ -92,12 +97,14 @@ class ResolutorVigencia:
         self.conexion.execute(
             text(
                 "UPDATE registro_versiones "
-                "   SET valid_tipo = :vt, verificado_en = :ahora, "
+                "   SET valid_tipo = :vt, valid_desde = :desde, verificado_en = :ahora, "
                 "       reverificar_antes_de = :hasta, estado_revision = :estado "
                 " WHERE id = :id"
             ),
             {
                 "vt": dictamen.valid_tipo.value,
+                # La computó la política, con el plazo del art. 5 aplicado.
+                "desde": dictamen.valid_desde,
                 "ahora": ahora,
                 # Frescura: hasta cuándo alcanza esta comprobación. No tiene
                 # nada que ver con hasta cuándo rige la norma.

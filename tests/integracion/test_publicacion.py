@@ -100,7 +100,7 @@ def test_una_etiqueta_no_vigente_no_alcanza_para_cerrar_la_vigencia(conexion: Co
     aplicándose a través de la norma que modificó."""
     dictamen = politica.dictaminar(
         estado_declarado="NO_VIGENTE",
-        tiene_fecha_inicio=True,
+        fecha_publicacion=dt.date(2009, 3, 6),
         cierres_aprobados=0,
         reaperturas_aprobadas=0,
         tiene_evidencia_de_estado=True,
@@ -115,7 +115,7 @@ def test_abrogada_y_restablecida_no_tiene_lectura_automatica() -> None:
     excepciones. El grafo no alcanza para deducirlo."""
     dictamen = politica.dictaminar(
         estado_declarado=None,
-        tiene_fecha_inicio=True,
+        fecha_publicacion=dt.date(2009, 3, 6),
         cierres_aprobados=1,
         reaperturas_aprobadas=1,
         tiene_evidencia_de_estado=True,
@@ -127,7 +127,7 @@ def test_abrogada_y_restablecida_no_tiene_lectura_automatica() -> None:
 def test_la_politica_solo_resuelve_lo_que_la_fuente_declara(conexion: Connection) -> None:
     dictamen = politica.dictaminar(
         estado_declarado="VIGENTE",
-        tiene_fecha_inicio=True,
+        fecha_publicacion=dt.date(2009, 3, 6),
         cierres_aprobados=0,
         reaperturas_aprobadas=0,
         tiene_evidencia_de_estado=True,
@@ -138,7 +138,7 @@ def test_la_politica_solo_resuelve_lo_que_la_fuente_declara(conexion: Connection
     # Sin la evidencia de esa declaración, no se aplica.
     sin_evidencia = politica.dictaminar(
         estado_declarado="VIGENTE",
-        tiene_fecha_inicio=True,
+        fecha_publicacion=dt.date(2009, 3, 6),
         cierres_aprobados=0,
         reaperturas_aprobadas=0,
         tiene_evidencia_de_estado=False,
