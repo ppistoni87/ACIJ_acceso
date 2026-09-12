@@ -2605,6 +2605,26 @@ def operacion_purgar_consultas(
         typer.echo(f"La más antigua que queda es del {resultado.mas_antigua.date().isoformat()}.")
 
 
+@operacion.command("purgar-sesiones")
+def operacion_purgar_sesiones() -> None:
+    """Borra las conversaciones vencidas (P-037, criterio 1).
+
+    Leerlas también las borra, pero eso sólo alcanza para las que alguien vuelve
+    a mirar. Una conversación abandonada no se lee nunca más y se quedaría con
+    los hechos de una persona mucho más allá del plazo que la pantalla prometió:
+    30 minutos de inactividad, dos horas de vida.
+    """
+    from backend_normativo.conversacion.sesion import INACTIVIDAD, VIDA_MAXIMA, purgar
+
+    with engine_migrador().begin() as conexion:
+        borradas = purgar(conexion)
+    typer.echo(
+        f"Conversaciones vencidas borradas: {borradas} "
+        f"(inactividad {int(INACTIVIDAD.total_seconds() // 60)} min · "
+        f"vida máxima {int(VIDA_MAXIMA.total_seconds() // 3600)} h)"
+    )
+
+
 @operacion.command("devoluciones")
 def operacion_devoluciones(
     horas: int = typer.Option(24, help="Ventana a mirar, en horas."),

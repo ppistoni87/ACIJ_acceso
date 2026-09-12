@@ -3155,3 +3155,60 @@ una sola cita. La publicación es lo que promueve las afirmaciones, de modo que
 aprobarlas ahora ya no entra en este corte: hay que aprobarlas y republicar. No
 afecta al recorrido ciudadano —el texto y sus citas salen de los fragmentos, no
 de las afirmaciones— pero sí a la ficha normativa.
+
+## D-134 · La conversación empieza a recordar, y eso cambia una promesa
+
+P-025 es la historia que habilita al resto de la ampliación: sin estado no se
+puede repreguntar el dato que falta, no se puede corregir lo dicho, y no se
+puede evaluar una condición sin que la persona repita todo cada vez. De ella
+dependen P-030, los hechos corregibles de P-032, P-037 y las tres historias de
+E2.
+
+Está construida la mitad que no necesita nada de afuera: el estado mínimo, sus
+plazos, sus rutas y su purga.
+
+**Qué recuerda.** Intención, jurisdicción, fecha y los hechos que la persona
+confirmó, con su procedencia. Nada más. **Ningún mensaje**, y eso lo hace
+cumplir un `CHECK` sobre las claves de `estado` en la base, no un comentario: si
+alguien quisiera guardar el historial tendría que cambiar la migración, que es
+exactamente la conversación que hay que tener antes de hacerlo.
+
+**Tres reglas que hacen que no se pueda mentir sobre lo que la persona dijo.**
+
+*Ausencia no es falso.* Un hecho que no está es DESCONOCIDO; uno que la persona
+eligió no contestar queda `rehusado`, que tampoco es falso. El motor de reglas
+ya distinguía los tres estados y lo que faltaba era que el estado de la
+conversación no los aplastara en dos. Confirmar «rehusado» con un valor es un
+error explícito: rehusar es no contestar, no contestar que no.
+
+*La corrección invalida lo que dependía del dato viejo.* Cada cambio sube
+`version`. Una respuesta lleva la versión con la que se calculó y el frente
+puede marcar como reemplazada cualquiera anterior, en vez de dejar dos
+conclusiones distintas conviviendo en la misma pantalla.
+
+*Todo caduca.* Treinta minutos de inactividad, dos horas de vida, lo que pase
+primero; el techo no se corre usándola. Los dos plazos están en el código y no
+en una variable de entorno: son una promesa que la pantalla le hace a la
+persona, no un parámetro que alguien pueda subir sin que nadie se entere. Leer
+una vencida la borra en el momento, y `bn operacion purgar-sesiones` borra las
+abandonadas: sin eso, una conversación que nadie vuelve a mirar se quedaría con
+los hechos de alguien mucho más allá del plazo prometido.
+
+**No hay listado.** El identificador es lo único que da acceso a una sesión, y
+una prueba verifica que no exista un `GET /v1/sesiones`: un índice de
+conversaciones sería recorrer las de cualquiera.
+
+**Lo que esto va a cambiar en la pantalla.** Hoy el frente no usa sesiones, así
+que la frase «nada de lo que escribas se guarda» sigue siendo cierta. En cuanto
+las use deja de serlo, y hay que cambiarla en el mismo cambio: pasa a ser «lo
+que confirmes se guarda un rato y podés borrarlo cuando quieras». Es la primera
+vez que este sistema guarda algo que dijo la persona, y no quiero que se
+descubra leyendo el esquema.
+
+**Sobre LangGraph.** El plan pide agregarlo como módulo de estado. No se agregó
+todavía, y la razón es que lo que aporta —coordinar pasos deterministas con
+llamadas al modelo y checkpoints con intervención humana— sólo se puede ejercer
+con un proveedor de modelo configurado, que no hay. Lo que sí hacía falta hoy es
+dónde se guarda el estado y con qué reglas, que es justo lo que un checkpointer
+guardaría. Cuando esté la clave, la orquestación se apoya sobre esto en vez de
+reemplazarlo. Queda dicho para que no parezca un olvido.

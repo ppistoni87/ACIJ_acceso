@@ -63,7 +63,7 @@ jurídica.
 
 | # | Historia | Estado | Qué hay y qué falta |
 | --- | --- | --- | --- |
-| P-025 | Conversación y memoria mínima | NO_INICIADA | **No hay estado de sesión**: cada consulta se resuelve sola y el contexto (jurisdicción, fecha) vive en el navegador. No hay LangGraph, checkpoints, TTL de sesión ni hechos mínimos con procedencia. Es la historia que más habilita al resto. |
+| P-025 | Conversación y memoria mínima | EN_CURSO | **Construida la mitad que no depende de nada externo** (D-134): estado mínimo con hechos, procedencia y `rehusado`, corrección que sube versión, TTL de 30 min / 2 h, rutas y purga. Falta usarlo desde el frente y, cuando haya clave de modelo, la orquestación con LangGraph. |
 | P-026 | Desambiguar beneficios y reordenar evidencia | EN_CURSO | La búsqueda híbrida existe y está medida, con conjunto congelado. Faltan las fichas comparativas por beneficio y el reranker acotado, que sólo se aprueban con mejora demostrada. |
 | P-027 | Adaptador de modelos actualizado | EN_CURSO | Hay adaptador por variables de entorno (`BN_MODELO_*`) con `httpx`, sin SDK. Faltan registro de modelo/versión/región/límites/costo medido, salida validada por Pydantic y ensayo de reversión. |
 | P-028 | Verificar cada respuesta antes de mostrarla | EN_CURSO | Los validadores comprueban que cada cita exista y pertenezca al corte, y el modo se declara. Falta lo caro: `evidence_ids` por afirmación, criticidad, verificación de respaldo semántico y retención de la afirmación afectada en vez de la respuesta entera. |
@@ -71,7 +71,7 @@ jurídica.
 | P-030 | Orientar desde situaciones y armar próximos pasos | NO_INICIADA | No hay opciones por necesidad ni lista de próximos pasos. Es el punto que quedó pendiente del análisis de Boti como «invertir el orden de la respuesta». |
 | P-031 | Derivar con contexto a atención humana | EN_CURSO | Desde el 12/09 la persona puede pedir hablar con alguien y queda contado (D-125). No hay cola, ni acuse, ni directorio con fecha de verificación: hoy la pantalla dice con todas las letras que no puede comunicar a nadie. |
 | P-032 | Front web conversacional de ACIJ | EN_CURSO | La pantalla ya cumple buena parte de §08.7. Faltan: control «Ver fuentes» plegable por respuesta, «Revisar lo que me contaste» con corrección de hechos, próximos pasos, estados de vencimiento de sesión, y el flujo HTTP/SSE con eventos tipados. |
-| P-037 | Memoria, datos y consentimientos | EN_CURSO | Hay retención de la traza (90 días, purga con rol de administración) y una pantalla que no pide identidad. Falta todo lo que depende de que exista sesión: expiración a 30 minutos, recuperación entre sesiones opcional, consentimientos independientes y revocables. |
+| P-037 | Memoria, datos y consentimientos | EN_CURSO | Criterio 1 cerrado del lado del servidor: la sesión expira a los 30 minutos de inactividad y vive dos horas como máximo, con purga propia (D-134). Faltan la recuperación entre sesiones y los consentimientos independientes, y que la pantalla diga lo que ahora se guarda. |
 
 ## Entrega E2 · P-033 a P-036, P-038
 
@@ -88,9 +88,9 @@ jurídica.
 | Estado | E1 base | Ampliación E1 | E2 | Total |
 | --- | --- | --- | --- | --- |
 | LISTA_PARA_ACEPTACION | 4 | 0 | 0 | 4 |
-| EN_CURSO | 13 | 6 | 0 | 19 |
+| EN_CURSO | 13 | 7 | 0 | 20 |
 | BLOQUEADA | 5 | 0 | 0 | 5 |
-| NO_INICIADA | 2 | 3 | 5 | 10 |
+| NO_INICIADA | 2 | 2 | 5 | 9 |
 | ACEPTADA | 0 | 0 | 0 | 0 |
 
 ## Brechas de §02 del plan, contra el código de hoy

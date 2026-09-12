@@ -19,6 +19,7 @@ from backend_normativo.api.routers import (
     normas,
     operativo,
     recuperacion,
+    sesiones,
 )
 from backend_normativo.api.sondas import verificar_abriendo
 from backend_normativo.config import get_settings
@@ -104,6 +105,7 @@ def crear_app() -> FastAPI:
     app.include_router(evaluaciones.router)
     app.include_router(recuperacion.router)
     app.include_router(devoluciones.router)
+    app.include_router(sesiones.router)
     app.include_router(admin.router)
 
     # La consola de revisión se sirve desde la misma aplicación y en un solo

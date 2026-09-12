@@ -34,6 +34,7 @@ def cliente_con_permisos_de_produccion(engine_pruebas: Engine):
     from backend_normativo.api.app import crear_app
     from backend_normativo.api.dependencias import conexion_lectura
     from backend_normativo.api.routers.devoluciones import conexion_devolucion
+    from backend_normativo.api.routers.sesiones import conexion_sesion
 
     conexion = engine_pruebas.connect()
     conexion.execute(text(f"SET ROLE {ROL_DE_PRODUCCION}"))
@@ -43,6 +44,7 @@ def cliente_con_permisos_de_produccion(engine_pruebas: Engine):
     # La escritura de la devolución también va con el rol de producción: si
     # faltara el GRANT, el frente ciudadano recibiría 500 al agradecer.
     app.dependency_overrides[conexion_devolucion] = lambda: conexion
+    app.dependency_overrides[conexion_sesion] = lambda: conexion
     try:
         with TestClient(app) as cliente:
             yield cliente

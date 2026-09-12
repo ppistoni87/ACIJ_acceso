@@ -1421,6 +1421,276 @@
         }
       }
     },
+    "/v1/sesiones": {
+      "post": {
+        "tags": [
+          "conversación"
+        ],
+        "summary": "Abrir Sesion",
+        "description": "Empieza una conversación. No pide identidad ni deja rastro de quién.",
+        "operationId": "abrir_sesion_v1_sesiones_post",
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Abrir Sesion V1 Sesiones Post"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/sesiones/{sesion_id}": {
+      "get": {
+        "tags": [
+          "conversación"
+        ],
+        "summary": "Leer Sesion",
+        "operationId": "leer_sesion_v1_sesiones__sesion_id__get",
+        "parameters": [
+          {
+            "name": "sesion_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sesion Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Leer Sesion V1 Sesiones  Sesion Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "conversación"
+        ],
+        "summary": "Borrar Sesion",
+        "description": "«Borrar conversación». Borra de verdad, no marca como borrada.",
+        "operationId": "borrar_sesion_v1_sesiones__sesion_id__delete",
+        "parameters": [
+          {
+            "name": "sesion_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sesion Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/sesiones/{sesion_id}/contexto": {
+      "patch": {
+        "tags": [
+          "conversación"
+        ],
+        "summary": "Anotar Contexto",
+        "operationId": "anotar_contexto_v1_sesiones__sesion_id__contexto_patch",
+        "parameters": [
+          {
+            "name": "sesion_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sesion Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Contexto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Anotar Contexto V1 Sesiones  Sesion Id  Contexto Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/sesiones/{sesion_id}/hechos": {
+      "put": {
+        "tags": [
+          "conversación"
+        ],
+        "summary": "Confirmar Hecho",
+        "description": "Confirma o corrige un hecho. La corrección sube la versión del estado.\n\nEsa versión es lo que permite marcar como reemplazada una respuesta que se\ncalculó con el dato viejo, en lugar de dejar dos conclusiones distintas\nconviviendo en la misma pantalla.",
+        "operationId": "confirmar_hecho_v1_sesiones__sesion_id__hechos_put",
+        "parameters": [
+          {
+            "name": "sesion_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sesion Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Hecho"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Confirmar Hecho V1 Sesiones  Sesion Id  Hechos Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/sesiones/{sesion_id}/hechos/{clave}": {
+      "delete": {
+        "tags": [
+          "conversación"
+        ],
+        "summary": "Olvidar Hecho",
+        "description": "Saca un hecho: vuelve a desconocido, que no es lo mismo que falso.",
+        "operationId": "olvidar_hecho_v1_sesiones__sesion_id__hechos__clave__delete",
+        "parameters": [
+          {
+            "name": "sesion_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sesion Id"
+            }
+          },
+          {
+            "name": "clave",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clave"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Olvidar Hecho V1 Sesiones  Sesion Id  Hechos  Clave  Delete"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/admin/revisiones/{incidencia_id}/resolver": {
       "post": {
         "tags": [
@@ -2683,6 +2953,50 @@
         ],
         "title": "CondicionRespuesta"
       },
+      "Contexto": {
+        "properties": {
+          "intencion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intencion"
+          },
+          "jurisdiccion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jurisdiccion"
+          },
+          "fecha": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Contexto",
+        "description": "Lo que acota la orientación. Todo opcional: se completa de a poco."
+      },
       "DataStatus": {
         "type": "string",
         "enum": [
@@ -2862,6 +3176,43 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "Hecho": {
+        "properties": {
+          "clave": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Clave"
+          },
+          "valor": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valor"
+          },
+          "origen": {
+            "type": "string",
+            "pattern": "^(declarado|inferido)$",
+            "title": "Origen",
+            "default": "declarado"
+          },
+          "rehusado": {
+            "type": "boolean",
+            "title": "Rehusado",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "clave"
+        ],
+        "title": "Hecho",
+        "description": "Un dato confirmado, o la decisión de no contestarlo."
       },
       "NormaDetalle": {
         "properties": {

@@ -82,6 +82,43 @@ quien lo pidió. Lo que sí pasa es que queda contado, y eso es lo que permite
 discutir con números si hace falta atención humana. Prometer un contacto que no
 existe sería del mismo tipo de daño que inventar un teléfono de emergencia.
 
+## Qué se guarda de una conversación
+
+**Todavía nada, y está por cambiar.** La pantalla de hoy no usa sesiones: cada
+consulta se resuelve sola y no queda nada del intercambio. La frase que la
+pantalla muestra —«nada de lo que escribas se guarda»— es cierta hoy.
+
+La API ya tiene el estado mínimo que P-025 pide y P-037 acota
+(`src/backend_normativo/conversacion/sesion.py`, tabla
+`sesiones_conversacion`). Cuando el frente lo use, esto pasa a guardarse:
+
+| Se guarda | No se guarda |
+| --- | --- |
+| Intención, jurisdicción y fecha de la consulta | Ningún mensaje, ni el de la persona ni el del asistente |
+| Hechos que la persona confirmó, con su valor y su procedencia | Identidad, teléfono, correo, dirección |
+| Que eligió no contestar un dato (`rehusado`) | Historial entre sesiones |
+| Una versión que sube con cada corrección | Nada después del vencimiento |
+
+**Plazos:** 30 minutos de inactividad y **dos horas de vida como máximo**, lo que
+pase primero. El techo no se corre usándola. Una sesión vencida no se lee ni se
+resucita: se borra en el momento en que se la busca, y `bn operacion
+purgar-sesiones` borra las que nadie vuelve a mirar, que son las que de otro
+modo se quedarían con los hechos de alguien para siempre.
+
+**Que no entre un mensaje se hace cumplir en la base**, no en el cliente: un
+`CHECK` sobre las claves de `estado` rechaza cualquiera que no sea intención,
+jurisdicción, fecha, hechos o versión. Guardar el historial exigiría cambiar la
+migración, que es exactamente la conversación que hay que tener antes de
+hacerlo. El modelo de la ruta rechaza además cualquier campo de más.
+
+**Ausencia no es falso.** Un hecho que no está es DESCONOCIDO y uno rehusado
+tampoco es falso. El motor de reglas distingue los tres estados; el estado de la
+conversación no los aplasta en dos.
+
+**Cuando el frente empiece a usar esto, la frase de la pantalla deja de ser
+cierta** y hay que cambiarla en el mismo cambio: pasa a ser «lo que confirmes se
+guarda un rato y podés borrarlo cuando quieras». Está anotado en D-134.
+
 ## Qué se guarda en el navegador
 
 Nada. El frente no escribe en `localStorage` ni en `sessionStorage`, y «Salir y
