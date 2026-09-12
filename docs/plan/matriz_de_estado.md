@@ -39,7 +39,7 @@ jurídica.
 | P-003 | Esquema y permisos aislados | EN_CURSO | Ninguna prueba corrió contra PostgreSQL 18: el CI usa 16 y Neon sirve 18.6. |
 | P-004 | Originales fuera del contenedor | BLOQUEADA (B) | Bucket privado y su política de retención. |
 | P-005 | Carga reanudable del corpus | BLOQUEADA (D) | Los tres criterios se cumplen local; nunca corrió contra Neon. |
-| P-006 | Adaptadores y fuentes operativas | EN_CURSO | 44 de 85 fuentes sirven. El corpus servible pasó de 1 norma a 7. |
+| P-006 | Adaptadores y fuentes operativas | EN_CURSO | 44 de 85 fuentes sirven. Los documentos con fecha de publicación oficial pasaron de 18 a 61: InfoLeg no sirve la ficha (403, registrado como acceso limitado) y se tomaron del portal de normativa nacional, con captura, evidencia y `Crawl-delay` respetado (D-143). |
 | P-007 | Citas, vigencia y relaciones | LISTA_PARA_ACEPTACION | Las 215 referencias sin resolver son la cola auditable que el criterio pide. |
 | P-008 | Siete dimensiones por norma y beneficio | EN_CURSO | Con D-130 deja de esperar una firma. Son 5.397 afirmaciones en 54 versiones, y `bn revision aprobar-campos` se invoca por versión: 54 decisiones, 14 de ellas sobre las normas que sostienen los beneficios. |
 | P-009 | Circuito de revisión humana | LISTA_PARA_ACEPTACION | Que alguien lo use, y eso es P-010. |

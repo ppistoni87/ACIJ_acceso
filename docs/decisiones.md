@@ -3579,3 +3579,64 @@ distintos significa que «qué sirve un corte» estaba definido en cada consulta
 no en un solo lugar. Ahora hay un lugar: la membresía. Ninguna consulta vuelve a
 filtrar versiones por `rv.release_id`, y hay una búsqueda en el árbol que lo
 confirma.
+
+## D-143 · La fecha que faltaba se fue a buscar; el estado de vigencia no se inventó
+
+Cuarenta y seis versiones de norma quedaban fuera de todo corte con el intervalo
+en `DESCONOCIDO`, y el diagnóstico previo las trataba como un problema de
+criterio jurídico. No lo eran: a sus documentos les faltaba el dato más básico,
+**cuándo se publicaron**. Sin esa fecha no hay artículo 5 del Código Civil y
+Comercial que aplicar —una norma rige a los ocho días corridos de su publicación
+oficial si no fija otra— y la vigencia no se puede computar.
+
+**InfoLeg no sirve la ficha: responde 403.** Se registró como acceso limitado.
+No se rotó identidad, no se reintentó con otro agente y no se buscó la vuelta.
+
+**El portal de normativa nacional sí, y publica las mismas normas con su fecha.**
+No es esquivar el bloqueo: es otra fuente oficial, con su URL, su captura y su
+hash. El identificador de InfoLeg está en la URL del documento que ya teníamos y
+es el mismo que usa el portal, así que la correspondencia es exacta y no se
+adivina por parecido de tipo, número y año. Se respetó el `Crawl-delay: 10` que
+declara su `robots.txt`.
+
+Resultado: **40 de 42 documentos con su fecha de publicación oficial**, cada una
+con su captura, su evidencia citando el trozo exacto de la ficha y su evento de
+auditoría. Los documentos con fecha de publicación pasaron de 18 a 61. Los dos
+que faltan son de CABA y vienen del Boletín de la Ciudad: necesitan otra fuente
+y no se los forzó contra un portal que no los tiene.
+
+### Lo que no se resolvió, y por qué está bien que no se haya resuelto
+
+Con la fecha puesta, 43 de esas normas **siguen sin vigencia determinada**, y
+ahora fallan en otra puerta: la política se niega a declarar una norma vigente
+sólo porque no hay una derogación registrada. «La ausencia de una derogación en
+el grafo no es una constancia de que la norma esté vigente.» Es correcto y es
+deliberado.
+
+La ficha del portal tampoco declara el estado, así que no hay dato que capturar:
+hace falta una determinación por norma. Se buscó y no está; forzarlo habría sido
+justamente lo que la política impide.
+
+**Lo que esto cuesta hoy, medido: nada.** Ninguna de las 43 aporta un solo
+fragmento a ningún corte y sólo 3 son citadas por un beneficio publicado. Son
+decretos de montos y rangos de asignaciones familiares que se fueron reemplazando
+entre sí —1691/2004, 1345/2007, 1591/2008, 1388/2010, 614/2013, 779/2014,
+1141/2015…—. Publicarlos sin determinar su vigencia sería peor que no tenerlos:
+alguien podría llevarse el monto de 2013.
+
+## D-144 · Dos caminos transcribían lo mismo y decían cosas distintas
+
+Un canal de contacto sacado de un directorio salía con intervalo abierto desde
+su captura. El mismo canal sacado de la página de un organismo salía con
+`DESCONOCIDO` fijo, escrito así en el código. Como la aprobación en bloque se
+niega —con razón— a tocar lo que no tiene intervalo, **62 teléfonos y correos de
+organismos nunca llegaron a nadie**. Ministerio Público Tutelar entre ellos.
+
+No era una decisión: era una diferencia entre dos caminos que hacen lo mismo.
+Los dos transcriben un contacto de una página oficial con su evidencia, y los
+dos pueden afirmar exactamente lo mismo: que la fuente lo publicaba ese día y no
+dijo hasta cuándo. Ahora los dos lo dicen igual, la vigencia sale de la captura
+en el origen, y los 62 que ya estaban se corrigieron con el mismo criterio y su
+propio rastro.
+
+Están publicados en el corte `bbba8f66`. La cuarentena pasó de 130 a 68.

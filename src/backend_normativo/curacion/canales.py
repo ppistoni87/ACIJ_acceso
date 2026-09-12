@@ -333,13 +333,40 @@ class CuradorDeCanales:
         ).scalar_one()
 
         canal_id = uuid.uuid4()
+        # La vigencia sale de la captura que respalda el canal, igual que en el
+        # camino que transcribe los directorios. Antes este camino la dejaba en
+        # `DESCONOCIDO` fijo, y como la aprobación en bloque se niega —con
+        # razón— a tocar lo que no tiene intervalo, sesenta y dos contactos de
+        # organismo quedaron sin llegar nunca a nadie. Dos caminos que
+        # transcriben lo mismo de una página oficial no pueden decir cosas
+        # distintas sobre desde cuándo vale.
+        #
+        # Qué afirma: que la fuente publicaba este teléfono o este correo ese
+        # día y no dijo hasta cuándo. Lo mismo que dicen los otros 6.072, y lo
+        # mismo que la pantalla le muestra a quien está por llamar.
+        desde = self.conexion.execute(
+            text(
+                "SELECT cap.capturado_en::date FROM evidencias e "
+                "  JOIN documento_versiones dv ON dv.id = e.doc_version_id "
+                "  JOIN capturas cap ON cap.id = dv.captura_id "
+                " WHERE e.id = :e"
+            ),
+            {"e": evidencia_id},
+        ).scalar_one_or_none()
         registro = self.conexion.execute(
             text(
                 "INSERT INTO registro_versiones (entidad_tipo, entidad_id, numero_version, "
-                " estado_revision, valid_tipo, known_desde) "
-                "VALUES (:tipo, :eid, 1, 'CANDIDATE', 'DESCONOCIDO', :ahora) RETURNING id"
+                " estado_revision, valid_tipo, valid_desde, known_desde) "
+                "VALUES (:tipo, :eid, 1, 'CANDIDATE', :vt, :desde, :ahora) RETURNING id"
             ),
-            {"tipo": EntidadVersionada.CANAL.value, "eid": canal_id, "ahora": ahora},
+            {
+                "tipo": EntidadVersionada.CANAL.value,
+                "eid": canal_id,
+                # Sin captura detrás no se afirma nada: queda desconocido.
+                "vt": "ABIERTO_FIN" if desde else "DESCONOCIDO",
+                "desde": desde,
+                "ahora": ahora,
+            },
         ).scalar_one()
 
         self.conexion.execute(

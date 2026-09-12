@@ -31,11 +31,11 @@ actualiza es la forma más barata de mentir sin querer.
 | G4 | Backoffice, cierre jurídico, scheduler, alertas, restauración | Abierto |
 | G5 | Evaluación independiente, piloto, traspaso | Abierto |
 
-## Las siete causas
+## Las ocho causas
 
 Los pendientes no son un problema distinto cada uno. Hoy **ninguna se resuelve
 escribiendo código**: dos se cerraron por decisión (A y E), cuatro esperan una
-decisión o un permiso, y una espera curación.
+decisión o un permiso, y dos esperan curación.
 
 **A · Falta una firma jurídica. Cerrada por decisión, no por firma.** El
 12/09/2026 Pedro Pistoni decidió que el proyecto no va a contar con un
@@ -87,6 +87,16 @@ llegan a la pantalla de alguien que esta noche no tiene dónde dormir. Afecta a
 todo el corpus operativo y, por dependencia, a P-023 y P-024. Hasta la
 publicación de este informe la causa estaba oculta: `bn publicacion estado`
 contaba los 14.390 como publicables y con los ocho gates en verde (D-128).
+
+**H · Cuarenta y tres normas sin estado de vigencia declarado.** Con la fecha de
+publicación ya capturada (D-143), lo único que les falta es que alguien
+determine si están vigentes: la política se niega a deducirlo de que no haya una
+derogación registrada, y la ficha oficial no lo declara. Son decretos de montos
+de asignaciones familiares que se fueron reemplazando entre sí. **Hoy no cuestan
+nada**: ninguna aporta un fragmento a ningún corte y sólo 3 las cita un
+beneficio publicado. Publicarlas sin determinar su vigencia sería peor que no
+tenerlas —alguien podría llevarse un monto de 2013—. Necesita una determinación
+por norma.
 
 **F · Las reglas no tienen un rótulo por dato, y por eso un tercio no se puede
 preguntar.** El árbol de una regla nombra los datos que necesita —`edad`,

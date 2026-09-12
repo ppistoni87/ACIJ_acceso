@@ -170,3 +170,64 @@ def fechar_desde_la_captura(
             )
 
     return resultado
+
+
+# --- La vigencia de los canales que quedaron sin ella -------------------------
+#
+# Mismo razonamiento y misma fuente: la captura. Se separa de lo de arriba
+# porque son dos afirmaciones distintas —«esto se vio en la fuente tal día» y
+# «esto vale desde tal día»— y mezclarlas haría que arreglar una toque la otra.
+
+CANALES_SIN_VIGENCIA = """
+SELECT rv.id AS version_id, cap.capturado_en::date AS desde
+  FROM registro_versiones rv
+  JOIN canales ca ON ca.registro_version_id = rv.id
+  JOIN evidencias e ON e.id = ca.evidencia_id
+  JOIN documento_versiones dv ON dv.id = e.doc_version_id
+  JOIN capturas cap ON cap.id = dv.captura_id
+ WHERE rv.entidad_tipo = 'canal' AND rv.valid_tipo = 'DESCONOCIDO'
+"""
+
+
+def vigencia_de_canales(conexion: Connection, *, actor: str, simular: bool = False) -> int:
+    """Le pone a cada canal el intervalo que su captura sostiene.
+
+    Los canales de organismo se creaban con `DESCONOCIDO` fijo mientras los de
+    los directorios salían con `ABIERTO_FIN` desde su captura. Dos caminos que
+    transcriben lo mismo de una página oficial diciendo cosas distintas: la
+    consecuencia fue que sesenta y dos teléfonos y correos de organismos nunca
+    llegaron a nadie, porque la aprobación en bloque se niega —con razón— a
+    tocar lo que no tiene intervalo.
+
+    El origen quedó arreglado en `curacion.canales`; esto es para los que ya
+    estaban. Lo que no llega a una captura se queda como está.
+    """
+    if simular:
+        return conexion.execute(
+            text(f"SELECT count(*) FROM ({CANALES_SIN_VIGENCIA}) c")
+        ).scalar_one()
+
+    filas = conexion.execute(
+        text(
+            f"UPDATE registro_versiones rv SET valid_tipo = 'ABIERTO_FIN', valid_desde = c.desde "
+            f"  FROM ({CANALES_SIN_VIGENCIA}) c "
+            " WHERE rv.id = c.version_id RETURNING rv.id"
+        )
+    ).all()
+    for (version_id,) in filas:
+        conexion.execute(
+            text(
+                "INSERT INTO auditoria_eventos (actor, accion, objeto, objeto_id, motivo) "
+                "VALUES (:a, 'FECHAR_VIGENCIA', 'registro_version', :o, :m)"
+            ),
+            {
+                "a": actor,
+                "o": version_id,
+                "m": (
+                    "Intervalo abierto desde la captura oficial que respalda el canal, igual "
+                    "que los transcriptos de directorios. Afirma que la fuente publicaba este "
+                    "contacto ese día y no dijo hasta cuándo."
+                ),
+            },
+        )
+    return len(filas)

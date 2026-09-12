@@ -2673,6 +2673,63 @@ def operacion_devoluciones(
         typer.echo(f"  {fila['senal']:<15} {fila['resultado']}{motivo}: {fila['cuantas']}")
 
 
+@curacion.command("vigencia-de-canales")
+def curacion_vigencia_de_canales(
+    actor: str = typer.Option(..., help="Quién queda registrado en cada versión."),
+    simular: bool = typer.Option(False, "--simular", help="Cuenta y no escribe nada."),
+) -> None:
+    """Le pone a cada canal el intervalo que su captura sostiene.
+
+    Los canales de organismo se creaban sin intervalo mientras los de los
+    directorios salían con uno: sesenta y dos teléfonos y correos nunca
+    llegaron a nadie por esa diferencia. El origen ya está arreglado; esto es
+    para los que ya estaban.
+    """
+    from sqlalchemy import text as _text
+
+    from backend_normativo.curacion.verificacion import vigencia_de_canales
+
+    with engine_migrador().begin() as conexion:
+        cuantos = vigencia_de_canales(conexion, actor=actor, simular=simular)
+        if simular:
+            conexion.execute(_text("ROLLBACK"))
+    typer.echo(("Simulación: " if simular else "") + f"canales con intervalo: {cuantos}")
+
+
+@curacion.command("fechar-publicacion")
+def curacion_fechar_publicacion(
+    actor: str = typer.Option(..., help="Quién queda registrado en cada documento."),
+    limite: int = typer.Option(None, help="Cuántas atender como máximo."),
+    simular: bool = typer.Option(False, "--simular", help="Cuenta y no pide nada."),
+) -> None:
+    """Trae la fecha de publicación que falta, de la ficha oficial del portal.
+
+    Sin esa fecha no se puede aplicar el artículo 5 del Código Civil y Comercial
+    y la vigencia queda en DESCONOCIDO, así que la norma no entra en ningún
+    corte. InfoLeg no sirve la ficha —responde 403 y queda como acceso
+    limitado—; el portal de normativa nacional publica las mismas normas con su
+    fecha, con su propia URL y su propia captura.
+
+    No inventa: si la ficha no declara la fecha, la cuenta como no resuelta.
+    """
+    from backend_normativo.ingesta.fecha_de_publicacion import completar
+
+    with engine_migrador().begin() as conexion:
+        resultado = completar(conexion, actor=actor, limite=limite, simular=simular)
+
+    typer.echo("Simulación: no se pidió nada." if simular else "Hecho.")
+    typer.echo(f"  con fecha de la ficha oficial: {resultado.resueltas}")
+    for rotulo, cuales in (
+        ("la ficha no declara fecha", resultado.sin_fecha_en_la_ficha),
+        ("sin identificador para el portal", resultado.sin_identificador),
+        ("no se pudieron pedir", resultado.no_alcanzadas),
+    ):
+        if cuales:
+            typer.echo(f"  {rotulo}: {len(cuales)}")
+            for cual in cuales[:10]:
+                typer.echo(f"    {cual}")
+
+
 @curacion.command("fechar-verificacion")
 def curacion_fechar_verificacion(
     actor: str = typer.Option(..., help="Quién queda registrado en cada versión."),
