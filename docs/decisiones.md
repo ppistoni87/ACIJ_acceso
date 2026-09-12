@@ -2681,3 +2681,56 @@ agrega el dato concreto sólo cuando lo tiene. Y el hueco pasó a ser **un núme
 en el tablero** —`puntos_de_atencion_publicados`, hoy en cero— en vez de una
 disculpa en la pantalla. El final más frecuente de una consulta era el que menos
 se miraba.
+
+## D-123 · El canal va primero: reconocer la urgencia sin inventar a quién llamar
+
+Hallazgo 1 del análisis del flujo, y el más grave. Alguien escribió «estoy
+durmiendo en la calle, ¿hay algo urgente?» y el sistema contestó con el artículo
+10 de una ley. En un servicio público eso no es una respuesta pobre: hay una
+clase de mensaje donde **el canal va primero y la norma después**, y no existía.
+
+`conversacion/urgencia.py` reconoce cinco clases —violencia, salud, niñez, calle,
+alimentos— y la respuesta las lleva arriba de todo, antes del título y antes del
+texto legal. Tres cosas que **no** hace, y son la parte importante:
+
+**No diagnostica.** Dice «si necesitás un lugar esta noche, esto no reemplaza
+pedir ayuda», no «estás en una emergencia». Quien sabe si es una emergencia es
+la persona, no un puñado de expresiones regulares.
+
+**No inventa a quién llamar.** Escribir «llamá al X» en la pantalla de alguien en
+emergencia es una afirmación operativa: si el número está mal, desactualizado o
+no corresponde a esa jurisdicción, el daño es inmediato. Los canales salen del
+corpus curado. Hoy hay **cero** cargados, así que el sistema dice «no tengo
+cargado a quién derivarte, y eso es una falla de este sistema, no tuya». Es feo
+y es verdadero, y una prueba verifica que no aparezca ningún número que nadie
+curó.
+
+**No se activa por una palabra suelta.** El requisito va por expresión y no por
+clase, porque dentro de una misma clase conviven las dos cosas: «me pega» es un
+relato por construcción, «violencia de género» es el nombre de media docena de
+leyes. El conjunto congelado encontró exactamente ese fallo —«¿qué dice la ley
+sobre violencia de género?» disparaba la alarma— y también que «en la calle con
+mi bebé» caía en la clase menos urgente porque el patrón sólo miraba un orden de
+las palabras.
+
+Veintidós casos congelados en `docs/calidad/urgencia.json`, positivos y
+negativos. Los negativos importan tanto como los positivos: un aviso de
+emergencia que aparece siempre deja de leerse, y deja de leerse justo cuando
+hace falta.
+
+**Y lo que la persona escribió no vuelve.** La expresión que disparó queda para
+quien depura; la respuesta lleva sólo la clase.
+
+## D-124 · El corte publicado sigue con el marcado, y no se toca
+
+DQ10 y `extraccion@15` arreglan el problema **hacia adelante**. El corte que hoy
+se sirve tiene **47 unidades y 4 fragmentos** con marcado, y ahí siguen.
+
+Se podría correr un `UPDATE` que los limpie. No se hace: cambiaría el texto que
+un corte publicado sirve, sin pasar por una publicación nueva, y entonces
+`release_id` dejaría de identificar lo que se sirvió. Reproducir una respuesta
+pasada es la garantía sobre la que se apoya todo lo demás.
+
+Limpiarlo de verdad es volver a extraer y volver a curar las citas que apuntan a
+esas unidades — trabajo jurídico, no un `UPDATE`. Mientras tanto DQ10 impide
+publicar un corte nuevo que lo arrastre, así que el problema no puede crecer.

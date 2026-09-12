@@ -204,3 +204,48 @@ def test_lo_que_es_de_la_cocina_no_llega_a_la_pantalla(cliente_api, corpus_publi
         assert jerga not in de_la_persona, f"«{jerga}» llegó a la pantalla de la persona"
     # Y no se pierde: lo que no va a la persona viaja por su propio canal.
     assert isinstance(cuerpo["notas_operativas"], list)
+
+
+def test_la_urgencia_viaja_con_la_respuesta(cliente_api, corpus_publicado) -> None:
+    """Hay una clase de mensaje donde el canal va primero y la norma después."""
+    urgente = cliente_api.post(
+        "/v1/respuestas", json={"consulta": "estoy durmiendo en la calle con mi bebé"}
+    ).json()
+    assert urgente["urgencia"] == {"clase": "NINEZ"}
+
+    normal = cliente_api.post(
+        "/v1/respuestas", json={"consulta": "quién puede pedir el subsidio habitacional"}
+    ).json()
+    assert normal["urgencia"] is None
+
+
+def test_lo_que_la_persona_conto_no_vuelve_en_la_respuesta(cliente_api, corpus_publicado) -> None:
+    """La expresión que disparó la urgencia es un pedazo de su vida.
+
+    Se usa para clasificar y no sale del servidor: la respuesta lleva la clase,
+    que es lo que el frente necesita para elegir qué decir.
+    """
+    cuerpo = cliente_api.post(
+        "/v1/respuestas", json={"consulta": "mi pareja me pega y no sé qué hacer"}
+    ).json()
+    assert cuerpo["urgencia"] == {"clase": "VIOLENCIA"}
+    assert "me pega" not in json_str(cuerpo)
+
+
+def json_str(d) -> str:
+    import json
+
+    return json.dumps(d, ensure_ascii=False)
+
+
+def test_sin_corte_publicado_la_urgencia_igual_se_reconoce(cliente_api, corpus) -> None:
+    """Saberlo no puede depender de que la búsqueda encuentre algo.
+
+    Quien escribe «estoy en la calle» necesita lo mismo tanto si el corpus tiene
+    una ley de vivienda como si está vacío.
+    """
+    cuerpo = cliente_api.post(
+        "/v1/respuestas", json={"consulta": "estoy durmiendo en la calle"}
+    ).json()
+    assert cuerpo["data_status"] == "NO_PUBLICABLE"
+    assert cuerpo["urgencia"] == {"clase": "CALLE"}

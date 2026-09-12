@@ -122,6 +122,16 @@ body.sin-conversacion .compositor .marco{padding-top:4px}
 .alerta b{display:block; margin-bottom:3px}
 .aviso-privacidad{border-left-color:var(--frio)}
 .aviso-demo{border-left-color:var(--sello)}
+/* La urgencia no es una advertencia más: va arriba de todo, con el peso de
+   algo que hay que leer antes que el resto. */
+.urgente{
+  border:2px solid var(--sello); border-left-width:5px; border-radius:0 10px 10px 0;
+  background:var(--papel-2); padding:14px 16px; margin:0 0 18px;
+}
+.urgente h3{margin:0 0 6px; font-size:1rem; text-transform:none; letter-spacing:0;
+  color:var(--sello); font-weight:700}
+.urgente p{margin:0 0 8px; font-size:.96rem}
+.urgente p:last-child{margin-bottom:0}
 
 a.nota{
   font-size:.7rem; text-decoration:none; color:var(--frio);
@@ -456,6 +466,40 @@ function bloqueCobertura(lista){
   return '<h3>Lo que tengo publicado</h3><ul class="avisos">' + items + resto + "</ul>";
 }
 
+// Lo que se le dice a alguien que puede estar en una emergencia. Nunca
+// diagnostica —«si esto es urgente», no «estás en una emergencia»— y nunca
+// inventa un número: los canales son dato curado. Cuando no hay ninguno
+// cargado lo dice, porque callarse sería peor.
+const URGENCIA = {
+  VIOLENCIA: "Si estás en peligro ahora, esto no reemplaza pedir ayuda.",
+  SALUD: "Si es una emergencia de salud, esto no reemplaza pedir ayuda.",
+  NINEZ: "Si hay chicos o chicas en riesgo ahora, esto no reemplaza pedir ayuda.",
+  CALLE: "Si necesitás un lugar esta noche, esto no reemplaza pedir ayuda.",
+  ALIMENTOS: "Si hoy no tenés qué comer, esto no reemplaza pedir ayuda."
+};
+
+function bloqueUrgencia(urgencia, canales){
+  if(!urgencia || !urgencia.clase) return "";
+  const linea = URGENCIA[urgencia.clase] || URGENCIA.CALLE;
+  let html = '<div class="urgente"><h3>Antes que nada</h3><p>' + esc(linea) + "</p>";
+  if(canales && canales.length){
+    html += "<p>Podés ir o llamar acá:</p>";
+    canales.slice(0, 2).forEach(function(p){
+      html += '<p><b>' + esc(p.nombre) + "</b>" +
+        (p.direccion ? " · " + esc(p.direccion) : "") +
+        ((p.canales || []).filter(function(c){ return c && c.valor; }).slice(0, 2)
+          .map(function(c){ return " · " + esc(c.valor); }).join("")) + "</p>";
+    });
+  }else{
+    // Feo, y verdadero. Improvisar un teléfono sería peor: si está mal o no
+    // corresponde a esa jurisdicción, el daño es inmediato.
+    html += "<p><b>No tengo cargado a quién derivarte, y eso es una falla de este " +
+      "sistema, no tuya.</b> Si podés, preguntá en el municipio o en una " +
+      "organización del barrio. Abajo te dejo lo que sí tengo publicado.</p>";
+  }
+  return html + "</div>";
+}
+
 function bloqueCanales(canales){
   let html = "<h3>A dónde ir</h3>";
   if(canales && canales.length){
@@ -492,7 +536,10 @@ function responderEnElHilo(cuerpo, canales){
     indice[String(f.chunk_id).toLowerCase()] = i + 1;
   });
 
-  let html = '<h2 id="titulo-respuesta" tabindex="-1">' + esc(titulo) +
+  // Antes del título, antes del modo, antes de todo: si el mensaje parecía una
+  // emergencia, eso se lee primero.
+  let html = bloqueUrgencia(cuerpo.urgencia, canales);
+  html += '<h2 id="titulo-respuesta" tabindex="-1">' + esc(titulo) +
     ' <span class="sello s-' + esc(modo) + '" aria-hidden="true">' + esc(etiqueta) + "</span></h2>" +
     '<p class="ayuda">' + esc(explicacion) + "</p>";
 

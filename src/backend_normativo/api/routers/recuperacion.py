@@ -262,8 +262,15 @@ def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depen
     publicado, literal y citado. No puede alucinar, y se declara.
     """
     from backend_normativo.api.contratos import anotar
+    from backend_normativo.conversacion.urgencia import detectar as detectar_urgencia
     from backend_normativo.generacion.proveedores import configurado as proveedor_configurado
     from backend_normativo.generacion.respuesta import ModoRespuesta, responder
+
+    # Antes que nada. Hay una clase de mensaje donde el canal va primero y la
+    # norma después, y saberlo no puede depender de que la búsqueda encuentre
+    # algo: alguien que escribe «estoy durmiendo en la calle» necesita lo mismo
+    # tanto si el corpus tiene una ley de vivienda como si no.
+    urgencia = detectar_urgencia(solicitud.consulta).a_dict()
 
     if not contexto.hay_release:
         salida = responder(solicitud.consulta, [])
@@ -281,6 +288,7 @@ def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depen
             "solo_parecidos": False,
             "cobertura": [],
             "notas_operativas": [],
+            "urgencia": urgencia,
             **salida.a_dict(),
         }
 
@@ -340,6 +348,7 @@ def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depen
         # eligió sólo el parecido de significado. El frente lo usa para no
         # presentarlos como la respuesta.
         "solo_parecidos": hallazgo.solo_parecidos,
+        "urgencia": urgencia,
         "cobertura": cobertura_del_corte(contexto.conexion, contexto.release_id),
         **salida.a_dict(),
     }

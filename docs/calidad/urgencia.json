@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "nota": "Dónde está la línea entre un mensaje que pide el canal primero y uno que no. Se congela para que agregar una expresión obligue a decir, en el mismo commit, qué casos pasa a reconocer y cuáles sigue sin reconocer. Los casos se escribieron pensando en cómo escribe la gente: sin tildes, con apuro, en primera persona.\n\nLos negativos importan tanto como los positivos. Un aviso de emergencia que aparece siempre no distingue nada, y deja de leerse justo cuando hace falta.",
+  "reconoce": [
+    {"consulta": "estoy durmiendo en la calle, hay algo urgente?", "clase": "CALLE"},
+    {"consulta": "Duermo en la calle con mi bebé", "clase": "NINEZ"},
+    {"consulta": "me estan desalojando ahora, que hago", "clase": "CALLE"},
+    {"consulta": "no tengo donde dormir hoy", "clase": "CALLE"},
+    {"consulta": "estoy en la calle y hace frio", "clase": "CALLE"},
+    {"consulta": "mi pareja me pega y me quiero ir de casa", "clase": "VIOLENCIA"},
+    {"consulta": "sufri violencia de genero, me piden la antiguedad igual?", "clase": "VIOLENCIA"},
+    {"consulta": "me amenaza y tengo miedo", "clase": "VIOLENCIA"},
+    {"consulta": "tengo miedo de mi marido", "clase": "VIOLENCIA"},
+    {"consulta": "no puedo respirar, que hago", "clase": "SALUD"},
+    {"consulta": "hace dias que no como", "clase": "ALIMENTOS"},
+    {"consulta": "no tengo nada que comer y no tengo plata", "clase": "ALIMENTOS"},
+    {"consulta": "estamos en la calle con mis hijos", "clase": "NINEZ"}
+  ],
+  "no_reconoce": [
+    {"consulta": "quien puede pedir el subsidio habitacional?", "por_que": "Es una consulta informativa."},
+    {"consulta": "que dice la ley sobre violencia de genero", "por_que": "Pregunta por la norma, no relata una situación. La palabra suelta no alcanza."},
+    {"consulta": "me quede sin casa despues de un incendio", "por_que": "No dice que sea ahora. Sin marca de momento no se dispara: si no, el aviso aparecería en casi toda consulta de vivienda y dejaría de leerse."},
+    {"consulta": "hay algun programa para gente en situacion de calle?", "por_que": "Pregunta por el programa, no dice estar en esa situación."},
+    {"consulta": "cuanto cobra la asignacion universal por hijo", "por_que": "Consulta de monto."},
+    {"consulta": "el comedor escolar da de comer todos los dias?", "por_que": "Pregunta por el servicio; «comer» no alcanza."},
+    {"consulta": "vivo en la calle Corrientes 1234", "por_que": "«la calle» como dirección. La expresión exige «vivo en la calle» sin lo que sigue, y este caso fija que no se confunda."},
+    {"consulta": "que pasa si me desalojan?", "por_que": "Condicional, no está pasando."},
+    {"consulta": "tengo miedo de perder el beneficio", "por_que": "«tengo miedo» sin la persona que amenaza."}
+  ]
+}

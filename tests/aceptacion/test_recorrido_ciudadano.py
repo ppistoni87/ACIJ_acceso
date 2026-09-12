@@ -426,6 +426,39 @@ def test_la_pantalla_no_habla_en_jerga(pagina) -> None:
     assert colados == [], f"la pantalla habló en jerga: {colados}"
 
 
+def test_lo_urgente_va_arriba_de_la_norma(pagina) -> None:
+    """Alguien en la calle recibía el artículo 10 de una ley. Ahora no.
+
+    Y el aviso no diagnostica —«si necesitás un lugar esta noche», no «estás en
+    una emergencia»— ni inventa un teléfono: cuando no hay canal cargado lo
+    dice, porque improvisar un número que esté mal hace daño inmediato.
+    """
+    _preguntar(pagina, "estoy durmiendo en la calle con mi bebé")
+    assert pagina.locator(".urgente").count() == 1
+
+    # Arriba del título de la respuesta, no debajo.
+    orden = pagina.evaluate(
+        """() => {
+            const u = document.querySelector('.urgente');
+            const t = document.querySelector('#titulo-respuesta');
+            return u.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING ? 1 : 0;
+        }"""
+    )
+    assert orden == 1, "la urgencia tiene que leerse antes que la norma"
+
+    texto = pagina.inner_text(".urgente").casefold()
+    assert "no reemplaza pedir ayuda" in texto
+    assert "no tengo cargado a quién derivarte" in texto
+    for inventado in ("911", "147", "144", "llamá al"):
+        assert inventado not in texto, f"apareció un canal que nadie curó: {inventado}"
+
+
+def test_una_consulta_informativa_no_dispara_la_alarma(pagina) -> None:
+    """Un aviso de emergencia que aparece siempre deja de leerse."""
+    _preguntar(pagina, "quién puede pedir el subsidio habitacional")
+    assert pagina.locator(".urgente").count() == 0
+
+
 def test_la_pantalla_no_afirma_elegibilidad(pagina) -> None:
     """Prohibido por la especificación, y es lo primero que se lee."""
     encabezado = pagina.inner_text("main")
