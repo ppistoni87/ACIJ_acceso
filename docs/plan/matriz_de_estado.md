@@ -1,0 +1,102 @@
+# Matriz de estado de las 38 historias
+
+Plan integral v1.1 (12/09/2026) · reconciliada el 12/09/2026 contra el código de
+la rama `claude/backend-normativo-user-stories-41z94i`.
+
+El punto 5 de la instrucción de ejecución fija el vocabulario y la regla:
+**NO_INICIADA, EN_CURSO, BLOQUEADA, LISTA_PARA_ACEPTACION, ACEPTADA**, y «una
+historia sólo queda ACEPTADA cuando se cumplen todos sus criterios en el entorno
+requerido». Nada está desplegado en un destino remoto, así que **ninguna historia
+figura ACEPTADA**: lo más avanzado que hay es LISTA_PARA_ACEPTACION, que acá
+significa que los criterios se cumplen con evidencia reproducible en este
+entorno y falta la aceptación formal de quien corresponda.
+
+La línea de base del plan es `1c19c62`. La rama tiene **140 commits** y ese
+commit quedó atrás: la reconciliación de abajo se hace contra el código actual,
+no contra el que el plan inspeccionó. La suite completa está en **1.370 pruebas
+aprobadas y 6 salteadas** sobre PostgreSQL 16 local.
+
+## Cómo leer «EN_CURSO» y «BLOQUEADA»
+
+* **EN_CURSO**: hay código integrado y probado que cubre parte de los criterios,
+  y lo que falta se puede escribir.
+* **BLOQUEADA**: lo que falta **no se resuelve escribiendo código**. Las causas
+  están en `docs/reportes/estado_de_obra.md`: A firma jurídica, B cuenta de
+  nube, D límite del contenedor, E qué cuenta como verificar un directorio.
+
+## Entrega E1 · P-001 a P-024
+
+| # | Historia | Estado | Qué falta, concretamente |
+| --- | --- | --- | --- |
+| P-001 | Línea de base reproducible | EN_CURSO | Este documento es parte del criterio. Falta recalibrar esfuerzos y calendario con las 38 historias y fijar el SHA de referencia nuevo. |
+| P-002 | PostgreSQL persistente en Neon | BLOQUEADA (B, D) | Proyecto Neon del servicio y medición del presupuesto de conexiones con carga real. |
+| P-003 | Esquema y permisos aislados | EN_CURSO | Ninguna prueba corrió contra PostgreSQL 18: el CI usa 16 y Neon sirve 18.6. |
+| P-004 | Originales fuera del contenedor | BLOQUEADA (B) | Bucket privado y su política de retención. |
+| P-005 | Carga reanudable del corpus | BLOQUEADA (D) | Los tres criterios se cumplen local; nunca corrió contra Neon. |
+| P-006 | Adaptadores y fuentes operativas | EN_CURSO | 44 de 85 fuentes sirven. |
+| P-007 | Citas, vigencia y relaciones | LISTA_PARA_ACEPTACION | Las 215 referencias sin resolver son la cola auditable que el criterio pide. |
+| P-008 | Siete dimensiones por norma y beneficio | BLOQUEADA (A) | 135 campos en PENDIENTE, 4 INFORMADO. |
+| P-009 | Circuito de revisión humana | LISTA_PARA_ACEPTACION | Que alguien lo use, y eso es P-010. |
+| P-010 | Expediente jurídico del alcance | BLOQUEADA (A) | La firma. 166 candidatas listas, 109 con condición ejecutable. |
+| P-011 | Cortes completos y reversibles | LISTA_PARA_ACEPTACION | Cerrado el 12/09: un corte nuevo hereda lo que el anterior servía, con su índice semántico, y lo que se reemplaza no viaja (D-127, `tests/integracion/test_corte_completo.py`). Era una de las brechas que el plan v1.1 nombra en §02. |
+| P-012 | Recuperación híbrida trazable | EN_CURSO | Recall@5 híbrido 74,1 % contra un umbral de 90 %. |
+| P-013 | Respuestas con citas y abstención | EN_CURSO | Tres modos, cuatro validadores y abstención tipada; sin proveedor de modelo configurado sólo se sirve extracto (causa B). |
+| P-014 | Condiciones y datos con lógica tipada | BLOQUEADA (A) | El criterio dice «reglas publicadas» y no hay ninguna. |
+| P-015 | Front conversacional | EN_CURSO | Construido y probado con 36 casos E2E en Chromium. Faltan URL de staging (B) y revisión manual de accesibilidad con personas. |
+| P-016 | Backoffice de datos y revisión | LISTA_PARA_ACEPTACION | Nada del criterio. |
+| P-017 | Identidad, privacidad y protección | EN_CURSO | Criterios 1 y 2 cerrados. Falta proveedor de identidad y el modelo de amenazas escrito. |
+| P-018 | Integración continua obligatoria | EN_CURSO | Protección de rama: necesita permisos de administración del repositorio. |
+| P-019 | Desplegar revisión y producción | BLOQUEADA (B) | Sondas listas; no hay destino. |
+| P-020 | Monitoreo y entrega de eventos programados | BLOQUEADA (B) | Scheduler en la nube. |
+| P-021 | Salud, calidad, costos y nivel de servicio | EN_CURSO | Traza por consulta, tablero y límites medidos. Tokens y costo no se registran porque no hay proveedor. |
+| P-022 | Respaldo y restauración | EN_CURSO | Retención de Neon sin decidir; RPO/RTO no medidos contra el plan contratado. |
+| P-023 | Recorrido completo con pruebas independientes | NO_INICIADA | Depende de nueve historias. Faltan 52 consultas para llegar a las 150. |
+| P-024 | Piloto, traspaso y cierre de E1 | NO_INICIADA | Depende de P-023. |
+
+## Entrega E1 · ampliación P-025 a P-032, P-037
+
+| # | Historia | Estado | Qué hay y qué falta |
+| --- | --- | --- | --- |
+| P-025 | Conversación y memoria mínima | NO_INICIADA | **No hay estado de sesión**: cada consulta se resuelve sola y el contexto (jurisdicción, fecha) vive en el navegador. No hay LangGraph, checkpoints, TTL de sesión ni hechos mínimos con procedencia. Es la historia que más habilita al resto. |
+| P-026 | Desambiguar beneficios y reordenar evidencia | EN_CURSO | La búsqueda híbrida existe y está medida, con conjunto congelado. Faltan las fichas comparativas por beneficio y el reranker acotado, que sólo se aprueban con mejora demostrada. |
+| P-027 | Adaptador de modelos actualizado | EN_CURSO | Hay adaptador por variables de entorno (`BN_MODELO_*`) con `httpx`, sin SDK. Faltan registro de modelo/versión/región/límites/costo medido, salida validada por Pydantic y ensayo de reversión. |
+| P-028 | Verificar cada respuesta antes de mostrarla | EN_CURSO | Los validadores comprueban que cada cita exista y pertenezca al corte, y el modo se declara. Falta lo caro: `evidence_ids` por afirmación, criticidad, verificación de respaldo semántico y retención de la afirmación afectada en vez de la respuesta entera. |
+| P-029 | Limpiar y versionar el lenguaje conversacional | EN_CURSO | La humanización está hecha y documentada en las decisiones. Falta el catálogo versionado: ID, situación de uso, texto anterior, texto corregido, variables, responsable y fecha. |
+| P-030 | Orientar desde situaciones y armar próximos pasos | NO_INICIADA | No hay opciones por necesidad ni lista de próximos pasos. Es el punto que quedó pendiente del análisis de Boti como «invertir el orden de la respuesta». |
+| P-031 | Derivar con contexto a atención humana | EN_CURSO | Desde el 12/09 la persona puede pedir hablar con alguien y queda contado (D-125). No hay cola, ni acuse, ni directorio con fecha de verificación: hoy la pantalla dice con todas las letras que no puede comunicar a nadie. |
+| P-032 | Front web conversacional de ACIJ | EN_CURSO | La pantalla ya cumple buena parte de §08.7. Faltan: control «Ver fuentes» plegable por respuesta, «Revisar lo que me contaste» con corrección de hechos, próximos pasos, estados de vencimiento de sesión, y el flujo HTTP/SSE con eventos tipados. |
+| P-037 | Memoria, datos y consentimientos | EN_CURSO | Hay retención de la traza (90 días, purga con rol de administración) y una pantalla que no pide identidad. Falta todo lo que depende de que exista sesión: expiración a 30 minutos, recuperación entre sesiones opcional, consentimientos independientes y revocables. |
+
+## Entrega E2 · P-033 a P-036, P-038
+
+| # | Historia | Estado | Nota |
+| --- | --- | --- | --- |
+| P-033 | Audios y lectura en voz | NO_INICIADA | Depende de P-032 y P-037. |
+| P-034 | Leer documentos sin crear expediente | NO_INICIADA | Depende de P-004 (bloqueada), P-032 y P-037. |
+| P-035 | Novedades voluntarias en el front | NO_INICIADA | Depende de P-020 (bloqueada), P-032 y P-037. |
+| P-036 | Evaluar front, diálogo, voz y adjuntos | NO_INICIADA | 270 casos mínimos y piloto con 12 participantes. |
+| P-038 | Cierre del despliegue de la ampliación | NO_INICIADA | Depende de P-024 y P-036. |
+
+## Recuento
+
+| Estado | E1 base | Ampliación E1 | E2 | Total |
+| --- | --- | --- | --- | --- |
+| LISTA_PARA_ACEPTACION | 4 | 0 | 0 | 4 |
+| EN_CURSO | 10 | 6 | 0 | 16 |
+| BLOQUEADA | 8 | 0 | 0 | 8 |
+| NO_INICIADA | 2 | 3 | 5 | 10 |
+| ACEPTADA | 0 | 0 | 0 | 0 |
+
+## Brechas de §02 del plan, contra el código de hoy
+
+El plan v1.1 nombra seis brechas que «ya deben formar parte de la
+implementación». Estado real:
+
+| Brecha del plan | Estado |
+| --- | --- |
+| Eliminar supuestos de localhost del bootstrap | Pendiente. |
+| Impedir que las pruebas de base se aprueben por omisión | Hecho: sin PostgreSQL la suite falla, y saltearlas exige `BN_PRUEBAS_SIN_BASE=1`, que deja el salteo dicho. |
+| Completar el tratamiento de reglas sin condición | Pendiente, causa A. |
+| Hacer coherente aprobar con la marca de revisión | Hecho en parte: la publicación exige `verificado_en` y la cuarentena lo dice (D-128). Queda que la curación de directorios la escriba, que es la decisión E. |
+| Verificar permisos reales de las funciones de consulta | Hecho: `tests/integracion/test_permisos_de_la_api.py` corre cada ruta pública con `SET ROLE bn_lector_api`. |
+| Probar que un nuevo release conserve las versiones publicadas | Hecho: D-127 y `tests/integracion/test_corte_completo.py`. Era también un riesgo declarado en §12. |

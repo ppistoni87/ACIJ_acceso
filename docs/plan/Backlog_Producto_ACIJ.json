@@ -1,0 +1,1350 @@
+{
+  "schema_version": "1.1",
+  "date": "2026-09-12",
+  "project": "ACIJ Acceso",
+  "repository": "https://github.com/ppistoni87/ACIJ_acceso",
+  "baseline_commit": "1c19c6281d1094cae7fd8189c0b05435e4c6ea11",
+  "purpose": "Plan ampliado de implementación y aceptación del chatbot; no acredita implementación ni despliegue.",
+  "existing_backlog": {
+    "cross_cutting_stories": 40,
+    "source_stories": 83,
+    "manifest_reconciliation_required": true
+  },
+  "estimate_total_person_days": {
+    "min": 131,
+    "max": 219,
+    "contingency_percent": 20
+  },
+  "calendar_estimate_weeks": {
+    "min": 16,
+    "max": 28,
+    "rebaseline_after": "P-001",
+    "basis": "Escenario de planeamiento con tres perfiles técnicos, QA y jurídico en paralelo; depende de integración del front y disponibilidad de revisión y atención."
+  },
+  "stories": [
+    {
+      "id": "P-001",
+      "title": "Consolidar una línea de base reproducible",
+      "epic": "Gobierno",
+      "priority": "P0",
+      "owner_capability": "Integración",
+      "estimate_person_days": {
+        "min": 2,
+        "max": 3
+      },
+      "depends_on": [],
+      "legacy_trace": [
+        "HU-001",
+        "HU-035",
+        "HU-040"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como responsable del producto quiero un inventario conciliado y una rama de integración para saber qué existe y qué falta.",
+      "acceptance": [
+        "Dado el commit 1c19c62 y los cambios locales, al auditar el repositorio se preserva el trabajo y cada cambio queda incluido o descartado con motivo en un PR; no se sobrescribe la rama original.",
+        "Dado el manifiesto de 83 recursos y las incorporaciones posteriores, al conciliar se obtiene un denominador versionado con cada ID, URL, tipo, beneficio, responsable, estado y criterio de cierre.",
+        "Dadas las pruebas existentes, al ejecutar la línea de base se registran commit, entorno, total recogido, aprobadas, fallidas y omitidas; una omisión de integración no se cuenta como aprobación."
+      ],
+      "evidence_required": [
+        "Acta de línea de base",
+        "Inventario versionado",
+        "PR y reporte de pruebas"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-002",
+      "title": "Provisionar PostgreSQL persistente en Neon",
+      "epic": "Datos",
+      "priority": "P0",
+      "owner_capability": "Plataforma / DBA",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-001"
+      ],
+      "legacy_trace": [
+        "HU-002",
+        "HU-037"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como operador quiero una base administrada que conserve el corpus cuando reinicie o reemplace la aplicación.",
+      "acceptance": [
+        "Dada la cuenta Neon conectada, al provisionar se documentan proyecto, región, versión PostgreSQL, ramas de revisión y producción, límites y propietario; las credenciales se guardan fuera de Git.",
+        "Dada una carga controlada, al terminar el proceso y desplegar una instancia nueva se conservan filas, versiones y referencias a originales; la prueba usa la base remota.",
+        "Dadas las conexiones por instancia, al medir con carga se respeta el presupuesto conjunto de pools, jobs y reserva; migraciones y operaciones de sesión usan conexión directa."
+      ],
+      "evidence_required": [
+        "Identificador del proyecto y ramas",
+        "Prueba de persistencia",
+        "Medición de conexiones con límites reales"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-003",
+      "title": "Migrar el esquema y aislar permisos",
+      "epic": "Datos",
+      "priority": "P0",
+      "owner_capability": "Datos SQL",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-002"
+      ],
+      "legacy_trace": [
+        "HU-002",
+        "HU-022",
+        "HU-033"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como mantenedor quiero migraciones versionadas y permisos mínimos para evolucionar el esquema sin exponer datos de revisión.",
+      "acceptance": [
+        "Dada una rama Neon vacía y otra con la versión anterior, al ejecutar Alembic ambas llegan al mismo esquema y alembic check no detecta deriva.",
+        "Dado el rol lector, al intentar modificar tablas o leer cuarentena se recibe denegación; revisor, publicador, ingesta y migrador tienen únicamente los permisos documentados.",
+        "Dadas claves, intervalos temporales y evidencias, al insertar huérfanos, intervalos imposibles o identidades duplicadas se rechazan por restricciones y pruebas sobre PostgreSQL real."
+      ],
+      "evidence_required": [
+        "Migraciones ascendentes y estrategia de reversión",
+        "Diccionario regenerado",
+        "Matriz y pruebas SQL de permisos"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-004",
+      "title": "Conservar originales fuera del contenedor",
+      "epic": "Ingesta",
+      "priority": "P0",
+      "owner_capability": "Ingesta / Plataforma",
+      "estimate_person_days": {
+        "min": 2,
+        "max": 4
+      },
+      "depends_on": [
+        "P-002"
+      ],
+      "legacy_trace": [
+        "HU-004",
+        "HU-007",
+        "HU-037"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como curador quiero recuperar el original exacto de cada afirmación aunque cambie la página o se borre el contenedor.",
+      "acceptance": [
+        "Dado un HTML, PDF o anexo, al capturarlo se guardan bytes, SHA-256, tipo, tamaño, fecha, URL solicitada y final, resultado HTTP y versión del adaptador en almacenamiento persistente.",
+        "Dadas dos capturas iguales y una distinta, al reingestar se deduplican los bytes iguales y se conserva la nueva versión sin sobrescribir la evidencia anterior.",
+        "Dada una referencia a un objeto, al recuperarlo desde otra instancia el hash coincide; si falta o difiere, se abre incidencia y se bloquea su publicación."
+      ],
+      "evidence_required": [
+        "Bucket privado y política de retención",
+        "Manifiesto de hashes",
+        "Prueba de lectura desde una instancia nueva"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-005",
+      "title": "Cargar el corpus de forma reanudable",
+      "epic": "Ingesta",
+      "priority": "P0",
+      "owner_capability": "Ingesta",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-003",
+        "P-004"
+      ],
+      "legacy_trace": [
+        "HU-005",
+        "HU-021",
+        "HU-035"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como operador quiero reconstruir y actualizar el corpus sin eliminar información ya aprobada.",
+      "acceptance": [
+        "Dada una base remota vacía, al ejecutar el bootstrap operativo se aplican migraciones, catálogo, importaciones y curación; el comando no contiene DROP DATABASE ni credenciales locales fijas.",
+        "Dada una interrupción entre lotes, al reanudar se conserva el checkpoint y no se duplican normas, evidencias, reglas o eventos.",
+        "Dadas las filas esperadas por cada importador, al cerrar la corrida se concilian leídas, nuevas, actualizadas, repetidas y rechazadas; cada error tiene causa y evidencia."
+      ],
+      "evidence_required": [
+        "Comando de bootstrap no destructivo",
+        "Reporte por fuente",
+        "Ensayo de interrupción y reanudación"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-006",
+      "title": "Completar adaptadores y fuentes operativas",
+      "epic": "Ingesta",
+      "priority": "P0",
+      "owner_capability": "Scraping / Datos",
+      "estimate_person_days": {
+        "min": 5,
+        "max": 8
+      },
+      "depends_on": [
+        "P-005"
+      ],
+      "legacy_trace": [
+        "HU-006",
+        "HU-007",
+        "HU-019",
+        "HU-020",
+        "HU-026",
+        "HU-027"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como persona que consulta quiero textos, requisitos, montos, plazos y canales provenientes de fuentes oficiales actualizadas.",
+      "acceptance": [
+        "Dada cada fuente del manifiesto, al ejecutarla se cumple su historia individual y se verifica paginación, cobertura de artículos y anexos, contenido esperado y destino SQL; un HTTP 200 no basta.",
+        "Dado un bloqueo, CAPTCHA, URL caída o documento ilegible, se conserva el fallo, se busca una representación oficial permitida y se mantiene la capacidad afectada como pendiente hasta resolverla.",
+        "Dadas las fuentes de montos y calendarios, al cargar se registra período, fecha de verificación y beneficio; un importe histórico nunca reemplaza el actual por ser el último descargado."
+      ],
+      "evidence_required": [
+        "Evidencia de las historias por fuente",
+        "Fixtures de regresión por familia",
+        "Conciliación y registro de bloqueos"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-007",
+      "title": "Resolver citas, vigencia y relaciones",
+      "epic": "Dominio",
+      "priority": "P0",
+      "owner_capability": "Curación / Datos SQL",
+      "estimate_person_days": {
+        "min": 4,
+        "max": 7
+      },
+      "depends_on": [
+        "P-005"
+      ],
+      "legacy_trace": [
+        "HU-009",
+        "HU-010",
+        "HU-023",
+        "HU-024"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como analista jurídico quiero distinguir la norma consultada, sus versiones y las normas que cita para reconstruir su efecto en una fecha.",
+      "acceptance": [
+        "Dadas F33, F19, F23 y F40, al extraer se preserva la identidad de la norma principal y se crean referencias independientes a D01-D06 con artículo, dirección, evidencia y tipo pendiente de confirmar.",
+        "Dadas referencias ambiguas o ciclos, al resolver se conserva cada identidad jurisdiccional, se evita recursión infinita y se mantiene una cola auditable de dependencias sin texto.",
+        "Dadas una modificación, una derogación y dos fechas de consulta, al consultar se devuelve la versión aplicable al período y conocida en ese momento; la fecha de descarga no decide vigencia."
+      ],
+      "evidence_required": [
+        "Seis relaciones iniciales verificadas",
+        "Pruebas históricas y de identidad",
+        "Grafo y pendientes conciliados"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-008",
+      "title": "Completar las siete dimensiones por norma y beneficio",
+      "epic": "Dominio",
+      "priority": "P0",
+      "owner_capability": "Análisis funcional / Curación",
+      "estimate_person_days": {
+        "min": 6,
+        "max": 10
+      },
+      "depends_on": [
+        "P-006",
+        "P-007"
+      ],
+      "legacy_trace": [
+        "HU-011",
+        "HU-012",
+        "HU-013",
+        "HU-015",
+        "HU-017",
+        "HU-018"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como especialista quiero una ficha completa y trazable para explicar a quién alcanza una norma y qué derechos o condiciones establece.",
+      "acceptance": [
+        "Dada una versión y cada beneficio que regula, al cerrar su ficha existen siete dimensiones con valores tipados o estados explícitos; ningún vacío se interpreta como respuesta negativa.",
+        "Dado un valor afirmado, al abrir su evidencia se accede a norma, versión, artículo y fragmento exacto; las salvaguardas de no exclusión se distinguen de la preservación documental.",
+        "Dadas condiciones insuficientes o contradictorias, se registra el límite y se bloquea únicamente la capacidad dependiente; no se fabrican valores para lograr completitud."
+      ],
+      "evidence_required": [
+        "Fichas pobladas",
+        "Matriz dimensión-beneficio-evidencia",
+        "Informe de completitud semántica"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-009",
+      "title": "Operar el circuito de revisión humana",
+      "epic": "Revisión",
+      "priority": "P0",
+      "owner_capability": "Backend / Curación",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-003",
+        "P-008"
+      ],
+      "legacy_trace": [
+        "HU-024",
+        "HU-036"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como revisor quiero comparar cada interpretación con el original y dejar una decisión identificada y fundamentada.",
+      "acceptance": [
+        "Dada una regla candidata, al revisarla se muestran literal, interpretación, condición, dependencias, vigencia y controles; aprobar, rechazar o pedir cambios exige actor autenticado y fundamento.",
+        "Dadas dos revisiones simultáneas, la segunda decisión sobre una versión desactualizada recibe conflicto y no sobrescribe la primera.",
+        "Dada una aprobación, se actualizan coherentemente estado y marca de revisión, se preserva auditoría y la regla todavía no aparece como publicada hasta pasar el corte de publicación."
+      ],
+      "evidence_required": [
+        "API de decisiones",
+        "Auditoría con actor real",
+        "Pruebas de concurrencia y transición"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-010",
+      "title": "Resolver el expediente jurídico del alcance",
+      "epic": "Revisión",
+      "priority": "P0",
+      "owner_capability": "Responsable jurídico",
+      "estimate_person_days": {
+        "min": 6,
+        "max": 10
+      },
+      "depends_on": [
+        "P-009"
+      ],
+      "legacy_trace": [
+        "HU-036"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como responsable jurídico quiero decidir todas las reglas que sostienen el servicio para autorizar su uso con un alcance definido.",
+      "acceptance": [
+        "Dado el expediente inicial de 166 candidatas, al conciliar se confirma el total actual y cada regla queda aprobada, rechazada con reemplazo cuando corresponda, informativa o devuelta a corrección.",
+        "Dadas las 67 reglas inicialmente sin condición ejecutable, se decide cuáles requieren formalización y pruebas, cuáles sólo explican y cuáles no tienen evidencia suficiente; no se aprueban en lote por un agente.",
+        "Dado cada beneficio del alcance público, se firma una matriz de capacidades habilitadas con evidencias y excepciones; una dependencia crítica pendiente impide declarar completa esa capacidad."
+      ],
+      "evidence_required": [
+        "Expediente decidido",
+        "Casos jurídicos positivos y negativos",
+        "Acta HU-036 por beneficio y capacidad"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-011",
+      "title": "Publicar cortes completos y reversibles",
+      "epic": "Publicación",
+      "priority": "P0",
+      "owner_capability": "Datos SQL / Backend",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-007",
+        "P-009"
+      ],
+      "legacy_trace": [
+        "HU-025",
+        "HU-031"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como publicador quiero un corte consistente para que las consultas no mezclen versiones ni pierdan normas sin cambios.",
+      "acceptance": [
+        "Dado un primer corte con A y un segundo que incorpora B, ambos A y B son recuperables en el segundo; el primero conserva su contenido histórico.",
+        "Dada una dependencia no aprobada, obsoleta o en conflicto crítico, al publicar se rechaza la capacidad afectada y no queda un corte parcialmente visible.",
+        "Dado un corte válido, al publicar o volver al anterior cambian de forma atómica el manifiesto, la pertenencia de versiones y los índices de consulta; los originales no se borran."
+      ],
+      "evidence_required": [
+        "Migración de pertenencia release-versiones si corresponde",
+        "Prueba de dos cortes y rollback",
+        "Manifiesto con hash y firma"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-012",
+      "title": "Implementar recuperación híbrida trazable",
+      "epic": "RAG",
+      "priority": "P0",
+      "owner_capability": "RAG / Datos SQL",
+      "estimate_person_days": {
+        "min": 5,
+        "max": 8
+      },
+      "depends_on": [
+        "P-011"
+      ],
+      "legacy_trace": [
+        "HU-031",
+        "HU-032"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como persona que consulta quiero encontrar la evidencia pertinente aunque use palabras distintas de las del texto legal.",
+      "acceptance": [
+        "Dado un corte publicado, se indexan fragmentos por artículo o unidad con versión, jurisdicción, beneficio y vigencia; el embedding conserva modelo, dimensión y hash del texto.",
+        "Dada una consulta, se combinan búsqueda textual y vectorial, se fusionan duplicados y se filtran permisos y temporalidad antes de entregar contexto al modelo.",
+        "Dado el conjunto de evaluación congelado, la recuperación alcanza Recall@5 >= 90% en preguntas respondibles y no recupera como servible contenido candidato o fuera del corte."
+      ],
+      "evidence_required": [
+        "Índices PostgreSQL y pgvector",
+        "Comparación lexical frente a híbrido",
+        "Reporte de Recall@5 segmentado"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-013",
+      "title": "Generar respuestas con citas y abstención",
+      "epic": "RAG",
+      "priority": "P0",
+      "owner_capability": "RAG / Backend",
+      "estimate_person_days": {
+        "min": 4,
+        "max": 7
+      },
+      "depends_on": [
+        "P-012"
+      ],
+      "legacy_trace": [
+        "HU-032"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como persona que consulta quiero una explicación comprensible respaldada por evidencia y una respuesta honesta cuando esa evidencia falta.",
+      "acceptance": [
+        "Dado contexto suficiente, el modelo configurado genera una respuesta estructurada con citas a fragmentos recuperados; se rechazan citas inventadas, enlaces ajenos al contexto y números sin soporte.",
+        "Dadas instrucciones maliciosas en una fuente o en el chat, el modelo no cambia permisos, no ejecuta SQL libre y no trata documentos como instrucciones del sistema.",
+        "Dadas falta de evidencia, caída del proveedor o contexto insuficiente, el chat explica el límite, ofrece una alternativa útil y registra el modo de respuesta; un extracto de respaldo no se presenta como generación activa."
+      ],
+      "evidence_required": [
+        "Proveedor real probado en staging",
+        "Validadores y evaluación de fidelidad",
+        "Pruebas de fallo y prompt injection"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-014",
+      "title": "Evaluar condiciones y datos operativos con lógica tipada",
+      "epic": "Conversación",
+      "priority": "P0",
+      "owner_capability": "Backend / Dominio",
+      "estimate_person_days": {
+        "min": 4,
+        "max": 7
+      },
+      "depends_on": [
+        "P-008",
+        "P-011"
+      ],
+      "legacy_trace": [
+        "HU-014",
+        "HU-016",
+        "HU-018",
+        "HU-029",
+        "HU-030"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como persona que consulta quiero orientación preliminar sobre condiciones, importes y plazos sin que el modelo los improvise.",
+      "acceptance": [
+        "Dadas reglas publicadas y hechos suficientes, el motor obtiene un resultado reproducible con reglas y parámetros usados; el modelo sólo explica el resultado.",
+        "Dado un dato faltante, se pregunta el mínimo necesario y se conserva DESCONOCIDO; no se transforma falta de información en inelegibilidad.",
+        "Dado un monto por fórmula o un plazo hábil, se usa parámetro y calendario vigentes y versionados; si faltan, se abstiene del cálculo y no reutiliza un valor anterior."
+      ],
+      "evidence_required": [
+        "Contratos OpenAPI",
+        "Pruebas de límites, fórmulas y calendarios",
+        "Trazas con reglas y parámetros"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-015",
+      "title": "Completar el front conversacional",
+      "epic": "Experiencia",
+      "priority": "P0",
+      "owner_capability": "Frontend / UX",
+      "estimate_person_days": {
+        "min": 5,
+        "max": 8
+      },
+      "depends_on": [
+        "P-013",
+        "P-014",
+        "P-017"
+      ],
+      "legacy_trace": [
+        "HU-029",
+        "HU-030",
+        "HU-032"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como persona que busca un derecho quiero conversar desde el celular, entender la respuesta y acceder a sus fuentes y próximos pasos.",
+      "acceptance": [
+        "Dada una consulta, se puede seleccionar o aclarar jurisdicción, fecha y beneficio, aportar hechos mínimos, cancelar, reintentar y comenzar de nuevo sin perder el control de la conversación.",
+        "Dada una respuesta, se muestran explicación, fuentes abribles, fecha y estado de información, advertencias pertinentes y canal oficial; errores y abstenciones tienen mensajes comprensibles.",
+        "Dado teclado, lector de pantalla y un ancho de 360 px, el flujo principal mantiene foco, etiquetas, contraste y mensajes accesibles; cerrar sesión borra credenciales y contenido privado visible.",
+        "El acceso ciudadano es el front web conversacional propio de ACIJ; P-032 amplía sus componentes de contexto, fuentes y acciones. El backoffice de revisión tiene un acceso separado."
+      ],
+      "evidence_required": [
+        "URL de staging integrada",
+        "E2E del recorrido ciudadano",
+        "Revisión manual de accesibilidad"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-016",
+      "title": "Completar el backoffice de datos y revisión",
+      "epic": "Experiencia",
+      "priority": "P0",
+      "owner_capability": "Frontend / Curación",
+      "estimate_person_days": {
+        "min": 4,
+        "max": 6
+      },
+      "depends_on": [
+        "P-009",
+        "P-011",
+        "P-017"
+      ],
+      "legacy_trace": [
+        "HU-012",
+        "HU-024",
+        "HU-034",
+        "HU-036"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como curador quiero resolver pendientes y publicar desde una interfaz conectada al mismo corpus que consulta el chat.",
+      "acceptance": [
+        "Dado un rol autorizado, se puede buscar normas, abrir las siete dimensiones, comparar versiones, revisar reglas y dependencias, filtrar pendientes y registrar decisiones con evidencia.",
+        "Dado un publicador, ve el resumen del corte, sus controles y capacidades afectadas antes de confirmar; un revisor sin ese rol no puede publicarlo.",
+        "Dado el tablero de calidad, cada indicador permite abrir los registros que lo componen; los conteos se consultan en la base y no provienen de constantes de demostración."
+      ],
+      "evidence_required": [
+        "URL de backoffice con roles",
+        "E2E revisión-publicación",
+        "Tablero conciliado con SQL"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-017",
+      "title": "Aplicar identidad, privacidad y protección del servicio",
+      "epic": "Seguridad",
+      "priority": "P0",
+      "owner_capability": "Seguridad / Backend",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-003"
+      ],
+      "legacy_trace": [
+        "HU-033"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como responsable del servicio quiero acceso administrativo individual y consultas ciudadanas que recolecten sólo lo necesario.",
+      "acceptance": [
+        "Dado un usuario administrativo, la identidad validada determina los roles y actor auditado; no se acepta un X-Actor libre como identidad de producción y se prueba revocación de sesión.",
+        "Dada una consulta ciudadana, no se exigen DNI, domicilio preciso ni datos de menores identificables; los hechos mínimos y la conversación tienen una política explícita de retención.",
+        "Dado abuso o una sesión no autorizada, se aplican límites y permisos en servidor, secretos fuera del front, protección XSS/CSRF según el mecanismo de sesión y logs sin texto sensible."
+      ],
+      "evidence_required": [
+        "Modelo de amenazas acotado",
+        "Pruebas de autorización y revocación",
+        "Política de datos y retención"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-018",
+      "title": "Hacer obligatoria la integración continua",
+      "epic": "Entrega",
+      "priority": "P0",
+      "owner_capability": "QA / Plataforma",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-001"
+      ],
+      "legacy_trace": [
+        "HU-002",
+        "HU-037",
+        "HU-040"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como integrador quiero pruebas automáticas por cambio para impedir que un repositorio aparente estar sano por controles ejecutados a mano.",
+      "acceptance": [
+        "Dado un push o PR, CI ejecuta Ruff, pruebas unitarias, integración en PostgreSQL, migraciones desde cero, alembic check y construcción del contenedor.",
+        "Dada una base inaccesible, una prueba crítica omitida o un fallo de contrato, el trabajo falla; toda exclusión tiene inventario, motivo y decisión explícita.",
+        "Dado un PR aprobado, los resultados quedan vinculados al SHA y se exigen para integrar en la rama estable; se incorporan E2E y evaluaciones de RAG al existir esos componentes."
+      ],
+      "evidence_required": [
+        "Workflow ejecutado en GitHub",
+        "Checks obligatorios",
+        "Artefactos de resultados por commit"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-019",
+      "title": "Desplegar revisión y producción",
+      "epic": "Entrega",
+      "priority": "P0",
+      "owner_capability": "Plataforma",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-002",
+        "P-004",
+        "P-017",
+        "P-018"
+      ],
+      "legacy_trace": [
+        "HU-037"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como usuario y operador quiero URLs estables con la aplicación y la API funcionando fuera del entorno de desarrollo.",
+      "acceptance": [
+        "Dada una imagen inmutable validada, el pipeline despliega front y API en Cloud Run con secretos por entorno, identidad de servicio y conexión a Neon; la imagen no contiene credenciales.",
+        "Dada una instancia nueva, readiness verifica esquema compatible y conexiones; producción además exige el corte habilitado y las capacidades declaradas; liveness se mantiene separado.",
+        "Dada una versión fallida, se revierte la imagen sin borrar la base y se demuestra compatibilidad de migraciones; la URL HTTPS funciona desde una red externa."
+      ],
+      "evidence_required": [
+        "URLs y revisión desplegada",
+        "Configuración operativa versionada",
+        "Prueba externa y rollback"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-020",
+      "title": "Programar monitoreo y entrega de eventos",
+      "epic": "Operación",
+      "priority": "P0",
+      "owner_capability": "Monitoreo / Plataforma",
+      "estimate_person_days": {
+        "min": 2,
+        "max": 4
+      },
+      "depends_on": [
+        "P-006",
+        "P-019"
+      ],
+      "legacy_trace": [
+        "HU-026",
+        "HU-027",
+        "HU-028"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como operador quiero que las fuentes se revaliden automáticamente y que los cambios lleguen a la cola de revisión.",
+      "acceptance": [
+        "Dado Cloud Scheduler, se dispara cada hora un job que ejecuta bn monitoreo ciclo y respeta la frecuencia individual de cada fuente; invocación y ejecución quedan identificadas.",
+        "Dados dos disparos simultáneos, un bloqueo o lease con vencimiento impide procesamiento duplicado; se prueban tiempo máximo, reintentos acotados y recuperación tras caída.",
+        "Dado un cambio relevante, se propaga impacto a beneficios, reglas e índices, se marca la frescura y se entrega un evento idempotente al consumidor configurado; un evento pendiente no se registra como entregado."
+      ],
+      "evidence_required": [
+        "Scheduler instalado",
+        "Dos ciclos automáticos consecutivos",
+        "Ensayo de solapamiento y entrega de evento"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-021",
+      "title": "Medir salud, calidad, costos y nivel de servicio",
+      "epic": "Operación",
+      "priority": "P0",
+      "owner_capability": "Observabilidad / QA",
+      "estimate_person_days": {
+        "min": 2,
+        "max": 4
+      },
+      "depends_on": [
+        "P-019",
+        "P-020"
+      ],
+      "legacy_trace": [
+        "HU-034",
+        "HU-037"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como responsable operativo quiero detectar fallos y degradaciones antes de que afecten sostenidamente a las consultas.",
+      "acceptance": [
+        "Dado tráfico real o de ensayo, se registran latencia, errores, abstenciones por causa, tokens, costo, recuperación, frescura y conexiones, con request_id y sin conversación sensible en logs.",
+        "Dado un job atrasado, fallo repetido, corte inválido o presupuesto agotado, se genera una alerta hacia el canal operativo previamente configurado y se demuestra su recepción.",
+        "Dado el tablero, se distingue una abstención correcta de una respuesta resuelta; los objetivos técnicos se presentan como mediciones con período, denominador y carga."
+      ],
+      "evidence_required": [
+        "Tablero y alertas probadas",
+        "Panel de gasto y límites",
+        "Runbook de incidentes"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-022",
+      "title": "Respaldar y restaurar base más documentos",
+      "epic": "Operación",
+      "priority": "P0",
+      "owner_capability": "DBA / Plataforma",
+      "estimate_person_days": {
+        "min": 2,
+        "max": 4
+      },
+      "depends_on": [
+        "P-005",
+        "P-019"
+      ],
+      "legacy_trace": [
+        "HU-037"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como responsable del corpus quiero recuperar una versión consistente ante pérdida o corrupción de datos y archivos.",
+      "acceptance": [
+        "Dada la retención configurada y documentada en Neon, se generan respaldos recuperables de base y originales con manifiesto consistente; una rama de desarrollo no se considera copia independiente.",
+        "Dado un ensayo aislado, se restaura a una base nueva y se recuperan los objetos referenciados; coinciden conteos, hashes, permisos, releases y respuestas de control.",
+        "Dados los objetivos iniciales RPO <= 24 h y RTO <= 4 h, se mide el cumplimiento y se registra cada limitación del plan contratado; si no cumple, no pasa el gate operativo."
+      ],
+      "evidence_required": [
+        "Política de respaldo y retención",
+        "Informe de restauración cronometrada",
+        "Hashes y consultas de control"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-023",
+      "title": "Validar el recorrido completo con pruebas independientes",
+      "epic": "Calidad",
+      "priority": "P0",
+      "owner_capability": "QA / Jurídico",
+      "estimate_person_days": {
+        "min": 5,
+        "max": 8
+      },
+      "depends_on": [
+        "P-010",
+        "P-012",
+        "P-013",
+        "P-014",
+        "P-015",
+        "P-016",
+        "P-020",
+        "P-021",
+        "P-022",
+        "P-025",
+        "P-028",
+        "P-029",
+        "P-030",
+        "P-031",
+        "P-032",
+        "P-037"
+      ],
+      "legacy_trace": [
+        "HU-036",
+        "HU-037",
+        "HU-038",
+        "HU-039",
+        "HU-040"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como responsable de calidad quiero demostrar que el servicio funciona con datos reales y resiste errores relevantes.",
+      "acceptance": [
+        "Dado staging, se prueba fuente -> captura -> SQL -> revisión -> publicación -> recuperación -> chat -> cita, y una actualización que invalida o reemplaza la respuesta anterior.",
+        "Dado un conjunto congelado de al menos 150 consultas anotadas, se alcanzan los umbrales de recuperación, fidelidad, no exclusión y utilidad de este plan; los casos no se ajustan para acomodar la salida.",
+        "Dadas 20 conversaciones concurrentes durante 30 minutos y fallos inducidos de proveedor, base y fuente, se verifican latencia, límites, recuperación y ausencia de exposición de datos pendientes.",
+        "La aceptación E1 incluye el front propio P-032, correcciones de hechos, continuidad, lenguaje claro, verificación antes de emitir y derivación con estado real; las capacidades E2 se aceptan en P-036/P-038."
+      ],
+      "evidence_required": [
+        "Reporte de aceptación reproducible",
+        "E2E y evaluación RAG",
+        "Carga y fallos con evidencias"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-024",
+      "title": "Realizar piloto, traspaso y cierre de E1",
+      "epic": "Cierre",
+      "priority": "P0",
+      "owner_capability": "Producto / Operación",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-023"
+      ],
+      "legacy_trace": [
+        "HU-036",
+        "HU-040"
+      ],
+      "status": "PLANIFICADA",
+      "user_story": "Como responsable del proyecto quiero recibir un servicio operable y un alcance explícitamente aceptado, con responsables y evidencia.",
+      "acceptance": [
+        "Dado un piloto con al menos ocho participantes que representen consulta, acompañamiento y revisión, al ejecutar tareas acordadas se documenta comprensión, utilidad, errores y correcciones.",
+        "Dadas las evidencias G0-G5 y los criterios E1 ampliados, producto, jurídico y operación aceptan E1; E2 conserva su backlog y no se declara cerrada hasta P-038/G7.",
+        "Dado el traspaso, otra persona opera una ingesta, revisa una regla, publica un corte, recibe una alerta y restaura usando la documentación; quedan accesos institucionales y responsables de soporte."
+      ],
+      "evidence_required": [
+        "Acta de aceptación",
+        "URL pública o acceso institucional acordado",
+        "Runbook, capacitación y propiedad de cuentas"
+      ],
+      "done": false
+    },
+    {
+      "id": "P-025",
+      "title": "Orquestar conversación y memoria mínima",
+      "epic": "Conversación",
+      "priority": "P0",
+      "owner_capability": "Backend / Diseño conversacional",
+      "estimate_person_days": {
+        "min": 4,
+        "max": 6
+      },
+      "depends_on": [
+        "P-013",
+        "P-014",
+        "P-027",
+        "P-037"
+      ],
+      "legacy_trace": [],
+      "extends": [
+        "P-013",
+        "P-014",
+        "P-015"
+      ],
+      "delivery_stage": "E1",
+      "status": "PLANIFICADA",
+      "user_story": "Como persona que consulta quiero explicar mi situación, corregir datos y retomar el tema sin repetir lo que ya dije.",
+      "acceptance": [
+        "Dado un diálogo con cambios de tema y correcciones, el estado conserva intención, jurisdicción, fecha y hechos mínimos con origen y confirmación; el último dato confirmado reemplaza al anterior e invalida resultados dependientes.",
+        "Dada una conversación incompleta, LangGraph solicita sólo el dato que cambia la orientación y permite no responder, corregir o empezar de nuevo; un dato desconocido nunca se transforma en falso.",
+        "Dadas dos sesiones simultáneas, reintentos, expiración o cancelación, no se mezclan hechos ni se duplica una acción; los checkpoints respetan TTL y permisos, sin historial permanente por defecto."
+      ],
+      "evidence_required": [
+        "Pruebas de diálogo de varios turnos",
+        "Esquema de estado y diagrama ejecutable",
+        "Ensayo de aislamiento y expiración"
+      ],
+      "done": false,
+      "estimate_scope": "Incremento sobre el alcance v1.0; no incluye volver a implementar la capacidad base vinculada."
+    },
+    {
+      "id": "P-026",
+      "title": "Desambiguar beneficios y reordenar evidencia",
+      "epic": "Recuperación",
+      "priority": "P0",
+      "owner_capability": "RAG / Datos",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-012"
+      ],
+      "legacy_trace": [],
+      "extends": [
+        "P-012"
+      ],
+      "delivery_stage": "E1",
+      "status": "PLANIFICADA",
+      "user_story": "Como persona que desconoce el nombre del programa quiero encontrar información pertinente a mi necesidad.",
+      "acceptance": [
+        "Dadas expresiones cotidianas, faltas de ortografía y programas similares, la búsqueda híbrida consulta sólo el corte habilitado y emplea fichas comparativas para diferenciar población, territorio, trámite y período.",
+        "Dada ambigüedad entre candidatos, un reranker o paso LLM acotado mejora el orden o solicita aclaración; nunca selecciona por similitud una jurisdicción, cohorte o versión inaplicable.",
+        "Dado el conjunto congelado, se compara recuperación base y ampliada por dominio, negación, fecha y excepción; se publica calidad, latencia y costo. La aprobación requiere ausencia de regresión crítica y mejora demostrada o simplificación justificada."
+      ],
+      "evidence_required": [
+        "Benchmark comparativo y configuración versionada",
+        "Trazas con candidatos y evidencia",
+        "Pruebas de filtros anteriores y posteriores al ranking"
+      ],
+      "done": false,
+      "estimate_scope": "Incremento sobre el alcance v1.0; no incluye volver a implementar la capacidad base vinculada."
+    },
+    {
+      "id": "P-027",
+      "title": "Incorporar un adaptador de modelos actualizado",
+      "epic": "Modelos",
+      "priority": "P0",
+      "owner_capability": "Backend / RAG",
+      "estimate_person_days": {
+        "min": 2,
+        "max": 4
+      },
+      "depends_on": [
+        "P-001",
+        "P-017"
+      ],
+      "legacy_trace": [],
+      "extends": [
+        "P-013"
+      ],
+      "delivery_stage": "E1",
+      "status": "PLANIFICADA",
+      "user_story": "Como responsable técnico quiero cambiar el modelo sin alterar reglas, contratos ni datos del proyecto.",
+      "acceptance": [
+        "Dado un proveedor habilitado, la configuración registra modelo y versión exacta, capacidades, región, endpoint, límites, política de datos y costo medido; se compara el candidato vigente con una alternativa de menor costo sobre el mismo conjunto.",
+        "Dada una llamada, Responses API o un adaptador equivalente devuelve JSON validado por Pydantic; rechazo del proveedor, timeout o salida truncada se manejan explícitamente y no se muestran como respuesta jurídica.",
+        "Dado un cambio de proveedor/modelo/prompt, las pruebas preceden la promoción; una falla revierte a la versión aprobada o a respuesta estructurada sin generador, sin enviar datos automáticamente a otro proveedor."
+      ],
+      "evidence_required": [
+        "Registro de modelos y decisión de selección",
+        "Pruebas contractuales del adaptador",
+        "Medición de costo y ensayo de reversión"
+      ],
+      "done": false,
+      "estimate_scope": "Incremento sobre el alcance v1.0; no incluye volver a implementar la capacidad base vinculada."
+    },
+    {
+      "id": "P-028",
+      "title": "Verificar cada respuesta antes de mostrarla",
+      "epic": "Evidencia",
+      "priority": "P0",
+      "owner_capability": "Backend / Jurídico / QA",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-013",
+        "P-014",
+        "P-026",
+        "P-027"
+      ],
+      "legacy_trace": [],
+      "extends": [
+        "P-013",
+        "P-014"
+      ],
+      "delivery_stage": "E1",
+      "status": "PLANIFICADA",
+      "user_story": "Como persona que consulta quiero una respuesta clara cuyas afirmaciones estén respaldadas.",
+      "acceptance": [
+        "Dadas afirmaciones sobre requisitos, plazos, importes o derechos, cada una apunta a evidencia del corte y a su localizador; fechas y cálculos provienen de funciones tipadas. Se verifica respaldo semántico además de existencia del enlace.",
+        "Dadas contradicciones, falta de evidencia o citas ajenas al contexto, se retiene la afirmación afectada y se ofrece una aclaración o derivación útil; los datos independientes que sí están habilitados pueden responderse.",
+        "Dado streaming o síntesis de voz, ningún texto sustantivo se emite antes de verificarlo; se pueden emitir estados de progreso sin contenido jurídico. Las instrucciones en documentos, OCR o resultados de herramientas no amplían permisos."
+      ],
+      "evidence_required": [
+        "Contrato de afirmaciones y evidencias",
+        "Casos de cita real pero conclusión incorrecta",
+        "Prueba de bloqueo antes de emisión"
+      ],
+      "done": false,
+      "estimate_scope": "Incremento sobre el alcance v1.0; no incluye volver a implementar la capacidad base vinculada."
+    },
+    {
+      "id": "P-029",
+      "title": "Limpiar y versionar el lenguaje conversacional",
+      "epic": "Lenguaje",
+      "priority": "P0",
+      "owner_capability": "Diseño conversacional / Jurídico",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-015",
+        "P-028"
+      ],
+      "legacy_trace": [],
+      "extends": [
+        "P-015"
+      ],
+      "delivery_stage": "E1",
+      "status": "PLANIFICADA",
+      "user_story": "Como persona con distinta experiencia digital quiero entender qué puedo hacer y cuál es el próximo paso.",
+      "acceptance": [
+        "Dado el inventario de mensajes, cada pieza tiene intención, condición de uso, texto anterior, texto corregido, variables, fuente cuando corresponda, responsable y versión; se eliminan duplicados editoriales sin borrar versiones jurídicas.",
+        "Dado un caso cotidiano, la respuesta utiliza voseo consistente, explicación breve, una pregunta necesaria por turno y ampliación opcional; preserva negaciones, excepciones, cuantías y plazos, sin prometer resultados no acreditados.",
+        "Dada una queja, una situación sensible o baja alfabetización, se adapta el tono y se ensaya comprensión con personas usuarias; nunca se bloquea una consulta legítima sólo por enojo, errores de escritura o vocabulario informal."
+      ],
+      "evidence_required": [
+        "Catálogo antes/después y guía de estilo",
+        "Rúbrica de comprensión y no exclusión",
+        "Pruebas de variables, términos y tono"
+      ],
+      "done": false,
+      "estimate_scope": "Incremento sobre el alcance v1.0; no incluye volver a implementar la capacidad base vinculada."
+    },
+    {
+      "id": "P-030",
+      "title": "Orientar desde situaciones y armar próximos pasos",
+      "epic": "Orientación",
+      "priority": "P0",
+      "owner_capability": "Producto / Backend / Jurídico",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-014",
+        "P-025",
+        "P-028"
+      ],
+      "legacy_trace": [],
+      "extends": [
+        "P-014",
+        "P-015"
+      ],
+      "delivery_stage": "E1",
+      "status": "PLANIFICADA",
+      "user_story": "Como persona que busca ayuda quiero conocer alternativas del corpus y los pasos para avanzar.",
+      "acceptance": [
+        "Dada una necesidad como vivienda, escolaridad o discapacidad, se muestran opciones del alcance con jurisdicción, condiciones y razones de pertinencia; no se presenta el catálogo como exhaustivo ni se infiere información sensible.",
+        "Dada una evaluación, se diferencian condiciones satisfechas, no satisfechas y desconocidas; se revisan excepciones aplicables y vías de subsanación con respaldo antes de comunicar un resultado preliminar desfavorable.",
+        "Dado el resultado, se ofrece una lista de próximos pasos y canales verificados con fecha; un resumen descargable es voluntario, no crea expediente ni equivale a presentar un trámite o garantizar una prestación."
+      ],
+      "evidence_required": [
+        "Casos de orientación por necesidad",
+        "Pruebas ternarias y de alternativas",
+        "Demostración de resumen y canales"
+      ],
+      "done": false,
+      "estimate_scope": "Incremento sobre el alcance v1.0; no incluye volver a implementar la capacidad base vinculada."
+    },
+    {
+      "id": "P-031",
+      "title": "Derivar con contexto a atención humana",
+      "epic": "Atención",
+      "priority": "P0",
+      "owner_capability": "Backend / Operación",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-015",
+        "P-017",
+        "P-025"
+      ],
+      "legacy_trace": [],
+      "extends": [
+        "P-015",
+        "P-016"
+      ],
+      "delivery_stage": "E1",
+      "status": "PLANIFICADA",
+      "user_story": "Como persona que necesita acompañamiento quiero pasar a un equipo disponible sin explicar todo de nuevo.",
+      "acceptance": [
+        "Dada una solicitud de atención, se consulta un directorio con organización, temas, territorio, horarios y fecha de verificación; el chat distingue un canal externo de una cola operativa de ACIJ.",
+        "Dada una cola configurada y la conformidad de la persona, se muestra y confirma el resumen mínimo antes de enviarlo; sólo un acuse real permite decir que la solicitud quedó registrada.",
+        "Dada atención fuera de horario, rechazo o caída del conector, se informa el estado real y una alternativa verificada; no se inventan turnos, SLA ni números de caso. El bot pausa cuando toma la conversación un operador."
+      ],
+      "evidence_required": [
+        "Directorio y acuerdo de operación",
+        "Prueba de acuse, pausa y reanudación",
+        "Pruebas de autorización y fallos"
+      ],
+      "done": false,
+      "estimate_scope": "Incremento sobre el alcance v1.0; no incluye volver a implementar la capacidad base vinculada."
+    },
+    {
+      "id": "P-032",
+      "title": "Diseñar e integrar el front web conversacional de ACIJ",
+      "epic": "Experiencia conversacional",
+      "priority": "P0",
+      "owner_capability": "Frontend / Diseño UX",
+      "estimate_person_days": {
+        "min": 4,
+        "max": 7
+      },
+      "depends_on": [
+        "P-015",
+        "P-025",
+        "P-028",
+        "P-029"
+      ],
+      "legacy_trace": [],
+      "extends": [
+        "P-015"
+      ],
+      "delivery_stage": "E1",
+      "status": "PLANIFICADA",
+      "user_story": "Como persona que busca orientación quiero conversar desde una interfaz web propia de ACIJ, ver las fuentes y corregir mi situación sin salir de la consulta.",
+      "acceptance": [
+        "Dada la entrada desde computadora o celular, la pantalla principal ofrece escritura libre y ejemplos opcionales, sin exigir cuenta ni teléfono. El recorrido funciona a 320 px, con zoom al 200%, teclado y lector de pantalla; los detalles jurídicos y el backoffice no compiten con la conversación.",
+        "Dada una respuesta verificada, el front presenta explicación breve, fuentes abribles con fragmento y fecha, próximos pasos y hechos confirmados que la persona puede corregir. Las opciones sugeridas no impiden escribir libremente; una corrección invalida las conclusiones dependientes y solicita reevaluación al servidor.",
+        "Dados envío, espera, cancelación, reintento, fallo o vencimiento, el front muestra el estado real, conserva el borrador sólo en memoria mientras la página está abierta y evita mensajes duplicados. Una respuesta de una solicitud cancelada no se añade al diálogo; sólo los eventos verificados muestran contenido sustantivo. Nueva consulta borra el estado activo y explica el alcance del borrado."
+      ],
+      "evidence_required": [
+        "Prototipo navegable y contrato de componentes/estados",
+        "Recorrido E2E desde entrada libre hasta fuente y próximos pasos",
+        "Pruebas de móvil, teclado, red lenta, cancelación y corrección"
+      ],
+      "done": false,
+      "estimate_scope": "Incremento sobre el alcance v1.0; no incluye volver a implementar la capacidad base vinculada."
+    },
+    {
+      "id": "P-033",
+      "title": "Comprender audios y ofrecer lectura en voz en la web",
+      "epic": "Accesibilidad",
+      "priority": "P1",
+      "owner_capability": "Backend / UX",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-025",
+        "P-028",
+        "P-029",
+        "P-032",
+        "P-037"
+      ],
+      "legacy_trace": [],
+      "extends": [],
+      "delivery_stage": "E2",
+      "status": "PLANIFICADA",
+      "user_story": "Como persona a quien le cuesta escribir o leer quiero consultar por audio y escuchar una respuesta.",
+      "acceptance": [
+        "Dado un audio permitido, se transcribe mediante un adaptador de voz y se permite confirmar o corregir datos críticos; ruido, acentos, negaciones e importes dudosos no generan una conclusión automática.",
+        "Dada una respuesta ya verificada, la síntesis lee ese mismo contenido y conserva una versión textual con enlaces accesibles; no agrega instrucciones o conclusiones durante la lectura.",
+        "Dadas fallas o archivos excesivos, se ofrece texto y se aplican límites configurables de duración, tamaño y costo. El audio original se elimina según la política del adjunto y nunca se exige biometría de voz."
+      ],
+      "evidence_required": [
+        "Pruebas con ruido y distintas voces",
+        "Comparación texto/voz",
+        "Pruebas de límites y borrado"
+      ],
+      "done": false,
+      "estimate_scope": "Incremento sobre el alcance v1.0; no incluye volver a implementar la capacidad base vinculada."
+    },
+    {
+      "id": "P-034",
+      "title": "Leer documentos aportados desde el front sin crear expediente",
+      "epic": "Documentos",
+      "priority": "P1",
+      "owner_capability": "Backend / Datos / Privacidad",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-004",
+        "P-025",
+        "P-028",
+        "P-032",
+        "P-037"
+      ],
+      "legacy_trace": [],
+      "extends": [],
+      "delivery_stage": "E2",
+      "status": "PLANIFICADA",
+      "user_story": "Como persona que recibió una comunicación quiero entender su contenido y saber qué información necesito verificar.",
+      "acceptance": [
+        "Dado un PDF o imagen permitido, se valida MIME real, tamaño, páginas y contenido activo, se extrae texto/OCR en un entorno acotado y se indica página y fragmento; la lectura del archivo no prueba autenticidad ni vigencia jurídica.",
+        "Dado un documento con nombres, DNI, domicilio o datos de menores, se minimizan o tachan identificadores antes del envío externo; si no puede hacerse con fiabilidad se pide una versión sin esos datos. El archivo no se incorpora al corpus normativo ni a entrenamiento.",
+        "Dada una fecha de resolución o notificación, se distingue texto detectado de hecho confirmado y se solicita el dato que inicia el plazo; sólo el motor tipado, calendario y fuente aprobada permiten calcularlo. No se redacta ni presenta automáticamente un recurso."
+      ],
+      "evidence_required": [
+        "Casos de PDF, foto y OCR dudoso",
+        "Pruebas de separación de corpus y documentos privados",
+        "Ensayo de eliminación y fechas ambiguas"
+      ],
+      "done": false,
+      "estimate_scope": "Incremento sobre el alcance v1.0; no incluye volver a implementar la capacidad base vinculada."
+    },
+    {
+      "id": "P-035",
+      "title": "Mostrar novedades voluntarias dentro del front",
+      "epic": "Novedades web",
+      "priority": "P1",
+      "owner_capability": "Backend / Frontend",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-020",
+        "P-032",
+        "P-037"
+      ],
+      "legacy_trace": [],
+      "extends": [],
+      "delivery_stage": "E2",
+      "status": "PLANIFICADA",
+      "user_story": "Como persona interesada en un tema quiero ver sus novedades aprobadas cuando consulte la web y poder dejar de seguirlo.",
+      "acceptance": [
+        "Dada una selección de temas, el front muestra novedades aprobadas del corpus sin exigir teléfono o correo. Guardar preferencias en este navegador requiere una opción expresa, plazo visible y borrado accesible; consultar un beneficio no activa seguimiento.",
+        "Dado un evento de cambio, sólo una publicación aprobada y pertinente al tema y territorio aparece en la sección Novedades del front, con fuente y fecha. No se infiere que cambió la elegibilidad individual ni se guarda el contenido de la conversación como preferencia.",
+        "Dados actualizaciones, recargas o baja, un identificador estable evita entradas duplicadas y se distinguen disponible, mostrada y abierta sin afirmar lectura efectiva. Las novedades se consultan al abrir la web; esta historia no incluye mensajes externos, correo ni notificaciones push."
+      ],
+      "evidence_required": [
+        "Pruebas de selección, consentimiento y borrado de preferencias",
+        "Evento publicado visible con fuente y fecha",
+        "Ensayo de recarga, duplicados y expiración"
+      ],
+      "done": false,
+      "estimate_scope": "Incremento sobre el alcance v1.0; no incluye volver a implementar la capacidad base vinculada."
+    },
+    {
+      "id": "P-036",
+      "title": "Evaluar el front, el diálogo, la voz y los adjuntos",
+      "epic": "Calidad conversacional",
+      "priority": "P1",
+      "owner_capability": "QA / Jurídico / UX",
+      "estimate_person_days": {
+        "min": 6,
+        "max": 9
+      },
+      "depends_on": [
+        "P-031",
+        "P-032",
+        "P-033",
+        "P-034",
+        "P-035",
+        "P-021"
+      ],
+      "legacy_trace": [],
+      "extends": [
+        "P-023"
+      ],
+      "delivery_stage": "E2",
+      "status": "PLANIFICADA",
+      "user_story": "Como responsable de calidad quiero comprobar las nuevas capacidades con casos independientes y personas usuarias.",
+      "acceptance": [
+        "Dado el conjunto base de 150 consultas, se agregan al menos 120 escenarios: 60 de varios turnos, 20 de interfaz/derivación/novedades, 20 de audio y 20 de documentos. Ajuste y evaluación final permanecen separados y los esperados son revisados por dominio.",
+        "Dada cada modalidad del front, pasan todos los casos críticos de negaciones, no exclusión, jurisdicción, fecha, cita, permiso, consentimiento e identidad; se informa calidad por estrato, latencia p95 y costo por orientación resuelta sin extrapolar resultados del piloto de Boti.",
+        "Dado un piloto de al menos 12 participantes adultos representativos, incluidos acompañantes y distintas habilidades digitales, se observa comprensión y finalización de tareas; se ensayan teclado/lector de pantalla, red lenta y fallas, con todos los defectos críticos corregidos."
+      ],
+      "evidence_required": [
+        "Conjunto mínimo de 270 casos y reporte reproducible",
+        "Pruebas del front por modalidad",
+        "Informe de comprensión con hallazgos"
+      ],
+      "done": false,
+      "estimate_scope": "Incremento sobre el alcance v1.0; no incluye volver a implementar la capacidad base vinculada."
+    },
+    {
+      "id": "P-037",
+      "title": "Controlar memoria, datos y consentimientos",
+      "epic": "Privacidad conversacional",
+      "priority": "P0",
+      "owner_capability": "Seguridad / Backend",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-017"
+      ],
+      "legacy_trace": [],
+      "extends": [
+        "P-017"
+      ],
+      "delivery_stage": "E1",
+      "status": "PLANIFICADA",
+      "user_story": "Como persona que consulta quiero controlar mis datos y saber cuándo se guardan o se comparten.",
+      "acceptance": [
+        "Dada una consulta web, no se exige identidad y el estado mínimo expira tras 30 minutos de inactividad, con máximo de dos horas; cualquier recuperación entre sesiones requiere opción expresa y plazo separado, propuesto inicialmente en siete días.",
+        "Dados checkpoints, adjuntos y proveedores, se prueba eliminación, aislamiento, redacción y política de retención por sistema; los adjuntos originales tienen máximo inicial de 24 horas y no se copian a trazas. La retención contractual del proveedor se explica sin prometer borrado absoluto.",
+        "Dadas acciones de derivar, guardar una conversación, seguir temas o cargar documentos, cada permiso es independiente y revocable; documentos y hechos personales no se usan para aprendizaje ni publicación automática. Las preferencias locales de temas tienen un máximo inicial de siete días y no incluyen el historial ni identificadores personales. La trazabilidad técnica evita contenido identificable innecesario."
+      ],
+      "evidence_required": [
+        "Mapa de datos y tabla de retención",
+        "Pruebas de borrado y acceso cruzado",
+        "Registro de decisiones y consentimientos"
+      ],
+      "done": false,
+      "estimate_scope": "Incremento sobre el alcance v1.0; no incluye volver a implementar la capacidad base vinculada."
+    },
+    {
+      "id": "P-038",
+      "title": "Cerrar el despliegue de la ampliación",
+      "epic": "Cierre ampliado",
+      "priority": "P1",
+      "owner_capability": "Producto / Operación",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "depends_on": [
+        "P-024",
+        "P-036"
+      ],
+      "legacy_trace": [],
+      "extends": [],
+      "delivery_stage": "E2",
+      "status": "PLANIFICADA",
+      "user_story": "Como responsable del proyecto quiero recibir la ampliación funcionando, con responsables, mediciones y una reversión probada.",
+      "acceptance": [
+        "Dadas E1 y E2, se habilitan capacidades del front mediante configuración después de sus pruebas y acuerdos de operación; la disponibilidad de la conversación por texto no acredita voz, documentos, novedades o atención humana.",
+        "Dado un cambio de modelo, prompt, índice o proveedor, se ejecuta evaluación antes de promoción, despliegue gradual y reversión; incidentes preservan evidencia mínima y detienen la capacidad afectada.",
+        "Dado el cierre G7, producto, jurídico y operación aceptan por capacidad las pruebas, costos y datos tratados; se entregan cuentas institucionales y runbook. Una dependencia externa abierta queda visible y no se marca ACEPTADA."
+      ],
+      "evidence_required": [
+        "Acta de aceptación de E2",
+        "Matriz de capacidades y responsables",
+        "Ensayo de reversión y traspaso"
+      ],
+      "done": false,
+      "estimate_scope": "Incremento sobre el alcance v1.0; no incluye volver a implementar la capacidad base vinculada."
+    }
+  ],
+  "document_version": "1.1",
+  "baseline_plan": {
+    "version": "1.0",
+    "date": "2026-09-09",
+    "estimate_total_person_days": {
+      "min": 85,
+      "max": 143,
+      "contingency_percent": 20
+    },
+    "calendar_estimate_weeks": {
+      "min": 12,
+      "max": 20
+    }
+  },
+  "estimate_increment_person_days": {
+    "min": 46,
+    "max": 76
+  },
+  "delivery_stages": [
+    {
+      "id": "E1",
+      "name": "Front web conversacional propio y orientación con evidencia",
+      "closing_story": "P-024"
+    },
+    {
+      "id": "E2",
+      "name": "Audio, documentos y novedades opcionales dentro del front",
+      "closing_story": "P-038"
+    }
+  ],
+  "channel_scope": {
+    "primary": "Front web conversacional propio de ACIJ, adaptable a computadora y celular",
+    "excluded": [
+      "WhatsApp",
+      "SMS",
+      "Mensajería externa",
+      "Notificaciones push"
+    ],
+    "public_access": "Consulta sin cuenta ni teléfono; preferencias persistentes optativas."
+  }
+}
