@@ -37,6 +37,10 @@ VIDA_MAXIMA = dt.timedelta(hours=2)
 # Lo que una conversación puede recordar. El mismo conjunto que el CHECK.
 CLAVES = ("intencion", "jurisdiccion", "fecha", "hechos", "version")
 
+# Lo que acota la orientación, y lo único que se puede anotar o deshacer como
+# contexto. `hechos` y `version` no están: tienen sus propias operaciones.
+CONTEXTO = ("intencion", "jurisdiccion", "fecha")
+
 ORIGENES = ("declarado", "inferido")
 
 
@@ -167,6 +171,7 @@ def confirmar(
     valor=None,
     origen: str = "declarado",
     rehusado: bool = False,
+    texto: str | None = None,
     ahora: dt.datetime | None = None,
 ):
     """Guarda un hecho confirmado y sube la versión del estado.
@@ -182,7 +187,14 @@ def confirmar(
     if sesion is None:
         return None
 
+    # El texto de la norma que se preguntó viaja con el hecho. Sin él, lo único
+    # que quedaría guardado sería la clave interna del campo, y la pantalla que
+    # muestra «lo que me contaste» tendría que mostrar `edad_del_causante` o no
+    # mostrar nada. Es texto público —las palabras de la ley—, no un dato de la
+    # persona.
     hecho = {"en": ahora.isoformat()}
+    if texto:
+        hecho["texto"] = texto
     if rehusado:
         hecho["rehusado"] = True
     else:
@@ -209,6 +221,33 @@ def olvidar(conexion: Connection, sesion_id: uuid.UUID, *, clave: str, ahora=Non
     hechos.pop(clave)
     estado = dict(sesion.estado)
     estado["hechos"] = hechos
+    estado["version"] = sesion.version + 1
+    return _guardar(conexion, sesion_id, estado, ahora)
+
+
+def olvidar_contexto(conexion: Connection, sesion_id: uuid.UUID, *, campo: str, ahora=None):
+    """Saca un dato de contexto. Existe porque `None` en `anotar` significa
+    «no lo toques», y sin esto no habría forma de deshacer una elección.
+
+    Y sin forma de deshacerla, la pantalla podía sacar de la vista el programa
+    elegido mientras el servidor seguía acotando cada consulta a ese programa:
+    un supuesto que sigue actuando después de que la persona lo quitó es peor
+    que uno que nunca se mostró.
+    """
+    if campo not in CONTEXTO:
+        raise SesionInvalida(
+            f"«{campo}» no es algo que la conversación tenga en cuenta. Son "
+            + ", ".join(CONTEXTO)
+            + "."
+        )
+    ahora = ahora or dt.datetime.now(dt.UTC)
+    sesion = leer(conexion, sesion_id, ahora=ahora)
+    if sesion is None:
+        return None
+    if campo not in sesion.estado:
+        return sesion
+    estado = dict(sesion.estado)
+    estado.pop(campo)
     estado["version"] = sesion.version + 1
     return _guardar(conexion, sesion_id, estado, ahora)
 
@@ -288,3 +327,23 @@ def purgar(conexion: Connection, *, ahora: dt.datetime | None = None) -> int:
         {"inactivas": ahora - INACTIVIDAD, "viejas": ahora - VIDA_MAXIMA},
     )
     return resultado.rowcount or 0
+
+
+def valores_declarados(hechos: dict) -> dict:
+    """Lo que el motor de reglas puede evaluar: clave y valor, sin la procedencia.
+
+    Un hecho rehusado no entra. No contestar deja la condición en desconocida,
+    que es exactamente lo que es: si entrara como `None` daría lo mismo, pero
+    entrar explícitamente sería afirmar que se preguntó y no se sabe, y acá se
+    sabe algo distinto —que la persona no quiso decirlo—.
+    """
+    return {
+        clave: dato.get("valor")
+        for clave, dato in (hechos or {}).items()
+        if not dato.get("rehusado")
+    }
+
+
+def rehusados(hechos: dict) -> list[str]:
+    """Los que la persona decidió no contestar. No se vuelven a preguntar."""
+    return [clave for clave, dato in (hechos or {}).items() if dato.get("rehusado")]

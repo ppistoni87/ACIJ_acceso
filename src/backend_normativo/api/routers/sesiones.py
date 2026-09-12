@@ -67,6 +67,10 @@ class Hecho(BaseModel):
     origen: str = Field("declarado", pattern="^(declarado|inferido)$")
     # No contestar no es contestar que no, y el motor de reglas los distingue.
     rehusado: bool = False
+    # Las palabras de la norma sobre las que se contestó. Se guardan para poder
+    # mostrarle a la persona qué fue lo que confirmó: la clave del campo es
+    # interna y no se muestra nunca.
+    texto: str | None = Field(None, max_length=600)
 
 
 @router.post("", status_code=201)
@@ -101,6 +105,27 @@ def anotar_contexto(
     return sesion.a_dict()
 
 
+@router.delete("/{sesion_id}/contexto/{campo}")
+def olvidar_contexto(
+    sesion_id: uuid.UUID, campo: str, conexion: Connection = Depends(conexion_sesion)
+) -> dict:
+    """Deshace una elección: el programa que la persona eligió, la fecha, la
+    jurisdicción. Sin esto, quitarlo de la pantalla lo dejaría actuando por
+    atrás en la próxima consulta."""
+    try:
+        sesion = ses.olvidar_contexto(conexion, sesion_id, campo=campo)
+    except ses.SesionInvalida as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=ErrorRespuesta(codigo=CodigoError.INVALID_REQUEST, detalle=str(exc)).model_dump(
+                mode="json"
+            ),
+        ) from exc
+    if sesion is None:
+        raise _vencida()
+    return sesion.a_dict()
+
+
 @router.put("/{sesion_id}/hechos")
 def confirmar_hecho(
     sesion_id: uuid.UUID, hecho: Hecho, conexion: Connection = Depends(conexion_sesion)
@@ -119,6 +144,7 @@ def confirmar_hecho(
             valor=hecho.valor,
             origen=hecho.origen,
             rehusado=hecho.rehusado,
+            texto=hecho.texto,
         )
     except ses.SesionInvalida as exc:
         raise HTTPException(

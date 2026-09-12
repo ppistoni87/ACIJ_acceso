@@ -3257,3 +3257,112 @@ beneficio; con más de un candidato **no elige**: elegir por cantidad de
 fragmentos sería decidir por parecido cuál de dos programas le corresponde a
 alguien. Y `aclarar` pide **una** pregunta por turno, la primera que el motor
 dejó pendiente: pedir tres datos juntos es lo que hace que la persona abandone.
+
+## D-136 · El nombre del campo no es una pregunta, y hay reglas que no se pueden preguntar
+
+El motor de reglas deja pendientes **nombres de campo**: `edad_del_causante`,
+`titular_reside_en_el_pais`, `percibe_otro_subsidio_habitacional`. El grafo
+tomaba el primero y lo devolvía como «la pregunta del turno». Eso no es una
+pregunta: es la clave interna con la que se guarda la respuesta, y mostrarla
+sería poner el modelo de datos adentro del recorrido ciudadano, que es
+exactamente lo que el plan prohíbe.
+
+**Lo que se pregunta es el texto de la norma.** La condición que quedó sin saber
+tiene sus palabras literales, y esas palabras son la pregunta: «la norma dice
+esto; ¿pasa en tu caso?». La persona contesta sobre lo que la norma exige, ve de
+dónde sale la pregunta, y la clave viaja escondida para poder guardar lo que
+conteste. Hay una prueba que falla si la clave se pinta en pantalla.
+
+**La forma de contestar sale del árbol de la regla, no de una lista escrita a
+mano.** `is_true` se contesta con sí o no, `in` con una de las opciones que la
+norma enumera, `compare` con un número en la unidad que la regla usa. Un
+operador que no esté previsto no inventa un control: se deja sin preguntar.
+
+### La regla que pide dos cosas en una oración
+
+Al ejercerlo contra el corpus real apareció el problema que rompe la pantalla si
+no se lo trata. La AUH tiene esta condición:
+
+> b. Acreditar la identidad del o de la titular del beneficio y de la niña, del
+> niño, adolescente y/o persona con discapacidad.
+
+Son **dos** datos adentro de una sola oración. Preguntando de a un campo por
+turno, la pantalla mostraba el mismo texto dos veces seguidas y le pedía a la
+persona que contestara cosas distintas leyendo exactamente lo mismo, sin ninguna
+forma de saber cuál le estaban preguntando. Se probó y se vio: dos vueltas
+consecutivas con el texto idéntico.
+
+**Decisión: antes que preguntar mal, no se pregunta.** Sólo se pregunta un campo
+cuya regla no nombre ningún otro. Los demás quedan como desconocidos —que es lo
+que son— y la pantalla **dice cuántos son y por qué**: «hay N requisitos que no
+te puedo preguntar todavía; el texto pide varias cosas en una misma oración y no
+tengo forma de saber cuál te estaría preguntando». Callarlos dejaría a la
+persona creyendo que contestó todo lo que había que contestar.
+
+**Qué cuesta esto, medido.** De 93 reglas ejecutables publicadas, 62 nombran un
+solo campo y se pueden preguntar; 31 no. Dos tercios del corpus quedan
+preguntables y el tercio restante queda declarado, no escondido.
+
+**Lo que falta para levantarlo no es de esta pantalla.** Hace falta un rótulo
+por hoja del árbol, tomado de la norma, y eso se cura: es una carencia del
+corpus, no del frente. Queda anotada como tal.
+
+## D-137 · El frente usa la conversación, y la promesa de la pantalla cambió
+
+La pantalla decía, en la portada: «Nada de lo que escribas se guarda, y al salir
+se borra todo». Dejó de ser cierto en cuanto la conversación empezó a recordar
+los datos que la persona confirma. Una promesa de privacidad incumplida es peor
+que no haberla hecho, así que la frase se cambió en el mismo cambio que la
+volvió falsa —no en el siguiente—, y dice las tres cosas que la hacen
+verificable: **qué** se guarda (lo que la persona confirma cuando el sistema le
+pregunta algo puntual, nunca sus mensajes), **por cuánto** (media hora sin usar
+la conversación, dos horas de vida máxima) y **cómo se borra** (a la vista, dato
+por dato, o entera con un botón). Hay una prueba que falla si la frase vieja
+vuelve.
+
+**La conversación se abre en el primer envío, no al cargar la página.** Alguien
+que entra, lee y se va no deja nada abierto en ningún lado. Y el identificador
+vive **sólo en memoria**: no va a `localStorage` ni a una cookie, así que
+recargar empieza de cero aunque la sesión siga viva del lado del servidor hasta
+que vence. Una pantalla compartida es el caso normal, no el raro.
+
+**Sin conversación no hay orientación, y no es una limitación técnica.** La
+orientación se sostiene en hechos que la persona confirma; sin dónde guardarlos,
+la pregunta no tendría a dónde volver. La consulta se contesta igual con la
+evidencia: lo que no hay es a quién preguntarle. El grafo tiene esa bifurcación
+explícita y así tampoco se paga una transacción de escritura por cada consulta
+anónima.
+
+**«Revisar lo que me contaste» está siempre a la vista, no en el hilo.** Es
+estado actual, no un mensaje; un estado que hay que buscar scrolleando hacia
+arriba es un estado que la persona no controla. Cada dato muestra qué se
+contestó, sobre qué texto de la norma, y si lo dijo ella o lo dedujo el sistema.
+
+**Corregir es volver a preguntar, no editar el valor a ciegas.** La forma de la
+respuesta —sí o no, un número, una de varias opciones— la sabe la regla, no la
+pantalla. Al corregir se saca el dato y la pregunta vuelve como era. Adivinar la
+forma a partir del valor guardado habría funcionado para los sí/no y habría
+mentido para todo lo demás.
+
+**Una respuesta calculada con un dato que después cambió se marca, no se
+borra.** Borrarla dejaría a la persona sin saber que lo que leyó ya no vale;
+dejarla igual la dejaría creyendo que sigue valiendo. Se atenúa y se le pone
+encima el aviso. Es para lo que existe la versión del estado de P-025.
+
+**Cuando la consulta toca más de un programa, elige la persona.** El grafo se
+niega a elegir por cantidad de fragmentos parecidos, y hasta acá eso terminaba
+en «no puedo orientarte». Ahora la pantalla ofrece los nombres y la elección
+queda guardada en la conversación, así no se vuelve a adivinar en cada mensaje.
+Se muestran los **nombres**, no los códigos: `AR.AUH` es cómo lo llamamos
+nosotros.
+
+**Un resultado sin frase se dibuja como un párrafo vacío.** Faltaba la de
+`REQUIERE_DATOS`, que es el resultado más frecuente, y se leía como si el
+sistema no tuviera nada que decir sobre el caso. Hay una prueba que recorre el
+enumerado del motor y falla si a la pantalla le falta alguno.
+
+**Lo desconocido sigue pesando más que lo negativo, y ahora se ve.** Con una
+condición confirmada como que no se cumple y otra todavía sin saber, el
+resultado es «me falta un dato», no «no cumplís». Es del motor y está bien:
+decirle «no» a alguien es lo más dañino que este sistema puede hacer, y no lo
+dice mientras le falte algo por saber. La pantalla lo dice con esas palabras.

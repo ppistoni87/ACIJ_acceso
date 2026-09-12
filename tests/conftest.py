@@ -7,6 +7,7 @@ las ejecutaría.
 
 from __future__ import annotations
 
+import contextlib
 import os
 import uuid
 from collections.abc import Iterator
@@ -211,6 +212,7 @@ def cliente_api(engine_pruebas: Engine, conexion: Connection):
     from backend_normativo.api.dependencias import conexion_administracion, conexion_lectura
     from backend_normativo.api.limites import VARIABLE_LIMITE, reiniciar_limitadores
     from backend_normativo.api.routers.devoluciones import conexion_devolucion
+    from backend_normativo.api.routers.recuperacion import abrir_conversacion
     from backend_normativo.api.routers.sesiones import conexion_sesion
 
     # El límite de consultas queda desactivado para el resto de la suite, a
@@ -233,6 +235,11 @@ def cliente_api(engine_pruebas: Engine, conexion: Connection):
     # corresponde, en `test_permisos_de_la_api.py`, con el rol de verdad.
     app.dependency_overrides[conexion_devolucion] = lambda: conexion
     app.dependency_overrides[conexion_sesion] = lambda: conexion
+    # `/v1/respuestas` abre la conversación en su propia transacción. Atada acá
+    # a la conexión del caso, la consulta ve la sesión que la prueba abrió.
+    app.dependency_overrides[abrir_conversacion] = lambda: (
+        lambda: contextlib.nullcontext(conexion)
+    )
     try:
         with TestClient(app) as cliente:
             yield cliente

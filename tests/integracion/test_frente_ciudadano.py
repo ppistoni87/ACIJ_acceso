@@ -266,3 +266,49 @@ def test_la_pantalla_tiene_un_solo_lugar_para_escribir(cliente_api) -> None:
     # Ni un campo de texto suelto: el único `input` que hay es el de fecha, que
     # se crea desde el guion cuando alguien pide ver qué decía la norma antes.
     assert '<input type="text"' not in html
+
+
+def test_la_pantalla_tiene_texto_para_todo_lo_que_el_motor_puede_contestar(cliente_api) -> None:
+    """Un resultado sin frase se dibuja como un párrafo vacío.
+
+    Y un párrafo vacío arriba de una lista de condiciones se lee como si el
+    sistema no tuviera nada que decir sobre el caso, cuando en realidad lo que
+    pasó es que nadie escribió la frase. Pasó con `REQUIERE_DATOS`, que es
+    justamente el resultado más frecuente. Esto lo agarra antes.
+    """
+    from backend_normativo.reglas.evaluacion import ResultadoBeneficio
+
+    pantalla = cliente_api.get("/consulta").text
+    bloque = pantalla.split("const RESULTADOS = {", 1)[1].split("};", 1)[0]
+    faltan = [r.value for r in ResultadoBeneficio if r.value + ":" not in bloque]
+    assert not faltan, f"la pantalla no sabe cómo decir estos resultados: {faltan}"
+
+
+def test_la_pantalla_no_muestra_el_nombre_interno_de_ningun_campo(cliente_api) -> None:
+    """La clave con la que se guarda un hecho no es una pregunta.
+
+    `edad_del_causante` es el modelo de datos. Lo que se muestra es el texto de
+    la norma; la clave viaja para poder guardar la respuesta y nunca se pinta.
+    """
+    pantalla = cliente_api.get("/consulta").text
+    # Las dos formas en que se escaparía: pintarla en el repaso o en la pregunta.
+    assert "pregunta.campo" in pantalla, "la clave se usa para guardar, eso sí"
+    for escape in ("textContent = pregunta.campo", "esc(pregunta.campo)", "esc(clave)"):
+        assert escape not in pantalla, f"«{escape}» pondría el modelo de datos en pantalla"
+
+
+def test_la_pantalla_dice_que_guarda_lo_que_la_persona_confirma(cliente_api) -> None:
+    """La promesa vieja dejó de ser cierta y la pantalla tuvo que cambiarla.
+
+    Decía «nada de lo que escribas se guarda». Desde que la conversación
+    recuerda los datos confirmados, eso sería mentira, y una promesa de
+    privacidad incumplida es peor que no haberla hecho.
+    """
+    pantalla = cliente_api.get("/consulta").text
+    assert "Nada de lo que escribas se guarda" not in pantalla
+    assert "Tus mensajes no se guardan" in pantalla
+    # Y dice las tres cosas que hacen que la promesa se pueda verificar: qué se
+    # guarda, por cuánto y cómo se borra.
+    assert "confirmes" in pantalla
+    assert "media hora" in pantalla and "dos horas" in pantalla
+    assert "Borrar estos datos" in pantalla

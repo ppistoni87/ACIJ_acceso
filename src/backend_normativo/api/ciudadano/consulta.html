@@ -244,6 +244,71 @@ textarea#pregunta{
 .estado[hidden]{display:none}
 .pie{margin:8px 2px 0; font-size:.78rem; color:var(--tinta-3)}
 
+/* --- orientación: lo que las reglas dicen con lo que la persona contó ------ */
+.orienta{
+  border:1px solid var(--linea); border-radius:12px; padding:14px 16px; margin:16px 0 0;
+  background:var(--papel-2);
+}
+.orienta h3{margin:0 0 4px}
+.orienta .programa{font-weight:600; color:var(--tinta); display:block; margin:0 0 8px}
+.orienta ul{margin:4px 0 12px; padding:0 0 0 1.1em; font-size:.93rem; color:var(--tinta-2)}
+.orienta li{margin:0 0 5px}
+.orienta .grupo{margin:0 0 10px}
+.orienta .grupo:last-child{margin-bottom:0}
+.orienta .rotulo{
+  font-size:.8rem; text-transform:uppercase; letter-spacing:.05em; color:var(--tinta-3);
+  font-weight:600; display:block; margin:0 0 3px;
+}
+.orienta .r-cumple{color:var(--ok)}
+.orienta .r-no{color:var(--sello)}
+.orienta .r-falta{color:var(--espera)}
+
+/* La pregunta: una por vez, con el texto de la norma arriba y el control abajo. */
+.pregunta{
+  border:1px solid var(--linea-fuerte); border-radius:12px; padding:14px 16px; margin:16px 0 0;
+  background:var(--papel-2);
+}
+.pregunta .dice{
+  margin:0 0 10px; padding-left:12px; border-left:3px solid var(--linea-fuerte);
+  color:var(--tinta-2); font-size:.94rem;
+}
+.pregunta .enunciado{font-weight:600; margin:0 0 10px}
+.pregunta input[type=number],.pregunta input[type=date]{
+  font:inherit; padding:8px 10px; border:1px solid var(--linea-fuerte); border-radius:8px;
+  background:var(--papel); color:var(--tinta); max-width:220px;
+}
+.pregunta .unidad{color:var(--tinta-3); font-size:.9rem; margin-left:8px}
+
+/* Lo que la persona confirmó. Vive a la vista y se puede corregir o sacar. */
+.repaso{
+  max-width:720px; margin:0 auto; width:100%;
+  border:1px solid var(--linea); border-radius:12px; padding:12px 14px;
+  background:var(--papel-3);
+  /* Con muchos datos confirmados el panel no puede empujar el cuadro de
+     escribir fuera de la pantalla: se desplaza él. */
+  max-height:34vh; overflow-y:auto;
+}
+.repaso[hidden]{display:none}
+.repaso h3{margin:0 0 6px}
+.repaso ol{margin:0; padding:0; list-style:none}
+.repaso li{
+  display:flex; flex-wrap:wrap; gap:8px; align-items:baseline;
+  padding:8px 0; border-top:1px solid var(--linea);
+}
+.repaso li:first-child{border-top:none}
+.repaso .dicho{flex:1 1 240px; font-size:.92rem}
+.repaso .valor{font-weight:600}
+.repaso .origen{font-size:.8rem; color:var(--tinta-3); display:block}
+.repaso .ficha-btn{padding:4px 10px; font-size:.83rem; border-radius:999px}
+
+/* Una respuesta que se calculó con un dato que después se corrigió. No se
+   borra: se marca. Borrarla dejaría a la persona sin saber que cambió. */
+.msj.reemplazada .burbuja{opacity:.55}
+.reemplazo{
+  border-left:3px solid var(--espera); padding:6px 0 6px 12px; margin:0 0 10px;
+  font-size:.89rem; color:var(--tinta-2);
+}
+
 .bienvenida{margin:0 0 4px}
 .bienvenida h2{font-size:1.5rem; font-weight:600; letter-spacing:-.02em; margin:0 0 10px;
   text-wrap:balance}
@@ -270,6 +335,17 @@ textarea#pregunta{
   <div class="fichas" id="contexto-fichas"></div>
 </div>
 
+<!-- Lo que la persona confirmó, siempre a la vista y siempre corregible. No es
+     un mensaje del hilo: es el estado actual, y un estado que hay que buscar
+     scrolleando hacia arriba es un estado que la persona no controla. -->
+<section class="repaso" id="repaso" aria-labelledby="repaso-titulo" hidden>
+  <h3 id="repaso-titulo">Revisar lo que me contaste</h3>
+  <ol id="repaso-lista"></ol>
+  <div class="fichas">
+    <button type="button" class="ficha-btn" id="borrar-conversacion">Borrar estos datos</button>
+  </div>
+</section>
+
 <form class="compositor" id="consulta" novalidate>
   <div class="marco">
     <div class="caja">
@@ -284,6 +360,7 @@ textarea#pregunta{
     <p class="estado" id="estado" role="status" aria-live="polite" hidden></p>
     <p class="pie" id="pie-compositor">
       Enter envía · Shift+Enter hace un renglón nuevo. No hace falta tu nombre ni tu documento.
+      Tus mensajes no se guardan; lo que confirmes, sí, y lo podés borrar.
     </p>
   </div>
 </form>
@@ -341,7 +418,8 @@ let cobertura = [];         // qué normas cubre el corte publicado
 // Lo que el sistema está teniendo en cuenta. Vive a la vista y se puede quitar:
 // un chat que arrastra supuestos sin mostrarlos es donde estos sistemas empiezan
 // a mentir. Acá no hay nada inferido que la persona no pueda ver y borrar.
-const contexto = {jurisdiccion:null, jurisdiccionNombre:null, fecha:null};
+const contexto = {jurisdiccion:null, jurisdiccionNombre:null, fecha:null,
+                  programa:null, programaNombre:null};
 let jurisdicciones = [];
 
 function mostrarEstado(texto, ocupado){
@@ -671,6 +749,7 @@ function bloqueDeCierre(requestId, canales){
 }
 
 function responderEnElHilo(cuerpo, canales, requestId){
+  const orientacion = cuerpo.orientacion;
   const modo = cuerpo.modo || "ERROR";
   const marca = nMensajes + 1;
   const titulo = (MODOS[modo] || ["Respuesta", "", ""])[0];
@@ -710,6 +789,19 @@ function responderEnElHilo(cuerpo, canales, requestId){
   html += fichaDeDatos(cuerpo);
 
   const nodo = agregarMensaje("suyo", "ACIJ Acceso", html, true);
+  // Después de la evidencia y antes de las sugerencias: primero de dónde sale,
+  // después qué significa para su caso. Al revés se lee como un veredicto con
+  // las fuentes de adorno abajo.
+  if(orientacion){
+    const bloque = bloqueOrientacion(orientacion);
+    if(bloque){
+      nodo.classList.add("con-orientacion");
+      nodo.querySelector(".burbuja").appendChild(bloque);
+    }
+    if(orientacion.pregunta){
+      nodo.querySelector(".burbuja").appendChild(cajaDePregunta(orientacion.pregunta));
+    }
+  }
   nodo.appendChild(sugerenciasDeSeguimiento());
   // Al final de todo: primero lo que la persona puede seguir preguntando, y
   // recién después la pregunta por la respuesta que acaba de leer.
@@ -736,6 +828,13 @@ function pintarContexto(){
   if(contexto.fecha){
     puestas.push(["fecha", "Fecha: " + fechaLegible(contexto.fecha)]);
   }
+  // El programa que la persona eligió cuando la consulta tocaba varios. Va acá
+  // y no escondido en la sesión: un supuesto que el sistema arrastra sin
+  // mostrarlo es donde estos sistemas empiezan a mentir. Se muestra el nombre;
+  // el código es nuestro y no se pinta.
+  if(contexto.programa){
+    puestas.push(["programa", "Programa: " + contexto.programaNombre]);
+  }
   $("contexto").hidden = puestas.length === 0;
   puestas.forEach(function(par){
     const b = document.createElement("button");
@@ -744,8 +843,14 @@ function pintarContexto(){
     b.innerHTML = esc(par[1]) + '<span class="quitar" aria-hidden="true">×</span>';
     b.setAttribute("aria-label", "Dejar de tener en cuenta " + par[1]);
     b.addEventListener("click", function(){
-      if(par[0] === "jurisdiccion"){ contexto.jurisdiccion = null; contexto.jurisdiccionNombre = null; }
-      else { contexto.fecha = null; }
+      if(par[0] === "jurisdiccion"){
+        contexto.jurisdiccion = null; contexto.jurisdiccionNombre = null;
+      }else if(par[0] === "programa"){
+        contexto.programa = null; contexto.programaNombre = null;
+        // Sacarlo de la pantalla sin sacarlo de la conversación lo dejaría
+        // actuando por atrás en la próxima consulta.
+        if(sesion) olvidarPrograma();
+      }else{ contexto.fecha = null; }
       pintarContexto();
       mostrarEstado("Listo, ya no lo tengo en cuenta.");
     });
@@ -760,6 +865,376 @@ function chip(texto, alPulsar){
   b.textContent = texto;
   b.addEventListener("click", alPulsar);
   return b;
+}
+
+// --- la conversación: lo que se guarda, y que se pueda corregir --------------
+//
+// Hasta acá la pantalla no guardaba nada y lo decía. Ahora guarda lo que la
+// persona **confirma** —no lo que escribe— y también lo dice, con el plazo y
+// con el botón para borrarlo. El identificador de la conversación vive sólo en
+// memoria: no va a `localStorage` ni a una cookie, así que recargar la página
+// empieza de cero aunque la sesión del servidor siga viva hasta que vence.
+let sesion = null;              // {sesion_id, vence_en, version, hechos, intencion}
+
+async function abrirSesion(){
+  if(sesion) return sesion;
+  try{
+    const r = await fetch("/v1/sesiones", {method:"POST", headers:{"Accept":"application/json"}});
+    if(!r.ok) return null;
+    sesion = await r.json();
+    pintarRepaso();
+    return sesion;
+  }catch(_){
+    // Sin conversación se puede consultar igual: lo que no hay es orientación.
+    return null;
+  }
+}
+
+function cerrarSesion(){
+  sesion = null;
+  // El programa elegido vivía en la conversación: sin conversación no sigue
+  // elegido. Dejarlo en la franja de contexto sería mostrar como vigente algo
+  // que el servidor ya no tiene.
+  contexto.programa = null;
+  contexto.programaNombre = null;
+  pintarContexto();
+  pintarRepaso();
+}
+
+// La sesión venció mientras la persona miraba la pantalla. No se resucita ni se
+// abre otra por atrás: se dice, y la próxima consulta empieza una nueva.
+function avisarVencida(){
+  cerrarSesion();
+  // Lo que está en pantalla se calculó con datos que ya no existen. Igual que
+  // al borrarlos a mano: se marca, no se esconde.
+  marcarReemplazadas();
+  agregarMensaje("suyo", "ACIJ Acceso",
+    '<h2 tabindex="-1">Se cerró la conversación</h2>' +
+    "<p>Pasó media hora sin que la usaras, o ya llevaba dos horas abierta. Borré lo que " +
+    "habías confirmado, que era el trato. Lo que leíste sigue en pantalla hasta que cierres " +
+    "o borres; si querés seguir, escribime de nuevo y arrancamos otra.</p>", true);
+}
+
+// Usa la conversación abierta; **no abre una**. Abrirla es cosa de mandar un
+// mensaje. Si esto la abriera, apretar un botón de una respuesta vieja después
+// de que la conversación venció arrancaría otra sin que la persona lo pida, y
+// guardaría ahí un dato que contestó en otra.
+async function conSesion(hacer){
+  if(!sesion){
+    mostrarEstado("Esa conversación ya se cerró. Escribime de nuevo y arrancamos otra.");
+    return null;
+  }
+  try{
+    const r = await hacer(sesion.sesion_id);
+    if(r.status === 404){ avisarVencida(); return null; }
+    if(!r.ok) return null;
+    if(r.status === 204) return null;
+    sesion = await r.json();
+    pintarRepaso();
+    return sesion;
+  }catch(_){ return null; }
+}
+
+function ponerHecho(datos){
+  return conSesion(function(id){
+    return fetch("/v1/sesiones/" + encodeURIComponent(id) + "/hechos", {
+      method:"PUT",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body: JSON.stringify(datos)
+    });
+  });
+}
+
+function guardarHecho(clave, valor, texto){
+  return ponerHecho({clave: clave, valor: valor, origen: "declarado", texto: texto || null});
+}
+
+function rehusarHecho(clave, texto){
+  return ponerHecho({clave: clave, rehusado: true, texto: texto || null});
+}
+
+function olvidarHecho(clave){
+  return conSesion(function(id){
+    return fetch("/v1/sesiones/" + encodeURIComponent(id) + "/hechos/" + encodeURIComponent(clave),
+      {method:"DELETE", headers:{"Accept":"application/json"}});
+  });
+}
+
+function elegirBeneficio(codigo){
+  return conSesion(function(id){
+    return fetch("/v1/sesiones/" + encodeURIComponent(id) + "/contexto", {
+      method:"PATCH",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body: JSON.stringify({intencion: codigo})
+    });
+  });
+}
+
+// Deshacer la elección tiene ruta propia: mandar `null` al PATCH significaría
+// «no lo toques», y el programa seguiría acotando cada consulta después de que
+// la persona lo sacó de la pantalla.
+function olvidarPrograma(){
+  return conSesion(function(id){
+    return fetch("/v1/sesiones/" + encodeURIComponent(id) + "/contexto/intencion",
+      {method:"DELETE", headers:{"Accept":"application/json"}});
+  });
+}
+
+// Devuelve si el servidor confirmó el borrado. Importa: la pantalla promete
+// que se borra en el momento, y si no se pudo hay que decirlo en vez de dejar
+// a la persona creyendo que sí.
+async function borrarConversacion(){
+  if(!sesion) return true;
+  const id = sesion.sesion_id;
+  cerrarSesion();
+  try{
+    const r = await fetch("/v1/sesiones/" + encodeURIComponent(id), {method:"DELETE"});
+    return r.ok;
+  }catch(_){ return false; }
+}
+
+// Borra lo confirmado y deja el hilo. No es lo mismo que «Salir y borrar», que
+// además limpia la pantalla: alguien puede querer sacar sus datos y seguir
+// leyendo lo que ya le contestaron. Lo que se leyó queda marcado como
+// reemplazado, porque se calculó con datos que ya no están.
+async function borrarLosDatos(){
+  if(!sesion){ mostrarEstado("No hay nada confirmado para borrar."); return; }
+  const listo = await borrarConversacion();
+  marcarReemplazadas();
+  mostrarEstado(listo
+    ? "Listo, borré lo que habías confirmado. Lo de arriba se calculó con eso, así que ya no vale."
+    : "No pude confirmar el borrado en el servidor. Se borra solo a la media hora sin usarlo.");
+}
+
+// --- lo que la persona confirmó ---------------------------------------------
+// Los valores que la norma enumera vienen en mayúsculas y con guiones bajos:
+// son su vocabulario, no una etiqueta para leer.
+function opcionLegible(valor){
+  const limpio = String(valor).replace(/_/g, " ").toLowerCase();
+  return limpio.charAt(0).toUpperCase() + limpio.slice(1);
+}
+
+function valorLegible(dato){
+  if(dato.rehusado) return "Preferiste no contestar";
+  const v = dato.valor;
+  if(v === true) return "Sí";
+  if(v === false) return "No";
+  if(v === null || v === undefined) return "Sin dato";
+  if(typeof v === "number") return String(v);
+  return opcionLegible(v);
+}
+
+function pintarRepaso(){
+  const caja = $("repaso");
+  const lista = $("repaso-lista");
+  const hechos = (sesion && sesion.hechos) || {};
+  const claves = Object.keys(hechos);
+  caja.hidden = claves.length === 0;
+  lista.innerHTML = "";
+  claves.forEach(function(clave){
+    const dato = hechos[clave];
+    const li = document.createElement("li");
+    const dicho = document.createElement("div");
+    dicho.className = "dicho";
+    // Lo que se muestra es el texto de la norma. La clave del campo es interna
+    // y no aparece nunca: es el modelo de datos, no algo que alguien preguntó.
+    dicho.innerHTML = '<span class="valor">' + esc(valorLegible(dato)) + "</span> — " +
+      esc(dato.texto || "un dato que confirmaste") +
+      '<span class="origen">' +
+      (dato.origen === "inferido" ? "lo deduje yo, no me lo dijiste" : "me lo dijiste vos") +
+      "</span>";
+    li.appendChild(dicho);
+    // Corregir es volver a preguntar, no editar el valor a ciegas: la forma de
+    // la respuesta —sí o no, un número, una de varias opciones— la sabe la
+    // regla, no esta pantalla. Se saca el dato y la pregunta vuelve como era.
+    li.appendChild(chip(dato.rehusado ? "Contestarlo ahora" : "Cambiar", async function(){
+      await olvidarHecho(clave);
+      marcarReemplazadas();
+      mostrarEstado("Lo saqué y te lo vuelvo a preguntar.");
+      if(ultimoEnvio) consultar(ultimoEnvio);
+    }));
+    lista.appendChild(li);
+  });
+}
+
+// Una respuesta calculada con un dato que después cambió no se borra: se marca.
+// Borrarla dejaría a la persona sin saber que lo que leyó ya no vale; dejarla
+// como estaba la dejaría creyendo que sigue valiendo.
+function marcarReemplazadas(){
+  document.querySelectorAll(".msj.con-orientacion:not(.reemplazada)").forEach(function(nodo){
+    nodo.classList.add("reemplazada");
+    // Y sus controles dejan de andar. Un botón que sigue contestando adentro de
+    // un bloque marcado como «esto ya no vale» vuelve a escribir el dato viejo.
+    nodo.querySelectorAll(".pregunta button, .pregunta input").forEach(function(control){
+      control.disabled = true;
+    });
+    const nota = document.createElement("p");
+    nota.className = "reemplazo";
+    nota.textContent = "Cambiaste un dato después de esto. Lo de acá arriba se calculó con el " +
+      "anterior, así que ya no vale: mirá la respuesta de más abajo.";
+    nodo.querySelector(".burbuja").prepend(nota);
+  });
+}
+
+// --- orientación: lo que las reglas dicen con lo que la persona contó -------
+//
+// Cada palabra de acá está elegida para que no se lea como una decisión. No hay
+// «te corresponde», no hay «no te corresponde», no hay «cumplís los
+// requisitos». Hay condiciones, y en qué estado quedó cada una con lo que la
+// persona dijo hasta ahora.
+const RESULTADOS = {
+  POTENCIALMENTE_APLICABLE:
+    "Con lo que me contaste, no encontré nada en las normas que te deje afuera. " +
+    "Eso no es un sí: el organismo mira cosas que yo no veo.",
+  NO_CUMPLE_REGLA_EXPLICITA:
+    "Con lo que me contaste, hay una condición escrita en la norma que no se cumple. " +
+    "Eso no es un no: si te parece que el dato quedó mal cargado, cambialo acá abajo, " +
+    "y de todas formas quien decide es el organismo.",
+  REQUIERE_DATOS:
+    "Con lo que me contaste todavía me falta saber algo para poder decirte cómo va. " +
+    "Si aparece una condición marcada como que no se cumple, ojo: no la leas como un no, " +
+    "porque mientras quede algo sin saber esto no dice ni que sí ni que no.",
+  REQUIERE_REVISION:
+    "Con lo que me contaste no me alcanza para decir nada firme: parte de lo que la norma " +
+    "exige todavía no lo tengo escrito de una forma que pueda evaluar."
+};
+
+const MOTIVOS = {
+  sin_fragmentos: "No encontré textos publicados sobre esto, así que no tengo condiciones que mirar.",
+  sin_beneficio: "Los textos que encontré no cuelgan de ningún programa que tenga publicado.",
+  sin_reglas: "Tengo el programa publicado, pero todavía no tengo sus condiciones cargadas como para revisarlas una por una."
+};
+
+function listaDeCondiciones(rotulo, clase, condiciones){
+  if(!condiciones || !condiciones.length) return "";
+  let html = '<div class="grupo"><span class="rotulo ' + clase + '">' + esc(rotulo) + "</span><ul>";
+  condiciones.forEach(function(c){
+    html += "<li>" + esc(c.texto_literal) +
+      (c.alcance ? ' <span class="origen">(' + esc(c.alcance) + ")</span>" : "") + "</li>";
+  });
+  return html + "</ul></div>";
+}
+
+// Cuando la consulta toca más de un programa, el sistema no elige: pregunta.
+// Elegir por cantidad de párrafos parecidos sería decidir por la persona cuál
+// de dos programas es el suyo.
+function cajaDeEleccion(candidatos){
+  const caja = document.createElement("div");
+  caja.className = "pregunta";
+  const p = document.createElement("p");
+  p.className = "enunciado";
+  p.textContent = "Encontré textos de más de un programa. No elijo yo cuál es el tuyo: " +
+    "¿sobre cuál querés que mire las condiciones?";
+  caja.appendChild(p);
+  const fichas = document.createElement("div");
+  fichas.className = "fichas";
+  candidatos.forEach(function(c){
+    fichas.appendChild(chip(c.nombre, async function(){
+      await elegirBeneficio(c.codigo);
+      contexto.programa = c.codigo;
+      contexto.programaNombre = c.nombre;
+      pintarContexto();
+      mostrarEstado("Listo, miro ese.");
+      if(ultimoEnvio) consultar(ultimoEnvio);
+    }));
+  });
+  caja.appendChild(fichas);
+  return caja;
+}
+
+// La pregunta: el texto de la norma arriba, el control abajo, y siempre la
+// salida de no contestar. Una sola por vez.
+function cajaDePregunta(pregunta){
+  const caja = document.createElement("div");
+  caja.className = "pregunta";
+
+  if(pregunta.texto_literal){
+    const dice = document.createElement("p");
+    dice.className = "dice";
+    dice.textContent = "La norma dice: «" + pregunta.texto_literal + "»";
+    caja.appendChild(dice);
+  }
+  const enunciado = document.createElement("p");
+  enunciado.className = "enunciado";
+  enunciado.textContent = pregunta.forma === "si_no"
+    ? "¿Eso pasa en tu caso?"
+    : (pregunta.forma === "opciones" ? "¿Cuál de estas es la tuya?" : "¿Qué valor te corresponde ahí?");
+  caja.appendChild(enunciado);
+
+  const guardar = async function(valor){
+    await guardarHecho(pregunta.campo, valor, pregunta.texto_literal);
+    marcarReemplazadas();
+    if(ultimoEnvio) consultar(ultimoEnvio);
+  };
+
+  const fichas = document.createElement("div");
+  fichas.className = "fichas";
+  if(pregunta.forma === "si_no"){
+    fichas.appendChild(chip("Sí", function(){ guardar(true); }));
+    fichas.appendChild(chip("No", function(){ guardar(false); }));
+  }else if(pregunta.forma === "opciones"){
+    (pregunta.opciones || []).forEach(function(op){
+      fichas.appendChild(chip(opcionLegible(op), function(){ guardar(op); }));
+    });
+  }else{
+    const campo = document.createElement("input");
+    campo.type = pregunta.forma === "fecha" ? "date" : "number";
+    campo.id = "respuesta-" + Math.random().toString(36).slice(2, 8);
+    campo.setAttribute("aria-label", "Tu respuesta");
+    caja.appendChild(campo);
+    if(pregunta.unidad){
+      const u = document.createElement("span");
+      u.className = "unidad";
+      u.textContent = "en " + pregunta.unidad;
+      caja.appendChild(u);
+    }
+    fichas.appendChild(chip("Guardar", function(){
+      if(campo.value === "") return;
+      guardar(pregunta.forma === "fecha" ? campo.value : Number(campo.value));
+    }));
+  }
+  // No contestar es una respuesta, y una que el sistema respeta: la condición
+  // queda desconocida —no en contra— y no se vuelve a preguntar.
+  fichas.appendChild(chip("Prefiero no contestar", async function(){
+    await rehusarHecho(pregunta.campo, pregunta.texto_literal);
+    if(ultimoEnvio) consultar(ultimoEnvio);
+  }));
+  caja.appendChild(fichas);
+  return caja;
+}
+
+function bloqueOrientacion(o){
+  const caja = document.createElement("div");
+  caja.className = "orienta";
+
+  if(!o.resultado){
+    if(o.motivo_sin_evaluar === "varios_beneficios" && (o.candidatos || []).length){
+      return cajaDeEleccion(o.candidatos);
+    }
+    const p = document.createElement("p");
+    p.textContent = MOTIVOS[o.motivo_sin_evaluar] || "";
+    if(!p.textContent) return null;
+    caja.innerHTML = "<h3>Por qué no puedo mirar las condiciones</h3>";
+    caja.appendChild(p);
+    return caja;
+  }
+
+  let html = "<h3>Cómo va tu caso contra lo que pide la norma</h3>" +
+    '<span class="programa">' + esc(o.beneficio || "") + "</span>" +
+    "<p>" + esc(RESULTADOS[o.resultado] || "") + "</p>";
+  html += listaDeCondiciones("Se cumple con lo que me contaste", "r-cumple", o.condiciones_cumplidas);
+  html += listaDeCondiciones("No se cumple con lo que me contaste", "r-no", o.condiciones_no_cumplidas);
+  html += listaDeCondiciones("Todavía no lo sé", "r-falta", o.condiciones_desconocidas);
+  html += listaDeCondiciones("A tener en cuenta igual", "r-falta", o.salvaguardas);
+  if(o.sin_preguntar > 0){
+    html += '<div class="alerta"><b>Hay ' + o.sin_preguntar + " requisito(s) que no te puedo " +
+      "preguntar todavía.</b>El texto de la norma pide varias cosas en una misma oración y no " +
+      "tengo forma de saber cuál te estaría preguntando. Prefiero no preguntar mal: quedan " +
+      "como desconocidos y por eso la orientación es incompleta.</div>";
+  }
+  html += '<p class="ayuda">' + esc(o.aclaracion || "") + "</p>";
+  caja.innerHTML = html;
+  return caja;
 }
 
 function sugerenciasDeSeguimiento(){
@@ -787,6 +1262,13 @@ function pedirJurisdiccion(caja){
       contexto.jurisdiccion = j.id;
       contexto.jurisdiccionNombre = j.nombre;
       pintarContexto();
+      if(sesion) conSesion(function(id){
+        return fetch("/v1/sesiones/" + encodeURIComponent(id) + "/contexto", {
+          method:"PATCH",
+          headers:{"Content-Type":"application/json","Accept":"application/json"},
+          body: JSON.stringify({jurisdiccion: j.id})
+        });
+      });
       if(ultimoEnvio) consultar({texto: ultimoEnvio.texto});
     }));
   });
@@ -808,6 +1290,13 @@ function pedirFecha(caja){
     if(!campo.value) return;
     contexto.fecha = campo.value;
     pintarContexto();
+    if(sesion) conSesion(function(id){
+      return fetch("/v1/sesiones/" + encodeURIComponent(id) + "/contexto", {
+        method:"PATCH",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body: JSON.stringify({fecha: campo.value})
+      });
+    });
     if(ultimoEnvio) consultar({texto: ultimoEnvio.texto});
   });
   caja.appendChild(etiqueta);
@@ -831,8 +1320,19 @@ function saludar(){
     "dónde sale cada cosa, para que puedas llevárselo a quien te atienda.</p>" +
     '<div class="alerta aviso-privacidad"><b>Esto no decide si te corresponde.</b>' +
     "No te lo doy ni te lo niego: eso lo resuelve el organismo. Y no necesito tu nombre, tu " +
-    "documento, tu dirección exacta ni datos de otra persona. Nada de lo que escribas se " +
-    "guarda, y al salir se borra todo.</div>" +
+    "documento, tu dirección exacta ni datos de otra persona.</div>" +
+    // Antes esta pantalla prometía «nada de lo que escribas se guarda». Dejó de
+    // ser cierto en cuanto la conversación empezó a recordar los datos que la
+    // persona confirma, y una promesa de privacidad que no se cumple es peor
+    // que no haberla hecho. Lo que se guarda, por cuánto tiempo y cómo se borra
+    // se dicen acá, en la portada, y no en un enlace al pie.
+    '<div class="alerta aviso-privacidad"><b>Qué se guarda y por cuánto.</b>' +
+    "Tus mensajes no se guardan. Sí se guardan los datos que <b>confirmes</b> cuando yo te " +
+    "pregunte algo puntual —por ejemplo, si tenés un hijo a cargo—, para no volver a " +
+    "preguntártelos y para poder mirar las condiciones de la norma con eso. Los vas a ver " +
+    "listados en pantalla, los podés cambiar o sacar cuando quieras, y se borran solos a la " +
+    "media hora sin usar la conversación, o a las dos horas de empezada. «Borrar estos datos» los saca en el " +
+    "momento, y «Salir y borrar» borra además todo lo que está en pantalla.</div>" +
     bloqueCobertura(cobertura) +
     "</div>";
   $("resultado").appendChild(nodo);
@@ -918,6 +1418,10 @@ async function consultar(envio){
 
   const cuerpo = {consulta: envio.texto, limite: 5};
   if(contexto.jurisdiccion) cuerpo.jurisdiccion = contexto.jurisdiccion;
+  // La conversación se abre en el primer envío y no antes: alguien que entra,
+  // lee y se va no deja nada abierto en ningún lado.
+  const abierta = await abrirSesion();
+  if(abierta) cuerpo.sesion_id = abierta.sesion_id;
   const ruta = "/v1/respuestas" +
     (contexto.fecha ? "?as_of=" + encodeURIComponent(contexto.fecha) : "");
 
@@ -942,6 +1446,12 @@ async function consultar(envio){
       return;
     }
     const datos = await r.json();
+    if(datos.sesion_vencida){
+      // El servidor ya la borró. Se dice acá y no se abre otra a escondidas.
+      sacarPensando();
+      avisarVencida();
+      return;
+    }
     if(datos.cobertura && datos.cobertura.length) cobertura = datos.cobertura;
     const canales = await buscarCanales(contexto.jurisdiccion, peticion.signal);
     sacarPensando();
@@ -995,6 +1505,16 @@ function ajustarAlto(){
 // pantalla compartida es el caso normal, no el raro.
 function borrarTodo(mensaje, saludarDeNuevo){
   if(peticion) peticion.abort();
+  // La pantalla se limpia ya, sin esperar a nadie: quien aprieta «salir» suele
+  // tener a alguien al lado. El borrado en el servidor sale en paralelo y, si
+  // falla, se dice; lo que no se hace es dejar la conversación a la vista
+  // mientras se espera una respuesta de red.
+  borrarConversacion().then(function(listo){
+    if(!listo){
+      mostrarEstado("Limpié la pantalla, pero no pude confirmar el borrado en el servidor. " +
+        "Lo que habías confirmado se borra solo a la media hora sin usarlo.");
+    }
+  });
   $("resultado").innerHTML = "";
   $("pregunta").value = "";
   ajustarAlto();
@@ -1004,6 +1524,8 @@ function borrarTodo(mensaje, saludarDeNuevo){
   contexto.jurisdiccion = null;
   contexto.jurisdiccionNombre = null;
   contexto.fecha = null;
+  contexto.programa = null;
+  contexto.programaNombre = null;
   pintarContexto();
   try{ sessionStorage.clear(); localStorage.clear(); }catch(_){}
   mostrarEstado(mensaje || "");
@@ -1040,6 +1562,7 @@ document.addEventListener("DOMContentLoaded", async function(){
   $("limpiar").addEventListener("click", function(){
     borrarTodo("", true);
   });
+  $("borrar-conversacion").addEventListener("click", borrarLosDatos);
   $("salir").addEventListener("click", function(){
     borrarTodo("Listo. Borré la conversación y todo lo que habías escrito.", false);
   });

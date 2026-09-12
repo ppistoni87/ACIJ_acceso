@@ -31,10 +31,11 @@ actualiza es la forma más barata de mentir sin querer.
 | G4 | Backoffice, cierre jurídico, scheduler, alertas, restauración | Abierto |
 | G5 | Evaluación independiente, piloto, traspaso | Abierto |
 
-## Las cinco causas
+## Las seis causas
 
-Los pendientes no son un problema distinto cada uno. Hoy **ninguna de las cinco
-causas se resuelve escribiendo código**: la que lo era se agotó.
+Los pendientes no son un problema distinto cada uno. Hoy **ninguna de las seis
+causas se resuelve escribiendo código**: cinco esperan una decisión o un permiso
+y la sexta espera curación.
 
 **A · Falta una firma jurídica. Cerrada por decisión, no por firma.** El
 12/09/2026 Pedro Pistoni decidió que el proyecto no va a contar con un
@@ -76,6 +77,17 @@ llegan a la pantalla de alguien que esta noche no tiene dónde dormir. Afecta a
 todo el corpus operativo y, por dependencia, a P-023 y P-024. Hasta la
 publicación de este informe la causa estaba oculta: `bn publicacion estado`
 contaba los 14.390 como publicables y con los ocho gates en verde (D-128).
+
+**F · Las reglas no tienen un rótulo por dato, y por eso un tercio no se puede
+preguntar.** El árbol de una regla nombra los datos que necesita —`edad`,
+`identidad_titular`— pero el único texto en castellano que hay es el de la regla
+entera. Cuando una regla pide dos cosas en la misma oración («acreditar la
+identidad del o de la titular **y** de la niña, del niño…»), la pantalla no
+tiene forma de preguntar por una sola: mostraría el mismo texto dos veces y le
+pediría a la persona que adivine cuál le están preguntando. Decisión tomada: no
+se pregunta, se declara cuántas quedaron y por qué (D-136). De 93 reglas
+ejecutables publicadas, **62 se pueden preguntar y 31 no**. Levantarlo es
+trabajo de curación —un rótulo por hoja, tomado de la norma—, no del frente.
 
 ## Historia por historia
 

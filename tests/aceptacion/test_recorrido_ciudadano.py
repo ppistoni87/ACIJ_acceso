@@ -70,8 +70,9 @@ def base_e2e() -> str:
     motor = create_engine(_url_e2e(), future=True)
     with motor.begin() as conexion:
         conexion.execute(text("SET CONSTRAINTS ALL IMMEDIATE"))
-        publicar_corpus(conexion, construir_corpus(conexion))
+        corpus = publicar_corpus(conexion, construir_corpus(conexion))
         _punto_de_atencion_publicado(conexion)
+        _beneficio_con_reglas_publicado(conexion, corpus)
     motor.dispose()
 
     yield _url_e2e()
@@ -126,6 +127,90 @@ def _punto_de_atencion_publicado(conexion) -> None:
     Publicador(conexion).publicar(
         actor="publicador:recorrido", motivo="Un lugar de atención en el corte."
     )
+
+
+# El texto que la persona va a ver como pregunta. Es el de la norma, palabra por
+# palabra: la pantalla no lo reescribe.
+CONDICION_PREGUNTABLE = (
+    "Son beneficiarios las personas en situación de vulnerabilidad habitacional."
+)
+CONDICION_DE_DOS_COSAS = (
+    "Acreditar la identidad de la persona titular y la del grupo conviviente."
+)
+
+
+def _beneficio_con_reglas_publicado(conexion, corpus) -> None:
+    """Un beneficio publicado con condiciones evaluables, para el recorrido.
+
+    Sin esto el recorrido nunca llega a la parte que orienta: la consulta
+    contesta con evidencia y ahí se termina. Van dos reglas a propósito, una que
+    se puede preguntar —nombra un solo dato— y otra que no, porque pide dos
+    cosas en la misma oración; la segunda es la que prueba que la pantalla
+    prefiere declarar que no puede preguntar antes que preguntar mal.
+    """
+    import json
+
+    beneficio = conexion.execute(
+        text(
+            "INSERT INTO beneficios (codigo, nombre, linea, familia) "
+            "VALUES ('AR.RECORRIDO', 'Apoyo habitacional', 'SUBSIDIO', 'HABITACIONAL') "
+            "RETURNING id"
+        )
+    ).scalar_one()
+    version = conexion.execute(
+        text(
+            "INSERT INTO registro_versiones (entidad_tipo, entidad_id, numero_version, "
+            " estado_revision, valid_tipo, valid_desde, release_id, verificado_en) "
+            "SELECT 'beneficio', :b, 1, 'PUBLISHED', 'ABIERTO_FIN', DATE '2025-12-23', "
+            "       rv.release_id, now() "
+            "  FROM registro_versiones rv WHERE rv.id = :rv RETURNING id"
+        ),
+        {"b": beneficio, "rv": corpus.registro_version_id},
+    ).scalar_one()
+    conexion.execute(
+        text(
+            "INSERT INTO beneficio_versiones (registro_version_id, beneficio_id, "
+            " jurisdiccion_id, naturaleza, descripcion) "
+            "VALUES (:rv, :b, 'AR-C', 'PRESTACION_MONETARIA', "
+            " 'Prestación económica mensual para el recorrido.')"
+        ),
+        {"rv": version, "b": beneficio},
+    )
+    evidencia = conexion.execute(text("SELECT id FROM evidencias LIMIT 1")).scalar_one()
+    conexion.execute(
+        text(
+            "INSERT INTO beneficio_normas (beneficio_version_id, norma_version_id, rol, "
+            " evidencia_id) VALUES (:bv, :nv, 'CREA', :e)"
+        ),
+        {"bv": version, "nv": corpus.registro_version_id, "e": evidencia},
+    )
+    for literal, ast in (
+        (
+            CONDICION_PREGUNTABLE,
+            {"op": "is_true", "field": "vulnerabilidad_habitacional", "schema_version": "1.0"},
+        ),
+        (
+            CONDICION_DE_DOS_COSAS,
+            {
+                "op": "all",
+                "schema_version": "1.0",
+                "args": [
+                    {"op": "is_true", "field": "identidad_titular", "schema_version": "1.0"},
+                    {"op": "is_true", "field": "identidad_grupo", "schema_version": "1.0"},
+                ],
+            },
+        ),
+    ):
+        conexion.execute(
+            text(
+                "INSERT INTO reglas (beneficio_version_id, evidencia_id, categoria, "
+                " texto_literal, descripcion, ast, ast_schema_version, requiere_revision, "
+                " estado_revision) "
+                "VALUES (:bv, :e, 'APLICABILIDAD', :l, 'Condición del recorrido.', "
+                " CAST(:a AS jsonb), '1.0', false, 'APPROVED')"
+            ),
+            {"bv": version, "e": evidencia, "l": literal, "a": json.dumps(ast)},
+        )
 
 
 @pytest.fixture(scope="module")
@@ -778,3 +863,230 @@ def test_una_oficina_con_horario_no_se_ofrece_como_canal_de_emergencia(pagina) -
         assert inventado not in texto
     # Y el lugar sigue estando donde corresponde: más abajo, como lo que es.
     assert "Sede Comunal de prueba" in pagina.inner_text(".canal")
+
+
+# --- P-025 / P-032 / P-037: la conversación recuerda, y se puede corregir -----
+#
+# Esta parte del recorrido es la que puede hacer daño de verdad. No porque se
+# rompa, sino porque puede quedarse con datos que la persona no sabe que dio,
+# mostrarle una conclusión calculada con un dato que ya corrigió, o preguntarle
+# el nombre de un campo de una tabla. Los casos de acá miran eso.
+
+
+def _orientar(pagina) -> None:
+    """Llegar hasta donde la pantalla mira las condiciones del programa."""
+    _preguntar(pagina, "vulnerabilidad habitacional")
+    pagina.wait_for_selector(".pregunta", timeout=20_000)
+
+
+def _contestar(pagina, boton: str) -> str:
+    """Contestar la pregunta y devolver la orientación **nueva**, en minúsculas.
+
+    Contestar dispara otra consulta, así que hay que esperar a que llegue: leer
+    el último mensaje enseguida devuelve el «buscando en las normas».
+    """
+    cuantas = pagina.locator(".msj.suyo.con-orientacion").count()
+    pagina.locator(".pregunta").last.get_by_text(boton, exact=True).click()
+    pagina.wait_for_function(
+        "n => document.querySelectorAll('.msj.suyo.con-orientacion').length > n",
+        arg=cuantas,
+        timeout=20_000,
+    )
+    # En minúsculas: los rótulos de los grupos se pintan en mayúsculas por CSS y
+    # `inner_text` devuelve lo que se ve, no lo que dice el HTML. Esa diferencia
+    # es de estilo, no de contenido, y una prueba no debería atarse a ella.
+    return pagina.locator(".msj.suyo.con-orientacion").last.inner_text().lower()
+
+
+def test_la_portada_dice_que_se_guarda_lo_que_se_confirma(pagina) -> None:
+    """Antes prometía que no se guardaba nada. Dejó de ser cierto.
+
+    Una promesa de privacidad incumplida es peor que no haberla hecho, así que
+    la portada dice las tres cosas que la hacen verificable: qué se guarda, por
+    cuánto tiempo y cómo se borra.
+    """
+    apertura = pagina.inner_text(".bienvenida")
+    assert "Nada de lo que escribas se guarda" not in apertura
+    assert "mensajes no se guardan" in apertura.lower()
+    assert "confirmes" in apertura.lower()
+    assert "media hora" in apertura and "dos horas" in apertura
+
+
+def test_antes_de_confirmar_nada_no_hay_nada_que_revisar(pagina) -> None:
+    """El repaso no está vacío en pantalla: no está."""
+    assert pagina.locator("#repaso").is_hidden()
+    _preguntar(pagina, "una consulta cualquiera")
+    assert pagina.locator("#repaso").is_hidden()
+
+
+def test_la_pregunta_usa_las_palabras_de_la_norma_y_no_el_nombre_del_campo(pagina) -> None:
+    _orientar(pagina)
+    caja = pagina.inner_text(".pregunta")
+
+    assert CONDICION_PREGUNTABLE in caja
+    # El nombre interno del dato no aparece en ningún lado de la pantalla.
+    assert "vulnerabilidad_habitacional" not in pagina.inner_text("body")
+    # Y siempre está la salida de no contestar: no contestar es una respuesta.
+    assert "Prefiero no contestar" in caja
+
+
+def test_lo_que_se_confirma_queda_a_la_vista_y_dice_quien_lo_dijo(pagina) -> None:
+    _orientar(pagina)
+    _contestar(pagina, "Sí")
+
+    repaso = pagina.inner_text("#repaso")
+    assert "Sí" in repaso
+    assert CONDICION_PREGUNTABLE in repaso
+    assert "me lo dijiste vos" in repaso
+    assert "vulnerabilidad_habitacional" not in repaso
+
+
+def test_la_condicion_confirmada_pasa_a_cumplida_y_no_se_vuelve_a_preguntar(pagina) -> None:
+    _orientar(pagina)
+    orientacion = _contestar(pagina, "Sí")
+
+    assert "se cumple con lo que me contaste" in orientacion
+    assert CONDICION_PREGUNTABLE.lower() in orientacion
+
+
+def test_cambiar_un_dato_marca_como_reemplazado_lo_que_se_calculo_con_el_viejo(pagina) -> None:
+    """Dos conclusiones distintas conviviendo en la misma pantalla es lo peor
+    que puede pasar acá: la persona se lleva la que le convenga o la que vio
+    primero, y ninguna de las dos tiene por qué ser la que vale."""
+    _orientar(pagina)
+    _contestar(pagina, "Sí")
+
+    pagina.locator("#repaso").get_by_text("Cambiar", exact=True).click()
+    pagina.wait_for_selector(".msj.reemplazada", timeout=20_000)
+
+    assert "ya no vale" in pagina.inner_text(".reemplazo")
+    # Y el dato volvió a preguntarse, con la misma forma de antes.
+    pagina.wait_for_selector(".pregunta", timeout=20_000)
+    assert CONDICION_PREGUNTABLE in pagina.locator(".pregunta").last.inner_text()
+
+
+def test_rehusar_no_se_lee_como_una_negativa_y_no_se_insiste(pagina) -> None:
+    """No contestar no es contestar que no, y la diferencia decide un derecho."""
+    _orientar(pagina)
+    ultima = _contestar(pagina, "Prefiero no contestar")
+
+    assert "Preferiste no contestar" in pagina.inner_text("#repaso")
+    assert "no se cumple con lo que me contaste" not in ultima
+    assert "todavía no lo sé" in ultima
+
+
+def test_se_declara_lo_que_no_se_puede_preguntar_en_vez_de_callarlo(pagina) -> None:
+    """Callarlo dejaría a la persona creyendo que contestó todo lo que había."""
+    _orientar(pagina)
+    texto = pagina.locator(".msj.suyo").last.inner_text()
+    assert "no te puedo preguntar todavía" in texto
+    # Y no se le muestra dos veces la misma oración esperando que adivine cuál
+    # de las dos cosas que pide le están preguntando.
+    assert CONDICION_DE_DOS_COSAS not in pagina.locator(".pregunta").inner_text()
+
+
+def test_borrar_los_datos_los_saca_y_deja_leer_lo_que_ya_contesto(pagina) -> None:
+    """Alguien puede querer sacar sus datos y seguir leyendo lo que le
+    contestaron. Lo que no puede pasar es que la conclusión calculada con esos
+    datos quede en pantalla como si todavía valiera."""
+    _orientar(pagina)
+    _contestar(pagina, "Sí")
+
+    pagina.click("#borrar-conversacion")
+    pagina.wait_for_selector("#repaso", state="hidden", timeout=20_000)
+    pagina.wait_for_selector(".msj.reemplazada", timeout=20_000)
+    assert "ya no vale" in pagina.inner_text(".reemplazo")
+    # El hilo sigue ahí para leerlo.
+    assert CONDICION_PREGUNTABLE in pagina.inner_text("#resultado")
+
+
+def test_salir_y_borrar_saca_tambien_lo_que_estaba_en_pantalla(pagina) -> None:
+    """El otro botón sí limpia todo: es el de la pantalla compartida."""
+    _orientar(pagina)
+    _contestar(pagina, "Sí")
+
+    pagina.click("#salir")
+    pagina.wait_for_selector("#repaso", state="hidden", timeout=20_000)
+    assert CONDICION_PREGUNTABLE not in pagina.inner_text("body")
+
+
+def test_una_conversacion_vencida_se_dice_y_no_se_resucita(pagina) -> None:
+    """El plazo es una promesa de la pantalla, no un detalle del servidor."""
+    pagina.route(
+        "**/v1/respuestas**",
+        lambda ruta: ruta.fulfill(
+            status=200,
+            content_type="application/json",
+            body=(
+                '{"modo":"EXTRACTO","texto":"algo","citas":[],"fuentes":[],"motivo":null,'
+                '"alternativa":null,"proveedor":null,"validacion":null,'
+                '"as_of":"2026-01-01","known_at":"2026-01-01T00:00:00Z",'
+                '"release_id":null,"data_status":"PUBLICADO","cobertura":[],'
+                '"notas_operativas":[],"avisos":[],"solo_parecidos":false,'
+                '"urgencia":{"clase":null,"detectada":false},'
+                '"sesion_vencida":true,"orientacion":null}'
+            ),
+        ),
+    )
+    pagina.fill("#pregunta", "algo")
+    pagina.keyboard.press("Enter")
+    pagina.wait_for_selector("text=Se cerró la conversación", timeout=20_000)
+
+    texto = pagina.inner_text(".msj.suyo >> nth=-1")
+    assert "media hora" in texto
+    assert pagina.locator("#repaso").is_hidden()
+
+
+def test_la_eleccion_de_programa_se_ve_y_se_puede_deshacer(pagina, servidor: str) -> None:
+    """Un supuesto que el sistema arrastra sin mostrarlo es donde estos
+    sistemas empiezan a mentir, y sacarlo de la vista sin sacarlo de la
+    conversación es peor: sigue acotando cada consulta por atrás."""
+    pagina.route(
+        "**/v1/respuestas**",
+        lambda ruta: ruta.fulfill(
+            status=200,
+            content_type="application/json",
+            body=(
+                '{"modo":"EXTRACTO","texto":"algo","citas":[],"fuentes":[],"motivo":null,'
+                '"alternativa":null,"proveedor":null,"validacion":null,'
+                '"as_of":"2026-01-01","known_at":"2026-01-01T00:00:00Z",'
+                '"release_id":null,"data_status":"PUBLICADO","cobertura":[],'
+                '"notas_operativas":[],"avisos":[],"solo_parecidos":false,'
+                '"urgencia":{"clase":null,"detectada":false},"sesion_vencida":false,'
+                '"orientacion":{"beneficio":null,"resultado":null,"version_estado":0,'
+                '"condiciones_cumplidas":[],"condiciones_no_cumplidas":[],'
+                '"condiciones_desconocidas":[],"salvaguardas":[],"pregunta":null,'
+                '"sin_preguntar":0,"motivo_sin_evaluar":"varios_beneficios",'
+                '"candidatos":[{"codigo":"AR.UNO","nombre":"Programa uno"},'
+                '{"codigo":"AR.DOS","nombre":"Programa dos"}],"aclaracion":"No decide."}}'
+            ),
+        ),
+    )
+    _preguntar(pagina, "algo que toca dos programas")
+    pagina.wait_for_selector(".pregunta", timeout=20_000)
+    assert "No elijo yo cuál es el tuyo" in pagina.inner_text(".pregunta")
+    # Se ofrecen los nombres, nunca los códigos: «AR.UNO» es cómo lo llamamos
+    # nosotros, no cómo lo conoce quien pregunta.
+    assert "AR.UNO" not in pagina.inner_text("body")
+
+    pagina.locator(".pregunta").get_by_text("Programa uno", exact=True).click()
+    pagina.wait_for_selector("#contexto:not([hidden])", timeout=20_000)
+    assert "Programa: Programa uno" in pagina.inner_text("#contexto")
+
+    pagina.locator("#contexto").get_by_role("button").first.click()
+    pagina.wait_for_selector("#contexto", state="hidden", timeout=20_000)
+    assert "Programa uno" not in pagina.inner_text("#contexto")
+
+
+def test_los_controles_de_una_respuesta_reemplazada_dejan_de_andar(pagina) -> None:
+    """Un botón que sigue contestando adentro de un bloque marcado como «esto ya
+    no vale» vuelve a escribir el dato viejo."""
+    _orientar(pagina)
+    _contestar(pagina, "Sí")
+    pagina.locator("#repaso").get_by_text("Cambiar", exact=True).click()
+    pagina.wait_for_selector(".msj.reemplazada", timeout=20_000)
+
+    controles = pagina.locator(".msj.reemplazada .pregunta button")
+    assert controles.count() > 0
+    for i in range(controles.count()):
+        assert controles.nth(i).is_disabled()

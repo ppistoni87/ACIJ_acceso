@@ -9,6 +9,9 @@ preguntándolo. Eso es una bifurcación, y por eso hay un grafo.
 from __future__ import annotations
 
 import datetime as dt
+import uuid
+from dataclasses import dataclass
+from dataclasses import field as dataclasses_field
 from typing import ClassVar
 
 import pytest
@@ -86,6 +89,13 @@ def test_el_grafo_tiene_la_bifurcacion_que_permite_preguntar() -> None:
     assert {"recibir", "buscar", "identificar", "evaluar", "aclarar", "responder"} <= nodos
 
 
+@dataclass
+class ReglaFalsa:
+    texto_literal: str
+    ast: dict
+    id: uuid.UUID = dataclasses_field(default_factory=uuid.uuid4)
+
+
 def test_una_pregunta_por_turno() -> None:
     """Pedir tres datos juntos es lo que hace que alguien abandone."""
 
@@ -96,14 +106,93 @@ def test_una_pregunta_por_turno() -> None:
             "tiene_hijos",
         ]
 
-    aclarar = grafo._nodo_aclarar(None)
-    assert aclarar({"dictamen": DictamenFalso()}) == {"pregunta": "ingreso_mensual_del_hogar"}
+    reglas = [
+        ReglaFalsa(
+            "El ingreso del hogar no puede superar el mínimo.",
+            {
+                "op": "compare",
+                "cmp": "<",
+                "field": "ingreso_mensual_del_hogar",
+                "value": 1,
+                "unit": "ARS",
+            },
+        ),
+        ReglaFalsa(
+            "Debe ser menor de edad.",
+            {"op": "compare", "cmp": "<", "field": "edad", "value": 18, "unit": "anios_cumplidos"},
+        ),
+        ReglaFalsa("Debe tener hijos a cargo.", {"op": "is_true", "field": "tiene_hijos"}),
+    ]
+
+    salida = grafo._nodo_aclarar(None)({"dictamen": DictamenFalso(), "reglas": reglas})
+
+    # Una sola, y la primera que dejó el motor. Lo que se muestra es el texto de
+    # la norma; el nombre del campo va sólo para poder guardar la respuesta.
+    assert salida["pregunta"].campo == "ingreso_mensual_del_hogar"
+    assert salida["pregunta"].texto_literal.startswith("El ingreso del hogar")
+    assert salida["sin_preguntar"] == 0
+
+
+def test_lo_que_no_se_puede_preguntar_se_cuenta_en_vez_de_preguntarse_mal() -> None:
+    """Una regla que pide dos cosas en una oración no se pregunta dos veces.
+
+    Sería mostrarle a la persona el mismo texto dos veces seguidas y esperar que
+    adivine cuál de las dos le están preguntando. Queda sin preguntar y el turno
+    lleva la cuenta para que la pantalla pueda decir que la orientación está
+    incompleta.
+    """
+
+    class DictamenFalso:
+        preguntas_faltantes: ClassVar[list[str]] = ["identidad_titular", "identidad_causante"]
+
+    reglas = [
+        ReglaFalsa(
+            "Acreditar la identidad del titular y de la niña o del niño.",
+            {
+                "op": "all",
+                "args": [
+                    {"op": "is_true", "field": "identidad_titular"},
+                    {"op": "is_true", "field": "identidad_causante"},
+                ],
+            },
+        )
+    ]
+
+    salida = grafo._nodo_aclarar(None)({"dictamen": DictamenFalso(), "reglas": reglas})
+    assert "pregunta" not in salida
+    assert salida["sin_preguntar"] == 2
+
+
+def test_lo_rehusado_no_vuelve_a_preguntarse() -> None:
+    """No contestar es una respuesta, y el turno no insiste."""
+
+    class DictamenFalso:
+        preguntas_faltantes: ClassVar[list[str]] = ["tiene_hijos"]
+
+    estado = {
+        "dictamen": DictamenFalso(),
+        "reglas": [
+            ReglaFalsa("Debe tener hijos a cargo.", {"op": "is_true", "field": "tiene_hijos"})
+        ],
+        "rehusados": ["tiene_hijos"],
+    }
+    assert "pregunta" not in grafo._nodo_aclarar(None)(estado)
+    assert grafo._hay_que_aclarar(estado) == "responder"
 
 
 def test_sin_preguntas_pendientes_no_se_inventa_una() -> None:
     class DictamenCompleto:
         preguntas_faltantes: ClassVar[list[str]] = []
 
-    assert grafo._nodo_aclarar(None)({"dictamen": DictamenCompleto()}) == {}
+    assert "pregunta" not in grafo._nodo_aclarar(None)({"dictamen": DictamenCompleto()})
     assert grafo._hay_que_aclarar({"dictamen": DictamenCompleto()}) == "responder"
     assert grafo._hay_que_aclarar({"dictamen": None}) == "responder"
+
+
+def test_sin_conversacion_abierta_no_se_identifica_ni_se_evalua() -> None:
+    """La orientación se sostiene en hechos que la persona confirma. Sin dónde
+    guardarlos, la pregunta no tendría a dónde volver: se contesta con la
+    evidencia y listo."""
+    assert grafo._hay_que_orientar({"orientar": False}) == "responder"
+    assert grafo._hay_que_orientar({}) == "responder"
+    assert grafo._hay_que_orientar({"orientar": True}) == "identificar"

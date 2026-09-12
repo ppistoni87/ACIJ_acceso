@@ -21,6 +21,9 @@ from backend_normativo.api.contratos import (
 )
 from backend_normativo.api.dependencias import Administracion, Contexto, exigir_rol
 from backend_normativo.calidad.cobertura import medir
+from backend_normativo.conversacion import sesion as ses
+from backend_normativo.conversacion.grafo import correr as correr_turno
+from backend_normativo.db.session import engine_api
 from backend_normativo.recuperacion.busqueda import buscar as buscar_fragmentos
 from backend_normativo.recuperacion.embeddings import embebedor_compartido
 from backend_normativo.seguridad.credenciales import ROL_AUDITOR
@@ -196,6 +199,11 @@ class SolicitudRespuesta(BaseModel):
     jurisdiccion: str | None = None
     beneficio: str | None = None
     limite: int = Field(default=5, ge=1, le=10)
+    # Con conversación abierta la respuesta además orienta: usa los hechos que
+    # la persona confirmó y, si falta uno, pregunta ese. Sin ella la consulta se
+    # contesta igual con la evidencia; lo que no hay es a dónde guardar lo que
+    # conteste, así que no se le pregunta nada.
+    sesion_id: uuid.UUID | None = None
 
 
 class FuenteCitada(BaseModel):
@@ -214,6 +222,33 @@ class FuenteCitada(BaseModel):
     url_fuente: str | None = None
     jurisdiccion: str | None = None
     encontrado_por: str = "lexica"
+
+
+class Orientacion(BaseModel):
+    """Lo que las reglas publicadas dicen con lo que la persona confirmó.
+
+    No es una decisión y el texto lo dice en la pantalla y acá: `resultado` es
+    el estado de las condiciones, no un otorgamiento ni una denegatoria.
+    """
+
+    beneficio: str | None = None
+    resultado: str | None = None
+    version_estado: int = 0
+    condiciones_cumplidas: list[dict] = Field(default_factory=list)
+    condiciones_no_cumplidas: list[dict] = Field(default_factory=list)
+    condiciones_desconocidas: list[dict] = Field(default_factory=list)
+    salvaguardas: list[dict] = Field(default_factory=list)
+    pregunta: dict | None = None
+    # Requisitos que siguen sin saberse y que todavía no se pueden preguntar:
+    # su texto en la norma exige varias cosas a la vez y no hay forma de saber
+    # cuál se está contestando. Se cuentan para poder decirlo.
+    sin_preguntar: int = 0
+    motivo_sin_evaluar: str | None = None
+    candidatos: list[dict] = Field(default_factory=list)
+    aclaracion: str = (
+        "Esto es lo que dicen las normas publicadas con lo que me contaste. "
+        "No decide: la decisión la toma el organismo."
+    )
 
 
 # Qué normas cubre cada corte. Se calcula una vez por corte y se guarda: un
@@ -249,8 +284,71 @@ def cobertura_del_corte(conexion, release_id) -> list[dict]:
     return cobertura
 
 
+def abrir_conversacion():
+    """Cómo abrir la transacción de la conversación, **sin abrirla todavía**.
+
+    La dependencia devuelve la forma de abrirla y no una conexión ya abierta: la
+    mayoría de las consultas llegan sin conversación, y no tiene por qué pagar
+    una transacción de escritura quien sólo vino a leer una norma. Como es una
+    dependencia y no una llamada al motor metida adentro de la función, las
+    pruebas la pueden reemplazar por la conexión del caso.
+    """
+    return engine_api().begin
+
+
+def _leer_sesion(sesion_id: uuid.UUID | None, abrir):
+    """La sesión y su reloj, en su propia transacción.
+
+    Leerla la toca: usar la conversación corre el plazo de inactividad. Va en
+    una transacción aparte de la consulta porque la consulta lee y esto escribe,
+    y no se mezclan dos cosas con distinto motivo en la misma unidad de trabajo.
+    """
+    if sesion_id is None:
+        return None, False
+    with abrir() as conexion:
+        sesion = ses.tocar(conexion, sesion_id)
+    # `None` acá es una sesión que venció y ya se borró. No es un error de quien
+    # pregunta: la consulta se contesta igual, sin orientación, y la pantalla
+    # avisa que la conversación se cerró.
+    return sesion, sesion is None
+
+
+def _orientacion(turno, sesion) -> Orientacion:
+    from backend_normativo.api.routers.evaluaciones import _condiciones
+
+    dictamen = turno.dictamen
+    if dictamen is None:
+        return Orientacion(
+            version_estado=sesion.version,
+            motivo_sin_evaluar=turno.motivo_sin_evaluar,
+            candidatos=turno.candidatos,
+        )
+    return Orientacion(
+        beneficio=turno.beneficio_nombre,
+        resultado=dictamen.resultado.value,
+        version_estado=sesion.version,
+        condiciones_cumplidas=[c.model_dump(mode="json") for c in _condiciones(dictamen.cumplidas)],
+        condiciones_no_cumplidas=[
+            c.model_dump(mode="json") for c in _condiciones(dictamen.no_cumplidas)
+        ],
+        condiciones_desconocidas=[
+            c.model_dump(mode="json")
+            for c in _condiciones(dictamen.desconocidas + dictamen.no_ejecutables)
+        ],
+        salvaguardas=[c.model_dump(mode="json") for c in _condiciones(dictamen.salvaguardas)],
+        pregunta=turno.pregunta.a_dict() if turno.pregunta else None,
+        sin_preguntar=turno.sin_preguntar,
+        motivo_sin_evaluar=turno.motivo_sin_evaluar,
+        candidatos=turno.candidatos,
+    )
+
+
 @router.post("/respuestas")
-def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depends()) -> dict:
+def responder_consulta(
+    solicitud: SolicitudRespuesta,
+    contexto: Contexto = Depends(),
+    abrir_sesion=Depends(abrir_conversacion),
+) -> dict:
     """Recupera y arma la respuesta, declarando con qué se armó.
 
     Tres modos y la diferencia no se borra: `GENERADA` si un proveedor redactó y
@@ -272,6 +370,12 @@ def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depen
     # tanto si el corpus tiene una ley de vivienda como si no.
     urgencia = detectar_urgencia(solicitud.consulta).a_dict()
 
+    # Y antes de contestar, la conversación: leerla la toca, y una que venció
+    # hay que poder decirla también cuando no hay nada publicado. Si esto
+    # estuviera después del corte, quien pregunta con una conversación vencida
+    # en un sistema sin corte no se enteraría de que se cerró.
+    sesion_actual, sesion_vencida = _leer_sesion(solicitud.sesion_id, abrir_sesion)
+
     if not contexto.hay_release:
         salida = responder(solicitud.consulta, [])
         anotar(
@@ -289,20 +393,36 @@ def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depen
             "cobertura": [],
             "notas_operativas": [],
             "urgencia": urgencia,
+            "sesion_vencida": sesion_vencida,
+            "orientacion": None,
             **salida.a_dict(),
         }
 
-    hallazgo = buscar_fragmentos(
+    # El turno lo corre el grafo. Antes esto era una función lineal que buscaba
+    # y contestaba de un tirón; el grafo hace lo mismo y además puede parar a
+    # preguntar el dato que cambia la orientación, que es lo que una función
+    # seguida no sabe hacer.
+    #
+    # Cuál beneficio eligió la persona cuando la consulta tocaba varios. Vive en
+    # la sesión y no en cada mensaje: elegirlo una vez alcanza, y borrarlo
+    # también es una sola cosa.
+    elegido = sesion_actual.estado.get("intencion") if sesion_actual else None
+    turno = correr_turno(
         contexto.conexion,
         solicitud.consulta,
         release_id=contexto.release_id,
         embebedor=embebedor_compartido(),
         limite=solicitud.limite,
         jurisdiccion=solicitud.jurisdiccion,
-        beneficio=solicitud.beneficio,
-        as_of=contexto.as_of,
+        beneficio=elegido or solicitud.beneficio,
+        beneficio_elegido=elegido,
+        fecha=contexto.as_of,
         known_at=contexto.known_at,
+        hechos=ses.valores_declarados(sesion_actual.hechos) if sesion_actual else {},
+        rehusados=ses.rehusados(sesion_actual.hechos) if sesion_actual else [],
+        orientar=sesion_actual is not None,
     )
+    hallazgo = turno.hallazgo
     # El proveedor sale del entorno: con `BN_MODELO_CLAVE` puesta redacta, sin
     # ella el orquestador cae al extracto. Ninguna de las dos ramas cambia los
     # validadores ni la política de modo, que es lo que protege a quien
@@ -350,6 +470,10 @@ def responder_consulta(solicitud: SolicitudRespuesta, contexto: Contexto = Depen
         "solo_parecidos": hallazgo.solo_parecidos,
         "urgencia": urgencia,
         "cobertura": cobertura_del_corte(contexto.conexion, contexto.release_id),
+        "sesion_vencida": sesion_vencida,
+        "orientacion": (
+            _orientacion(turno, sesion_actual).model_dump(mode="json") if sesion_actual else None
+        ),
         **salida.a_dict(),
     }
 
