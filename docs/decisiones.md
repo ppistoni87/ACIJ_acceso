@@ -3094,3 +3094,64 @@ B.O. —el propio adaptador lo dice—. Lo que la página capturada sí trae es 
 línea «Bs. As., dd/mm/aaaa», que es la fecha de firma y no la de publicación:
 extraerla sirve para tenerla tipada como `FIRMA`, y no para fundar una vigencia.
 Capturar la ficha es el paso que destraba de verdad.
+
+## D-133 · El primer corte con beneficios, y el 500 que estaba esperando
+
+Con las aprobaciones dadas se publicó el corte `180ae01f`: **23 versiones**, 15
+beneficios servibles y 7 normas. El corpus pasó de una norma a siete, y una
+consulta por la asignación universal por hijo dejó de contestar con una ley de
+vivienda de CABA para citar la Ley 24.714.
+
+**Lo que el camino dejó a la vista, en orden.**
+
+*DQ10 hizo su trabajo.* El primer intento de publicar salió en rojo: 14 unidades
+con marcado HTML dentro del texto, extraídas con `extraccion@3` y `@4`, antes de
+que el extractor lo limpiara. Se agregó `bn curacion limpiar-marcado`, que
+aplica exactamente la misma función que el extractor sobre unidades **no
+publicadas** —el texto de un corte publicado no se toca (D-124)— y deja un
+evento por unidad. 42 unidades limpiadas.
+
+Las evidencias no se tocan: son inmutables por diseño y citan lo que la fuente
+publicó, con marcado y todo. Después de limpiar, el fragmento citado ya no es un
+calco del texto de la unidad. La divergencia es esa, el comando la cuenta cada
+vez —61 evidencias— y conviene que esté escrita en vez de descubrirse.
+
+*El arrastre de corte funcionó sobre datos reales.* «606 fragmentos nuevos · 33
+heredados del corte anterior (33 con su vector)», y al reindexar: «606 embebidos,
+33 reusados porque el texto no cambió». Sin D-127 este corte habría dejado la API
+sin una sola unidad normativa que citar.
+
+*Y apareció el defecto que sólo podía aparecer hoy.* La evaluación de un
+beneficio con un monto por parámetro contestó **500**. La causa:
+
+```sql
+AND (:r::uuid IS NULL OR rv.release_id = :r)
+```
+
+El lector de `text()` de SQLAlchemy no toma un nombre de parámetro seguido de
+otro dos puntos, así que deja `:r::uuid` literal y PostgreSQL recibe un error de
+sintaxis. El segundo `:r` de la misma línea sí se sustituye, que es justo lo que
+hace que leyendo el código no se vea. Está compilado y verificado en la prueba:
+`'... (:r::uuid IS NULL OR x = %(r)s)'`.
+
+No lo agarró ninguna prueba porque la rama sólo corre cuando una regla necesita
+el valor de un parámetro, y para eso hace falta un beneficio publicado con
+reglas ejecutables. Nunca hubo uno hasta hoy. Quedó `CAST(:r AS uuid)`, que es
+la forma que usa el resto del proyecto, y dos pruebas: una que ejecuta las dos
+ramas del filtro, y otra que recorre el árbol buscando la firma `:nombre::tipo`,
+porque el defecto es de una clase que se repite y buscarla no cuesta nada.
+
+**Qué contesta hoy el motor.** Con la beca de comedor y sin datos: dos
+condiciones cumplidas, veinticuatro desconocidas, y las preguntas concretas que
+faltan. El monto se abstiene con su razón: «el catálogo no tiene un valor
+aprobado de CABA.SUELDO-MINIMO para 2026-09-12». Los 9 valores de parámetro
+siguen retenidos por falta de fecha de verificación, así que ninguna cuantía se
+calcula todavía. Es lo correcto: antes de decir un monto hay que poder decir de
+dónde sale.
+
+**Y una deuda que el publicador avisó al publicar.** Cinco versiones de norma se
+publicaron con todas sus afirmaciones sin aprobar, así que su ficha se sirve sin
+una sola cita. La publicación es lo que promueve las afirmaciones, de modo que
+aprobarlas ahora ya no entra en este corte: hay que aprobarlas y republicar. No
+afecta al recorrido ciudadano —el texto y sus citas salen de los fragmentos, no
+de las afirmaciones— pero sí a la ficha normativa.

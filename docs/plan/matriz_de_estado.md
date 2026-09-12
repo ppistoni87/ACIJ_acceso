@@ -39,15 +39,15 @@ jurídica.
 | P-003 | Esquema y permisos aislados | EN_CURSO | Ninguna prueba corrió contra PostgreSQL 18: el CI usa 16 y Neon sirve 18.6. |
 | P-004 | Originales fuera del contenedor | BLOQUEADA (B) | Bucket privado y su política de retención. |
 | P-005 | Carga reanudable del corpus | BLOQUEADA (D) | Los tres criterios se cumplen local; nunca corrió contra Neon. |
-| P-006 | Adaptadores y fuentes operativas | EN_CURSO | 44 de 85 fuentes sirven. |
+| P-006 | Adaptadores y fuentes operativas | EN_CURSO | 44 de 85 fuentes sirven. El corpus servible pasó de 1 norma a 7. |
 | P-007 | Citas, vigencia y relaciones | LISTA_PARA_ACEPTACION | Las 215 referencias sin resolver son la cola auditable que el criterio pide. |
 | P-008 | Siete dimensiones por norma y beneficio | EN_CURSO | Con D-130 deja de esperar una firma. Son 5.397 afirmaciones en 54 versiones, y `bn revision aprobar-campos` se invoca por versión: 54 decisiones, 14 de ellas sobre las normas que sostienen los beneficios. |
 | P-009 | Circuito de revisión humana | LISTA_PARA_ACEPTACION | Que alguien lo use, y eso es P-010. |
 | P-010 | Expediente jurídico del alcance | EN_CURSO | **Cambió el 12/09: no va a haber firma jurídica y se procede sin ella** (D-130). Las 99 reglas con condición ejecutable quedaron habilitadas con Pedro Pistoni como responsable registrado, un evento por regla. Quedan las 67 sin condición, que el criterio 2 manda clasificar entre formalizables, informativas y sin evidencia. |
-| P-011 | Cortes completos y reversibles | LISTA_PARA_ACEPTACION | Cerrado el 12/09: un corte nuevo hereda lo que el anterior servía, con su índice semántico, y lo que se reemplaza no viaja (D-127, `tests/integracion/test_corte_completo.py`). Era una de las brechas que el plan v1.1 nombra en §02. |
+| P-011 | Cortes completos y reversibles | LISTA_PARA_ACEPTACION | Cerrado el 12/09 y **ejercitado sobre datos reales**: el corte `180ae01f` publicó 606 fragmentos nuevos y heredó los 33 del anterior con sus vectores (D-127, D-133). Era una de las brechas que el plan v1.1 nombra en §02. |
 | P-012 | Recuperación híbrida trazable | EN_CURSO | Recall@5 híbrido 74,1 % contra un umbral de 90 %. |
 | P-013 | Respuestas con citas y abstención | EN_CURSO | Tres modos, cuatro validadores y abstención tipada; sin proveedor de modelo configurado sólo se sirve extracto (causa B). |
-| P-014 | Condiciones y datos con lógica tipada | BLOQUEADA (curación) | Ya no es la firma: el motor tiene sus 99 reglas conectadas. Ahora falta que algún beneficio esté publicado, y `aprobar-versiones` retiene 153 versiones sin intervalo de aplicación. 88 incidencias de vigencia abiertas. |
+| P-014 | Condiciones y datos con lógica tipada | EN_CURSO | **Contesta.** Con el corte `180ae01f` hay 15 beneficios publicados y 93 reglas ejecutables sirviendo. La evaluación devuelve cumple / no cumple / desconocido con el texto literal y la pregunta que falta. Los montos se abstienen: ningún valor de parámetro tiene fecha de verificación (D-133). |
 | P-015 | Front conversacional | EN_CURSO | Construido y probado con 36 casos E2E en Chromium. Faltan URL de staging (B) y revisión manual de accesibilidad con personas. |
 | P-016 | Backoffice de datos y revisión | LISTA_PARA_ACEPTACION | Nada del criterio. |
 | P-017 | Identidad, privacidad y protección | EN_CURSO | Criterios 1 y 2 cerrados. Falta proveedor de identidad y el modelo de amenazas escrito. |
@@ -88,8 +88,8 @@ jurídica.
 | Estado | E1 base | Ampliación E1 | E2 | Total |
 | --- | --- | --- | --- | --- |
 | LISTA_PARA_ACEPTACION | 4 | 0 | 0 | 4 |
-| EN_CURSO | 12 | 6 | 0 | 18 |
-| BLOQUEADA | 6 | 0 | 0 | 6 |
+| EN_CURSO | 13 | 6 | 0 | 19 |
+| BLOQUEADA | 5 | 0 | 0 | 5 |
 | NO_INICIADA | 2 | 3 | 5 | 10 |
 | ACEPTADA | 0 | 0 | 0 | 0 |
 

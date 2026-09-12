@@ -86,7 +86,15 @@ def _resolver_parametro(conexion: Connection, release_id: uuid.UUID | None):
                 "  JOIN registro_versiones rv ON rv.id = pv.registro_version_id "
                 " WHERE p.codigo = :c AND pv.publicable "
                 "   AND pv.rango_aplicacion @> :f "
-                "   AND (:r::uuid IS NULL OR rv.release_id = :r) "
+                # `CAST(:r AS uuid)` y no `:r::uuid`: con la segunda forma
+                # SQLAlchemy deja el primer parámetro sin sustituir —su lector de
+                # `text()` no toma un nombre seguido de otro dos puntos— y la
+                # consulta llega a PostgreSQL con `:r::uuid` literal. Error de
+                # sintaxis en ejecución, y sólo en la rama que resuelve un
+                # parámetro: la evaluación de un beneficio con un monto por
+                # parámetro se caía con 500 la primera vez que se la usó de
+                # verdad.
+                "   AND (CAST(:r AS uuid) IS NULL OR rv.release_id = :r) "
                 " LIMIT 1"
             ),
             {"c": codigo, "f": fecha, "r": release_id},

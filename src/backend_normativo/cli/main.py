@@ -2642,6 +2642,48 @@ def operacion_devoluciones(
         typer.echo(f"  {fila['senal']:<15} {fila['resultado']}{motivo}: {fila['cuantas']}")
 
 
+@curacion.command("limpiar-marcado")
+def curacion_limpiar_marcado(
+    actor: str = typer.Option(..., help="Quién queda registrado en cada unidad."),
+    fundamento: str = typer.Option(..., help="Por qué se toca el texto."),
+    simular: bool = typer.Option(False, "--simular", help="Cuenta y no escribe nada."),
+) -> None:
+    """Saca el marcado HTML que quedó dentro de unidades ya extraídas.
+
+    Aplica la misma limpieza que hace el extractor desde `extraccion@15`, así
+    que el texto queda igual que si el documento se volviera a extraer. Sólo
+    toca unidades de versiones que todavía no se publicaron: el texto de un
+    corte publicado no se cambia.
+
+    Las evidencias no se tocan —son inmutables y citan lo que la fuente
+    publicó—, así que después de esto el fragmento citado ya no es un calco del
+    texto de la unidad. El informe dice cuántas quedan así.
+    """
+    from sqlalchemy import text as _text
+
+    from backend_normativo.curacion.marcado import limpiar
+
+    try:
+        with engine_migrador().begin() as conexion:
+            resultado = limpiar(conexion, actor=actor, fundamento=fundamento, simular=simular)
+            if simular:
+                conexion.execute(_text("ROLLBACK"))
+    except ValueError as exc:
+        typer.echo(str(exc))
+        raise typer.Exit(code=1) from exc
+
+    verbo = "se limpiarían" if simular else "limpiadas"
+    typer.echo(f"Unidades con marcado: {resultado.unidades} · {verbo}: {resultado.limpiadas}")
+    if resultado.evidencias_que_quedan_con_marcado:
+        typer.echo(
+            f"Evidencias que siguen citando el texto con marcado: "
+            f"{resultado.evidencias_que_quedan_con_marcado}. Son inmutables y citan lo que "
+            f"la fuente publicó; no es un error, es la divergencia esperada."
+        )
+    for aviso in resultado.avisos:
+        typer.echo(f"  aviso: {aviso}")
+
+
 @curacion.command("canales")
 def curacion_canales(
     fuente: str | None = typer.Argument(None, help="Una fuente en particular. Por omisión, todas."),
