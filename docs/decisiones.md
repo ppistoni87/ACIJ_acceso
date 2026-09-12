@@ -2916,3 +2916,72 @@ El recorrido de aceptación pasó a publicar un punto de atención de verdad. Si
 eso, «A dónde ir» sólo se probaba vacío: treinta y pico de casos corrían contra
 un corpus sin un solo lugar, que es exactamente la mitad que el frente muestra
 mal si se descuida.
+
+## D-130 · Se procede sin firma jurídica, y queda escrito quién decidió
+
+**Decisión de Pedro Pistoni, 12 de septiembre de 2026.** El proyecto no va a
+contar con un responsable jurídico designado que firme el alcance. Se procede
+sin esa firma. Consultado sobre el alcance, eligió habilitar de una vez las 99
+reglas con condición ejecutable, sobre los 16 beneficios.
+
+Antes de hacerlo dejé planteada la alternativa y su razón: habilitar por
+beneficio acota el daño de una regla mal formalizada y permite mirar casos
+reales antes de seguir. La decisión fue la otra y se ejecutó completa. Esto
+queda acá porque dentro de seis meses la pregunta va a ser quién decidió que
+este servicio empezara a evaluar condiciones, y la respuesta tiene que estar
+escrita antes de que haga falta.
+
+**Qué se hizo exactamente.** Las 166 reglas del expediente ya figuraban
+APPROVED con «Pedro Pistoni» como actor, registrado como transcripción de su
+revisión declarada. Lo que faltaba no era aprobarlas: era conectarlas. Cada una
+quedó con un evento `HABILITAR_REGLA` propio, con ese actor y con este
+fundamento textual:
+
+> Decisión de producto del 12/09/2026: el proyecto no va a contar con firma
+> jurídica designada y se procede sin ella. Se habilitan las 99 reglas con
+> condición ejecutable del expediente de 166 que ya figuraban aprobadas con este
+> mismo actor. No hubo revisión de un profesional del derecho designado; la
+> responsabilidad de la decisión es de producto.
+
+Noventa y nueve eventos, uno por regla. Lo que se hace de una vez tiene que
+poder auditarse una por una, y el registro dice lo que pasó y no otra cosa: no
+dice que alguien revisó, dice que se decidió proceder sin revisión.
+
+**Las 67 sin condición ejecutable quedan afuera.** No tienen árbol validado, así
+que no hay nada que ejecutar; el motor las va a seguir contestando DESCONOCIDO
+con su motivo, y la base lo exige además por restricción. Clasificarlas entre
+formalizables, informativas y sin evidencia sigue siendo trabajo pendiente
+(P-010, criterio 2).
+
+**El defecto que esto destapó.** `aprobar()` decía en su docstring ser «la única
+transición que habilita a la evaluación», y no lo era: el motor decide con
+`ast is not None and not requiere_revision`, y ninguna transición bajaba esa
+marca. Se podían aprobar las 166 reglas y el evaluador seguía contestando
+DESCONOCIDO en todas, con el motivo «la regla está marcada como pendiente de
+revisión». Aprobada y pendiente de revisión al mismo tiempo.
+
+Ninguna prueba lo veía porque cada mitad estaba bien por su cuenta: la
+transición dejaba su rastro y el motor respetaba la marca. Faltaba que una cosa
+moviera la otra. El plan v1.1 lo nombra en §02 como «hacer coherente aprobar con
+la marca de revisión». Ahora aprobar una regla con árbol validado la vuelve
+ejecutable en la misma transición, y `bn revision habilitar-evaluacion` existe
+sólo para el expediente que se aprobó antes del arreglo.
+
+**Lo que esto todavía no cambia para nadie.** La evaluación lee reglas cuyo
+beneficio esté PUBLISHED, y no hay ninguno: los 16 beneficios están CANDIDATE y
+`bn revision aprobar-versiones` retiene 153 versiones «sin intervalo de
+aplicación: servirlas sería afirmar una vigencia que nadie determinó». Hay 88
+incidencias de VIGENCIA_INDETERMINADA abiertas y una resuelta.
+
+Eso no es una firma jurídica: es una determinación de hecho —desde cuándo rige
+cada norma— que tiene respuesta en los documentos capturados. Es el próximo
+cuello de botella y es trabajo de curación, no de firma.
+
+**Riesgo que queda asumido y por quién.** Una regla mal formalizada —una
+negación invertida, un umbral mal leído, una excepción que no se recuperó— hace
+que el servicio le diga a alguien que una condición no se cumple cuando sí se
+cumple, y esa persona se va sin pedir algo que le corresponde. Las 99 reglas no
+las revisó un profesional del derecho. Sigue vigente la prohibición de afirmar
+elegibilidad definitiva: el motor devuelve cumple / no cumple / desconocido por
+condición, con su cita, y la pantalla dice que quien decide es el organismo.
+Esa distinción es ahora lo único que separa una orientación de un dictamen.

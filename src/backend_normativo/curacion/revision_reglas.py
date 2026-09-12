@@ -341,6 +341,8 @@ def _mover(
         text("UPDATE reglas SET estado_revision = :e WHERE id = :id"),
         {"e": hasta, "id": regla_id},
     )
+    if hasta == EstadoRevision.APPROVED.value:
+        _marcar_ejecutable(conexion, regla_id)
     conexion.execute(
         text(
             "INSERT INTO auditoria_eventos (actor, accion, objeto, objeto_id, motivo) "
@@ -348,6 +350,113 @@ def _mover(
         ),
         {"actor": actor, "accion": accion, "id": str(regla_id), "motivo": fundamento},
     )
+
+
+def _marcar_ejecutable(conexion: Connection, regla_id: uuid.UUID) -> bool:
+    """Aprobar una regla con árbol validado es lo que la vuelve ejecutable.
+
+    Estaban separadas y no debían estarlo. El motor decide con
+    `ast is not None and not requiere_revision`, y nada bajaba esa marca: se
+    podían aprobar las 166 reglas del expediente y el evaluador seguía
+    contestando DESCONOCIDO en todas, con el motivo «la regla está marcada como
+    pendiente de revisión». Aprobado y pendiente de revisión a la vez.
+
+    Ninguna prueba lo veía porque cada mitad estaba bien por su cuenta: la
+    transición de estados dejaba su rastro y el motor respetaba la marca. Lo que
+    faltaba era que una cosa moviera la otra. El plan lo nombra en §02 como
+    «hacer coherente aprobar con la marca de revisión».
+
+    Una regla sin árbol no se toca: sin condición ejecutable no hay nada que
+    ejecutar, y la restricción `ck_reglas_ejecutable_solo_tras_validacion` de la
+    base dice lo mismo.
+    """
+    marcadas = conexion.execute(
+        text(
+            "UPDATE reglas SET requiere_revision = false "
+            " WHERE id = :id AND ast IS NOT NULL AND requiere_revision "
+            "RETURNING id"
+        ),
+        {"id": regla_id},
+    ).scalar_one_or_none()
+    return marcadas is not None
+
+
+@dataclass(frozen=True)
+class Habilitacion:
+    """Qué quedó ejecutable y qué no, después de habilitar el expediente."""
+
+    habilitadas: int
+    sin_condicion: int
+    ya_estaban: int
+
+    def a_dict(self) -> dict:
+        return {
+            "habilitadas": self.habilitadas,
+            "sin_condicion_ejecutable": self.sin_condicion,
+            "ya_estaban_habilitadas": self.ya_estaban,
+        }
+
+
+def habilitar_aprobadas(
+    conexion: Connection, *, actor: str, fundamento: str, beneficio: str | None = None
+) -> Habilitacion:
+    """Vuelve ejecutables las reglas que ya estaban aprobadas.
+
+    Existe porque las 166 del expediente se aprobaron antes de que aprobar
+    bajara la marca, y quedaron aprobadas y sin poder ejecutarse. Repetir la
+    aprobación no serviría: `_mover` sale de CANDIDATE o IN_REVIEW y esas ya
+    están en APPROVED.
+
+    No es una aprobación: no cambia el estado de revisión de ninguna regla ni
+    decide nada sobre su contenido. Toma lo que alguien ya aprobó y lo conecta
+    al motor. Aun así exige actor y fundamento, y deja un evento por regla: lo
+    que se hace de una vez tiene que poder auditarse una por una, y dentro de
+    seis meses la pregunta va a ser quién decidió que estas reglas empezaran a
+    contestarle a la gente.
+
+    Las que no tienen árbol quedan afuera y se informan: son las que el plan
+    manda clasificar entre formalizables, informativas y sin evidencia (P-010,
+    criterio 2), y ese trabajo no lo reemplaza este comando.
+    """
+    if not fundamento.strip():
+        raise RevisionInvalida(
+            "Habilitar el expediente sin fundamento deja sin explicación el momento en que "
+            "el servicio empezó a evaluar condiciones. Es la decisión que hay que poder "
+            "reconstruir."
+        )
+    filtro = " AND b.codigo = :c" if beneficio else ""
+    filas = (
+        conexion.execute(
+            text(
+                "SELECT r.id, r.ast IS NOT NULL AS tiene_ast, r.requiere_revision "
+                "  FROM reglas r "
+                "  JOIN beneficio_versiones bv ON bv.registro_version_id = r.beneficio_version_id "
+                "  JOIN beneficios b ON b.id = bv.beneficio_id "
+                f" WHERE r.estado_revision = 'APPROVED'{filtro}"
+            ),
+            {"c": beneficio} if beneficio else {},
+        )
+        .mappings()
+        .all()
+    )
+    habilitadas = sin_condicion = ya_estaban = 0
+    for fila in filas:
+        if not fila["tiene_ast"]:
+            sin_condicion += 1
+            continue
+        if not fila["requiere_revision"]:
+            ya_estaban += 1
+            continue
+        _marcar_ejecutable(conexion, fila["id"])
+        conexion.execute(
+            text(
+                "INSERT INTO auditoria_eventos (actor, accion, objeto, objeto_id, motivo) "
+                "VALUES (:actor, 'HABILITAR_REGLA', 'reglas', :id, :motivo)"
+            ),
+            {"actor": actor, "id": str(fila["id"]), "motivo": fundamento},
+        )
+        habilitadas += 1
+    return Habilitacion(habilitadas=habilitadas, sin_condicion=sin_condicion, ya_estaban=ya_estaban)
 
 
 def marcar_en_revision(

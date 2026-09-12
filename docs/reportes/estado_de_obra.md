@@ -36,11 +36,17 @@ actualiza es la forma más barata de mentir sin querer.
 Los pendientes no son un problema distinto cada uno. Hoy **ninguna de las cinco
 causas se resuelve escribiendo código**: la que lo era se agotó.
 
-**A · Falta una firma jurídica.** El criterio 2 de P-010 lo prohíbe
-explícitamente: las reglas «no se aprueban en lote por un agente». Aprobarlas
-desde acá pondría en la bitácora un actor que no revisó nada y haría que la API
-empiece a contestar «te corresponde» sobre esa base. Afecta a P-008, P-010,
-P-014 y P-023.
+**A · Falta una firma jurídica. Cerrada por decisión, no por firma.** El
+12/09/2026 Pedro Pistoni decidió que el proyecto no va a contar con un
+responsable jurídico designado y que se procede sin esa firma (D-130). Las 99
+reglas con condición ejecutable quedaron habilitadas con su nombre como
+responsable registrado y un evento por regla; el fundamento dice con todas las
+letras que no hubo revisión de un profesional del derecho.
+
+Lo que estaba detrás de esta causa no desapareció: cambió de naturaleza. Ahora
+es **trabajo de curación** —determinar la vigencia de 153 versiones, con 88
+incidencias abiertas, y aprobar 5.397 afirmaciones en 54 versiones— y ya no la
+espera de una persona con competencia jurídica. Afecta a P-008, P-014 y P-023.
 
 **B · Falta una cuenta de nube.** Bucket privado, Cloud Run, Cloud Scheduler,
 canal de alertas y el plan contratado de Neon con su retención. Nada de eso se

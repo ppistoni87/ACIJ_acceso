@@ -24,6 +24,12 @@ aprobadas y 6 salteadas** sobre PostgreSQL 16 local.
   están en `docs/reportes/estado_de_obra.md`: A firma jurídica, B cuenta de
   nube, D límite del contenedor, E qué cuenta como verificar un directorio.
 
+**La causa A se cerró el 12/09 por decisión de producto** (D-130): no va a haber
+firma jurídica y se procede sin ella. Lo que quedaba detrás de esa causa no
+desapareció, cambió de naturaleza: ahora es trabajo de curación —determinar
+vigencias y aprobar afirmaciones— y no la espera de una persona con competencia
+jurídica.
+
 ## Entrega E1 · P-001 a P-024
 
 | # | Historia | Estado | Qué falta, concretamente |
@@ -35,13 +41,13 @@ aprobadas y 6 salteadas** sobre PostgreSQL 16 local.
 | P-005 | Carga reanudable del corpus | BLOQUEADA (D) | Los tres criterios se cumplen local; nunca corrió contra Neon. |
 | P-006 | Adaptadores y fuentes operativas | EN_CURSO | 44 de 85 fuentes sirven. |
 | P-007 | Citas, vigencia y relaciones | LISTA_PARA_ACEPTACION | Las 215 referencias sin resolver son la cola auditable que el criterio pide. |
-| P-008 | Siete dimensiones por norma y beneficio | BLOQUEADA (A) | 135 campos en PENDIENTE, 4 INFORMADO. |
+| P-008 | Siete dimensiones por norma y beneficio | EN_CURSO | Con D-130 deja de esperar una firma. Son 5.397 afirmaciones en 54 versiones, y `bn revision aprobar-campos` se invoca por versión: 54 decisiones, 14 de ellas sobre las normas que sostienen los beneficios. |
 | P-009 | Circuito de revisión humana | LISTA_PARA_ACEPTACION | Que alguien lo use, y eso es P-010. |
-| P-010 | Expediente jurídico del alcance | BLOQUEADA (A) | La firma. 166 candidatas listas, 109 con condición ejecutable. |
+| P-010 | Expediente jurídico del alcance | EN_CURSO | **Cambió el 12/09: no va a haber firma jurídica y se procede sin ella** (D-130). Las 99 reglas con condición ejecutable quedaron habilitadas con Pedro Pistoni como responsable registrado, un evento por regla. Quedan las 67 sin condición, que el criterio 2 manda clasificar entre formalizables, informativas y sin evidencia. |
 | P-011 | Cortes completos y reversibles | LISTA_PARA_ACEPTACION | Cerrado el 12/09: un corte nuevo hereda lo que el anterior servía, con su índice semántico, y lo que se reemplaza no viaja (D-127, `tests/integracion/test_corte_completo.py`). Era una de las brechas que el plan v1.1 nombra en §02. |
 | P-012 | Recuperación híbrida trazable | EN_CURSO | Recall@5 híbrido 74,1 % contra un umbral de 90 %. |
 | P-013 | Respuestas con citas y abstención | EN_CURSO | Tres modos, cuatro validadores y abstención tipada; sin proveedor de modelo configurado sólo se sirve extracto (causa B). |
-| P-014 | Condiciones y datos con lógica tipada | BLOQUEADA (A) | El criterio dice «reglas publicadas» y no hay ninguna. |
+| P-014 | Condiciones y datos con lógica tipada | BLOQUEADA (curación) | Ya no es la firma: el motor tiene sus 99 reglas conectadas. Ahora falta que algún beneficio esté publicado, y `aprobar-versiones` retiene 153 versiones sin intervalo de aplicación. 88 incidencias de vigencia abiertas. |
 | P-015 | Front conversacional | EN_CURSO | Construido y probado con 36 casos E2E en Chromium. Faltan URL de staging (B) y revisión manual de accesibilidad con personas. |
 | P-016 | Backoffice de datos y revisión | LISTA_PARA_ACEPTACION | Nada del criterio. |
 | P-017 | Identidad, privacidad y protección | EN_CURSO | Criterios 1 y 2 cerrados. Falta proveedor de identidad y el modelo de amenazas escrito. |
@@ -82,8 +88,8 @@ aprobadas y 6 salteadas** sobre PostgreSQL 16 local.
 | Estado | E1 base | Ampliación E1 | E2 | Total |
 | --- | --- | --- | --- | --- |
 | LISTA_PARA_ACEPTACION | 4 | 0 | 0 | 4 |
-| EN_CURSO | 10 | 6 | 0 | 16 |
-| BLOQUEADA | 8 | 0 | 0 | 8 |
+| EN_CURSO | 12 | 6 | 0 | 18 |
+| BLOQUEADA | 6 | 0 | 0 | 6 |
 | NO_INICIADA | 2 | 3 | 5 | 10 |
 | ACEPTADA | 0 | 0 | 0 | 0 |
 

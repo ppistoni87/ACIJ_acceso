@@ -1967,6 +1967,53 @@ def revision_registrar_decisiones(
     typer.echo(formatear(resultado))
 
 
+@revision.command("habilitar-evaluacion")
+def revision_habilitar_evaluacion(
+    actor: str = typer.Option(..., help="Quién decide que estas reglas empiecen a evaluar."),
+    fundamento: str = typer.Option(..., help="Por qué, con todas las letras."),
+    beneficio: str | None = typer.Option(None, help="Un beneficio. Por omisión, todos."),
+    simular: bool = typer.Option(False, "--simular", help="Cuenta y no habilita nada."),
+) -> None:
+    """Conecta al motor las reglas ya aprobadas que tienen condición ejecutable.
+
+    No aprueba nada ni decide sobre el contenido de ninguna regla: toma lo que
+    alguien ya aprobó y lo vuelve ejecutable. Existe porque las 166 del
+    expediente se aprobaron antes de que aprobar bajara la marca de revisión, y
+    quedaron aprobadas y sin poder ejecutarse.
+
+    Las que no tienen árbol validado quedan afuera y se informan. Son las que el
+    plan manda clasificar entre formalizables, informativas y sin evidencia; ese
+    trabajo no lo reemplaza este comando.
+    """
+    from sqlalchemy import text as _text
+
+    from backend_normativo.curacion.revision_reglas import RevisionInvalida, habilitar_aprobadas
+
+    try:
+        with engine_migrador().begin() as conexion:
+            resultado = habilitar_aprobadas(
+                conexion, actor=actor, fundamento=fundamento, beneficio=beneficio
+            )
+            if simular:
+                conexion.execute(_text("ROLLBACK"))
+    except RevisionInvalida as exc:
+        typer.echo(str(exc))
+        raise typer.Exit(code=1) from exc
+
+    verbo = "se habilitarían" if simular else "habilitadas"
+    typer.echo(
+        f"Reglas {verbo}: {resultado.habilitadas}\n"
+        f"Ya estaban habilitadas: {resultado.ya_estaban}\n"
+        f"Sin condición ejecutable, quedan afuera: {resultado.sin_condicion}"
+    )
+    if resultado.sin_condicion:
+        typer.echo(
+            "Esas últimas siguen sin poder evaluarse y el motor las va a contestar "
+            "DESCONOCIDO con su motivo. Clasificarlas entre formalizables, informativas y "
+            "sin evidencia es P-010, criterio 2."
+        )
+
+
 @revision.command("rechazar-regla")
 def revision_rechazar_regla(
     regla: str = typer.Argument(..., help="Id de la regla."),
