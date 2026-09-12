@@ -1683,6 +1683,35 @@ def revision_pendientes(
         )
 
 
+@revision.command("derivar-vigencia-beneficios")
+def revision_derivar_vigencia_beneficios(
+    actor: str = typer.Option(..., help="Quién queda registrado en cada derivación."),
+    simular: bool = typer.Option(False, "--simular", help="Muestra qué haría y no escribe."),
+) -> None:
+    """Deriva la vigencia de cada beneficio de la de la norma que lo crea.
+
+    Un beneficio no tiene vigencia propia: existe porque una norma lo crea y
+    mientras esa norma rija. Las que lo reglamentan o lo modifican cambian su
+    contenido, no su existencia.
+
+    Es conservador: si la norma creadora no tiene vigencia resuelta, el
+    beneficio tampoco, y se informa cuál falta.
+    """
+    from sqlalchemy import text as _text
+
+    from backend_normativo.curacion.vigencia import ResolutorVigenciaDeBeneficios
+
+    with engine_migrador().begin() as conexion:
+        resultado = ResolutorVigenciaDeBeneficios(conexion).resolver(actor=actor)
+        if simular:
+            conexion.execute(_text("ROLLBACK"))
+
+    verbo = "se resolverían" if simular else "resueltos"
+    typer.echo(f"Beneficios mirados: {resultado.beneficios} · {verbo}: {resultado.resueltos}")
+    for pendiente in resultado.sin_resolver:
+        typer.echo(f"  queda sin resolver · {pendiente}")
+
+
 @revision.command("resolver-vigencia")
 def revision_resolver_vigencia(
     incidencia: str = typer.Argument(..., help="Identificador de la incidencia."),
@@ -1692,6 +1721,13 @@ def revision_resolver_vigencia(
     desde: str | None = typer.Option(None, help="Fecha de inicio (AAAA-MM-DD)."),
     hasta: str | None = typer.Option(None, help="Fecha de fin (AAAA-MM-DD)."),
     estado_legal: str = typer.Option("VIGENTE", help="Estado legal validado."),
+    condicion: str | None = typer.Option(
+        None,
+        help=(
+            "Para CONDICIONADO: de qué depende que rija. Sin esto la base rechaza la "
+            "decisión, y con razón: «condicionado» sin condición no dice nada."
+        ),
+    ),
     evidencia: str | None = typer.Option(
         None, help="Evidencia que fundamenta el estado. Si se omite, se usa la de la ficha."
     ),
@@ -1727,6 +1763,7 @@ def revision_resolver_vigencia(
                 "valid_desde": desde,
                 "valid_hasta": hasta,
                 "estado_legal": estado_legal,
+                "condicion_vigencia": condicion,
             },
         )
     typer.echo(

@@ -2985,3 +2985,67 @@ las revisó un profesional del derecho. Sigue vigente la prohibición de afirmar
 elegibilidad definitiva: el motor devuelve cumple / no cumple / desconocido por
 condición, con su cita, y la pantalla dice que quien decide es el organismo.
 Esa distinción es ahora lo único que separa una orientación de un dictamen.
+
+## D-131 · La vigencia se determinó leyendo, no firmando
+
+Con D-130 el cuello de botella dejó de ser una firma y pasó a ser trabajo de
+lectura: 88 incidencias de vigencia abiertas, y sin vigencia resuelta no se
+publica nada. Se resolvieron **diez**, las que sostienen el alcance con datos
+suficientes en el corpus. El dictamen completo, norma por norma, está en
+`docs/revision/dictamen_vigencia.md`; acá va lo que cambia el diseño.
+
+**La regla es supletoria y hay que decir cuál.** Art. 5 del Código Civil y
+Comercial, y art. 2 del Código Civil t.o. Ley 16.504 para las anteriores a 2015:
+la norma rige a los ocho días corridos de su publicación si no designa otro
+tiempo. Se buscó en el texto capturado de cada una una cláusula propia de
+entrada en vigencia y no hay ninguna, así que en todas rige el plazo supletorio.
+
+**Tres casos no eran mecánicos, y son los que importan.**
+
+*La Ley 547/2001 está etiquetada «no vigente» en la fuente y sí rige.* Es una
+norma modificatoria consumida por incorporación: sus artículos 1 y 2 son el
+texto actual de los artículos 10 y 16 de la Ordenanza 43478, que fijan los topes
+de ingreso de la beca de comedor, el incremento del 15 % por cada niño y la
+deducción por enfermedad crónica. Tratar la etiqueta como cierre de vigencia
+habría ocultado los criterios vigentes del beneficio. La política ya advertía
+este caso y por eso se negaba a resolverlo sola.
+
+*El Decreto 690/2006 no está derogado y tampoco puede declararse abierto.* La
+Ley 6935/2025 dice que el programa nuevo «se regirá exclusivamente por las
+disposiciones de la presente Ley» y su cláusula transitoria mantiene el decreto
+«hasta la publicación de reglamentación». Depende de un hecho externo que el
+corpus no registra. Quedó **CONDICIONADO**, y eso lo deja fuera de cualquier
+corte publicado: el servicio no va a servir como vigentes los requisitos del
+decreto viejo. Es la primera vez que el vocabulario CONDICIONADO se usa para lo
+que existe, y funcionó: el gate DQ08 lo retiene solo.
+
+*La Ley 24.714 fue derogada y restituida.* El Decreto 1382/2001 la derogó entera
+y el Decreto 1604/2001 restituyó su vigencia **desde la fecha de la derogación**,
+con una excepción cuyo alcance no se pudo leer en la captura. De ella cuelgan 12
+de los 16 beneficios. Se determinó ABIERTO_FIN con estado VIGENCIA_PARCIAL, y el
+fundamento registra las dos cosas que no se pudieron verificar: el alcance de esa
+excepción, y el de dos relaciones DEROGA —Ley 27260/2016 y Decreto 1039/2024—
+cuyo texto de origen no está capturado. Si alguna fuera total, la determinación
+cae y con ella los 12 beneficios. Está escrito para que se verifique primero.
+
+**Un beneficio no tiene vigencia propia.** Existe porque una norma lo crea y
+mientras esa norma rija; las que lo reglamentan o lo modifican cambian su
+contenido, no su existencia. Eso es ahora una política —
+`vigencia-derivada-del-beneficio@1`— y un resolutor. Antes no había ninguno: el
+resolutor de vigencia sólo recorre versiones de norma, y para los beneficios no
+había ni camino automático ni cola de revisión, así que iban a quedar en
+DESCONOCIDO para siempre. No fallaba nada; simplemente no se podía publicar un
+beneficio. Con las normas resueltas, los 16 quedaron con intervalo: 15 abiertos y
+uno condicionado.
+
+Es conservadora en los tres lugares donde derivar sería inventar: sin norma
+creadora no deriva —que no conste qué crea un beneficio es un dato que falta, no
+una vigencia abierta—; si la creadora no está resuelta, el beneficio tampoco; y
+la fecha sale de la norma que lo crea y nunca de una que lo reglamenta, porque un
+decreto reglamentario posterior no corre el nacimiento del derecho.
+
+**Lo que quedó a la vista.** De las 127 versiones que siguen sin intervalo, casi
+todas lo están por la misma razón: **124 de 142 documentos no tienen fecha
+capturada**. No es una cuestión jurídica —la regla para determinarlas es la de
+arriba— sino un dato que la ingesta no extrajo. El cuello de botella del corpus
+volvió a ser código.

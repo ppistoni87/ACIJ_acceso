@@ -197,3 +197,112 @@ class ResolutorVigencia:
             },
         )
         resultado.incidencias_creadas += 1
+
+
+@dataclass
+class ResultadoDerivada:
+    """Qué pasó al derivar la vigencia de los beneficios."""
+
+    beneficios: int = 0
+    resueltos: int = 0
+    sin_resolver: list[str] = field(default_factory=list)
+
+
+class ResolutorVigenciaDeBeneficios:
+    """Deriva la vigencia de cada beneficio de la de la norma que lo crea.
+
+    Un beneficio no tiene vigencia propia. Existe porque una norma lo crea y
+    mientras esa norma rija; las que lo reglamentan o lo modifican cambian su
+    contenido y no su existencia. Sin esto, los beneficios quedaban en
+    DESCONOCIDO para siempre: `ResolutorVigencia` sólo recorre versiones de
+    norma, y nadie creaba una incidencia para ellos, así que no había ni camino
+    automático ni cola de revisión. No fallaba nada; simplemente no se podía
+    publicar un beneficio.
+
+    Es conservador por construcción: si la norma creadora no tiene vigencia
+    resuelta, el beneficio tampoco. Derivar igual sería afirmar por
+    transitividad lo que nadie determinó en el origen.
+    """
+
+    def __init__(self, conexion: Connection) -> None:
+        self.conexion = conexion
+
+    CREADORAS = """
+    SELECT b.codigo, bv.registro_version_id AS version_id,
+           n.tipo || ' ' || coalesce(n.numero, '?') || '/' || coalesce(n.anio::text, '?')
+               AS norma,
+           rvn.valid_tipo, rvn.valid_desde, rvn.valid_hasta, rvn.condicion_vigencia
+      FROM beneficio_versiones bv
+      JOIN beneficios b ON b.id = bv.beneficio_id
+      JOIN registro_versiones rvb ON rvb.id = bv.registro_version_id
+      LEFT JOIN beneficio_normas bn ON bn.beneficio_version_id = bv.registro_version_id
+                                   AND bn.rol = :rol
+      LEFT JOIN norma_versiones nv ON nv.registro_version_id = bn.norma_version_id
+      LEFT JOIN normas n ON n.id = nv.norma_id
+      LEFT JOIN registro_versiones rvn ON rvn.id = nv.registro_version_id
+     WHERE rvb.estado_revision IN ('CANDIDATE', 'IN_REVIEW')
+       AND rvb.valid_tipo = 'DESCONOCIDO'
+     ORDER BY b.codigo
+    """
+
+    def resolver(self, *, actor: str, ahora: dt.datetime | None = None) -> ResultadoDerivada:
+        ahora = ahora or dt.datetime.now(dt.UTC)
+        resultado = ResultadoDerivada()
+
+        por_version: dict[str, dict] = {}
+        for fila in (
+            self.conexion.execute(text(self.CREADORAS), {"rol": politica.ROL_CREADOR})
+            .mappings()
+            .all()
+        ):
+            entrada = por_version.setdefault(
+                str(fila["version_id"]),
+                {"codigo": fila["codigo"], "version_id": fila["version_id"], "creadoras": []},
+            )
+            if fila["norma"] is not None:
+                entrada["creadoras"].append(
+                    {
+                        "norma": fila["norma"],
+                        "valid_tipo": fila["valid_tipo"],
+                        "valid_desde": fila["valid_desde"],
+                        "valid_hasta": fila["valid_hasta"],
+                        "condicion": fila["condicion_vigencia"],
+                    }
+                )
+
+        resultado.beneficios = len(por_version)
+        for entrada in por_version.values():
+            dictamen = politica.dictaminar_derivada(entrada["creadoras"])
+            if not dictamen.automatica:
+                resultado.sin_resolver.append(f"{entrada['codigo']}: {dictamen.fundamento}")
+                continue
+            self._aplicar(entrada["version_id"], dictamen, actor=actor, ahora=ahora)
+            resultado.resueltos += 1
+        return resultado
+
+    def _aplicar(self, version_id, dictamen, *, actor: str, ahora: dt.datetime) -> None:
+        self.conexion.execute(
+            text(
+                "UPDATE registro_versiones "
+                "   SET valid_tipo = :vt, valid_desde = :desde, valid_hasta = :hasta, "
+                "       condicion_vigencia = :condicion, verificado_en = :ahora, "
+                "       reverificar_antes_de = :frescura "
+                " WHERE id = :id"
+            ),
+            {
+                "vt": dictamen.valid_tipo.value,
+                "desde": dictamen.valid_desde,
+                "hasta": dictamen.valid_hasta,
+                "condicion": dictamen.condicion,
+                "ahora": ahora,
+                "frescura": ahora + dt.timedelta(days=30),
+                "id": version_id,
+            },
+        )
+        self.conexion.execute(
+            text(
+                "INSERT INTO auditoria_eventos (actor, accion, objeto, objeto_id, motivo) "
+                "VALUES (:actor, 'DERIVAR_VIGENCIA', 'registro_versiones', :id, :motivo)"
+            ),
+            {"actor": actor, "id": str(version_id), "motivo": dictamen.fundamento},
+        )
