@@ -63,7 +63,7 @@ jurídica.
 
 | # | Historia | Estado | Qué hay y qué falta |
 | --- | --- | --- | --- |
-| P-025 | Conversación y memoria mínima | EN_CURSO | **Construida la mitad que no depende de nada externo** (D-134): estado mínimo con hechos, procedencia y `rehusado`, corrección que sube versión, TTL de 30 min / 2 h, rutas y purga. Falta usarlo desde el frente y, cuando haya clave de modelo, la orquestación con LangGraph. |
+| P-025 | Conversación y memoria mínima | EN_CURSO | Estado mínimo con hechos, procedencia y `rehusado`, corrección que sube versión, TTL de 30 min / 2 h, rutas y purga (D-134). Y el turno como grafo de LangGraph, que puede parar a preguntar el único dato que cambia la orientación (D-135). Falta usarlo desde el frente. |
 | P-026 | Desambiguar beneficios y reordenar evidencia | EN_CURSO | La búsqueda híbrida existe y está medida, con conjunto congelado. Faltan las fichas comparativas por beneficio y el reranker acotado, que sólo se aprueban con mejora demostrada. |
 | P-027 | Adaptador de modelos actualizado | EN_CURSO | Hay adaptador por variables de entorno (`BN_MODELO_*`) con `httpx`, sin SDK. Faltan registro de modelo/versión/región/límites/costo medido, salida validada por Pydantic y ensayo de reversión. |
 | P-028 | Verificar cada respuesta antes de mostrarla | EN_CURSO | Los validadores comprueban que cada cita exista y pertenezca al corte, y el modo se declara. Falta lo caro: `evidence_ids` por afirmación, criticidad, verificación de respaldo semántico y retención de la afirmación afectada en vez de la respuesta entera. |

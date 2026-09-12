@@ -23,6 +23,13 @@ dependencies = [
     "jsonschema>=4.23",
     "typer>=0.13",
     "tenacity>=9.0",
+    # Módulo de estado de la conversación (P-025). Versión fijada, no un rango:
+    # el plan lo pide así y con razón —un grafo que cambia de semántica entre
+    # menores rompe una conversación en producción sin que nadie toque el
+    # código—. Arrastra `langsmith`, que puede enviar trazas a un servicio
+    # externo: se apaga explícitamente en `conversacion/grafo.py` y hay una
+    # prueba que lo verifica.
+    "langgraph==1.2.11",
 ]
 
 [project.optional-dependencies]

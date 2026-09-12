@@ -3212,3 +3212,48 @@ con un proveedor de modelo configurado, que no hay. Lo que sí hacía falta hoy 
 dónde se guarda el estado y con qué reglas, que es justo lo que un checkpointer
 guardaría. Cuando esté la clave, la orquestación se apoya sobre esto en vez de
 reemplazarlo. Queda dicho para que no parezca un olvido.
+
+## D-135 · LangGraph entra a orquestar, no a persistir
+
+Con la conversación autorizada a recordar, se incorporó LangGraph como pide el
+plan. Tres decisiones sobre cómo entra.
+
+**Orquesta y no persiste.** Sus `checkpointers` guardan el estado completo del
+grafo, mensajes incluidos. La política dice que el historial no se guarda y hay
+un `CHECK` en la base que lo hace cumplir sobre `sesiones_conversacion`. Así que
+el grafo se compila **sin checkpointer** —hay una prueba que lo verifica sobre
+el grafo compilado, no sobre el texto del código— y el estado conversacional
+sigue viviendo en nuestra tabla, con sus plazos y su límite de claves.
+
+**LangSmith queda apagado a la fuerza.** `langgraph` arrastra `langsmith`, que
+manda trazas a un servicio externo si encuentra su variable de entorno. Al
+importar el módulo se ponen en `false` las tres variables que lo activan, aunque
+vinieran puestas: una consulta sobre un desalojo no se le manda a un tercero
+porque alguien dejó algo en un `.env`. Una prueba lo comprueba con la propia
+función de la librería.
+
+**La versión va fijada, no en un rango.** `langgraph==1.2.11`. Un grafo que
+cambia de semántica entre menores rompe una conversación en producción sin que
+nadie haya tocado el código.
+
+**Qué gana el turno por ser un grafo.** No elegancia: gana **poder parar**. El
+recorrido de §08.2 vivía adentro de `POST /v1/respuestas`, en una función lineal
+que hacía todo seguido y contestaba con lo que tuviera. Ahora, después de
+evaluar, el turno puede terminar preguntando el único dato que cambia la
+orientación. Ese es el criterio 2 de P-025 y es una bifurcación, no un paso más.
+
+Los nodos son `recibir` (urgencia, antes que nada y sin depender de que la
+búsqueda encuentre algo), `buscar`, `identificar`, `evaluar`, y la bifurcación
+entre `aclarar` y `responder`.
+
+**Ninguno llama a un modelo, y por eso se puede ejercer hoy.** Todos los pasos
+son deterministas: buscar, identificar el beneficio, evaluar las reglas, elegir
+la pregunta. Cuando haya clave de proveedor, la redacción entra como un nodo más
+y la política de modos no cambia.
+
+**Dos negativas que quedaron en el código.** `identificar` pasa de «encontré este
+artículo» a «esto es sobre la beca de comedor» cruzando fragmento → norma →
+beneficio; con más de un candidato **no elige**: elegir por cantidad de
+fragmentos sería decidir por parecido cuál de dos programas le corresponde a
+alguien. Y `aclarar` pide **una** pregunta por turno, la primera que el motor
+dejó pendiente: pedir tres datos juntos es lo que hace que la persona abandone.
