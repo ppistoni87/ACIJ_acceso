@@ -69,7 +69,9 @@ pudieron ejercitar acá. Afecta a P-002 y P-005.
 respalda el dato, y que la pantalla diga exactamente eso —«lo saqué de la página
 oficial el …, confirmá antes de ir»— en vez de «lo verifiqué», que sería otra
 cosa (D-141). Se sellaron 14.452 versiones, ninguna huérfana, y la cuarentena
-bajó de 14.520 a 130. Falta publicar el corte. El texto que sigue es el
+bajó de 14.520 a 130. **Publicado en el corte `0fd34d45`**: los 1.842 lugares de
+atención y los 15 beneficios se sirven al mismo tiempo. La primera publicación
+salió incompleta y se revirtió; la causa está en D-142. El texto que sigue es el
 diagnóstico original.
 
 **E (diagnóstico original) · Falta decidir qué cuenta como verificar un directorio.** La base exige

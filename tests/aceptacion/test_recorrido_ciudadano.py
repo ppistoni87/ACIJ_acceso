@@ -134,9 +134,7 @@ def _punto_de_atencion_publicado(conexion) -> None:
 CONDICION_PREGUNTABLE = (
     "Son beneficiarios las personas en situación de vulnerabilidad habitacional."
 )
-CONDICION_DE_DOS_COSAS = (
-    "Acreditar la identidad de la persona titular y la del grupo conviviente."
-)
+CONDICION_DE_DOS_COSAS = "Acreditar la identidad de la persona titular y la del grupo conviviente."
 
 
 def _beneficio_con_reglas_publicado(conexion, corpus) -> None:
@@ -150,6 +148,8 @@ def _beneficio_con_reglas_publicado(conexion, corpus) -> None:
     """
     import json
 
+    from tests.conftest import version_publicada
+
     beneficio = conexion.execute(
         text(
             "INSERT INTO beneficios (codigo, nombre, linea, familia) "
@@ -157,17 +157,7 @@ def _beneficio_con_reglas_publicado(conexion, corpus) -> None:
             "RETURNING id"
         )
     ).scalar_one()
-    version = conexion.execute(
-        text(
-            "INSERT INTO registro_versiones (entidad_tipo, entidad_id, numero_version, "
-            " estado_revision, valid_tipo, valid_desde, release_id, verificado_en) "
-            "SELECT 'beneficio', :b, 1, 'PUBLISHED', 'ABIERTO_FIN', DATE '2025-12-23', "
-            "       r.id, now() "
-            "  FROM releases r WHERE r.estado = 'PUBLICADO' "
-            " ORDER BY r.publicado_en DESC LIMIT 1 RETURNING id"
-        ),
-        {"b": beneficio},
-    ).scalar_one()
+    version = version_publicada(conexion, entidad_tipo="beneficio", entidad_id=beneficio)
     conexion.execute(
         text(
             "INSERT INTO beneficio_versiones (registro_version_id, beneficio_id, "

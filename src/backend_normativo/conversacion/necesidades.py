@@ -114,8 +114,9 @@ NECESIDADES_DEL_CORTE = """
 SELECT b.familia, count(*) AS cuantos
   FROM beneficio_versiones bv
   JOIN registro_versiones rv ON rv.id = bv.registro_version_id
+  JOIN release_versiones m ON m.registro_version_id = rv.id AND m.release_id = :r
   JOIN beneficios b ON b.id = bv.beneficio_id
- WHERE rv.estado_revision = 'PUBLISHED' AND rv.release_id = :r
+ WHERE rv.estado_revision = 'PUBLISHED'
    AND b.familia IS NOT NULL
  GROUP BY b.familia
  ORDER BY count(*) DESC, b.familia
@@ -137,9 +138,10 @@ SELECT b.id, b.codigo, b.nombre, bv.descripcion, bv.jurisdiccion_id,
          LIMIT 1) AS norma
   FROM beneficio_versiones bv
   JOIN registro_versiones rv ON rv.id = bv.registro_version_id
+  JOIN release_versiones m ON m.registro_version_id = rv.id AND m.release_id = :r
   JOIN beneficios b ON b.id = bv.beneficio_id
   LEFT JOIN jurisdicciones j ON j.id = bv.jurisdiccion_id
- WHERE rv.estado_revision = 'PUBLISHED' AND rv.release_id = :r AND b.familia = :f
+ WHERE rv.estado_revision = 'PUBLISHED' AND b.familia = :f
  ORDER BY b.nombre
 """
 

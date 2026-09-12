@@ -14,6 +14,8 @@ import uuid
 import pytest
 from sqlalchemy import Connection, text
 
+from tests.conftest import version_publicada
+
 pytestmark = pytest.mark.integracion
 
 
@@ -27,16 +29,7 @@ def _beneficio(conexion: Connection, corpus, *, familia: str, nombre: str) -> No
         ),
         {"c": f"AR.NEC-{sufijo}", "n": nombre, "f": familia},
     ).scalar_one()
-    version = conexion.execute(
-        text(
-            "INSERT INTO registro_versiones (entidad_tipo, entidad_id, numero_version, "
-            " estado_revision, valid_tipo, valid_desde, release_id, verificado_en) "
-            "SELECT 'beneficio', :b, 1, 'PUBLISHED', 'ABIERTO_FIN', '2025-12-23', "
-            "       rv.release_id, now() FROM registro_versiones rv WHERE rv.id = :rv "
-            "RETURNING id"
-        ),
-        {"b": beneficio, "rv": corpus.registro_version_id},
-    ).scalar_one()
+    version = version_publicada(conexion, entidad_tipo="beneficio", entidad_id=beneficio)
     conexion.execute(
         text(
             "INSERT INTO beneficio_versiones (registro_version_id, beneficio_id, "

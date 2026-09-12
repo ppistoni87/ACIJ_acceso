@@ -15,6 +15,8 @@ import uuid
 import pytest
 from sqlalchemy import Connection, text
 
+from tests.conftest import version_publicada
+
 pytestmark = pytest.mark.integracion
 
 APLICABILIDAD = "Son beneficiarios las personas en situación de vulnerabilidad habitacional."
@@ -37,19 +39,7 @@ def _beneficio_publicado(conexion: Connection, corpus) -> str:
         ),
         {"c": f"AR.ORIENTACION-{sufijo}"},
     ).scalar_one()
-    version = conexion.execute(
-        text(
-            # `verificado_en` no es decorado: la base rechaza publicar sin él
-            # —lo pide un CHECK— y por eso este armado tiene que ponerlo igual
-            # que lo pondría el publicador.
-            "INSERT INTO registro_versiones (entidad_tipo, entidad_id, numero_version, "
-            " estado_revision, valid_tipo, valid_desde, release_id, verificado_en) "
-            "SELECT 'beneficio', :b, 1, 'PUBLISHED', 'ABIERTO_FIN', '2025-12-23', "
-            "       rv.release_id, now() "
-            "  FROM registro_versiones rv WHERE rv.id = :rv RETURNING id"
-        ),
-        {"b": beneficio, "rv": corpus.registro_version_id},
-    ).scalar_one()
+    version = version_publicada(conexion, entidad_tipo="beneficio", entidad_id=beneficio)
     conexion.execute(
         text(
             "INSERT INTO beneficio_versiones (registro_version_id, beneficio_id, "

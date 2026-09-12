@@ -179,7 +179,9 @@ SELECT b.id, b.codigo, b.nombre
   JOIN beneficio_versiones bv ON bv.beneficio_id = b.id
   JOIN registro_versiones rv ON rv.id = bv.registro_version_id
  WHERE b.codigo = :c AND rv.estado_revision = 'PUBLISHED'
-   AND (CAST(:r AS uuid) IS NULL OR rv.release_id = :r)
+   AND (CAST(:r AS uuid) IS NULL
+        OR EXISTS (SELECT 1 FROM release_versiones m
+                    WHERE m.registro_version_id = rv.id AND m.release_id = :r))
  LIMIT 1
 """
 

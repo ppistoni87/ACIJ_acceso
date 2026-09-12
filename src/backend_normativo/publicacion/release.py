@@ -67,6 +67,11 @@ class ResultadoPublicacion:
     # puntos de atención dejaría a la API sin una sola norma que citar.
     chunks_heredados: int = 0
     vectores_heredados: int = 0
+    versiones_heredadas: int = 0
+    # Entidades que el corte anterior servía y este no. Tiene que ser cero salvo
+    # que alguien lo haya decidido: la publicación que descubrió esto salió en
+    # verde mientras dejaba de servir quince beneficios.
+    dejo_de_servir: list[dict] = field(default_factory=list)
     eventos_emitidos: int = 0
     en_cuarentena: list[dict] = field(default_factory=list)
     gates: ResultadoGates | None = None
@@ -244,10 +249,15 @@ class Publicador:
             {"v": candidatos},
         )
 
+        self._registrar_membresia(release_id, candidatos)
         anterior = self._corte_anterior(release_id)
         if anterior is not None:
+            resultado.versiones_heredadas = self._heredar_versiones(
+                release_id, anterior, candidatos
+            )
             resultado.chunks_heredados = self._heredar_fragmentos(release_id, anterior, candidatos)
             resultado.vectores_heredados = self._heredar_vectores(release_id, anterior)
+            resultado.dejo_de_servir = self._dejo_de_servir(release_id, anterior)
         resultado.chunks_creados = self._construir_chunks(release_id, candidatos)
         resultado.eventos_emitidos = self._emitir_eventos(release_id, candidatos, manifiesto)
         resultado.en_cuarentena = self.cuarentena()
@@ -361,6 +371,91 @@ class Publicador:
             ),
             {"r": release_id},
         ).scalar_one_or_none()
+
+    def _registrar_membresia(self, release_id: uuid.UUID, candidatos: list[uuid.UUID]) -> None:
+        """Lo que esta corrida incorpora al corte."""
+        self.conexion.execute(
+            text(
+                "INSERT INTO release_versiones (release_id, registro_version_id, heredada) "
+                "SELECT :r, id, false FROM unnest(CAST(:v AS uuid[])) AS id "
+                "ON CONFLICT DO NOTHING"
+            ),
+            {"r": release_id, "v": candidatos},
+        )
+
+    def _heredar_versiones(
+        self, release_id: uuid.UUID, anterior: uuid.UUID, candidatos: list[uuid.UUID]
+    ) -> int:
+        """Trae al corte nuevo las versiones que el anterior servía y siguen vigentes.
+
+        Es el mismo criterio que los fragmentos y por la misma razón, un nivel
+        más arriba. `registro_versiones.release_id` es el corte que publicó la
+        versión, no los cortes en los que se sirve: sin esta herencia, publicar
+        el dato operativo creó un corte de 14.390 versiones sin los 15
+        beneficios ni las 8 normas del anterior, que se quedaron apuntando al
+        corte viejo. La orientación y la evaluación quedaron muertas y el
+        informe salió en verde.
+
+        No se hereda lo que esta corrida reemplaza: si entre los candidatos
+        viene una versión nueva de la misma entidad, la vieja no viaja. Servir
+        las dos sería contestar con dos textos de la misma norma.
+        """
+        heredadas = (
+            self.conexion.execute(
+                text(
+                    "INSERT INTO release_versiones (release_id, registro_version_id, heredada) "
+                    "SELECT :nuevo, m.registro_version_id, true "
+                    "  FROM release_versiones m "
+                    "  JOIN registro_versiones rv ON rv.id = m.registro_version_id "
+                    " WHERE m.release_id = :anterior "
+                    "   AND rv.estado_revision = 'PUBLISHED' "
+                    "   AND NOT EXISTS ("
+                    "     SELECT 1 FROM registro_versiones nueva "
+                    "      WHERE nueva.id = ANY(:v) "
+                    "        AND nueva.entidad_tipo = rv.entidad_tipo "
+                    "        AND nueva.entidad_id = rv.entidad_id) "
+                    "ON CONFLICT DO NOTHING "
+                    "RETURNING registro_version_id"
+                ),
+                {"nuevo": release_id, "anterior": anterior, "v": candidatos},
+            )
+            .scalars()
+            .all()
+        )
+        return len(heredadas)
+
+    def _dejo_de_servir(self, release_id: uuid.UUID, anterior: uuid.UUID) -> list[dict]:
+        """Entidades que el corte anterior servía y este no, por tipo.
+
+        La red que faltaba. Con herencia esto debería dar vacío siempre, y si da
+        algo es porque una versión salió de servicio —quedó en cuarentena, la
+        reemplazó otra que no se publicó— y eso hay que verlo antes de que
+        alguien se entere por la pantalla vacía.
+        """
+        return [
+            dict(fila)
+            for fila in self.conexion.execute(
+                text(
+                    "SELECT rv.entidad_tipo, count(*) AS cuantas "
+                    "  FROM release_versiones m "
+                    "  JOIN registro_versiones rv ON rv.id = m.registro_version_id "
+                    " WHERE m.release_id = :anterior "
+                    "   AND NOT EXISTS (SELECT 1 FROM release_versiones n "
+                    "                    WHERE n.release_id = :nuevo "
+                    "                      AND n.registro_version_id = m.registro_version_id) "
+                    "   AND NOT EXISTS (SELECT 1 FROM release_versiones n "
+                    "                    JOIN registro_versiones rn "
+                    "                      ON rn.id = n.registro_version_id "
+                    "                   WHERE n.release_id = :nuevo "
+                    "                     AND rn.entidad_tipo = rv.entidad_tipo "
+                    "                     AND rn.entidad_id = rv.entidad_id) "
+                    " GROUP BY rv.entidad_tipo ORDER BY 1"
+                ),
+                {"nuevo": release_id, "anterior": anterior},
+            )
+            .mappings()
+            .all()
+        ]
 
     def _heredar_fragmentos(
         self, release_id: uuid.UUID, anterior: uuid.UUID, candidatos: list[uuid.UUID]

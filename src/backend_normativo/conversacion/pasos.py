@@ -71,7 +71,9 @@ SELECT t.titulo, tp.orden, tp.accion
   JOIN registro_versiones rv ON rv.id = tv.registro_version_id
   JOIN tramite_pasos tp ON tp.tramite_version_id = tv.registro_version_id
  WHERE t.beneficio_id = :b AND rv.estado_revision = 'PUBLISHED'
-   AND (CAST(:r AS uuid) IS NULL OR rv.release_id = :r)
+   AND (CAST(:r AS uuid) IS NULL
+        OR EXISTS (SELECT 1 FROM release_versiones m
+                    WHERE m.registro_version_id = rv.id AND m.release_id = :r))
  ORDER BY t.titulo, tp.orden
 """
 

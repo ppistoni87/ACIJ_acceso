@@ -94,7 +94,14 @@ def _resolver_parametro(conexion: Connection, release_id: uuid.UUID | None):
                 # parámetro: la evaluación de un beneficio con un monto por
                 # parámetro se caía con 500 la primera vez que se la usó de
                 # verdad.
-                "   AND (CAST(:r AS uuid) IS NULL OR rv.release_id = :r) "
+                # La membresía y no `rv.release_id`: esa columna dice qué corte
+                # publicó la versión, no en cuáles se sirve. Filtrando por ella,
+                # el primer corte que no republicara el parámetro dejaba los
+                # montos sin resolver y la evaluación se abstenía sin decir por
+                # qué (D-142).
+                "   AND (CAST(:r AS uuid) IS NULL OR EXISTS ("
+                "        SELECT 1 FROM release_versiones m "
+                "         WHERE m.registro_version_id = rv.id AND m.release_id = :r)) "
                 " LIMIT 1"
             ),
             {"c": codigo, "f": fecha, "r": release_id},

@@ -2170,13 +2170,24 @@ def publicacion_publicar(
         raise typer.Exit(code=1) from exc
     typer.echo(
         f"Release {resultado.release_id}\n"
-        f"Versiones publicadas: {resultado.versiones_publicadas}\n"
+        f"Versiones publicadas: {resultado.versiones_publicadas} nuevas"
+        f" · {resultado.versiones_heredadas} heredadas del corte anterior\n"
         f"Fragmentos citables: {resultado.chunks_creados} nuevos"
         f" · {resultado.chunks_heredados} heredados del corte anterior"
         f" ({resultado.vectores_heredados} con su vector)\n"
         f"Eventos en outbox: {resultado.eventos_emitidos}\n"
         f"En cuarentena: {len(resultado.en_cuarentena)}"
     )
+    # Lo primero que hay que ver si pasó, porque es lo que no duele hasta que
+    # alguien se encuentra la pantalla vacía.
+    if resultado.dejo_de_servir:
+        typer.echo("AVISO: este corte deja de servir lo que el anterior servía:")
+        for fila in resultado.dejo_de_servir:
+            typer.echo(f"  {fila['entidad_tipo']:<18} {fila['cuantas']:>6}")
+        typer.echo(
+            "  Si no fue a propósito, `bn publicacion revertir` deja de servir este corte "
+            "sin borrar nada."
+        )
     for version in resultado.sin_afirmaciones_aprobadas:
         typer.echo(
             f"  aviso: la versión {version} se publicó con todas sus afirmaciones sin "

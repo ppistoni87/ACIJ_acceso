@@ -243,3 +243,149 @@ def test_el_indice_semantico_viaja_con_lo_heredado(conexion: Connection) -> None
         ).scalar_one()
         == cuantos
     )
+
+
+# --- Un nivel más arriba: las versiones, no sólo los fragmentos ---------------
+#
+# El agujero de arriba se tapó para los fragmentos y quedó abierto para las
+# versiones. `registro_versiones.release_id` es el corte que **publicó** la
+# versión, no los cortes en los que se sirve, así que un corte nuevo dejaba
+# fuera de servicio todo lo que el anterior había publicado. Se cobró una
+# publicación real: 14.390 versiones operativas entraron y los 15 beneficios y
+# las 8 normas del corte anterior se quedaron apuntando al viejo. La orientación
+# y la evaluación quedaron muertas con el informe en verde.
+
+
+def _beneficio_publicable(conexion: Connection, corpus, nombre: str) -> None:
+    """Un beneficio aprobado y sin publicar, colgado de la norma del corpus."""
+    import uuid as _uuid
+
+    beneficio = conexion.execute(
+        text(
+            "INSERT INTO beneficios (codigo, nombre, linea, familia) "
+            "VALUES (:c, :n, 'SUBSIDIO', 'HABITACIONAL') RETURNING id"
+        ),
+        {"c": f"AR.CORTE-{_uuid.uuid4().hex[:8].upper()}", "n": nombre},
+    ).scalar_one()
+    version = conexion.execute(
+        text(
+            "INSERT INTO registro_versiones (entidad_tipo, entidad_id, numero_version, "
+            " estado_revision, valid_tipo, valid_desde, verificado_en) "
+            "VALUES ('beneficio', :b, 1, 'APPROVED', 'ABIERTO_FIN', DATE '2025-12-23', now()) "
+            "RETURNING id"
+        ),
+        {"b": beneficio},
+    ).scalar_one()
+    conexion.execute(
+        text(
+            "INSERT INTO beneficio_versiones (registro_version_id, beneficio_id, "
+            " jurisdiccion_id, naturaleza, descripcion) "
+            "VALUES (:rv, :b, 'AR-C', 'PRESTACION_MONETARIA', 'Prestación de prueba.')"
+        ),
+        {"rv": version, "b": beneficio},
+    )
+
+
+def _beneficios_del_corte(conexion: Connection) -> int:
+    from backend_normativo.conversacion.necesidades import disponibles
+
+    return sum(n.cuantos for n in disponibles(conexion, release_vigente_ahora(conexion)))
+
+
+def test_el_segundo_corte_sigue_sirviendo_los_beneficios_del_primero(
+    conexion: Connection,
+) -> None:
+    """El caso que se cobró una publicación de verdad.
+
+    Publicar el dato operativo no puede dejar de servir los programas: sin
+    ellos no hay orientación, no hay evaluación y la pantalla no tiene qué
+    ofrecer, todo con el corte en verde.
+    """
+    from backend_normativo.publicacion.release import Publicador
+
+    corpus = construir_corpus(conexion)
+    _beneficio_publicable(conexion, corpus, "Apoyo habitacional")
+    publicar_corpus(conexion, corpus)
+    antes = _beneficios_del_corte(conexion)
+    assert antes > 0, "el primer corte publica el beneficio"
+
+    _punto_aprobado(conexion, "Sede que llega después")
+    Publicador(conexion).publicar(actor="publicador:equipo", motivo="Puntos de atención.")
+
+    despues = _beneficios_del_corte(conexion)
+    assert despues == antes, (
+        f"el corte nuevo sirve {despues} beneficios y el anterior servía {antes}: "
+        "publicar dejó a la orientación sin nada que ofrecer"
+    )
+
+
+def test_la_publicacion_avisa_cuando_deja_de_servir_algo(conexion: Connection) -> None:
+    """La red que faltaba, y que es lo que hace que esto no vuelva a pasar callado.
+
+    Con herencia esto tiene que dar vacío. Que exista el informe importa igual:
+    si mañana una versión sale de servicio por otro motivo —cuarentena, un
+    reemplazo que no se publicó—, se ve en la publicación y no en la pantalla
+    vacía de alguien.
+    """
+    from backend_normativo.publicacion.release import Publicador
+
+    corpus = construir_corpus(conexion)
+    _beneficio_publicable(conexion, corpus, "Apoyo habitacional")
+    publicar_corpus(conexion, corpus)
+
+    _punto_aprobado(conexion, "Otra sede más")
+    resultado = Publicador(conexion).publicar(
+        actor="publicador:equipo", motivo="Puntos de atención."
+    )
+
+    assert resultado.dejo_de_servir == [], f"el corte dejó de servir {resultado.dejo_de_servir}"
+    assert resultado.versiones_heredadas > 0, "algo tenía que heredarse del corte anterior"
+
+
+def test_revertir_no_desatiende_lo_que_publico_el_corte_anterior(conexion: Connection) -> None:
+    """Heredar no puede convertir a un corte en dueño de lo ajeno.
+
+    Si al revertir el corte nuevo se despublicara también lo heredado, revertir
+    una corrida de puntos de atención apagaría las leyes que venían de antes.
+    """
+    from backend_normativo.publicacion.release import Publicador
+
+    corpus = construir_corpus(conexion)
+    _beneficio_publicable(conexion, corpus, "Apoyo habitacional")
+    publicar_corpus(conexion, corpus)
+    antes = _beneficios_del_corte(conexion)
+
+    _punto_aprobado(conexion, "Sede efímera")
+    segundo = Publicador(conexion).publicar(actor="publicador:equipo", motivo="Puntos.")
+    Publicador(conexion).revertir(
+        segundo.release_id, actor="publicador:equipo", motivo="Se revierte."
+    )
+
+    assert _beneficios_del_corte(conexion) == antes, (
+        "revertir el corte nuevo apagó lo que servía el anterior"
+    )
+
+
+def test_ninguna_consulta_filtra_versiones_por_release_id(conexion: Connection) -> None:
+    """«Qué sirve un corte» se define en un solo lugar: la membresía.
+
+    El mismo error apareció dos veces en dos niveles distintos —los fragmentos
+    y las versiones— porque cada consulta lo resolvía por su cuenta. Esta prueba
+    es la que evita la tercera.
+    """
+    import pathlib
+    import re
+
+    raiz = pathlib.Path(__file__).resolve().parents[2] / "src" / "backend_normativo"
+    culpables = []
+    for archivo in raiz.rglob("*.py"):
+        if "migrations" in archivo.parts:
+            continue
+        for numero, linea in enumerate(archivo.read_text().splitlines(), 1):
+            if re.search(r"\brv\.release_id\s*=\s*:", linea):
+                culpables.append(f"{archivo.relative_to(raiz)}:{numero}")
+
+    assert not culpables, (
+        "filtrar versiones por `rv.release_id` pregunta qué corte las publicó, no en cuáles "
+        f"se sirven: {culpables}. Se une contra `release_versiones`."
+    )

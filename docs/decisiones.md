@@ -3530,3 +3530,52 @@ lectura jurídica.
 
 **El corte todavía no está publicado.** El sellado corrió sobre la base local;
 publicar el nuevo corte quedó pendiente de una autorización explícita.
+
+## D-142 · Un corte es la foto completa también en las versiones, y se cobró una publicación
+
+D-127 arregló esto para los fragmentos: un corte armado sólo con los candidatos
+de su corrida dejaba a la búsqueda sin nada que citar. La solución fue heredar
+del corte anterior lo que seguía vigente.
+
+**El mismo agujero seguía abierto un nivel más arriba**, y esta vez no lo
+encontré leyendo: lo encontré rompiendo el servicio. Publicar el dato operativo
+—14.390 versiones con su fecha de verificación— creó un corte **sin los 15
+beneficios ni las 8 normas** del anterior. La orientación por situación, la
+elección de programa y la evaluación de condiciones quedaron todas muertas, y el
+informe salió en verde: «14.390 versiones publicadas, 639 fragmentos heredados,
+130 en cuarentena». La única señal habría sido que la gente dejara de recibir
+respuestas.
+
+**La causa.** `registro_versiones.release_id` significa *el corte que publicó esa
+versión*, no *los cortes en los que se sirve*. Mientras hubo un solo corte las
+dos lecturas coincidían. Con dos, las consultas que filtran por corte —las
+necesidades, el programa elegido, los pasos del trámite, el valor de un
+parámetro— dejaron de encontrar lo que el corte anterior había publicado.
+
+**El arreglo.** Una tabla `release_versiones` que dice qué versiones sirve cada
+corte, y un `_heredar_versiones` con el mismo criterio que ya tenían los
+fragmentos: viaja lo que el corte anterior servía y esta corrida no reemplaza.
+`release_id` conserva su significado, y por eso **revertir sigue siendo
+correcto**: devuelve a `APPROVED` sólo lo que ese corte introdujo, y lo heredado
+se sigue sirviendo desde el corte del que venía. Hay una prueba para eso, porque
+lo contrario —revertir una corrida de puntos de atención y apagar las leyes—
+sería peor que el bug original.
+
+**La red, que es lo que hace que no vuelva a pasar callado.** La publicación
+ahora informa qué entidades servía el corte anterior y este no, y lo dice
+primero, antes que cualquier otro aviso. Con herencia tiene que dar vacío; que
+exista importa igual, porque una versión puede salir de servicio por otros
+motivos —cuarentena, un reemplazo que no se publicó— y eso hay que verlo en la
+publicación y no en la pantalla vacía de alguien.
+
+**Cómo se manejó.** Se revirtió el corte incompleto apenas se detectó —revertir
+no borra nada y devolvió el servicio al corte anterior en el acto—, se arregló
+la causa, se escribieron las pruebas que fallan sin el arreglo, y recién después
+se volvió a publicar. El corte bueno es `0fd34d45`: sirve los 15 beneficios y
+los 1.842 puntos de atención al mismo tiempo, que era el objetivo.
+
+**Lo que esto dice del diseño.** Dos veces el mismo error en dos niveles
+distintos significa que «qué sirve un corte» estaba definido en cada consulta y
+no en un solo lugar. Ahora hay un lugar: la membresía. Ninguna consulta vuelve a
+filtrar versiones por `rv.release_id`, y hay una búsqueda en el árbol que lo
+confirma.

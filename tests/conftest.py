@@ -237,9 +237,7 @@ def cliente_api(engine_pruebas: Engine, conexion: Connection):
     app.dependency_overrides[conexion_sesion] = lambda: conexion
     # `/v1/respuestas` abre la conversación en su propia transacción. Atada acá
     # a la conexión del caso, la consulta ve la sesión que la prueba abrió.
-    app.dependency_overrides[abrir_conversacion] = lambda: (
-        lambda: contextlib.nullcontext(conexion)
-    )
+    app.dependency_overrides[abrir_conversacion] = lambda: lambda: contextlib.nullcontext(conexion)
     try:
         with TestClient(app) as cliente:
             yield cliente
@@ -437,3 +435,42 @@ def regla_candidata(conexion: Connection, corpus) -> str:
         {"a": principal, "b": referida},
     )
     return str(principal)
+
+
+def version_publicada(conexion: Connection, *, entidad_tipo: str, entidad_id, **campos):
+    """Una versión servida por el corte vigente, como la dejaría el publicador.
+
+    Existe porque tres pruebas la armaban a mano y las tres se rompieron el día
+    que publicar pasó a registrar la membresía del corte: una versión con
+    `release_id` puesto pero sin fila en `release_versiones` está publicada y no
+    la sirve nadie. Armarla en un solo lugar es lo que evita que la próxima
+    diferencia entre «lo que hace el publicador» y «lo que arma la prueba» se
+    descubra con siete pruebas en rojo.
+    """
+    corte = conexion.execute(
+        text(
+            "SELECT id FROM releases WHERE estado = 'PUBLICADO'  ORDER BY publicado_en DESC LIMIT 1"
+        )
+    ).scalar_one()
+    version = conexion.execute(
+        text(
+            "INSERT INTO registro_versiones (entidad_tipo, entidad_id, numero_version, "
+            " estado_revision, valid_tipo, valid_desde, release_id, verificado_en) "
+            "VALUES (:t, :e, :n, 'PUBLISHED', 'ABIERTO_FIN', :desde, :r, now()) RETURNING id"
+        ),
+        {
+            "t": entidad_tipo,
+            "e": entidad_id,
+            "n": campos.get("numero_version", 1),
+            "desde": campos.get("valid_desde", "2025-12-23"),
+            "r": corte,
+        },
+    ).scalar_one()
+    conexion.execute(
+        text(
+            "INSERT INTO release_versiones (release_id, registro_version_id, heredada) "
+            "VALUES (:r, :v, false)"
+        ),
+        {"r": corte, "v": version},
+    )
+    return version
