@@ -3640,3 +3640,73 @@ en el origen, y los 62 que ya estaban se corrigieron con el mismo criterio y su
 propio rastro.
 
 Están publicados en el corte `bbba8f66`. La cuarentena pasó de 130 a 68.
+
+## D-145 · La Ley 24.714 está vigente, y ahora está fundado con el texto
+
+Era la verificación pendiente más grave: **12 de los 15 beneficios publicados
+cuelgan de la Ley 24.714**, y el corpus registraba contra ella 6 relaciones
+`DEROGA` y 2 `ABROGA`. Si la ley estuviera caída, la mitad de lo que la pantalla
+contesta no se sostendría.
+
+Se resolvió leyendo el texto capturado, no razonando sobre la existencia de las
+aristas. La cadena entera está en `docs/revision/dictamen_vigencia.md`. En
+corto: abrogada por el Decreto 1382/2001, **restituida un mes después por el
+Decreto 1604/2001 y con efecto retroactivo a la fecha de la derogación** —así
+que no hubo hueco—, y desde entonces con derogaciones puntuales de un apartado
+(Ley 27260/2016) y de un párrafo (Decreto 1039/2024).
+
+**El argumento que cierra la cuestión sale del propio corpus.** Entre 2004 y 2024
+se siguió legislando sobre la ley como norma viva: el Decreto 1602/2009 le
+**incorpora** el subsistema de la AUH, seis decretos le **sustituyen artículos**,
+y dos normas le **derogan parcialmente** un apartado y un párrafo. No se
+incorpora un subsistema a una ley abrogada, y sobre todo no se deroga un párrafo
+de una norma muerta: derogar parcialmente presupone que el resto sigue en pie.
+
+**`VIGENCIA_PARCIAL` desde el 16/10/1996 es correcto**, que es lo que el corpus
+ya tenía. Lo que cambió no es el dato: es que antes descansaba en una
+determinación sin fundamentar y ahora está escrito con el texto en la mano.
+
+**Un defecto de extracción encontrado en el camino.** La unidad del art. 26 del
+Decreto 1382/2001 está cortada: no incluye sus párrafos segundo y tercero, que
+son justamente los que definen el alcance de la excepción de 2001. El texto
+apareció en unidades sueltas de tipo `PARRAFO` del mismo documento. Es una
+carencia de la segmentación, no de la fuente, y queda anotada.
+
+## D-146 · Lo que no se pudo verificar, y de quién es el bloqueo
+
+**La reglamentación de la Ley 6935/2025 sigue sin verificar, y el bloqueo es
+nuestro.** `CABA.SUBSIDIO-SITUACION-DE-CALLE` está en `CONDICIONADO` con la
+condición escrita: «rige mientras no se publique la reglamentación de la Ley
+6935/2025». Para verificarla hace falta el buscador de normativa de CABA, y
+`normativa.buenosaires.gob.ar` **lo rechaza la política de egreso de este
+entorno**, no el sitio: el proxy responde 502 `connect_rejected`. No es un 403 de
+la fuente y no corresponde registrarlo como acceso limitado de la fuente.
+
+Queda como está, que es lo correcto: el beneficio no se sirve y la condición
+dice qué habría que mirar. El programa nuevo de la Ley 6935 —
+`CABA.APOYO-VULNERABILIDAD-HABITACIONAL`— sí se sirve, así que quien pregunta
+por vivienda en CABA recibe el vigente.
+
+## D-147 · Las 43 normas sin estado: por qué se paró acá
+
+Con la fecha de publicación ya capturada (D-143), 39 de las 43 no declaran su
+propia entrada en vigencia, así que les aplicaría el plazo del art. 5 y el
+sistema podría computar desde cuándo rigen. Lo único que falta es **declarar que
+están vigentes**, y ahí la política se planta: la ausencia de una derogación
+registrada no prueba que una norma siga rigiendo. La ficha oficial tampoco lo
+declara. Hace falta una determinación por norma.
+
+**Se decidió no hacerlas en bloque, y el motivo no es falta de autorización.**
+Son decretos de montos y rangos de asignaciones familiares que se fueron
+reemplazando entre sí. La determinación honesta para cada uno no es «vigente con
+intervalo abierto» sino **un intervalo cerrado** que termina cuando el decreto
+siguiente de la serie empieza a regir: eso es derogación tácita por norma
+posterior de igual rango sobre la misma materia, y es una lectura que hay que
+hacer decreto por decreto, con su texto y su serie a la vista. Firmarlas de a 39
+para que la cuarentena baje sería exactamente el tipo de afirmación que el resto
+del sistema está construido para impedir.
+
+**Lo que cuesta esperarlas, medido: nada.** Ninguna aporta un solo fragmento a
+ningún corte y sólo 3 las cita un beneficio publicado. La consecuencia de
+apurarlas sí sería concreta: que alguien pregunte por un monto y se lleve el de
+2013.

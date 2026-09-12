@@ -114,3 +114,88 @@ resto del corpus.
 
 Las 67 reglas sin condición ejecutable siguen pendientes de clasificar entre
 formalizables, informativas y sin evidencia (P-010, criterio 2).
+
+---
+
+# Ley 24.714 — la cadena completa, con el texto a la vista
+
+13 de septiembre de 2026 · actor registrado: `curacion_juridica:agente (sin
+firma jurídica designada, D-130)`.
+
+Esta era la verificación pendiente más grave del proyecto: **12 de los 15
+beneficios publicados cuelgan de la Ley 24.714**, y el corpus registraba contra
+ella 6 relaciones `DEROGA` y 2 `ABROGA`. Si la ley estuviera caída, la mitad de
+lo que la pantalla contesta no se sostendría.
+
+Se resolvió leyendo el texto capturado, no razonando sobre la existencia de las
+aristas. La cadena, en orden:
+
+**1. Abrogada en 2001.** Decreto 1382/2001, art. 26 (B.O. 2/11/2001):
+«Derógase la Ley Nº 24.714 sus modificatorias y el artículo 89 del Decreto
+Nº 2284/91.»
+
+**2. Restituida un mes después, y con efecto retroactivo.** Decreto 1604/2001,
+art. 1º (B.O. 6/12/2001): «Restitúyese, **desde la fecha de su derogación**, la
+vigencia del artículo 89 del Decreto Nº 2284/91 y de la Ley Nº 24.714, con
+excepción de las normas correspondientes a las prestaciones a las que refiere el
+tercer párrafo del artículo 26 del Decreto Nº 1382/01, cuya vigencia se regirá
+por las pautas en él establecidas.»
+
+La restitución es **desde la fecha de la derogación**, así que no hubo hueco de
+vigencia: entre el 2 de noviembre y el 6 de diciembre de 2001 la ley no dejó de
+regir a los efectos de lo que se restituyó.
+
+**3. Qué quedó exceptuado.** El tercer párrafo del art. 26 del Decreto 1382/01
+—que hubo que buscar aparte, porque la unidad extraída del artículo está
+cortada y no lo incluye— dice: «Las prestaciones de asignación por hijo,
+asignación por hijo discapacitado, asignación por maternidad, ayuda escolar
+primaria y la asignación por cónyuge correspondiente a los beneficiarios del
+SISTEMA INTEGRADO DE JUBILACIONES Y PENSIONES y sus respectivos requisitos de la
+Ley Nº 24.714 se mantendrán **hasta la fecha de inicio de pago de las
+prestaciones equivalentes** establecidas en el artículo 2º».
+
+Es decir: cinco prestaciones se mantenían vigentes hasta que empezara a pagarse
+el sistema que el Decreto 1382/01 creaba.
+
+**4. Lo que el propio corpus prueba sobre lo que pasó después.** No hace falta
+salir a averiguar si aquel sistema llegó a pagarse: el corpus registra que entre
+2004 y 2024 se siguió legislando **sobre la Ley 24.714 como norma viva**.
+
+- Decreto 1602/2009 (B.O. 30/10/2009) **incorpora** a la Ley 24.714 el
+  subsistema no contributivo de Asignación Universal por Hijo.
+- Decretos 368/2004, 1199/2004, 1134/2005, 1345/2007, 516/2017 y 840/2020
+  **sustituyen artículos** de la Ley 24.714.
+- Ley 27260/2016, art. 35 (B.O. 22/7/2016) **deroga un apartado** suyo, con
+  vigencia desde el día siguiente al de su publicación.
+- Decreto 1039/2024, art. 2º (B.O. 25/11/2024) **deroga el tercer párrafo** de
+  uno de sus artículos, con vigencia desde su publicación.
+
+No se incorpora un subsistema a una ley abrogada, no se sustituyen artículos de
+una ley que no rige, y sobre todo **no se deroga un apartado ni un párrafo de
+una norma muerta**: derogar parcialmente presupone que el resto sigue en pie.
+
+## Determinación
+
+**La Ley 24.714 está vigente, con vigencia parcial**, desde el 16/10/1996, con
+derogaciones puntuales de apartados y párrafos en 2016 y 2024. Es exactamente el
+estado que el corpus ya tenía registrado (`VIGENCIA_PARCIAL`, `ABIERTO_FIN`
+desde 1996-10-16), y esta lectura lo confirma con el texto en la mano en vez de
+dejarlo apoyado en una determinación anterior sin fundamentar.
+
+**Los 12 beneficios publicados que dependen de ella se sostienen.**
+
+## Lo que esta determinación no dice
+
+- **No dice que los 6 `DEROGA` y 2 `ABROGA` sean errores.** Son correctos: hubo
+  una abrogación total en 2001 y hay derogaciones parciales en 2016 y 2024. Lo
+  que no hay es una derogación vigente de la ley entera.
+- **No resuelve el alcance exacto de la excepción de 2001** sobre las cinco
+  prestaciones. Que el sistema del Decreto 1382/01 nunca haya llegado a pagar es
+  un hecho histórico que el corpus no registra; lo que el corpus sí prueba es
+  que la ley siguió recibiendo modificaciones e incorporaciones hasta 2024, y
+  eso alcanza para la determinación de arriba. Si alguien necesita el punto
+  exacto, hay que capturar la implementación del SIPF.
+- **Deja anotado un defecto de extracción**: la unidad del art. 26 del Decreto
+  1382/2001 está cortada y no incluye sus párrafos segundo y tercero, que son
+  los que importan. El texto se encontró en unidades sueltas de tipo `PARRAFO`
+  del mismo documento. Es una carencia de la segmentación, no de la fuente.

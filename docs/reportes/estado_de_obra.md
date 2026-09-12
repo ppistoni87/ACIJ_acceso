@@ -88,7 +88,12 @@ todo el corpus operativo y, por dependencia, a P-023 y P-024. Hasta la
 publicación de este informe la causa estaba oculta: `bn publicacion estado`
 contaba los 14.390 como publicables y con los ocho gates en verde (D-128).
 
-**H · Cuarenta y tres normas sin estado de vigencia declarado.** Con la fecha de
+**H · Cuarenta y tres normas sin estado de vigencia declarado.** Se decidió no
+firmarlas en bloque (D-147): la determinación honesta para un decreto de montos
+no es «vigente con intervalo abierto» sino un intervalo **cerrado** que termina
+cuando el siguiente de la serie empieza a regir, y eso se lee decreto por
+decreto. Hoy no cuestan nada; apurarlas sí costaría que alguien se lleve un
+monto de 2013. Diagnóstico original: Con la fecha de
 publicación ya capturada (D-143), lo único que les falta es que alguien
 determine si están vigentes: la política se niega a deducirlo de que no haya una
 derogación registrada, y la ficha oficial no lo declara. Son decretos de montos
@@ -163,6 +168,16 @@ organismo todavía no los tengo cargados» (D-140). Afecta al criterio 3 de P-03
    deje de servir los once fragmentos que no son la norma.
 5. **La protección de rama** que hace obligatorios los checks de CI (P-018,
    criterio 3). Necesita permisos de administración del repositorio.
+
+## Lo que este entorno no puede verificar
+
+`normativa.buenosaires.gob.ar` —el buscador de normativa de CABA— lo rechaza la
+**política de egreso de este entorno**, no el sitio: el proxy devuelve 502
+`connect_rejected`. Sin él no se puede verificar si la Ley 6935/2025 fue
+reglamentada, que es la condición que mantiene a
+`CABA.SUBSIDIO-SITUACION-DE-CALLE` fuera de servicio (D-146). No es acceso
+limitado de la fuente y no se registró como tal. Se resuelve habilitando ese
+destino o verificándolo desde afuera.
 
 ## Pendiente de seguridad
 
