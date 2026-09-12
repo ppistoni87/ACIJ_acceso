@@ -176,6 +176,25 @@ details.mas[open] > summary::before{content:"▾ "}
 .canal ul{margin:6px 0 0; padding:0 0 0 1.15em; font-size:.9rem}
 
 /* --- fichas y sugerencias --- */
+/* El cierre de la respuesta. Va discreto y al pie: preguntar «¿te sirvió?» con
+   el mismo peso visual que la respuesta convierte la pantalla en una encuesta.
+   No hay caja de texto y no la va a haber: es donde alguien escribiría su caso
+   completo, y nada de eso se guarda. */
+.cierre{
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+  margin:18px 0 0; padding-top:12px; border-top:1px solid var(--linea);
+}
+.cierre .rotulo{font-size:.87rem; color:var(--tinta-3)}
+.cierre .ficha-btn{padding:6px 12px; font-size:.87rem; border-radius:999px}
+.cierre .persona{margin-left:auto}
+.cierre-gracias{
+  margin:18px 0 0; padding-top:12px; border-top:1px solid var(--linea);
+  font-size:.9rem; color:var(--tinta-2);
+}
+.cierre-gracias p{margin:0 0 6px}
+.cierre-gracias p:last-child{margin-bottom:0}
+@media (max-width:520px){ .cierre .persona{margin-left:0} }
+
 .fichas{display:flex; flex-wrap:wrap; gap:8px; margin:16px 0 0}
 .ficha-btn{
   border:1px solid var(--linea-fuerte); background:var(--papel-2); color:var(--tinta);
@@ -524,7 +543,136 @@ function bloqueCanales(canales){
   return html;
 }
 
-function responderEnElHilo(cuerpo, canales){
+// --- cerrar el ciclo --------------------------------------------------------
+//
+// Todo lo que el sistema medía lo medía de sí mismo: latencia, abstenciones,
+// evidencias. Nada decía si a la persona le sirvió. Estos tres botones son la
+// única forma que tiene de contestar, y son tres a propósito: una caja de texto
+// debajo de una respuesta sobre desalojos es donde alguien escribe su caso
+// completo, y este sistema está construido para no guardar eso.
+async function enviarDevolucion(senal, requestId){
+  try{
+    const r = await fetch("/v1/devoluciones", {
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body: JSON.stringify({request_id: requestId, senal: senal})
+    });
+    return r.ok;
+  }catch(_){ return false; }
+}
+
+const GRACIAS = {
+  SIRVIO: ["Gracias. Es la única forma que tengo de saber que algo de esto sirvió."],
+  NO_SIRVIO: [
+    "Gracias por decírmelo. Queda anotado que esta respuesta no sirvió. Lo que escribiste " +
+    "no queda: eso no se guarda.",
+    "Si querés, probá contándome lo mismo con otras palabras: a veces cambia lo que encuentro."
+  ]
+};
+
+// Lo que se le dice a quien pide hablar con una persona. Lo primero es lo que
+// esta pantalla **no** puede hacer, y la razón es la misma por la que no guarda
+// nada: no te pide tus datos, así que no tiene a dónde escribirte. Prometer un
+// contacto que no existe sería del mismo tipo de daño que inventar un teléfono.
+const SIN_VUELTA =
+  "No puedo comunicarte con alguien desde acá: no te pido tus datos, así que no tengo " +
+  "a dónde escribirte ni a quién avisarle que estás esperando.";
+
+function textoDePersona(hayCanales){
+  return hayCanales
+    ? [SIN_VUELTA,
+       "Los lugares que tengo publicados están acá arriba, en «A dónde ir». Ahí sí atiende " +
+       "gente, y son los que puedo mostrarte porque están cargados y verificados."]
+    : [SIN_VUELTA,
+       "Y todavía no tengo cargado ningún lugar de atención para mostrarte, que es una falla " +
+       "de este sistema y no tuya.",
+       "Que lo hayas pedido queda registrado —sin tu consulta y sin nada tuyo—, y es lo que " +
+       "se mira para saber cuánta falta hace que atienda una persona."];
+}
+
+function bloqueDeCierre(requestId, canales){
+  // Sin identificador no hay nada que registrar, y un botón que no puede hacer
+  // lo que promete es peor que no ofrecerlo.
+  if(!requestId) return null;
+  const caja = document.createElement("div");
+  caja.className = "cierre";
+  caja.setAttribute("role", "group");
+  caja.setAttribute("aria-label", "¿Te sirvió esta respuesta?");
+
+  const rotulo = document.createElement("span");
+  rotulo.className = "rotulo";
+  rotulo.textContent = "¿Te sirvió?";
+  caja.appendChild(rotulo);
+
+  const hayCanales = !!(canales && canales.length);
+
+  function agradecer(lineas){
+    const gracias = document.createElement("div");
+    gracias.className = "cierre-gracias";
+    gracias.setAttribute("role", "status");
+    lineas.forEach(function(linea){
+      const p = document.createElement("p");
+      p.textContent = linea;
+      gracias.appendChild(p);
+    });
+    if(caja.parentNode) caja.parentNode.replaceChild(gracias, caja);
+    return gracias;
+  }
+
+  function boton(texto, senal, clase){
+    const b = chip(texto, async function(){
+      Array.prototype.forEach.call(caja.querySelectorAll("button"), function(otro){
+        otro.disabled = true;
+      });
+      const fue = await enviarDevolucion(senal, requestId);
+      if(!fue){
+        // No se inventa un «gracias» por algo que no se registró.
+        rotulo.textContent = "No pude registrar tu respuesta. Probá de nuevo.";
+        Array.prototype.forEach.call(caja.querySelectorAll("button"), function(otro){
+          otro.disabled = false;
+        });
+        return;
+      }
+      if(senal === "QUIERE_PERSONA"){
+        agradecer(textoDePersona(hayCanales));
+        return;
+      }
+      const gracias = agradecer(GRACIAS[senal]);
+      // Después de un «no», la salida a una persona sigue disponible: es
+      // justamente ahí donde más hace falta.
+      if(senal === "NO_SIRVIO"){
+        const otra = chip("Quiero hablar con una persona", async function(){
+          otra.disabled = true;
+          if(!(await enviarDevolucion("QUIERE_PERSONA", requestId))){
+            otra.disabled = false;
+            return;
+          }
+          const caja2 = document.createElement("div");
+          caja2.className = "cierre-gracias";
+          caja2.setAttribute("role", "status");
+          textoDePersona(hayCanales).forEach(function(linea){
+            const p = document.createElement("p");
+            p.textContent = linea;
+            caja2.appendChild(p);
+          });
+          gracias.parentNode.replaceChild(caja2, gracias);
+        });
+        otra.className = "ficha-btn";
+        gracias.appendChild(otra);
+      }
+    });
+    b.className = "ficha-btn" + (clase ? " " + clase : "");
+    b.setAttribute("data-senal", senal);
+    return b;
+  }
+
+  caja.appendChild(boton("Sí", "SIRVIO"));
+  caja.appendChild(boton("No", "NO_SIRVIO"));
+  caja.appendChild(boton("Quiero hablar con una persona", "QUIERE_PERSONA", "persona"));
+  return caja;
+}
+
+function responderEnElHilo(cuerpo, canales, requestId){
   const modo = cuerpo.modo || "ERROR";
   const marca = nMensajes + 1;
   const titulo = (MODOS[modo] || ["Respuesta", "", ""])[0];
@@ -565,6 +713,10 @@ function responderEnElHilo(cuerpo, canales){
 
   const nodo = agregarMensaje("suyo", "ACIJ Acceso", html, true);
   nodo.appendChild(sugerenciasDeSeguimiento());
+  // Al final de todo: primero lo que la persona puede seguir preguntando, y
+  // recién después la pregunta por la respuesta que acaba de leer.
+  const cierre = bloqueDeCierre(requestId, canales);
+  if(cierre) nodo.appendChild(cierre);
 }
 
 function errorEnElHilo(titulo, detalle, reintentable){
@@ -796,7 +948,9 @@ async function consultar(envio){
     const canales = await buscarCanales(contexto.jurisdiccion, peticion.signal);
     sacarPensando();
     mostrarEstado("");
-    responderEnElHilo(datos, canales);
+    // La cabecera es lo que ata la devolución a esta respuesta sin que viaje
+    // nada de lo que la persona escribió.
+    responderEnElHilo(datos, canales, r.headers.get("X-Request-Id"));
   }catch(error){
     if(error && error.name === "AbortError"){
       sacarPensando();

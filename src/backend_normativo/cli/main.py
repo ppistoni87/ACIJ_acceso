@@ -2275,10 +2275,6 @@ def monitoreo_entregar(
         typer.echo(f"  aviso: {aviso}")
 
 
-if __name__ == "__main__":
-    app()
-
-
 @recuperacion.command("indexar")
 def recuperacion_indexar(
     release: str | None = typer.Option(None, help="Corte a indexar. Por omisión, el último."),
@@ -2502,8 +2498,49 @@ def operacion_purgar_consultas(
         f"Retención: {resultado.dias} días · {verbo} {resultado.candidatas} · "
         f"quedan {resultado.quedan}"
     )
+    # Las devoluciones caducan en la misma corrida. Se informan aparte porque
+    # son otra tabla: si alguna vez este número queda en cero mientras la traza
+    # se purga, lo que hay son señales huérfanas quedándose atrás.
+    typer.echo(f"Devoluciones: {verbo} {resultado.devoluciones_candidatas}")
     if resultado.mas_antigua:
         typer.echo(f"La más antigua que queda es del {resultado.mas_antigua.date().isoformat()}.")
+
+
+@operacion.command("devoluciones")
+def operacion_devoluciones(
+    horas: int = typer.Option(24, help="Ventana a mirar, en horas."),
+) -> None:
+    """Qué contestó la gente sobre las respuestas que recibió (P-015).
+
+    Es la única medición del sistema que no es sobre sí mismo. Todo lo demás
+    —latencia, abstenciones, evidencias— puede estar en verde mientras cada
+    persona que pregunta se va igual de perdida que como llegó.
+
+    El denominador va siempre: cuatro devoluciones sobre cinco consultas y
+    cuatro sobre mil son hallazgos distintos, y el segundo dice que el
+    mecanismo no se está usando.
+    """
+    from backend_normativo.api.devoluciones import resumen as resumen_devoluciones
+
+    with engine_migrador().connect() as conexion:
+        medido = resumen_devoluciones(conexion, desde_horas=horas)
+
+    typer.echo(
+        f"Últimas {medido['periodo_horas']} h · {medido['devoluciones']} devoluciones "
+        f"sobre {medido['consultas']} consultas"
+    )
+    for senal, cuantas in medido["por_senal"].items():
+        typer.echo(f"  {senal:<15} {cuantas}")
+    if not medido["por_resultado"]:
+        typer.echo(
+            "Nadie contestó todavía. Un cero acá no dice que las respuestas estén bien: "
+            "dice que no se sabe."
+        )
+        return
+    typer.echo("\nCon qué clase de respuesta se encontró cada señal:")
+    for fila in medido["por_resultado"]:
+        motivo = f" ({fila['motivo']})" if fila["motivo"] else ""
+        typer.echo(f"  {fila['senal']:<15} {fila['resultado']}{motivo}: {fila['cuantas']}")
 
 
 @curacion.command("canales")
@@ -2529,3 +2566,14 @@ def curacion_canales(
         typer.echo(f"Evidencia escrita en {salida} · canales {resultado.creados}")
     else:
         typer.echo(texto)
+
+
+# Va al final del archivo y no en el medio, que es donde estaba. Con el bloque a
+# mitad de camino, `python -m backend_normativo.cli.main` ejecutaba la
+# aplicación antes de que se registraran los comandos definidos más abajo —entre
+# ellos `operacion purgar-consultas` y `operacion devoluciones`—, que
+# contestaban «No such command». Por el entrypoint `bn` funcionaban, porque ahí
+# el módulo se importa entero primero. Un comando que existe o no según cómo se
+# lo invoque es peor que uno que falta.
+if __name__ == "__main__":
+    app()

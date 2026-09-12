@@ -249,3 +249,20 @@ def test_sin_corte_publicado_la_urgencia_igual_se_reconoce(cliente_api, corpus) 
     ).json()
     assert cuerpo["data_status"] == "NO_PUBLICABLE"
     assert cuerpo["urgencia"] == {"clase": "CALLE"}
+
+
+def test_la_pantalla_tiene_un_solo_lugar_para_escribir(cliente_api) -> None:
+    """El cuadro de la consulta, y ninguno más.
+
+    La devolución son tres botones, no una caja de comentarios. Una caja de
+    texto debajo de una respuesta sobre desalojos o pensiones es exactamente
+    donde alguien escribe su caso completo, y eso sí se guardaría. Si algún día
+    aparece un segundo campo de escritura en esta pantalla, esta prueba lo tiene
+    que ver antes que una persona.
+    """
+    html = cliente_api.get("/consulta").text
+    assert html.count("<textarea") == 1
+    assert 'id="pregunta"' in html
+    # Ni un campo de texto suelto: el único `input` que hay es el de fecha, que
+    # se crea desde el guion cuando alguien pide ver qué decía la norma antes.
+    assert '<input type="text"' not in html

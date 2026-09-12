@@ -1,6 +1,6 @@
 # Diccionario de datos
 
-**53 tablas** y **513 columnas**, generadas desde los modelos
+**54 tablas** y **519 columnas**, generadas desde los modelos
 con `bn calidad diccionario`. No se edita a mano: si una columna cambia, se regenera.
 
 El propósito de cada tabla es el docstring de su modelo. Las verificaciones que
@@ -30,6 +30,7 @@ sostienen las reglas que una restricción no puede expresar están en la migraci
 - [`cuantia_parametros`](#cuantia-parametros)
 - [`derivacion_insumos`](#derivacion-insumos)
 - [`derivaciones`](#derivaciones)
+- [`devoluciones`](#devoluciones)
 - [`documento_versiones`](#documento-versiones)
 - [`documentos`](#documentos)
 - [`equivalencias_unidades`](#equivalencias-unidades)
@@ -517,8 +518,10 @@ Traza mínima de una consulta servida, para reproducibilidad y métricas.
 | Columna | Tipo | Nulo | Defecto | Referencia |
 | --- | --- | --- | --- | --- |
 | `id` | UUID | no | `gen_random_uuid()` | — |
-| `release_id` | UUID | no | — | `releases.id` |
+| `release_id` | UUID | sí | — | `releases.id` |
 | `intencion` | TEXT | sí | — | — |
+| `request_id` | TEXT | sí | — | — |
+| `motivo_abstencion` | TEXT | sí | — | — |
 | `fecha_consulta` | DATE | sí | — | — |
 | `jurisdiccion_id` | VARCHAR(32) | sí | — | `jurisdicciones.id` |
 | `resultado_tipo` | TEXT | sí | — | — |
@@ -535,6 +538,7 @@ Traza mínima de una consulta servida, para reproducibilidad y métricas.
 
 - `ix_consultas_auditadas_ocurrido (índice): (ocurrido_en)`
 - `ix_consultas_auditadas_release_id (índice): (release_id)`
+- `ix_consultas_auditadas_request_id (índice): (request_id)`
 
 ## controles_calidad
 
@@ -655,6 +659,40 @@ Cálculo reproducible: algoritmo, fórmula, insumos y resultado.
 **Verificaciones**
 
 - `ck_derivaciones_algoritmo_version_no_vacia: length(btrim(algoritmo_version)) > 0`
+
+## devoluciones
+
+Lo que la persona contesta sobre la respuesta que recibió.
+
+    No lleva texto libre y no lleva identidad: sólo una señal de un vocabulario
+    cerrado y el `request_id`, que la une a la traza de la consulta sin decir
+    qué se preguntó. Agregar acá una columna de comentario invierte esa decisión
+    —es donde alguien escribe su caso completo— y hay una prueba que falla si
+    aparece.
+
+    No hay clave foránea contra `consultas_auditadas`: `request_id` no es único
+    —lo puede mandar quien llama en la cabecera— y una FK le exigiría una
+    unicidad que no tiene.
+
+| Columna | Tipo | Nulo | Defecto | Referencia |
+| --- | --- | --- | --- | --- |
+| `id` | UUID | no | `gen_random_uuid()` | — |
+| `request_id` | TEXT | no | — | — |
+| `senal` | TEXT | no | — | — |
+| `ocurrido_en` | TIMESTAMP | no | `now()` | — |
+
+**Claves únicas**
+
+- `uq_devoluciones_request_senal: (request_id, senal)`
+
+**Verificaciones**
+
+- `ck_devoluciones_senal: senal IN ('SIRVIO', 'NO_SIRVIO', 'QUIERE_PERSONA')`
+
+**Índices**
+
+- `ix_devoluciones_ocurrido_en (índice): (ocurrido_en)`
+- `ix_devoluciones_senal (índice): (senal)`
 
 ## documento_versiones
 
@@ -1044,7 +1082,7 @@ Conflicto o ambigüedad que necesita decisión humana.
 - `ck_incidencias_revision_estado_vocabulario: estado IN ('ABIERTA', 'EN_REVISION', 'RESUELTA', 'DIFERIDA')`
 - `ck_incidencias_revision_resuelta_con_decision_y_actor: estado <> 'RESUELTA' OR (decision IS NOT NULL AND decidido_por IS NOT NULL AND resuelta_en IS NOT NULL)`
 - `ck_incidencias_revision_severidad_vocabulario: severidad IN ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO')`
-- `ck_incidencias_revision_tipo_vocabulario: tipo IN ('CONFLICTO_DE_FUENTES', 'IDENTIDAD_AMBIGUA', 'DISCREPANCIA_NUMERACION', 'VIGENCIA_INDETERMINADA', 'COBERTURA_EXTRACCION', 'ACCESO_BLOQUEADO', 'CAMBIO_DE_ESQUEMA', 'DATO_FALTANTE_CRITICO')`
+- `ck_incidencias_revision_tipo_vocabulario: tipo IN ('CONFLICTO_DE_FUENTES', 'IDENTIDAD_AMBIGUA', 'DISCREPANCIA_NUMERACION', 'VIGENCIA_INDETERMINADA', 'COBERTURA_EXTRACCION', 'ACCESO_BLOQUEADO', 'CAMBIO_DE_ESQUEMA', 'DATO_FALTANTE_CRITICO', 'EVIDENCIA_NO_RECUPERABLE')`
 
 **Índices**
 
@@ -1742,7 +1780,7 @@ Segmento del texto con su lugar en la jerarquía.
 
 - `ck_unidades_documentales_offsets_ordenados: fin IS NULL OR inicio IS NULL OR fin >= inicio`
 - `ck_unidades_documentales_paginas_ordenadas: pagina_hasta IS NULL OR pagina_desde IS NULL OR pagina_hasta >= pagina_desde`
-- `ck_unidades_documentales_rol_contenido_vocabulario: rol_contenido IN ('DISPOSITIVO', 'CITADO', 'SUSTITUTIVO', 'INCORPORADO', 'HISTORICO', 'NOTA')`
+- `ck_unidades_documentales_rol_contenido_vocabulario: rol_contenido IN ('DISPOSITIVO', 'CITADO', 'SUSTITUTIVO', 'INCORPORADO', 'HISTORICO', 'NOTA', 'INFORMATIVO')`
 - `ck_unidades_documentales_sin_autopadre: parent_id IS NULL OR parent_id <> id`
 - `ck_unidades_documentales_tipo_vocabulario: tipo IN ('PREAMBULO', 'VISTO', 'CONSIDERANDO', 'LIBRO', 'TITULO', 'CAPITULO', 'SECCION', 'ARTICULO', 'INCISO', 'PARRAFO', 'ANEXO', 'TRANSITORIA', 'FIRMA', 'TABLA', 'NO_RECONOCIDO')`
 

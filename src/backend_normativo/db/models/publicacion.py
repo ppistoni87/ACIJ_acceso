@@ -153,10 +153,17 @@ class ConsultaAuditada(Base):
     __tablename__ = "consultas_auditadas"
 
     id: Mapped[uuid.UUID] = pk_uuid()
-    release_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("releases.id", ondelete="RESTRICT"), nullable=False, index=True
+    # Opcional desde 0017: una consulta sin corte publicado es justamente la
+    # abstención más importante, y con la columna obligatoria era la única que
+    # no se podía registrar.
+    release_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("releases.id", ondelete="RESTRICT"), nullable=True, index=True
     )
+    # `intencion` recibe la ruta pedida —`/v1/respuestas`—, nunca lo que la
+    # persona escribió.
     intencion: Mapped[str | None] = mapped_column(Text)
+    request_id: Mapped[str | None] = mapped_column(Text, index=True)
+    motivo_abstencion: Mapped[str | None] = mapped_column(Text)
     fecha_consulta: Mapped[dt.date | None] = mapped_column(Date)
     jurisdiccion_id: Mapped[str | None] = mapped_column(
         ForeignKey("jurisdicciones.id", ondelete="RESTRICT")
@@ -170,4 +177,35 @@ class ConsultaAuditada(Base):
     __table_args__ = (
         CheckConstraint("latencia_ms IS NULL OR latencia_ms >= 0", name="latencia_no_negativa"),
         Index("ix_consultas_auditadas_ocurrido", "ocurrido_en"),
+    )
+
+
+class Devolucion(Base):
+    """Lo que la persona contesta sobre la respuesta que recibió.
+
+    No lleva texto libre y no lleva identidad: sólo una señal de un vocabulario
+    cerrado y el `request_id`, que la une a la traza de la consulta sin decir
+    qué se preguntó. Agregar acá una columna de comentario invierte esa decisión
+    —es donde alguien escribe su caso completo— y hay una prueba que falla si
+    aparece.
+
+    No hay clave foránea contra `consultas_auditadas`: `request_id` no es único
+    —lo puede mandar quien llama en la cabecera— y una FK le exigiría una
+    unicidad que no tiene.
+    """
+
+    __tablename__ = "devoluciones"
+
+    id: Mapped[uuid.UUID] = pk_uuid()
+    request_id: Mapped[str] = mapped_column(Text, nullable=False)
+    senal: Mapped[str] = mapped_column(Text, nullable=False)
+    ocurrido_en: Mapped[dt.datetime] = ts_creacion()
+
+    __table_args__ = (
+        CheckConstraint(
+            "senal IN ('SIRVIO', 'NO_SIRVIO', 'QUIERE_PERSONA')", name="senal"
+        ),
+        UniqueConstraint("request_id", "senal", name="uq_devoluciones_request_senal"),
+        Index("ix_devoluciones_ocurrido_en", "ocurrido_en"),
+        Index("ix_devoluciones_senal", "senal"),
     )

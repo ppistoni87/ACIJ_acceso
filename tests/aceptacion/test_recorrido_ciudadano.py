@@ -627,3 +627,72 @@ def test_el_contraste_alcanza_el_umbral_en_los_dos_esquemas(
         assert flojos == [], f"con esquema {esquema} no llegan a {CONTRASTE_MINIMO}:1 → {flojos}"
     finally:
         contexto.close()
+
+
+# --- cerrar el ciclo: qué puede contestar la persona -------------------------
+
+
+def test_antes_de_contestar_no_hay_nada_que_devolver(pagina) -> None:
+    """La portada no pregunta «¿te sirvió?»: todavía no sirvió de nada."""
+    assert pagina.locator(".cierre").count() == 0
+
+
+def test_se_puede_decir_que_no_sirvio_y_no_viaja_lo_que_escribio(pagina) -> None:
+    """La señal viaja sola: el identificador de la respuesta y nada más.
+
+    Es la prueba de la decisión de privacidad, no del botón. Si algún día el
+    cuerpo lleva un comentario, este caso lo tiene que ver.
+    """
+    _preguntar(pagina, "me quieren echar de la pieza donde vivo con mis hijos")
+    pagina.wait_for_selector(".cierre", timeout=20_000)
+    with pagina.expect_request("**/v1/devoluciones") as esperado:
+        pagina.locator('.cierre button[data-senal="NO_SIRVIO"]').click()
+    enviado = esperado.value.post_data_json
+    assert set(enviado) == {"request_id", "senal"}
+    assert enviado["senal"] == "NO_SIRVIO"
+    assert enviado["request_id"]
+    assert "pieza" not in str(enviado)
+
+    pagina.wait_for_selector(".cierre-gracias", timeout=10_000)
+    gracias = pagina.inner_text(".cierre-gracias")
+    assert "Gracias" in gracias
+    # Y la salida a una persona sigue estando: es donde más hace falta.
+    assert pagina.get_by_role("button", name="Quiero hablar con una persona").count() >= 1
+
+
+def test_la_devolucion_se_ata_a_la_respuesta_que_se_leyo(pagina) -> None:
+    """El `request_id` que se manda es el que trajo esa respuesta."""
+    pagina.fill("#pregunta", "prestación económica")
+    with pagina.expect_response("**/v1/respuestas**") as respuesta:
+        pagina.keyboard.press("Enter")
+    de_la_respuesta = respuesta.value.header_value("x-request-id")
+    pagina.wait_for_selector(".cierre", timeout=20_000)
+    with pagina.expect_request("**/v1/devoluciones") as esperado:
+        pagina.locator('.cierre button[data-senal="SIRVIO"]').click()
+    assert esperado.value.post_data_json["request_id"] == de_la_respuesta
+
+
+def test_pedir_una_persona_no_promete_lo_que_no_puede(pagina) -> None:
+    """No hay a dónde escribirle a nadie, y se dice.
+
+    La pantalla no pide datos —esa es la decisión de la que cuelga todo lo
+    demás—, así que no puede prometer que alguien va a llamar. Y no inventa un
+    teléfono: ese número, si está mal, hace daño el mismo día.
+    """
+    _preguntar(pagina, "no tengo dónde dormir esta noche")
+    pagina.wait_for_selector(".cierre", timeout=20_000)
+    pagina.locator('.cierre button[data-senal="QUIERE_PERSONA"]').click()
+    pagina.wait_for_selector(".cierre-gracias", timeout=10_000)
+    texto = pagina.inner_text(".cierre-gracias")
+    assert "no tengo a dónde escribirte" in texto
+    for inventado in ("911", "147", "144", "llamá al", "te vamos a llamar", "te contactamos"):
+        assert inventado not in texto, f"apareció una promesa que nadie puede cumplir: {inventado}"
+
+
+def test_apretar_dos_veces_no_cuenta_dos_veces(pagina) -> None:
+    """Los botones se van al primer clic: la tasa no se infla desde la pantalla."""
+    _preguntar(pagina, "prestación económica")
+    pagina.wait_for_selector(".cierre", timeout=20_000)
+    pagina.locator('.cierre button[data-senal="SIRVIO"]').click()
+    pagina.wait_for_selector(".cierre-gracias", timeout=10_000)
+    assert pagina.locator('.cierre button[data-senal="SIRVIO"]').count() == 0

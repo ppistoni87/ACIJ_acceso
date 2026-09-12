@@ -30,10 +30,17 @@ from dataclasses import dataclass
 
 from sqlalchemy import Connection, text
 
+from backend_normativo.api.devoluciones import borrar_anteriores as borrar_devoluciones
+
 # Cabecera de correlación. Se acepta la que venga de afuera —un balanceador o un
 # front suelen ponerla— y si no viene se genera: perder la correlación porque
 # nadie la mandó deja cada salto contando su propia historia.
 CABECERA_REQUEST_ID = "X-Request-Id"
+
+# Rutas de `/v1` que no son consultas y no entran en el denominador. Hoy es
+# una sola: la devolución es la respuesta de la persona a una consulta que ya
+# quedó registrada, y contarla otra vez mediría el mecanismo de medición.
+RUTAS_SIN_TRAZA = frozenset({"/v1/devoluciones"})
 
 # Lo que se contesta cuando sí hay respuesta. Todo lo demás es una abstención, y
 # una abstención sin causa es indistinguible de un error silencioso.
@@ -174,12 +181,20 @@ class Purga:
     quedan: int
     mas_antigua: object | None = None
     simulada: bool = False
+    # Las devoluciones caducan con la misma regla y en la misma corrida. Van
+    # contadas aparte porque son otra tabla y porque, si alguna vez el número
+    # queda en cero mientras la traza se purga, eso es el síntoma de que se
+    # están dejando señales huérfanas atrás.
+    devoluciones_candidatas: int = 0
+    devoluciones_borradas: int = 0
 
     def a_dict(self) -> dict:
         return {
             "dias_de_retencion": self.dias,
             "candidatas": self.candidatas,
             "borradas": self.borradas,
+            "devoluciones_candidatas": self.devoluciones_candidatas,
+            "devoluciones_borradas": self.devoluciones_borradas,
             "quedan": self.quedan,
             "mas_antigua": self.mas_antigua.isoformat() if self.mas_antigua else None,
             "simulada": self.simulada,
@@ -210,6 +225,8 @@ def purgar(conexion: Connection, *, dias: int | None = None, simular: bool = Fal
             ),
             parametros,
         )
+    # Lo que la persona contestó sobre esas respuestas caduca junto con ellas.
+    caidas = borrar_devoluciones(conexion, dias=dias, simular=simular)
     quedan = conexion.execute(text("SELECT count(*) FROM consultas_auditadas")).scalar_one()
     mas_antigua = conexion.execute(
         text("SELECT min(ocurrido_en) FROM consultas_auditadas")
@@ -221,4 +238,6 @@ def purgar(conexion: Connection, *, dias: int | None = None, simular: bool = Fal
         quedan=int(quedan),
         mas_antigua=mas_antigua,
         simulada=simular,
+        devoluciones_candidatas=caidas,
+        devoluciones_borradas=0 if simular else caidas,
     )

@@ -2734,3 +2734,78 @@ pasada es la garantía sobre la que se apoya todo lo demás.
 Limpiarlo de verdad es volver a extraer y volver a curar las citas que apuntan a
 esas unidades — trabajo jurídico, no un `UPDATE`. Mientras tanto DQ10 impide
 publicar un corte nuevo que lo arrastre, así que el problema no puede crecer.
+
+## D-125 · La persona puede contestar, y sólo con tres botones
+
+Todo lo que el sistema medía lo medía de sí mismo: latencia, abstenciones por
+causa, cuántas evidencias usó, frescura del corte. Nada decía si a quien
+preguntó le sirvió. Una respuesta puede salir en 40 ms, con seis citas y contra
+el corte correcto, y dejar a la persona igual de perdida que como llegó; con la
+traza sola, eso se cuenta como éxito.
+
+Al pie de cada respuesta hay tres botones: **Sí**, **No** y **Quiero hablar con
+una persona**. La señal viaja a `POST /v1/devoluciones` con el `request_id` que
+la respuesta devolvió en la cabecera `X-Request-Id`, y nada más.
+
+**No hay caja de comentarios, y ésa es la decisión.** Es lo que primero se
+pediría —«dejá que expliquen qué les faltó»— y es el lugar exacto donde alguien
+escribe su caso completo: el nombre de su hija, la dirección de la que lo echan,
+el número de expediente. Todo el resto del sistema está construido para no
+guardar eso, empezando por `intencion`, que recibe la ruta y no la pregunta. Un
+`<textarea>` lo tira abajo en un renglón, y lo haría con la mejor de las
+intenciones.
+
+Se hace cumplir en tres lugares porque uno solo se olvida: el modelo de la ruta
+rechaza cualquier campo de más, el `CHECK` de la base sólo acepta las tres
+señales, y una prueba compara las columnas de la tabla contra la lista escrita.
+Hay además una que verifica que la pantalla tenga un único lugar donde escribir.
+
+**Se une a la traza por `request_id`, y eso es lo que la vuelve accionable.** Sin
+el cruce, «doce personas dijeron que no les sirvió» no dice qué hacer. Con el
+cruce, la primera corrida contra el recorrido real ya lo mostró: las dos señales
+negativas cayeron sobre abstenciones con motivo `SIN_EVIDENCIA` y las dos
+positivas sobre respuestas resueltas. Eso dice que el problema está en lo que el
+corpus no cubre, y no en cómo están redactadas las respuestas. Son dos trabajos
+distintos y hasta ahora no había forma de saber cuál hacía falta.
+
+**El denominador viaja siempre.** «El 80 % dijo que le sirvió» sobre cinco
+respuestas no es un dato, y cuatro de cinco y cuatro de mil son hallazgos
+distintos: el segundo dice que el mecanismo no se está usando.
+
+**Una señal por respuesta.** `ON CONFLICT DO NOTHING` sobre el UNIQUE de
+`(request_id, senal)`: una tasa de satisfacción que se puede inflar apretando
+repetido no mide satisfacción. Va sin nombrar las columnas del conflicto porque
+la forma con destino explícito exige `SELECT` sobre la tabla para inferir el
+índice árbitro, y el rol de la API sólo tiene `INSERT`; darle lectura sobre las
+devoluciones de todo el mundo para ahorrar un paréntesis sería pagar un permiso
+de más por una comodidad de escritura.
+
+**La devolución no entra en la traza.** Contarla inflaría el denominador —«400
+consultas» pasaría a incluir los clics en «me sirvió»— y la tasa de respuesta se
+mediría contra sí misma.
+
+**Pedir una persona no abre un canal de vuelta, y la pantalla lo dice.** «No
+puedo comunicarte con alguien desde acá: no te pido tus datos, así que no tengo
+a dónde escribirte ni a quién avisarle que estás esperando.» Es la misma
+decisión que hace que no se guarde nada, vista desde el otro lado. Lo que sí
+pasa es que queda contado, y ése es el argumento con números para discutir si
+hace falta atención humana. Prometer un contacto que no existe es del mismo tipo
+de daño que inventar un teléfono de emergencia (D-123), sólo que más lento.
+
+Se lee con `bn operacion devoluciones`. Una devolución que nadie mira no cierra
+ningún ciclo: sería el mismo defecto que tenía `consultas_auditadas` cuando
+existía la tabla, existía el permiso y nadie escribía nunca en ella.
+
+## D-126 · Un comando que existía según cómo se lo llamara
+
+`if __name__ == "__main__": app()` estaba a mitad del archivo del CLI. Corriendo
+`python -m backend_normativo.cli.main`, la aplicación arrancaba antes de que se
+registraran los comandos definidos más abajo —entre ellos `operacion
+purgar-consultas`, que es el que aplica la retención— y contestaban «No such
+command». Por el entrypoint `bn` funcionaban, porque ahí el módulo se importa
+entero primero.
+
+Otra falla que no falla: nada se rompe, el comando simplemente no está, y la
+respuesta que se recibe es la misma que si nunca se hubiera escrito. Se movió el
+bloque al final y quedó una prueba que compara, para cada grupo, los comandos
+registrados en el módulo contra los que aparecen al correrlo con `python -m`.

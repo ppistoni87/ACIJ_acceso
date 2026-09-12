@@ -33,12 +33,16 @@ def cliente_con_permisos_de_produccion(engine_pruebas: Engine):
 
     from backend_normativo.api.app import crear_app
     from backend_normativo.api.dependencias import conexion_lectura
+    from backend_normativo.api.routers.devoluciones import conexion_devolucion
 
     conexion = engine_pruebas.connect()
     conexion.execute(text(f"SET ROLE {ROL_DE_PRODUCCION}"))
 
     app = crear_app()
     app.dependency_overrides[conexion_lectura] = lambda: conexion
+    # La escritura de la devolución también va con el rol de producción: si
+    # faltara el GRANT, el frente ciudadano recibiría 500 al agradecer.
+    app.dependency_overrides[conexion_devolucion] = lambda: conexion
     try:
         with TestClient(app) as cliente:
             yield cliente
@@ -172,3 +176,21 @@ def test_las_consultas_de_recuperacion_no_tocan_staging(
             # lo que esta prueba mira.
     finally:
         conexion.close()
+
+
+def test_la_devolucion_se_puede_escribir_con_el_rol_de_produccion(
+    cliente_con_permisos_de_produccion,
+) -> None:
+    """El GRANT de `devoluciones`, ejercido y no supuesto.
+
+    La prueba de POST de arriba manda `{"consulta": ...}` a todas las rutas y
+    esta contesta 422 antes de tocar la base, así que pasaría igual sin el
+    permiso. Es el mismo hueco por el que se coló la cobertura en D-86: una
+    prueba que verifica que no hay 500 sin llegar nunca a ejecutar el SQL.
+    """
+    respuesta = cliente_con_permisos_de_produccion.post(
+        "/v1/devoluciones",
+        json={"request_id": "permiso-de-produccion", "senal": "NO_SIRVIO"},
+    )
+    assert respuesta.status_code == 202, respuesta.text
+    assert respuesta.json()["registrada"] is True

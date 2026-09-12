@@ -1377,6 +1377,50 @@
         }
       }
     },
+    "/v1/devoluciones": {
+      "post": {
+        "tags": [
+          "conversación"
+        ],
+        "summary": "Registrar Devolucion",
+        "description": "Anota la señal y no devuelve nada más que el acuse.\n\n202 y no 201: lo que se hace con esto es leerlo después, agregado. No hay\nrecurso que después se pueda ir a buscar, y no lo hay a propósito —una\ndevolución individual no se consulta ni se corrige—.\n\n`registrada` en `false` significa que esa señal ya estaba: apretar dos veces\nno cuenta dos veces. No es un error y el frente muestra lo mismo.",
+        "operationId": "registrar_devolucion_v1_devoluciones_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Devolucion"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Registrar Devolucion V1 Devoluciones Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/admin/revisiones/{incidencia_id}/resolver": {
       "post": {
         "tags": [
@@ -2649,6 +2693,28 @@
         ],
         "title": "DataStatus",
         "description": "Qué tan sostenible es lo que devuelve la respuesta."
+      },
+      "Devolucion": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Request Id",
+            "description": "El identificador que la respuesta devolvió en la cabecera X-Request-Id. Une la señal con la consulta sin decir qué se preguntó."
+          },
+          "senal": {
+            "$ref": "#/components/schemas/Senal"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "senal"
+        ],
+        "title": "Devolucion",
+        "description": "Lo único que se acepta. Cualquier campo de más es un 422."
       },
       "Evidencia": {
         "properties": {
@@ -4106,6 +4172,16 @@
         "type": "object",
         "title": "ResultadoRecuperacion"
       },
+      "Senal": {
+        "type": "string",
+        "enum": [
+          "SIRVIO",
+          "NO_SIRVIO",
+          "QUIERE_PERSONA"
+        ],
+        "title": "Senal",
+        "description": "Lo único que se puede contestar. El CHECK en la base dice lo mismo."
+      },
       "SolicitudDecisionRegla": {
         "properties": {
           "decision": {
@@ -4682,6 +4758,10 @@
     {
       "name": "recuperación",
       "description": "Fragmentos citables y cobertura."
+    },
+    {
+      "name": "conversación",
+      "description": "Lo que la persona contesta sobre la respuesta que recibió."
     },
     {
       "name": "administración",

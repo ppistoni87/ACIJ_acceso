@@ -210,6 +210,7 @@ def cliente_api(engine_pruebas: Engine, conexion: Connection):
     from backend_normativo.api.app import crear_app
     from backend_normativo.api.dependencias import conexion_administracion, conexion_lectura
     from backend_normativo.api.limites import VARIABLE_LIMITE, reiniciar_limitadores
+    from backend_normativo.api.routers.devoluciones import conexion_devolucion
 
     # El límite de consultas queda desactivado para el resto de la suite, a
     # propósito y con nombre. Todas las pruebas comparten el mismo origen
@@ -225,6 +226,11 @@ def cliente_api(engine_pruebas: Engine, conexion: Connection):
     app = crear_app()
     app.dependency_overrides[conexion_lectura] = lambda: conexion
     app.dependency_overrides[conexion_administracion] = lambda: conexion
+    # La devolución escribe en su propia transacción con el motor de la API.
+    # Atada acá a la conexión del caso, la prueba puede verla y se revierte
+    # con todo lo demás; los permisos de esa escritura se verifican donde
+    # corresponde, en `test_permisos_de_la_api.py`, con el rol de verdad.
+    app.dependency_overrides[conexion_devolucion] = lambda: conexion
     try:
         with TestClient(app) as cliente:
             yield cliente

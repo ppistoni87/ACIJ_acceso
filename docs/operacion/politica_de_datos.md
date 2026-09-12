@@ -11,7 +11,7 @@ Nada obligatorio más que la pregunta.
 | Dato | ¿Se pide? | Dónde |
 | --- | --- | --- |
 | Pregunta | Sí, es la consulta | `POST /v1/respuestas` |
-| Situación personal («hechos mínimos») | Opcional, texto libre | campo `#hechos` del frente |
+| Situación personal | Opcional, dentro de la misma consulta | no hay un campo aparte: la pantalla tiene un solo lugar para escribir |
 | Jurisdicción, fecha, tipo de beneficio | Opcional, de una lista | selectores del frente |
 | DNI, CUIL | **No existe el campo** | verificado en `test_frente_ciudadano.py` |
 | Nombre, domicilio, teléfono, correo | **No existe el campo** | ídem |
@@ -47,6 +47,41 @@ persona preguntó.
 La tabla no tiene ninguna columna de identidad. Está verificado por una prueba
 que falla si alguien agrega una.
 
+## Qué se guarda de lo que la persona contesta
+
+Al pie de cada respuesta hay tres botones —«Sí», «No», «Quiero hablar con una
+persona»— y **ninguna caja de texto**. Lo que se guarda es una fila en
+`devoluciones` (`src/backend_normativo/api/devoluciones.py`):
+
+| Se guarda | No se guarda |
+| --- | --- |
+| `request_id`, que la une a la traza de esa consulta | Un comentario, una aclaración, un relato |
+| La señal: `SIRVIO`, `NO_SIRVIO` o `QUIERE_PERSONA` | Quién la dejó |
+| Cuándo | Contra qué texto de pregunta |
+
+La ausencia de texto libre es la decisión, no una limitación. Una caja de
+comentarios debajo de una respuesta sobre desalojos o pensiones por discapacidad
+es el lugar exacto donde alguien escribe su caso: el nombre de su hija, la
+dirección de la que lo echan, el número de expediente. Todo el resto del sistema
+está construido para no guardar eso, y un `<textarea>` lo tira abajo en un
+renglón.
+
+Se hace cumplir en tres lugares, no en uno: el modelo de la ruta rechaza
+cualquier campo de más (422), el `CHECK` de la base sólo acepta las tres señales,
+y una prueba compara las columnas de la tabla contra la lista escrita
+(`tests/integracion/test_devoluciones.py`) para que agregar una sea una decisión
+y no un descuido. Otra prueba verifica que la pantalla tenga un solo lugar donde
+escribir (`tests/integracion/test_frente_ciudadano.py`).
+
+Una misma señal sobre la misma respuesta se registra una vez: apretar dos veces
+no cuenta dos veces.
+
+**Pedir hablar con una persona no abre un canal de vuelta**, y la pantalla lo
+dice con esas palabras: como no se piden datos, no hay a dónde escribirle a
+quien lo pidió. Lo que sí pasa es que queda contado, y eso es lo que permite
+discutir con números si hace falta atención humana. Prometer un contacto que no
+existe sería del mismo tipo de daño que inventar un teléfono de emergencia.
+
 ## Qué se guarda en el navegador
 
 Nada. El frente no escribe en `localStorage` ni en `sessionStorage`, y «Salir y
@@ -75,9 +110,20 @@ Poner la variable en 0 o en un valor ilegible **no** borra todo: se toma el
 mínimo de 1 día. Para no guardar nada hay que no registrar, que es otra decisión
 y se toma en otro lado.
 
+Las devoluciones caducan con la misma regla y en la misma corrida, y el
+comando informa las dos cifras por separado. Si alguna vez la traza se purga y
+las devoluciones no, lo que queda son señales huérfanas: un «no me sirvió» del
+que ya no se puede saber sobre qué clase de respuesta fue.
+
 El purgado corre con el rol de administración. El lector de la API puede
-insertar su traza y no puede borrar la de nadie: esa separación es lo que hace
-que el registro sirva como registro.
+insertar su traza y su devolución, y no puede borrar ni leer la de nadie: esa
+separación es lo que hace que el registro sirva como registro.
+
+Para leerlas, agregadas y con denominador:
+
+```bash
+bn operacion devoluciones --horas 24
+```
 
 ## Límites de uso
 

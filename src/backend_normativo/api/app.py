@@ -12,7 +12,14 @@ from sqlalchemy.exc import OperationalError
 from backend_normativo import SCHEMA_VERSION, __version__
 from backend_normativo.api.contratos import CodigoError, ErrorRespuesta
 from backend_normativo.api.limites import VENTANA_AUTENTICACION_S
-from backend_normativo.api.routers import admin, evaluaciones, normas, operativo, recuperacion
+from backend_normativo.api.routers import (
+    admin,
+    devoluciones,
+    evaluaciones,
+    normas,
+    operativo,
+    recuperacion,
+)
 from backend_normativo.api.sondas import verificar_abriendo
 from backend_normativo.config import get_settings
 from backend_normativo.db.session import engine_api
@@ -84,6 +91,10 @@ def crear_app() -> FastAPI:
             {"name": "operativo", "description": "Beneficios, valores, plazos y atención."},
             {"name": "evaluación", "description": "Evaluación preliminar de aplicabilidad."},
             {"name": "recuperación", "description": "Fragmentos citables y cobertura."},
+            {
+                "name": "conversación",
+                "description": "Lo que la persona contesta sobre la respuesta que recibió.",
+            },
             {"name": "administración", "description": "Revisión y publicación."},
         ],
     )
@@ -92,6 +103,7 @@ def crear_app() -> FastAPI:
     app.include_router(operativo.router)
     app.include_router(evaluaciones.router)
     app.include_router(recuperacion.router)
+    app.include_router(devoluciones.router)
     app.include_router(admin.router)
 
     # La consola de revisión se sirve desde la misma aplicación y en un solo
@@ -181,6 +193,7 @@ def crear_app() -> FastAPI:
         from backend_normativo.api.observabilidad import (
             CABECERA_REQUEST_ID,
             RESUELTA,
+            RUTAS_SIN_TRAZA,
             Anotacion,
             registrar,
             request_id_de,
@@ -199,6 +212,14 @@ def crear_app() -> FastAPI:
         # la consola no son consultas de nadie, y registrarlas ensucia el
         # denominador con tráfico de infraestructura.
         if not ruta.startswith("/v1") or "/admin/" in ruta:
+            return respuesta
+
+        # Una devolución no es una consulta de nadie: es la respuesta de la
+        # persona a una que ya se registró. Contarla en la traza inflaría el
+        # denominador —«400 consultas» pasaría a incluir los clics en «me
+        # sirvió»— y haría que la tasa de respuesta se midiera contra sí misma.
+        # Su registro es la tabla `devoluciones`, no esta.
+        if ruta in RUTAS_SIN_TRAZA:
             return respuesta
 
         estado = anotado.get("data_status")
