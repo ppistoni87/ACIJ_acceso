@@ -17,15 +17,15 @@ sustituyen la demostración del criterio. Cada nivel exige el anterior.
 | --- | --- | --- | --- |
 | L1.1 | Instalación reproducible desde cero | `pip install -e ".[dev]"` en un entorno limpio | **cumplido** |
 | L1.2 | Migraciones desde base vacía al esquema completo | `alembic upgrade head` sobre base nueva | **cumplido** (V-3) |
-| L1.3 | Modelos y esquema sin deriva | `alembic check` | **NO cumplido** (H-04) |
-| L1.4 | Suite completa en verde, sin salteos no declarados | `pytest -q -rs` + `scripts/verificar_salteos.py` | **parcial**: 1.504 en verde, **6 salteos sin motivo** (H-05) |
-| L1.5 | Análisis estático limpio | `ruff check .` y `ruff format --check .` | **NO cumplido** (H-03) |
-| L1.6 | Imagen construible | `docker build` | **no verificable** aquí (H-14) |
-| L1.7 | **CI en verde sobre la rama** | una corrida con `conclusion: success` | **NO cumplido**: 8 corridas seguidas en `failure` |
+| L1.3 | Modelos y esquema sin deriva | `alembic check` | **CUMPLIDO el 13/09** (T-04) |
+| L1.4 | Suite completa en verde, sin salteos no declarados | `pytest -q -rs` + `scripts/verificar_salteos.py` | **CUMPLIDO el 13/09**: 1.523 en verde, 0 salteos (T-04) |
+| L1.5 | Análisis estático limpio | `ruff check .` y `ruff format --check .` | **CUMPLIDO el 13/09** (T-04) |
+| L1.6 | Imagen construible | `docker build` | **CUMPLIDO el 13/09**: verificado por primera vez en la corrida 78 de CI |
+| L1.7 | **CI en verde sobre la rama** | una corrida con `conclusion: success` | **CUMPLIDO el 13/09**: [corrida 78](https://github.com/ppistoni87/ACIJ_acceso/actions/runs/34732959209) |
 | L1.8 | Corpus cargado y un corte publicado | `GET /v1/beneficios` devuelve datos del corte | **cumplido**: corte `bbba8f66`, 16 beneficios, 639 fragmentos |
 | L1.9 | Recorrido navegador→respuesta con citas abribles | E2E en Chromium | **cumplido**: 59 casos; 50/50 citas con URL oficial |
 
-**Falta para el nivel 1: T-04.**
+**Nivel 1 alcanzado el 13/09/2026** con T-04. Se sostiene sólo mientras el CI siga en verde.
 
 ### Nivel 2 · Apto para piloto interno
 
@@ -33,7 +33,7 @@ Todo el nivel 1, más:
 
 | # | Criterio | Cómo se demuestra | Estado hoy |
 | --- | --- | --- | --- |
-| L2.1 | **Al menos un beneficio concluye** | dictamen con cumplidas / no cumplidas / desconocidas y sus subsanaciones | **NO cumplido** — 0 de 16 (H-01) |
+| L2.1 | **Al menos un beneficio concluye** | dictamen con cumplidas / no cumplidas / desconocidas y sus subsanaciones | **CUMPLIDO el 13/09** — `AR.CUIDADO-DE-SALUD-INTEGRAL` llega a los cuatro veredictos sobre el corpus real (`scripts/verificar_dictamen.py`). Los otros 14 siguen sin concluir. |
 | L2.2 | **El sistema se abstiene cuando no sabe** | consulta fuera de alcance → abstención + derivación | **NO cumplido** — 54 casos responden igual (H-02) |
 | L2.3 | Pregunta de a una y la conversación progresa | 3 turnos: pregunta → respuesta → dictamen distinto | **NO cumplido** (H-06, H-07) |
 | L2.4 | Corregir un dato cambia la orientación y lo reemplazado se ve | corrección sube `version` y marca la respuesta anterior | **cumplido** (C-03) |
@@ -153,7 +153,7 @@ fundadas, no acuerdos previos.**
 | Recall@5 híbrido | **74,1 %** | ≥ 90 % | Umbral que el propio proyecto ya se había fijado en P-012 |
 | Gate DQ18 | **78/150; 60/92 críticos** | 100 % de los **críticos**; ≥ 85 % del total | Un crítico que falla es una respuesta que puede hacer que alguien actúe mal |
 | Abstención correcta | **0 de 54** casos que debían abstenerse | 100 % | Es el defecto P0 H-02: no admite umbral parcial |
-| Beneficios que pueden concluir | **0 de 16** | ≥ 1 para piloto interno; **todos los ofrecidos** para público | Ofrecer un programa que nunca concluye es prometer lo que no se cumple |
+| Beneficios que pueden concluir | **1 de 16** (era 0 hasta el 13/09) | ≥ 1 para piloto interno; **todos los ofrecidos** para público | Ofrecer un programa que nunca concluye es prometer lo que no se cumple |
 | Latencia por consulta | medida por `bn calidad rendimiento`; **no fijada** | p95 ≤ 3 s en modo `EXTRACTO` | Es un backend local sobre 639 fragmentos; por encima de eso la conversación se corta |
 | Costo por consulta | **no medido: no hay proveedor** | a fijar con T-05 antes de habilitar `GENERADA` | No se inventa un número |
 | Cobertura de fuentes | 44 de 85 sirven | comunicada en pantalla, no un umbral | Ocultarla sería peor que declararla |
@@ -173,6 +173,11 @@ python scripts/verificar_salteos.py resultados/pruebas.xml
 
 # 3. Imagen
 docker build -t acij-acceso:local .
+
+# 3b. Que un beneficio publicado llegue a los cuatro veredictos sobre el corpus
+#     real. No va como prueba de pytest: la suite corre sobre un corpus mínimo
+#     que no tiene este beneficio, y una prueba salteada cuenta como éxito.
+python scripts/verificar_dictamen.py
 
 # 4. Calidad del producto
 BN_LIMITE_CONSULTAS_POR_MINUTO=0 bn calidad consultas

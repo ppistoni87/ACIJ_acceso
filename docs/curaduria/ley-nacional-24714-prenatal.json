@@ -1,226 +1,262 @@
 {
- "schema_version": "1.0",
- "norma": {
-  "external_id": "infoleg:39880:actualizado",
-  "referencia": "Ley 24.714",
-  "rol": "CREA"
- },
- "nota": "Lectura curada de la asignación prenatal. Es la contraparte contributiva de la Asignación por Embarazo para Protección Social —mismo hecho de la vida, dos subsistemas— y compararlas muestra por qué se curan por separado: la prenatal pide tres meses de antigüedad en el empleo y se acredita entre el tercer y el cuarto mes de embarazo; la otra pide tres años de residencia legal y se solicita desde la semana doce. Nada de eso se puede promediar. Todo entra como candidato.",
- "beneficio": {
-  "codigo": "AR.ASIGNACION-PRENATAL",
-  "nombre": "Asignación prenatal",
-  "familia": "SEGURIDAD_SOCIAL",
-  "linea": "ASIGNACION_FAMILIAR",
-  "jurisdiccion": "AR",
-  "naturaleza": "PRESTACION_MONETARIA",
-  "descripcion": "Suma mensual equivalente a la asignación por hijo, que se abona desde el momento de la concepción hasta el nacimiento. El estado de embarazo se acredita entre el tercer y el cuarto mes mediante certificado médico, y se requiere una antigüedad mínima y continuada en el empleo de tres meses.",
-  "unidad_beneficiaria": "PERSONA",
-  "modalidad": "TRANSFERENCIA",
-  "frecuencia": "MENSUAL",
-  "requiere_solicitud": true,
-  "ruta_evidencia": "articulo-9"
- },
- "poblaciones": [
-  {
-   "codigo": "AR.TRABAJADOR-EN-RELACION-DE-DEPENDENCIA",
-   "nombre": "Personas del subsistema contributivo",
-   "definicion": "Trabajadores que prestan servicios remunerados en relación de dependencia en la actividad privada, beneficiarios de la Ley sobre Riesgos del Trabajo y del Seguro de Desempleo, e inscriptos y aportantes al Régimen Simplificado para Pequeños Contribuyentes.",
-   "rol_persona": "TITULAR",
-   "alcance": "Es la misma población que la de la asignación por hijo. El artículo 9 no dice que la titular tenga que ser la persona gestante: dice «se requerirá una antigüedad mínima en el empleo», sin decir de quién, y eso es parte de lo que queda a revisión.",
-   "ruta_evidencia": "articulo-1/inciso-a-3"
-  }
- ],
- "reglas": [
-  {
-   "clave": "COMPRENDIDO-EN-EL-SUBSISTEMA-CONTRIBUTIVO",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-1/inciso-a-3",
-   "texto_literal": "a) Un subsistema contributivo fundado en los principios de reparto de aplicación a los trabajadores que presten servicios remunerados en relación de dependencia en la actividad privada, cualquiera sea la modalidad de contratación laboral, beneficiarios de la Ley sobre Riesgos de Trabajo y beneficiarios del Seguro de Desempleo, el que se financiará con los recursos previstos en el artículo 5° de la presente ley.",
-   "descripcion": "Estar comprendido en el subsistema contributivo.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "in",
-    "field": "situacion_laboral_del_titular",
-    "values": [
-     "RELACION_DE_DEPENDENCIA_PRIVADA",
-     "BENEFICIARIO_RIESGOS_DEL_TRABAJO",
-     "BENEFICIARIO_SEGURO_DE_DESEMPLEO",
-     "MONOTRIBUTISTA",
-     "SECTOR_PUBLICO",
-     "PENSION_NO_CONTRIBUTIVA"
-    ]
-   },
-   "requiere_revision": true,
-   "motivo_revision": "La lista no incluye a las empleadas de casas particulares: el artículo 2 les conserva sólo la asignación por maternidad y las manda al subsistema no contributivo, donde cobran la Asignación por Embarazo. Es la misma lista que en la asignación por hijo y distinta de la de maternidad, y esa diferencia es la que hay que confirmar antes de aprobar cualquiera de las tres."
+  "schema_version": "1.0",
+  "norma": {
+    "external_id": "infoleg:39880:actualizado",
+    "referencia": "Ley 24.714",
+    "rol": "CREA"
   },
-  {
-   "clave": "EMBARAZO-EN-CURSO",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-9",
-   "texto_literal": "La asignación prenatal consistirá en el pago de una suma equivalente a la asignación por hijo, que se abonara desde el momento de la concepción hasta el nacimiento del hijo.",
-   "descripcion": "Se abona desde el momento de la concepción hasta el nacimiento.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "embarazo_en_curso"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "El derecho corre «desde el momento de la concepción», que no es un dato que nadie pueda acreditar: lo que se acredita es el estado de embarazo, entre el tercer y el cuarto mes. De la diferencia entre esas dos fechas depende si los primeros meses se pagan retroactivamente o se pierden, y el texto no lo dice."
+  "nota": "Lectura curada de la asignación prenatal. Es la contraparte contributiva de la Asignación por Embarazo para Protección Social —mismo hecho de la vida, dos subsistemas— y compararlas muestra por qué se curan por separado: la prenatal pide tres meses de antigüedad en el empleo y se acredita entre el tercer y el cuarto mes de embarazo; la otra pide tres años de residencia legal y se solicita desde la semana doce. Nada de eso se puede promediar. Todo entra como candidato.",
+  "beneficio": {
+    "codigo": "AR.ASIGNACION-PRENATAL",
+    "nombre": "Asignación prenatal",
+    "familia": "SEGURIDAD_SOCIAL",
+    "linea": "ASIGNACION_FAMILIAR",
+    "jurisdiccion": "AR",
+    "naturaleza": "PRESTACION_MONETARIA",
+    "descripcion": "Suma mensual equivalente a la asignación por hijo, que se abona desde el momento de la concepción hasta el nacimiento. El estado de embarazo se acredita entre el tercer y el cuarto mes mediante certificado médico, y se requiere una antigüedad mínima y continuada en el empleo de tres meses.",
+    "unidad_beneficiaria": "PERSONA",
+    "modalidad": "TRANSFERENCIA",
+    "frecuencia": "MENSUAL",
+    "requiere_solicitud": true,
+    "ruta_evidencia": "articulo-9"
   },
-  {
-   "clave": "ACREDITAR-EL-EMBARAZO-ENTRE-EL-TERCER-Y-CUARTO-MES",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-9",
-   "texto_literal": "Este estado debe ser acreditado entre el tercer y cuarto mes de embarazo, mediante certificado médico.",
-   "descripcion": "El estado de embarazo se acredita entre el tercer y el cuarto mes, mediante certificado médico.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "embarazo_acreditado_con_certificado_medico"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "Es la condición más filosa de esta prestación y el árbol no la captura entera. El texto abre una ventana —«entre el tercer y cuarto mes»— y no dice qué pasa fuera de ella: si acreditar en el sexto mes hace perder el derecho, lo hace perder desde el sexto mes, o no cambia nada. Escribir una condición que devuelva falso fuera de la ventana daría por perdido un derecho que la ley no dice que se pierda; escribir una que la ignore borraría la ventana. Se guarda la acreditación y la ventana queda como plazo aparte, con este mismo motivo."
-  },
-  {
-   "clave": "ANTIGUEDAD-MINIMA-DE-TRES-MESES",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-9",
-   "texto_literal": "Para el goce de esta asignación se requerirá una antigüedad mínima y continuada en el empleo de tres meses.",
-   "descripcion": "Acreditar una antigüedad mínima y continuada en el empleo de tres meses.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "compare",
-    "field": "antiguedad_continuada_en_el_empleo",
-    "cmp": ">=",
-    "value": 3,
-    "unit": "meses"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "Es la misma exigencia que la asignación por maternidad y con el mismo problema: «mínima y continuada» pide dos cosas y el árbol guarda una. Qué interrumpe la continuidad no lo dice la ley. La Asignación por Embarazo del otro subsistema no pide antigüedad alguna: pide tres años de residencia legal, que mide algo completamente distinto."
-  },
-  {
-   "clave": "REMUNERACION-ENTRE-EL-PISO-Y-EL-TECHO",
-   "categoria": "EXCLUSION",
-   "ruta_evidencia": "articulo-3",
-   "texto_literal": "Quedan excluidos de las prestaciones de esta ley, con excepción de las asignaciones familiares por maternidad y por hijos con discapacidad, los trabajadores que perciban una remuneración inferior a PESOS CIEN ($ 100) o igual o superior a PESOS CUATRO MIL CON UN CENTAVO ($ 4.000,01).",
-   "descripcion": "Queda excluido quien percibe una remuneración inferior al piso o igual o superior al techo. La prenatal no está entre las excepciones del artículo 3.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "all",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "compare",
-      "field": "remuneracion_del_titular",
-      "cmp": ">=",
-      "parameter": "AR.TOPE-MINIMO-ASIGNACIONES",
-      "unit": "ARS"
-     },
-     {
-      "schema_version": "1.0",
-      "op": "compare",
-      "field": "remuneracion_del_titular",
-      "cmp": "<",
-      "parameter": "AR.TOPE-MAXIMO-ASIGNACIONES",
-      "unit": "ARS"
-     }
-    ]
-   },
-   "parametros": [
+  "poblaciones": [
     {
-     "codigo": "AR.TOPE-MINIMO-ASIGNACIONES",
-     "rol": "UMBRAL"
+      "codigo": "AR.TRABAJADOR-EN-RELACION-DE-DEPENDENCIA",
+      "nombre": "Personas del subsistema contributivo",
+      "definicion": "Trabajadores que prestan servicios remunerados en relación de dependencia en la actividad privada, beneficiarios de la Ley sobre Riesgos del Trabajo y del Seguro de Desempleo, e inscriptos y aportantes al Régimen Simplificado para Pequeños Contribuyentes.",
+      "rol_persona": "TITULAR",
+      "alcance": "Es la misma población que la de la asignación por hijo. El artículo 9 no dice que la titular tenga que ser la persona gestante: dice «se requerirá una antigüedad mínima en el empleo», sin decir de quién, y eso es parte de lo que queda a revisión.",
+      "ruta_evidencia": "articulo-1/inciso-a-3"
+    }
+  ],
+  "reglas": [
+    {
+      "clave": "COMPRENDIDO-EN-EL-SUBSISTEMA-CONTRIBUTIVO",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-1/inciso-a-3",
+      "texto_literal": "a) Un subsistema contributivo fundado en los principios de reparto de aplicación a los trabajadores que presten servicios remunerados en relación de dependencia en la actividad privada, cualquiera sea la modalidad de contratación laboral, beneficiarios de la Ley sobre Riesgos de Trabajo y beneficiarios del Seguro de Desempleo, el que se financiará con los recursos previstos en el artículo 5° de la presente ley.",
+      "descripcion": "Estar comprendido en el subsistema contributivo.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "in",
+        "field": "situacion_laboral_del_titular",
+        "values": [
+          "RELACION_DE_DEPENDENCIA_PRIVADA",
+          "BENEFICIARIO_RIESGOS_DEL_TRABAJO",
+          "BENEFICIARIO_SEGURO_DE_DESEMPLEO",
+          "MONOTRIBUTISTA",
+          "SECTOR_PUBLICO",
+          "PENSION_NO_CONTRIBUTIVA"
+        ]
+      },
+      "requiere_revision": true,
+      "motivo_revision": "La lista no incluye a las empleadas de casas particulares: el artículo 2 les conserva sólo la asignación por maternidad y las manda al subsistema no contributivo, donde cobran la Asignación por Embarazo. Es la misma lista que en la asignación por hijo y distinta de la de maternidad, y esa diferencia es la que hay que confirmar antes de aprobar cualquiera de las tres."
     },
     {
-     "codigo": "AR.TOPE-MAXIMO-ASIGNACIONES",
-     "rol": "UMBRAL"
+      "clave": "EMBARAZO-EN-CURSO",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-9",
+      "texto_literal": "La asignación prenatal consistirá en el pago de una suma equivalente a la asignación por hijo, que se abonara desde el momento de la concepción hasta el nacimiento del hijo.",
+      "descripcion": "Se abona desde el momento de la concepción hasta el nacimiento.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "embarazo_en_curso"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "El derecho corre «desde el momento de la concepción», que no es un dato que nadie pueda acreditar: lo que se acredita es el estado de embarazo, entre el tercer y el cuarto mes. De la diferencia entre esas dos fechas depende si los primeros meses se pagan retroactivamente o se pierden, y el texto no lo dice."
+    },
+    {
+      "clave": "ACREDITAR-EL-EMBARAZO-ENTRE-EL-TERCER-Y-CUARTO-MES",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-9",
+      "texto_literal": "Este estado debe ser acreditado entre el tercer y cuarto mes de embarazo, mediante certificado médico.",
+      "descripcion": "El estado de embarazo se acredita entre el tercer y el cuarto mes, mediante certificado médico.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "embarazo_acreditado_con_certificado_medico"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "Es la condición más filosa de esta prestación y el árbol no la captura entera. El texto abre una ventana —«entre el tercer y cuarto mes»— y no dice qué pasa fuera de ella: si acreditar en el sexto mes hace perder el derecho, lo hace perder desde el sexto mes, o no cambia nada. Escribir una condición que devuelva falso fuera de la ventana daría por perdido un derecho que la ley no dice que se pierda; escribir una que la ignore borraría la ventana. Se guarda la acreditación y la ventana queda como plazo aparte, con este mismo motivo."
+    },
+    {
+      "clave": "ANTIGUEDAD-MINIMA-DE-TRES-MESES",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-9",
+      "texto_literal": "Para el goce de esta asignación se requerirá una antigüedad mínima y continuada en el empleo de tres meses.",
+      "descripcion": "Acreditar una antigüedad mínima y continuada en el empleo de tres meses.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "compare",
+        "field": "antiguedad_continuada_en_el_empleo",
+        "cmp": ">=",
+        "value": 3,
+        "unit": "meses"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "Es la misma exigencia que la asignación por maternidad y con el mismo problema: «mínima y continuada» pide dos cosas y el árbol guarda una. Qué interrumpe la continuidad no lo dice la ley. La Asignación por Embarazo del otro subsistema no pide antigüedad alguna: pide tres años de residencia legal, que mide algo completamente distinto."
+    },
+    {
+      "clave": "REMUNERACION-FUERA-DE-LA-BANDA",
+      "categoria": "EXCLUSION",
+      "ruta_evidencia": "articulo-3",
+      "texto_literal": "Quedan excluidos de las prestaciones de esta ley, con excepción de las asignaciones familiares por maternidad y por hijos con discapacidad, los trabajadores que perciban una remuneración inferior a PESOS CIEN ($ 100) o igual o superior a PESOS CUATRO MIL CON UN CENTAVO ($ 4.000,01).",
+      "descripcion": "Queda excluido quien percibe una remuneración inferior al piso o igual o superior al techo que fija el artículo 3.",
+      "ast": {
+        "op": "any",
+        "args": [
+          {
+            "op": "compare",
+            "cmp": "<",
+            "unit": "ARS",
+            "field": "remuneracion_del_titular",
+            "parameter": "AR.TOPE-MINIMO-ASIGNACIONES",
+            "schema_version": "1.0"
+          },
+          {
+            "op": "compare",
+            "cmp": ">=",
+            "unit": "ARS",
+            "field": "remuneracion_del_titular",
+            "parameter": "AR.TOPE-MAXIMO-ASIGNACIONES",
+            "schema_version": "1.0"
+          }
+        ],
+        "schema_version": "1.0"
+      },
+      "parametros": [
+        {
+          "codigo": "AR.TOPE-MINIMO-ASIGNACIONES",
+          "rol": "UMBRAL"
+        },
+        {
+          "codigo": "AR.TOPE-MAXIMO-ASIGNACIONES",
+          "rol": "UMBRAL"
+        }
+      ],
+      "requiere_revision": true,
+      "motivo_revision": "Los dos números del texto son de 2007 y no rigen: se comparan contra parámetros y, sin valor aprobado para el período consultado, la regla devuelve desconocido. Y una asimetría que conviene mirar: el artículo 3 exceptúa a la asignación por maternidad del tope, y a la prenatal no, aunque las dos cubren el mismo embarazo en momentos distintos.",
+      "casos": [
+        {
+          "nombre": "cobra dentro de la banda",
+          "hechos": {
+            "remuneracion_del_titular": 2000
+          },
+          "parametros": {
+            "AR.TOPE-MINIMO-ASIGNACIONES": 100,
+            "AR.TOPE-MAXIMO-ASIGNACIONES": 4000.01
+          },
+          "espera": "FALSE"
+        },
+        {
+          "nombre": "cobra por debajo del piso",
+          "hechos": {
+            "remuneracion_del_titular": 50
+          },
+          "parametros": {
+            "AR.TOPE-MINIMO-ASIGNACIONES": 100,
+            "AR.TOPE-MAXIMO-ASIGNACIONES": 4000.01
+          },
+          "espera": "TRUE"
+        },
+        {
+          "nombre": "cobra igual o más que el techo",
+          "hechos": {
+            "remuneracion_del_titular": 4000.01
+          },
+          "parametros": {
+            "AR.TOPE-MINIMO-ASIGNACIONES": 100,
+            "AR.TOPE-MAXIMO-ASIGNACIONES": 4000.01
+          },
+          "espera": "TRUE"
+        }
+      ],
+      "correccion": "Corrección de polaridad (T-16, D-149): el árbol expresaba la condición de inclusión y la categoría dice EXCLUSION, así que el motor leía «queda excluido» exactamente al revés."
+    },
+    {
+      "clave": "UN-SOLO-PROGENITOR-PERCIBE",
+      "categoria": "PRIORIDAD",
+      "ruta_evidencia": "articulo-20",
+      "texto_literal": "ARTICULO 20.- Cuando ambos progenitores estén comprendidos en el presente régimen, las prestaciones enumeradas en los artículos 6º y 15 serán percibidas por uno solo de ellos.",
+      "descripcion": "Cuando ambos progenitores están comprendidos en el régimen, la prestación la percibe uno solo de ellos.",
+      "requiere_revision": true,
+      "motivo_revision": "La ley dice que cobra uno solo y no dice cuál. Acá pesa distinto que en la asignación por hijo: la persona gestante es una sola y el artículo no dice que la prenatal tenga que cobrarla ella."
+    },
+    {
+      "clave": "EMPLEO-CON-MAYOR-ANTIGUEDAD",
+      "categoria": "PRIORIDAD",
+      "ruta_evidencia": "articulo-21",
+      "texto_literal": "Cuando el trabajador se desempeñare en más de un empleo tendrá derecho a la percepción de las prestaciones de la presente ley en el que acredite mayor antigüedad, a excepción de la asignación por maternidad, que será percibida en cada uno de ellos.",
+      "descripcion": "Con más de un empleo, la prestación se percibe en el que acredite mayor antigüedad.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "empleo_con_mayor_antiguedad"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "Se cruza con la antigüedad mínima de tres meses del artículo 9: si el empleo de mayor antigüedad tiene tres meses pero el otro no, o al revés, cuál es el que cuenta para el requisito no lo dice la ley."
+    },
+    {
+      "clave": "INEMBARGABLE-Y-NO-REMUNERATIVA",
+      "categoria": "SALVAGUARDA",
+      "ruta_evidencia": "articulo-23",
+      "texto_literal": "Las Asignaciones Familiares dispuestas en la presente ley son inembargables, no constituyen remuneración ni están sujetas a gravámenes, atento su naturaleza jurídica, tampoco serán tenidas en cuenta para la determinación del sueldo anual complementario, ni para el pago de las indemnizaciones por despido, enfermedad, accidente o para cualquier otro efecto. No pueden ser enajenadas ni afectadas a terceros por derecho alguno.",
+      "descripcion": "La asignación es inembargable, no constituye remuneración y no puede ser enajenada ni afectada a terceros.",
+      "requiere_revision": true,
+      "motivo_revision": "Es una protección sobre lo cobrado y no una condición de acceso, así que no tiene AST."
     }
-   ],
-   "requiere_revision": true,
-   "motivo_revision": "Los dos números del texto son de 2007 y no rigen: se comparan contra parámetros y, sin valor aprobado para el período consultado, la regla devuelve desconocido. Y una asimetría que conviene mirar: el artículo 3 exceptúa a la asignación por maternidad del tope, y a la prenatal no, aunque las dos cubren el mismo embarazo en momentos distintos."
-  },
-  {
-   "clave": "UN-SOLO-PROGENITOR-PERCIBE",
-   "categoria": "PRIORIDAD",
-   "ruta_evidencia": "articulo-20",
-   "texto_literal": "ARTICULO 20.- Cuando ambos progenitores estén comprendidos en el presente régimen, las prestaciones enumeradas en los artículos 6º y 15 serán percibidas por uno solo de ellos.",
-   "descripcion": "Cuando ambos progenitores están comprendidos en el régimen, la prestación la percibe uno solo de ellos.",
-   "requiere_revision": true,
-   "motivo_revision": "La ley dice que cobra uno solo y no dice cuál. Acá pesa distinto que en la asignación por hijo: la persona gestante es una sola y el artículo no dice que la prenatal tenga que cobrarla ella."
-  },
-  {
-   "clave": "EMPLEO-CON-MAYOR-ANTIGUEDAD",
-   "categoria": "PRIORIDAD",
-   "ruta_evidencia": "articulo-21",
-   "texto_literal": "Cuando el trabajador se desempeñare en más de un empleo tendrá derecho a la percepción de las prestaciones de la presente ley en el que acredite mayor antigüedad, a excepción de la asignación por maternidad, que será percibida en cada uno de ellos.",
-   "descripcion": "Con más de un empleo, la prestación se percibe en el que acredite mayor antigüedad.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "empleo_con_mayor_antiguedad"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "Se cruza con la antigüedad mínima de tres meses del artículo 9: si el empleo de mayor antigüedad tiene tres meses pero el otro no, o al revés, cuál es el que cuenta para el requisito no lo dice la ley."
-  },
-  {
-   "clave": "INEMBARGABLE-Y-NO-REMUNERATIVA",
-   "categoria": "SALVAGUARDA",
-   "ruta_evidencia": "articulo-23",
-   "texto_literal": "Las Asignaciones Familiares dispuestas en la presente ley son inembargables, no constituyen remuneración ni están sujetas a gravámenes, atento su naturaleza jurídica, tampoco serán tenidas en cuenta para la determinación del sueldo anual complementario, ni para el pago de las indemnizaciones por despido, enfermedad, accidente o para cualquier otro efecto. No pueden ser enajenadas ni afectadas a terceros por derecho alguno.",
-   "descripcion": "La asignación es inembargable, no constituye remuneración y no puede ser enajenada ni afectada a terceros.",
-   "requiere_revision": true,
-   "motivo_revision": "Es una protección sobre lo cobrado y no una condición de acceso, así que no tiene AST."
-  }
- ],
- "cuantia": {
-  "tipo": "FORMULA",
-  "ruta_evidencia": "articulo-18/inciso-c-78",
-  "formula_version": "ley-24714-art18-c@1",
-  "unidad_beneficiaria": "PERSONA",
-  "descripcion": "Una suma igual a la de la asignación por hijo: el artículo 18 inciso c) no fija un valor propio sino que remite al inciso a), con su escala por tramos de remuneración.",
-  "parametros": [
-   {
-    "codigo": "AR.ASIGNACION-HIJO",
-    "rol": "REFERENCIA"
-   }
   ],
-  "requiere_revision": true,
-  "motivo_revision": "La remisión al inciso a) hace que esta cuantía herede su escala y sus valores de 2007, que no rigen. Servir el número sería peor que decir que no se sabe. Y hay una diferencia con la Asignación por Embarazo del otro subsistema, que remite a «la mayor suma fijada en el inciso a)»: acá es «una suma igual a la de asignación por hijo», que con una escala por tramos no es lo mismo que la mayor."
- },
- "plazos": [
-  {
-   "clave": "VENTANA-DE-ACREDITACION",
-   "tipo": "PRESENTACION_DOCUMENTAL",
-   "ruta_evidencia": "articulo-9",
-   "texto_literal": "Este estado debe ser acreditado entre el tercer y cuarto mes de embarazo, mediante certificado médico.",
-   "cantidad": 4,
-   "unidad": "meses",
-   "tipo_dia": "NO_INFORMADO",
-   "evento_inicio": "inicio del embarazo",
-   "requiere_revision": true,
-   "motivo_revision": "Es una ventana con dos extremos —desde el tercer mes, hasta el cuarto— y el modelo guarda una cantidad y un evento de inicio. Se cargó el extremo que cierra, que es el que corre contra la persona, y queda dicho que hay otro que abre: acreditar antes del tercer mes tampoco está previsto. Sobre todo queda dicho lo que la ley no dice, que es qué pasa fuera de la ventana."
-  }
- ],
- "campos_no_informados": [
-  {
-   "campo": "criterios_revocacion",
-   "motivo": "La ley no declara causales de baja. Termina con el nacimiento, que no es una revocación, y no dice qué pasa si el embarazo se interrumpe: si lo cobrado hasta ahí se conserva o se reclama. La Asignación por Embarazo del otro subsistema sí prevé la interrupción como uno de sus dos finales posibles."
-  }
- ],
- "dependencias": [
-  {
-   "referencia": "Resoluciones de ANSES que fijan montos y topes de la Ley 24.714",
-   "motivo": "El artículo 19 delega la cuantía y los topes en el Poder Ejecutivo. Sin la resolución vigente, ni el monto —que remite al inciso a)— ni el tope tienen valor."
+  "cuantia": {
+    "tipo": "FORMULA",
+    "ruta_evidencia": "articulo-18/inciso-c-78",
+    "formula_version": "ley-24714-art18-c@1",
+    "unidad_beneficiaria": "PERSONA",
+    "descripcion": "Una suma igual a la de la asignación por hijo: el artículo 18 inciso c) no fija un valor propio sino que remite al inciso a), con su escala por tramos de remuneración.",
+    "parametros": [
+      {
+        "codigo": "AR.ASIGNACION-HIJO",
+        "rol": "REFERENCIA"
+      }
+    ],
+    "requiere_revision": true,
+    "motivo_revision": "La remisión al inciso a) hace que esta cuantía herede su escala y sus valores de 2007, que no rigen. Servir el número sería peor que decir que no se sabe. Y hay una diferencia con la Asignación por Embarazo del otro subsistema, que remite a «la mayor suma fijada en el inciso a)»: acá es «una suma igual a la de asignación por hijo», que con una escala por tramos no es lo mismo que la mayor."
   },
-  {
-   "referencia": "Ley 24.241, artículos 6 y 9",
-   "motivo": "El artículo 4 remite a ellos para definir qué cuenta como remuneración, que es el dato con el que se mide el piso y el techo."
-  }
- ],
- "vacios_declarados": [
-  {
-   "dato": "canales",
-   "motivo": "La ley no dice dónde se presenta el certificado médico ni dónde se gestiona la prestación. El subsistema contributivo históricamente liquidó por el empleador, pero eso no sale de esta norma."
-  }
- ]
+  "plazos": [
+    {
+      "clave": "VENTANA-DE-ACREDITACION",
+      "tipo": "PRESENTACION_DOCUMENTAL",
+      "ruta_evidencia": "articulo-9",
+      "texto_literal": "Este estado debe ser acreditado entre el tercer y cuarto mes de embarazo, mediante certificado médico.",
+      "cantidad": 4,
+      "unidad": "meses",
+      "tipo_dia": "NO_INFORMADO",
+      "evento_inicio": "inicio del embarazo",
+      "requiere_revision": true,
+      "motivo_revision": "Es una ventana con dos extremos —desde el tercer mes, hasta el cuarto— y el modelo guarda una cantidad y un evento de inicio. Se cargó el extremo que cierra, que es el que corre contra la persona, y queda dicho que hay otro que abre: acreditar antes del tercer mes tampoco está previsto. Sobre todo queda dicho lo que la ley no dice, que es qué pasa fuera de la ventana."
+    }
+  ],
+  "campos_no_informados": [
+    {
+      "campo": "criterios_revocacion",
+      "motivo": "La ley no declara causales de baja. Termina con el nacimiento, que no es una revocación, y no dice qué pasa si el embarazo se interrumpe: si lo cobrado hasta ahí se conserva o se reclama. La Asignación por Embarazo del otro subsistema sí prevé la interrupción como uno de sus dos finales posibles."
+    }
+  ],
+  "dependencias": [
+    {
+      "referencia": "Resoluciones de ANSES que fijan montos y topes de la Ley 24.714",
+      "motivo": "El artículo 19 delega la cuantía y los topes en el Poder Ejecutivo. Sin la resolución vigente, ni el monto —que remite al inciso a)— ni el tope tienen valor."
+    },
+    {
+      "referencia": "Ley 24.241, artículos 6 y 9",
+      "motivo": "El artículo 4 remite a ellos para definir qué cuenta como remuneración, que es el dato con el que se mide el piso y el techo."
+    }
+  ],
+  "vacios_declarados": [
+    {
+      "dato": "canales",
+      "motivo": "La ley no dice dónde se presenta el certificado médico ni dónde se gestiona la prestación. El subsistema contributivo históricamente liquidó por el empleador, pero eso no sale de esta norma."
+    }
+  ]
 }

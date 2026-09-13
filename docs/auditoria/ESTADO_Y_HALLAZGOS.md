@@ -479,7 +479,7 @@ LISTA_PARA_ACEPTACION y 8 EN_CURSO, ninguna NO_INICIADA. El total de 38 cierra
 igual porque los errores se compensan. Es un defecto de documentación, no de
 producto, y conviene corregirlo antes de usar ese recuento para planificar.
 
-#### H-17 · Una regla con la polaridad invertida daría una orientación materialmente falsa — **P0 latente, bloquea el MVP**
+#### H-17 · Una regla con la polaridad invertida daría una orientación materialmente falsa — **P0 latente · CORREGIDO en T-16**
 * **Componente:** `reglas`, `AR.ASIGNACION-POR-CONYUGE-SIJP`, regla de categoría `EXCLUSION`
 * **Evidencia:** el texto literal es el inciso i) del art. 18 de la Ley 24.714 —«la
   suma de PESOS TREINTA ($ 30) para los que perciban haberes inferiores a PESOS
@@ -504,15 +504,19 @@ producto, y conviene corregirlo antes de usar ese recuento para planificar.
   y le diría exactamente a quien califica que una regla explícita lo excluye.
 * **Consecuencia para el plan: T-15 no puede entrar antes que la revisión de
   polaridad.** Cargar los montos sin revisar las reglas es habilitar el error.
-* **Alcance del hallazgo, dicho con honestidad:** un barrido por palabras sobre
-  las `descripcion` de las 14 reglas `EXCLUSION` ejecutables encontró **una sola**
-  coincidencia, que es ésta. Un barrido por palabras **no prueba** que las otras
-  13 estén bien: hace falta leer cada una contra su texto literal.
+* **Alcance real, medido después:** el barrido por palabras encontró una sola y
+  **se quedó corto por un factor de doce**. Al comprobar las 14 con casos
+  concretos leídos del texto legal, **12 estaban invertidas**. Las dos correctas
+  son las de la Ley 6935, las únicas que se curaron a mano. Es la prueba de que
+  un barrido por palabras no sirve para esto: lo único que lo detecta es
+  preguntarle al árbol por un caso donde el texto no deje dudas.
+* **Corregido:** las 12 en su lectura curada, con sus casos declarados, cargadas
+  y reaprobadas. Verificación sobre la base: **12 correctas, 0 invertidas**.
 * **Criterio de resolución:** las 14 reglas `EXCLUSION` ejecutables revisadas una
   por una contra su texto, con su decisión registrada; y una prueba de aceptación
   que fije los dos extremos de esta regla.
 
-#### H-18 · Diez reglas retiradas siguen bloqueando — **P2**
+#### H-18 · Diez reglas retiradas siguen bloqueando — **P2 · CORREGIDO en T-16**
 * **Evidencia:** `reglas.alcance` de diez filas dice «La lectura curada ya no
   contiene esta regla: su cita se corrigió o se quitó. Se conserva el texto para
   poder explicar qué se afirmaba antes.» Siguen `PUBLISHED` y marcadas
@@ -523,8 +527,80 @@ producto, y conviene corregirlo antes de usar ese recuento para planificar.
   beneficio (`AR.CUIDADO-DE-SALUD-INTEGRAL`, de `REQUIERE_REVISION` a
   `REQUIERE_DATOS`). No es la solución de H-01; es una regla que no debería
   bloquear nada.
-* **Recomendación mínima:** un estado de revisión `RETIRADA` que el cargador de
-  reglas excluya, en vez de una nota en `alcance`.
+* **Causa exacta, más simple de lo que parecía:** las diez **ya están en
+  `SUPERSEDED`**, que es el estado que el vocabulario tiene para esto. Lo que
+  faltaba era el filtro: `_reglas_publicadas` (`api/routers/evaluaciones.py:113`)
+  acotaba por el estado de la **versión del beneficio** y nunca por el de la
+  regla, así que una regla retirada se seguía cargando y evaluando.
+* **Corregido:** una línea en esa consulta, `AND r.estado_revision <> 'SUPERSEDED'`.
+
+#### H-19 · Corregir una lectura curada no corregía la regla ya cargada — **P1 (corregido en T-16)**
+* **Componente:** `curacion/beneficios.py::_regla`
+* **Evidencia:** las reglas se reconocen por su `texto_literal`; si ya existía una
+  con ese texto, el cargador devolvía la fila y **descartaba en silencio la
+  categoría, el árbol y la descripción** que la lectura traía. Es la razón por la
+  que las doce polaridades invertidas sobrevivieron a varias corridas de
+  curación: corregir el JSON no hacía nada.
+* **Corrección:** `_actualizar_si_la_lectura_cambio` aplica el cambio, deja un
+  evento `CORREGIR_REGLA` con actor y motivo, y **devuelve la regla a CANDIDATE**
+  aunque estuviera aprobada — lo que alguien aprobó fue la regla anterior.
+* **Verificación:** 12 eventos `CORREGIR_REGLA` en la corrida de T-16.
+
+#### H-20 · Las rutas de cita llevan la posición de la unidad y una resegmentación las rompe — **P1**
+* **Evidencia:** la Ley 24.714 está capturada dos veces: la versión 1 con 172
+  unidades y la 2 con 201. El mismo inciso c) del art. 1 es
+  `articulo-1/inciso-c-4` en una y `articulo-1/inciso-c-6` en la otra: el sufijo
+  es el ordinal de la unidad en el documento, así que **agregar unidades
+  renumera todas las siguientes**. El cargador toma siempre la versión más alta,
+  de modo que **tres lecturas curadas dejaron de cargar** —adopción, cuidado de
+  salud integral y nacimiento— y con ellas se perdían tres de las doce
+  correcciones de polaridad.
+* **Cómo pasó desapercibido:** `bn curacion beneficios` lo informa como un
+  «aviso» y **termina con código 0**. Cuatro de veintitrés lecturas no cargaban y
+  la corrida se veía normal.
+* **Recomendación mínima:** un identificador de unidad estable —el número del
+  artículo y del inciso, no la posición—; y que una lectura que no carga sea un
+  error de la corrida, no un aviso.
+* **Estado:** las tres rutas se corrigieron a mano para desbloquear T-16. **El
+  diseño del identificador sigue igual**, y la cuarta lectura
+  (`decreto-caba-690-2006.json`) sigue sin cargar por otra cita rota.
+
+#### H-21 · Ninguna regla puede resolver su parámetro — **P1**
+* **Evidencia:** las 99 reglas ejecutables citan **ocho** códigos de parámetro
+  —`AR.SMVM` (7 reglas), `AR.TOPE-MAXIMO-ASIGNACIONES` (6),
+  `AR.TOPE-MINIMO-ASIGNACIONES` (5), `CABA.SUELDO-MINIMO` (4),
+  `CABA.SUELDO-MINIMO-CONVENIO-COMERCIO` (3), `AR.CBA`,
+  `AR.SALARIO-MINIMO-VITAL-Y-MOVIL`, `INDEC.CBT`— y los únicos tres parámetros
+  con valores cargados son **`SMVM`, `PRESTACION_DESEMPLEO_MINIMO` y
+  `PRESTACION_DESEMPLEO_MAXIMO`**. La intersección es **vacía**.
+* **Consecuencia:** `AR.SMVM` y `SMVM` son la misma magnitud con dos códigos
+  —el importador de montos escribe uno (`catalogo/derivacion.py:146`,
+  `COLUMNAS_DE_MONTOS`) y las lecturas curadas citan el otro—, así que **ni
+  siquiera en octubre**, cuando la serie del SMVM empieza a regir, resolvería
+  ninguna regla. H-08 decía «no hay valores para hoy»; el problema es más grande:
+  **no hay ningún valor que una regla pueda alcanzar, en ninguna fecha**.
+* **Qué se puede arreglar sin fuente nueva:** unificar el código del SMVM. Eso
+  hace resolver 8 reglas desde el 1/10/2026.
+* **Qué queda bloqueado por falta de fuente:** los topes de asignaciones
+  familiares no tienen valores en ninguna fecha. La única fuente que los publica
+  es **M05 (ANSES), con `access_status = ACCESO_LIMITADO`**. Sin esa fuente, las
+  once reglas que dependen de los topes se quedan en desconocido y ningún
+  beneficio de la Ley 24.714 puede concluir.
+
+#### H-22 · La pantalla mostraba una exclusión que **no** alcanza a la persona bajo el rótulo «No se cumple» — **P1 · CORREGIDO**
+* **Componente:** `api/ciudadano/consulta.html:1368`
+* **Evidencia:** el front rotula `condiciones_no_cumplidas` como «No se cumple con
+  lo que me contaste». Para una `EXCLUSION` que evaluó FALSE eso es **buena
+  noticia** —la causal no la alcanza—, y se leía como lo contrario. En el
+  escenario en que a la persona **le corresponde** el beneficio, la pantalla le
+  mostraba bajo «No se cumple»: «Quedan excluidos del beneficio los trabajadores
+  que se desempeñen en la economía informal…».
+* **Por qué apareció recién ahora:** sólo se ve cuando un beneficio llega a un
+  veredicto, y hasta T-16 ninguno llegaba. Es el tipo de defecto que un producto
+  que nunca concluye no puede mostrar.
+* **Corregido:** la respuesta ya traía la `categoria` de cada condición; el front
+  ahora separa «Se cumple» / «Esto te dejaría afuera» / «No se cumple» /
+  «Causales de exclusión que no te alcanzan».
 
 ### Riesgos fundamentados (no son defectos comprobados)
 

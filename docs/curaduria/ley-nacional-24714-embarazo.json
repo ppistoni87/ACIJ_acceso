@@ -1,250 +1,280 @@
 {
- "schema_version": "1.0",
- "norma": {
-  "external_id": "infoleg:39880:actualizado",
-  "referencia": "Ley 24.714",
-  "rol": "CREA"
- },
- "nota": "Lectura curada de la Asignación por Embarazo para Protección Social, la otra prestación del subsistema no contributivo de la Ley 24.714. Se cura aparte de la Asignación Universal por Hijo porque son dos prestaciones distintas con requisitos distintos —tres años de residencia legal acá, dos allá— y mezclarlas haría que la condición de una decidiera el acceso a la otra. La ley declara además que percibirlas juntas no es incompatible, y eso también se guarda. Todo entra como candidato.",
- "beneficio": {
-  "codigo": "AR.ASIGNACION-POR-EMBARAZO",
-  "nombre": "Asignación por Embarazo para Protección Social",
-  "familia": "SEGURIDAD_SOCIAL",
-  "linea": "ASIGNACION_FAMILIAR",
-  "jurisdiccion": "AR",
-  "naturaleza": "PRESTACION_MONETARIA",
-  "descripcion": "Prestación monetaria no retributiva mensual que se abona a la persona gestante desde el inicio del embarazo hasta su interrupción o el nacimiento, con un máximo de nueve mensualidades. Se solicita a partir de la semana doce de gestación. Se liquida el ochenta por ciento en forma mensual y el veinte por ciento restante se paga en un solo pago al finalizar el embarazo, si se cumplieron los controles médicos de seguimiento.",
-  "unidad_beneficiaria": "PERSONA",
-  "modalidad": "TRANSFERENCIA",
-  "frecuencia": "MENSUAL",
-  "requiere_solicitud": true,
-  "ruta_evidencia": "articulo-14-quater"
- },
- "poblaciones": [
-  {
-   "codigo": "AR.PERSONA-GESTANTE",
-   "nombre": "Persona gestante",
-   "definicion": "Persona cursando un embarazo, que percibe la asignación desde su inicio hasta la interrupción o el nacimiento, sin exceder nueve mensualidades.",
-   "rol_persona": "TITULAR",
-   "alcance": "Es titular y causante a la vez: la prestación se mide sobre su embarazo y la cobra ella. Es lo que la distingue de la Asignación Universal por Hijo, donde el causante es una persona distinta de quien cobra.",
-   "ruta_evidencia": "articulo-14-quater"
-  }
- ],
- "reglas": [
-  {
-   "clave": "NACIONALIDAD-O-RESIDENCIA-LEGAL-3-ANIOS",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-14-quinquies/inciso-a-55",
-   "texto_literal": "a) Que la embarazada sea argentina nativa o por opción, naturalizada o residente, con residencia legal en el país no inferior a TRES (3) años previos a la solicitud de la asignación.",
-   "descripcion": "Ser argentina nativa o por opción, naturalizada o residente, con residencia legal en el país no inferior a tres años previos a la solicitud.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "any",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "gestante_argentina"
-     },
-     {
-      "schema_version": "1.0",
-      "op": "compare",
-      "field": "residencia_legal_de_la_gestante",
-      "cmp": ">=",
-      "value": 3,
-      "unit": "anios_cumplidos"
-     }
-    ]
-   },
-   "requiere_revision": true,
-   "motivo_revision": "Son tres años, y la Asignación Universal por Hijo del mismo subsistema pide dos. La diferencia está en el texto de las dos normas y no se unifica: cada prestación conserva su requisito. Además el inciso enumera «argentina nativa o por opción, naturalizada o residente» y la exigencia de residencia legal se lee sobre el último caso; leerla sobre todos le pediría tres años de residencia a una argentina nativa que volvió al país."
+  "schema_version": "1.0",
+  "norma": {
+    "external_id": "infoleg:39880:actualizado",
+    "referencia": "Ley 24.714",
+    "rol": "CREA"
   },
-  {
-   "clave": "IDENTIDAD-CON-DNI",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-14-quinquies/inciso-b-56",
-   "texto_literal": "b) Acreditar identidad, mediante Documento Nacional de Identidad.",
-   "descripcion": "Acreditar identidad mediante Documento Nacional de Identidad.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "gestante_acredita_identidad_con_dni"
-   }
+  "nota": "Lectura curada de la Asignación por Embarazo para Protección Social, la otra prestación del subsistema no contributivo de la Ley 24.714. Se cura aparte de la Asignación Universal por Hijo porque son dos prestaciones distintas con requisitos distintos —tres años de residencia legal acá, dos allá— y mezclarlas haría que la condición de una decidiera el acceso a la otra. La ley declara además que percibirlas juntas no es incompatible, y eso también se guarda. Todo entra como candidato.",
+  "beneficio": {
+    "codigo": "AR.ASIGNACION-POR-EMBARAZO",
+    "nombre": "Asignación por Embarazo para Protección Social",
+    "familia": "SEGURIDAD_SOCIAL",
+    "linea": "ASIGNACION_FAMILIAR",
+    "jurisdiccion": "AR",
+    "naturaleza": "PRESTACION_MONETARIA",
+    "descripcion": "Prestación monetaria no retributiva mensual que se abona a la persona gestante desde el inicio del embarazo hasta su interrupción o el nacimiento, con un máximo de nueve mensualidades. Se solicita a partir de la semana doce de gestación. Se liquida el ochenta por ciento en forma mensual y el veinte por ciento restante se paga en un solo pago al finalizar el embarazo, si se cumplieron los controles médicos de seguimiento.",
+    "unidad_beneficiaria": "PERSONA",
+    "modalidad": "TRANSFERENCIA",
+    "frecuencia": "MENSUAL",
+    "requiere_solicitud": true,
+    "ruta_evidencia": "articulo-14-quater"
   },
-  {
-   "clave": "ACREDITAR-EL-EMBARAZO",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-14-quinquies/inciso-c-57",
-   "texto_literal": "La acreditación del estado de embarazo mediante la inscripción en el \"Plan Nacer\" del MINISTERIO DE SALUD.",
-   "descripcion": "Acreditar el estado de embarazo mediante la inscripción en el Plan Nacer del Ministerio de Salud, o por certificado médico en los casos con cobertura de obra social que prevea la reglamentación.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "gestante_acredita_estado_de_embarazo"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "El texto nombra el «Plan Nacer», un programa que dejó de llamarse así hace más de una década. La vía alternativa —certificado médico para quien tiene obra social— queda condicionada a lo que prevea la reglamentación, que no está en el corpus. El campo guarda si el embarazo está acreditado y no cuál de las dos vías se usó: elegir una diría que la otra no sirve."
-  },
-  {
-   "clave": "ACREDITACION-TARDIA-NO-PAGA-LA-GESTACION",
-   "categoria": "EXCLUSION",
-   "ruta_evidencia": "articulo-14-quinquies/parrafo-58",
-   "texto_literal": "Si el requisito se acredita con posterioridad al nacimiento o interrupción del embarazo, no corresponde el pago de la asignación por el período correspondiente al de gestación.",
-   "descripcion": "Si el embarazo se acredita después del nacimiento o de la interrupción, no corresponde el pago por el período de gestación.",
-   "requiere_revision": true,
-   "motivo_revision": "No excluye del beneficio: excluye del pago de un período. El modelo guarda reglas que dicen si alguien accede, no reglas que recorten meses ya transcurridos, y clasificarla como exclusión sin decir esto haría que una acreditación tardía se leyera como «no te corresponde la asignación». Es lo contrario de lo que dice el texto."
-  },
-  {
-   "clave": "DECLARACION-JURADA-Y-PERDIDA-POR-FALSEDAD",
-   "categoria": "REVOCACION",
-   "ruta_evidencia": "articulo-14-quinquies/inciso-d-59",
-   "texto_literal": "d) La presentación por parte del titular del beneficio de una declaración jurada relativa al cumplimiento de los requisitos exigidos por la presente y a las calidades invocadas. De comprobarse la falsedad de alguno de estos datos, se producirá la pérdida del beneficio, sin perjuicio de las sanciones que correspondan.",
-   "descripcion": "La titular presenta una declaración jurada sobre el cumplimiento de los requisitos; comprobada la falsedad de alguno de esos datos se pierde el beneficio, sin perjuicio de las sanciones que correspondan.",
-   "requiere_revision": true,
-   "motivo_revision": "Es a la vez la vía de acreditación y la causal de pérdida, y el texto no dice qué pasa con lo ya percibido ni si la pérdida es definitiva. Tampoco dice quién comprueba la falsedad ni con qué procedimiento. Formalizar la pérdida sin eso convertiría una discrepancia en un dato declarado en una baja automática."
-  },
-  {
-   "clave": "COMPATIBLE-CON-LA-AUH",
-   "categoria": "COMPATIBILIDAD",
-   "ruta_evidencia": "articulo-14-quater/parrafo-52",
-   "texto_literal": "La percepción de esta asignación no será incompatible con la Asignación Universal por Hijo para Protección Social por cada menor de DIECIOCHO (18) años, o sin límite de edad cuando se trate de un discapacitado, a cargo de la mujer embarazada.",
-   "descripcion": "Percibir esta asignación no es incompatible con percibir la Asignación Universal por Hijo por cada menor de dieciocho años, o sin límite de edad si tiene discapacidad, a cargo de la persona embarazada.",
-   "requiere_revision": true,
-   "motivo_revision": "Es una afirmación de la ley, no una condición que alguien cumpla. Está acá porque una regla de compatibilidad omitida se lee como incompatibilidad, y eso haría que una persona gestante que ya cobra la AUH creyera que tiene que elegir. Cómo se representa una compatibilidad declarada es lo que la revisión tiene que decidir."
-  },
-  {
-   "clave": "UNA-SOLA-POR-EMBARAZO-MULTIPLE",
-   "categoria": "PRIORIDAD",
-   "ruta_evidencia": "articulo-14-quater/parrafo-52",
-   "texto_literal": "Sólo corresponderá la percepción del importe equivalente a UNA (1) Asignación por Embarazo para Protección Social, aún cuando se trate de embarazo múltiple.",
-   "descripcion": "Corresponde una sola asignación aunque el embarazo sea múltiple.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "embarazo_acreditado"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "La regla es sobre cuántas se cobran, no sobre si se accede, y el AST guardado sólo dice que hay un embarazo acreditado. Es el contraste con la Asignación Universal por Hijo, que se paga por cada causante: acá el embarazo múltiple no multiplica la prestación. Cómo se guarda un tope de cantidad es la decisión que queda abierta."
-  },
-  {
-   "clave": "EXCLUSION-INFORMAL-SOBRE-EL-SMVM",
-   "categoria": "EXCLUSION",
-   "ruta_evidencia": "articulo-3/parrafo-9",
-   "texto_literal": "Quedan excluidos del beneficio previsto en el artículo 1° inciso c) de la presente los trabajadores que se desempeñen en la economía informal, que perciban una remuneración superior al salario mínimo, vital y móvil.",
-   "descripcion": "Queda excluida quien se desempeñe en la economía informal y perciba una remuneración superior al salario mínimo, vital y móvil.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "not",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "all",
-      "args": [
-       {
+  "poblaciones": [
+    {
+      "codigo": "AR.PERSONA-GESTANTE",
+      "nombre": "Persona gestante",
+      "definicion": "Persona cursando un embarazo, que percibe la asignación desde su inicio hasta la interrupción o el nacimiento, sin exceder nueve mensualidades.",
+      "rol_persona": "TITULAR",
+      "alcance": "Es titular y causante a la vez: la prestación se mide sobre su embarazo y la cobra ella. Es lo que la distingue de la Asignación Universal por Hijo, donde el causante es una persona distinta de quien cobra.",
+      "ruta_evidencia": "articulo-14-quater"
+    }
+  ],
+  "reglas": [
+    {
+      "clave": "NACIONALIDAD-O-RESIDENCIA-LEGAL-3-ANIOS",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-14-quinquies/inciso-a-55",
+      "texto_literal": "a) Que la embarazada sea argentina nativa o por opción, naturalizada o residente, con residencia legal en el país no inferior a TRES (3) años previos a la solicitud de la asignación.",
+      "descripcion": "Ser argentina nativa o por opción, naturalizada o residente, con residencia legal en el país no inferior a tres años previos a la solicitud.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "any",
+        "args": [
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "gestante_argentina"
+          },
+          {
+            "schema_version": "1.0",
+            "op": "compare",
+            "field": "residencia_legal_de_la_gestante",
+            "cmp": ">=",
+            "value": 3,
+            "unit": "anios_cumplidos"
+          }
+        ]
+      },
+      "requiere_revision": true,
+      "motivo_revision": "Son tres años, y la Asignación Universal por Hijo del mismo subsistema pide dos. La diferencia está en el texto de las dos normas y no se unifica: cada prestación conserva su requisito. Además el inciso enumera «argentina nativa o por opción, naturalizada o residente» y la exigencia de residencia legal se lee sobre el último caso; leerla sobre todos le pediría tres años de residencia a una argentina nativa que volvió al país."
+    },
+    {
+      "clave": "IDENTIDAD-CON-DNI",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-14-quinquies/inciso-b-56",
+      "texto_literal": "b) Acreditar identidad, mediante Documento Nacional de Identidad.",
+      "descripcion": "Acreditar identidad mediante Documento Nacional de Identidad.",
+      "ast": {
         "schema_version": "1.0",
         "op": "is_true",
-        "field": "gestante_se_desempena_en_la_economia_informal"
-       },
-       {
-        "schema_version": "1.0",
-        "op": "compare",
-        "field": "ingreso_mensual_de_la_gestante",
-        "cmp": ">",
-        "parameter": "AR.SMVM",
-        "unit": "ARS"
-       }
-      ]
-     }
-    ]
-   },
-   "parametros": [
+        "field": "gestante_acredita_identidad_con_dni"
+      }
+    },
     {
-     "codigo": "AR.SMVM",
-     "rol": "UMBRAL"
+      "clave": "ACREDITAR-EL-EMBARAZO",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-14-quinquies/inciso-c-57",
+      "texto_literal": "La acreditación del estado de embarazo mediante la inscripción en el \"Plan Nacer\" del MINISTERIO DE SALUD.",
+      "descripcion": "Acreditar el estado de embarazo mediante la inscripción en el Plan Nacer del Ministerio de Salud, o por certificado médico en los casos con cobertura de obra social que prevea la reglamentación.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "gestante_acredita_estado_de_embarazo"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "El texto nombra el «Plan Nacer», un programa que dejó de llamarse así hace más de una década. La vía alternativa —certificado médico para quien tiene obra social— queda condicionada a lo que prevea la reglamentación, que no está en el corpus. El campo guarda si el embarazo está acreditado y no cuál de las dos vías se usó: elegir una diría que la otra no sirve."
+    },
+    {
+      "clave": "ACREDITACION-TARDIA-NO-PAGA-LA-GESTACION",
+      "categoria": "EXCLUSION",
+      "ruta_evidencia": "articulo-14-quinquies/parrafo-58",
+      "texto_literal": "Si el requisito se acredita con posterioridad al nacimiento o interrupción del embarazo, no corresponde el pago de la asignación por el período correspondiente al de gestación.",
+      "descripcion": "Si el embarazo se acredita después del nacimiento o de la interrupción, no corresponde el pago por el período de gestación.",
+      "requiere_revision": true,
+      "motivo_revision": "No excluye del beneficio: excluye del pago de un período. El modelo guarda reglas que dicen si alguien accede, no reglas que recorten meses ya transcurridos, y clasificarla como exclusión sin decir esto haría que una acreditación tardía se leyera como «no te corresponde la asignación». Es lo contrario de lo que dice el texto."
+    },
+    {
+      "clave": "DECLARACION-JURADA-Y-PERDIDA-POR-FALSEDAD",
+      "categoria": "REVOCACION",
+      "ruta_evidencia": "articulo-14-quinquies/inciso-d-59",
+      "texto_literal": "d) La presentación por parte del titular del beneficio de una declaración jurada relativa al cumplimiento de los requisitos exigidos por la presente y a las calidades invocadas. De comprobarse la falsedad de alguno de estos datos, se producirá la pérdida del beneficio, sin perjuicio de las sanciones que correspondan.",
+      "descripcion": "La titular presenta una declaración jurada sobre el cumplimiento de los requisitos; comprobada la falsedad de alguno de esos datos se pierde el beneficio, sin perjuicio de las sanciones que correspondan.",
+      "requiere_revision": true,
+      "motivo_revision": "Es a la vez la vía de acreditación y la causal de pérdida, y el texto no dice qué pasa con lo ya percibido ni si la pérdida es definitiva. Tampoco dice quién comprueba la falsedad ni con qué procedimiento. Formalizar la pérdida sin eso convertiría una discrepancia en un dato declarado en una baja automática."
+    },
+    {
+      "clave": "COMPATIBLE-CON-LA-AUH",
+      "categoria": "COMPATIBILIDAD",
+      "ruta_evidencia": "articulo-14-quater/parrafo-52",
+      "texto_literal": "La percepción de esta asignación no será incompatible con la Asignación Universal por Hijo para Protección Social por cada menor de DIECIOCHO (18) años, o sin límite de edad cuando se trate de un discapacitado, a cargo de la mujer embarazada.",
+      "descripcion": "Percibir esta asignación no es incompatible con percibir la Asignación Universal por Hijo por cada menor de dieciocho años, o sin límite de edad si tiene discapacidad, a cargo de la persona embarazada.",
+      "requiere_revision": true,
+      "motivo_revision": "Es una afirmación de la ley, no una condición que alguien cumpla. Está acá porque una regla de compatibilidad omitida se lee como incompatibilidad, y eso haría que una persona gestante que ya cobra la AUH creyera que tiene que elegir. Cómo se representa una compatibilidad declarada es lo que la revisión tiene que decidir."
+    },
+    {
+      "clave": "UNA-SOLA-POR-EMBARAZO-MULTIPLE",
+      "categoria": "PRIORIDAD",
+      "ruta_evidencia": "articulo-14-quater/parrafo-52",
+      "texto_literal": "Sólo corresponderá la percepción del importe equivalente a UNA (1) Asignación por Embarazo para Protección Social, aún cuando se trate de embarazo múltiple.",
+      "descripcion": "Corresponde una sola asignación aunque el embarazo sea múltiple.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "embarazo_acreditado"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "La regla es sobre cuántas se cobran, no sobre si se accede, y el AST guardado sólo dice que hay un embarazo acreditado. Es el contraste con la Asignación Universal por Hijo, que se paga por cada causante: acá el embarazo múltiple no multiplica la prestación. Cómo se guarda un tope de cantidad es la decisión que queda abierta."
+    },
+    {
+      "clave": "EXCLUSION-INFORMAL-SOBRE-EL-SMVM",
+      "categoria": "EXCLUSION",
+      "ruta_evidencia": "articulo-3/parrafo-9",
+      "texto_literal": "Quedan excluidos del beneficio previsto en el artículo 1° inciso c) de la presente los trabajadores que se desempeñen en la economía informal, que perciban una remuneración superior al salario mínimo, vital y móvil.",
+      "descripcion": "Queda excluida quien se desempeñe en la economía informal y perciba una remuneración superior al salario mínimo, vital y móvil.",
+      "ast": {
+        "op": "all",
+        "args": [
+          {
+            "op": "is_true",
+            "field": "gestante_se_desempena_en_la_economia_informal",
+            "schema_version": "1.0"
+          },
+          {
+            "op": "compare",
+            "cmp": ">",
+            "unit": "ARS",
+            "field": "ingreso_mensual_de_la_gestante",
+            "parameter": "AR.SMVM",
+            "schema_version": "1.0"
+          }
+        ],
+        "schema_version": "1.0"
+      },
+      "parametros": [
+        {
+          "codigo": "AR.SMVM",
+          "rol": "UMBRAL"
+        }
+      ],
+      "requiere_revision": true,
+      "motivo_revision": "La exclusión es del inciso c) del artículo 1, que es el subsistema no contributivo entero: alcanza a esta asignación igual que a la Asignación Universal por Hijo. Pide dos cosas a la vez —informalidad y remuneración sobre el salario mínimo— y quien trabaja en la economía informal no tiene una remuneración registrada contra la cual medir: el dato es declarado. Mientras el umbral no tenga valor aprobado para el período consultado, la regla devuelve desconocido.",
+      "casos": [
+        {
+          "nombre": "informal y cobra más que el salario mínimo",
+          "hechos": {
+            "gestante_se_desempena_en_la_economia_informal": true,
+            "ingreso_mensual_de_la_gestante": 900000
+          },
+          "parametros": {
+            "AR.SMVM": 300000
+          },
+          "espera": "TRUE"
+        },
+        {
+          "nombre": "informal y cobra menos que el salario mínimo",
+          "hechos": {
+            "gestante_se_desempena_en_la_economia_informal": true,
+            "ingreso_mensual_de_la_gestante": 100
+          },
+          "parametros": {
+            "AR.SMVM": 300000
+          },
+          "espera": "FALSE"
+        },
+        {
+          "nombre": "no se desempeña en la economía informal",
+          "hechos": {
+            "gestante_se_desempena_en_la_economia_informal": false,
+            "ingreso_mensual_de_la_gestante": 900000
+          },
+          "parametros": {
+            "AR.SMVM": 300000
+          },
+          "espera": "FALSE"
+        }
+      ],
+      "correccion": "Corrección de polaridad (T-16, D-149): el árbol expresaba la condición de inclusión y la categoría dice EXCLUSION, así que el motor leía «queda excluido» exactamente al revés."
+    },
+    {
+      "clave": "INEMBARGABLE-Y-NO-REMUNERATIVA",
+      "categoria": "SALVAGUARDA",
+      "ruta_evidencia": "articulo-23",
+      "texto_literal": "Las Asignaciones Familiares dispuestas en la presente ley son inembargables, no constituyen remuneración ni están sujetas a gravámenes, atento su naturaleza jurídica, tampoco serán tenidas en cuenta para la determinación del sueldo anual complementario, ni para el pago de las indemnizaciones por despido, enfermedad, accidente o para cualquier otro efecto. No pueden ser enajenadas ni afectadas a terceros por derecho alguno.",
+      "descripcion": "La asignación es inembargable, no constituye remuneración, no está sujeta a gravámenes y no puede ser enajenada ni afectada a terceros.",
+      "requiere_revision": true,
+      "motivo_revision": "No es una condición de acceso: es una protección sobre lo cobrado, y por eso no tiene AST. Se conserva porque es lo que hay que poder responder cuando alguien pregunta si le pueden descontar la asignación por una deuda. El artículo tiene además un tercer párrafo derogado en 2024, así que qué protege exactamente hoy es una lectura que hay que hacer sobre el texto vigente."
     }
-   ],
-   "requiere_revision": true,
-   "motivo_revision": "La exclusión es del inciso c) del artículo 1, que es el subsistema no contributivo entero: alcanza a esta asignación igual que a la Asignación Universal por Hijo. Pide dos cosas a la vez —informalidad y remuneración sobre el salario mínimo— y quien trabaja en la economía informal no tiene una remuneración registrada contra la cual medir: el dato es declarado. Mientras el umbral no tenga valor aprobado para el período consultado, la regla devuelve desconocido."
-  },
-  {
-   "clave": "INEMBARGABLE-Y-NO-REMUNERATIVA",
-   "categoria": "SALVAGUARDA",
-   "ruta_evidencia": "articulo-23",
-   "texto_literal": "Las Asignaciones Familiares dispuestas en la presente ley son inembargables, no constituyen remuneración ni están sujetas a gravámenes, atento su naturaleza jurídica, tampoco serán tenidas en cuenta para la determinación del sueldo anual complementario, ni para el pago de las indemnizaciones por despido, enfermedad, accidente o para cualquier otro efecto. No pueden ser enajenadas ni afectadas a terceros por derecho alguno.",
-   "descripcion": "La asignación es inembargable, no constituye remuneración, no está sujeta a gravámenes y no puede ser enajenada ni afectada a terceros.",
-   "requiere_revision": true,
-   "motivo_revision": "No es una condición de acceso: es una protección sobre lo cobrado, y por eso no tiene AST. Se conserva porque es lo que hay que poder responder cuando alguien pregunta si le pueden descontar la asignación por una deuda. El artículo tiene además un tercer párrafo derogado en 2024, así que qué protege exactamente hoy es una lectura que hay que hacer sobre el texto vigente."
-  }
- ],
- "cuantia": {
-  "tipo": "FORMULA",
-  "ruta_evidencia": "articulo-18/inciso-l-98",
-  "formula_version": "ley-24714-art18-l@1",
-  "unidad_beneficiaria": "PERSONA",
-  "descripcion": "La mayor suma fijada en el inciso a) del artículo 18. Entre la semana doce y la última de gestación se liquida el ochenta por ciento en forma mensual por el sistema de pagos de ANSES; el veinte por ciento restante se abona una vez finalizado el embarazo y en un solo pago, si se cumplieron los controles médicos de seguimiento. La falta de acreditación hace perder el derecho al cobro de ese veinte por ciento.",
-  "parametros": [
-   {
-    "codigo": "AR.ASIGNACION-HIJO",
-    "rol": "REFERENCIA"
-   }
   ],
-  "requiere_revision": true,
-  "motivo_revision": "El inciso a) del artículo 18 sigue diciendo cien pesos: es el valor nominal de 2007. El artículo 19 faculta al Poder Ejecutivo a fijar la cuantía y los montos vigentes salen de resoluciones de ANSES que no están en el corpus. Queda declarada como fórmula con su parámetro de referencia y sin valor. A diferencia de la Asignación Universal por Hijo, acá el veinte por ciento reservado se paga una sola vez al final y contra controles médicos, no contra escolaridad: son dos reservas distintas y unificarlas cambiaría cuándo y contra qué se cobra."
- },
- "plazos": [
-  {
-   "clave": "DURACION-MAXIMA-EN-MENSUALIDADES",
-   "tipo": "DURACION_BENEFICIO",
-   "ruta_evidencia": "articulo-14-quater",
-   "texto_literal": "desde el inicio de su embarazo hasta su interrupción o el nacimiento del hijo, siempre que no exceda de nueve (9) mensualidades",
-   "cantidad": 9,
-   "unidad": "meses",
-   "tipo_dia": "NO_INFORMADO",
-   "evento_inicio": "inicio del embarazo",
-   "requiere_revision": true,
-   "motivo_revision": "El tope son nueve mensualidades y el final real es la interrupción o el nacimiento, lo que ocurra primero. El modelo guarda una cantidad y un evento de inicio, no un plazo con dos finales posibles: se cargó el tope, que es el que se puede computar, y queda dicho que el otro existe. Y la solicitud recién se puede hacer desde la semana doce, así que nueve mensualidades desde el inicio del embarazo no son nueve pagos."
+  "cuantia": {
+    "tipo": "FORMULA",
+    "ruta_evidencia": "articulo-18/inciso-l-98",
+    "formula_version": "ley-24714-art18-l@1",
+    "unidad_beneficiaria": "PERSONA",
+    "descripcion": "La mayor suma fijada en el inciso a) del artículo 18. Entre la semana doce y la última de gestación se liquida el ochenta por ciento en forma mensual por el sistema de pagos de ANSES; el veinte por ciento restante se abona una vez finalizado el embarazo y en un solo pago, si se cumplieron los controles médicos de seguimiento. La falta de acreditación hace perder el derecho al cobro de ese veinte por ciento.",
+    "parametros": [
+      {
+        "codigo": "AR.ASIGNACION-HIJO",
+        "rol": "REFERENCIA"
+      }
+    ],
+    "requiere_revision": true,
+    "motivo_revision": "El inciso a) del artículo 18 sigue diciendo cien pesos: es el valor nominal de 2007. El artículo 19 faculta al Poder Ejecutivo a fijar la cuantía y los montos vigentes salen de resoluciones de ANSES que no están en el corpus. Queda declarada como fórmula con su parámetro de referencia y sin valor. A diferencia de la Asignación Universal por Hijo, acá el veinte por ciento reservado se paga una sola vez al final y contra controles médicos, no contra escolaridad: son dos reservas distintas y unificarlas cambiaría cuándo y contra qué se cobra."
   },
-  {
-   "clave": "SOLICITUD-DESDE-LA-SEMANA-12",
-   "tipo": "CONVOCATORIA",
-   "ruta_evidencia": "articulo-14-quater",
-   "texto_literal": "debiendo solicitarse a partir de la decimosegunda (12) semana de gestación. (Párrafo sustituido por art. 7° de la Ley N° 27.611 B.O. 15/01/2021)",
-   "cantidad": 12,
-   "unidad": "semanas",
-   "tipo_dia": "NO_INFORMADO",
-   "evento_inicio": "inicio de la gestación",
-   "requiere_revision": true,
-   "motivo_revision": "No es un vencimiento sino una apertura: dice desde cuándo se puede pedir, no hasta cuándo. El modelo guarda plazos que corren hacia adelante desde un evento, así que doce semanas desde el inicio de la gestación describe bien el momento y no el cierre. Leer este plazo como vencimiento haría creer que después de la semana doce ya no se puede solicitar, que es lo contrario de lo que dice el texto."
-  }
- ],
- "campos_no_informados": [
-  {
-   "campo": "criterios_revocacion",
-   "motivo": "Lo único que la ley declara perder es el veinte por ciento reservado por no acreditar los controles, y el beneficio entero por falsedad en la declaración jurada. No dice qué pasa con lo ya percibido en ninguno de los dos casos, ni si el derecho se puede recuperar acreditando después. Cese, suspensión y revocación tienen efectos distintos sobre lo cobrado y el texto no elige."
-  }
- ],
- "dependencias": [
-  {
-   "referencia": "Resoluciones de ANSES que fijan montos y topes de la Ley 24.714",
-   "motivo": "El artículo 19 delega la cuantía en el Poder Ejecutivo. Sin la resolución vigente en el corpus, la fórmula del inciso l) queda declarada y sin monto."
-  },
-  {
-   "referencia": "Plan Nacer del Ministerio de Salud",
-   "motivo": "El artículo 14 quinquies inciso c) lo usa como vía de acreditación del embarazo. El programa dejó de llamarse así hace más de una década y la norma sigue nombrándolo: cuál es hoy el registro equivalente no sale de esta ley."
-  },
-  {
-   "referencia": "Reglamentación de la Ley 24.714 para la acreditación con obra social",
-   "motivo": "El mismo inciso condiciona la vía del certificado médico a «los casos que prevea la reglamentación». Sin ella, se sabe que la alternativa existe y no en qué casos."
-  },
-  {
-   "referencia": "Salario mínimo, vital y móvil",
-   "motivo": "El último párrafo del artículo 3 lo usa como umbral de la exclusión por economía informal. Mientras el parámetro no tenga valor aprobado para el período consultado, la regla que lo compara devuelve desconocido."
-  }
- ],
- "vacios_declarados": [
-  {
-   "dato": "canales",
-   "motivo": "La ley nombra a ANSES como quien paga y al Ministerio de Salud por el programa donde se acredita el embarazo, y no dice dónde ni cómo se solicita la prestación. Poner el canal desde el conocimiento general sería afirmar sin evidencia algo que le cambia el viaje a una persona embarazada."
-  }
- ]
+  "plazos": [
+    {
+      "clave": "DURACION-MAXIMA-EN-MENSUALIDADES",
+      "tipo": "DURACION_BENEFICIO",
+      "ruta_evidencia": "articulo-14-quater",
+      "texto_literal": "desde el inicio de su embarazo hasta su interrupción o el nacimiento del hijo, siempre que no exceda de nueve (9) mensualidades",
+      "cantidad": 9,
+      "unidad": "meses",
+      "tipo_dia": "NO_INFORMADO",
+      "evento_inicio": "inicio del embarazo",
+      "requiere_revision": true,
+      "motivo_revision": "El tope son nueve mensualidades y el final real es la interrupción o el nacimiento, lo que ocurra primero. El modelo guarda una cantidad y un evento de inicio, no un plazo con dos finales posibles: se cargó el tope, que es el que se puede computar, y queda dicho que el otro existe. Y la solicitud recién se puede hacer desde la semana doce, así que nueve mensualidades desde el inicio del embarazo no son nueve pagos."
+    },
+    {
+      "clave": "SOLICITUD-DESDE-LA-SEMANA-12",
+      "tipo": "CONVOCATORIA",
+      "ruta_evidencia": "articulo-14-quater",
+      "texto_literal": "debiendo solicitarse a partir de la decimosegunda (12) semana de gestación. (Párrafo sustituido por art. 7° de la Ley N° 27.611 B.O. 15/01/2021)",
+      "cantidad": 12,
+      "unidad": "semanas",
+      "tipo_dia": "NO_INFORMADO",
+      "evento_inicio": "inicio de la gestación",
+      "requiere_revision": true,
+      "motivo_revision": "No es un vencimiento sino una apertura: dice desde cuándo se puede pedir, no hasta cuándo. El modelo guarda plazos que corren hacia adelante desde un evento, así que doce semanas desde el inicio de la gestación describe bien el momento y no el cierre. Leer este plazo como vencimiento haría creer que después de la semana doce ya no se puede solicitar, que es lo contrario de lo que dice el texto."
+    }
+  ],
+  "campos_no_informados": [
+    {
+      "campo": "criterios_revocacion",
+      "motivo": "Lo único que la ley declara perder es el veinte por ciento reservado por no acreditar los controles, y el beneficio entero por falsedad en la declaración jurada. No dice qué pasa con lo ya percibido en ninguno de los dos casos, ni si el derecho se puede recuperar acreditando después. Cese, suspensión y revocación tienen efectos distintos sobre lo cobrado y el texto no elige."
+    }
+  ],
+  "dependencias": [
+    {
+      "referencia": "Resoluciones de ANSES que fijan montos y topes de la Ley 24.714",
+      "motivo": "El artículo 19 delega la cuantía en el Poder Ejecutivo. Sin la resolución vigente en el corpus, la fórmula del inciso l) queda declarada y sin monto."
+    },
+    {
+      "referencia": "Plan Nacer del Ministerio de Salud",
+      "motivo": "El artículo 14 quinquies inciso c) lo usa como vía de acreditación del embarazo. El programa dejó de llamarse así hace más de una década y la norma sigue nombrándolo: cuál es hoy el registro equivalente no sale de esta ley."
+    },
+    {
+      "referencia": "Reglamentación de la Ley 24.714 para la acreditación con obra social",
+      "motivo": "El mismo inciso condiciona la vía del certificado médico a «los casos que prevea la reglamentación». Sin ella, se sabe que la alternativa existe y no en qué casos."
+    },
+    {
+      "referencia": "Salario mínimo, vital y móvil",
+      "motivo": "El último párrafo del artículo 3 lo usa como umbral de la exclusión por economía informal. Mientras el parámetro no tenga valor aprobado para el período consultado, la regla que lo compara devuelve desconocido."
+    }
+  ],
+  "vacios_declarados": [
+    {
+      "dato": "canales",
+      "motivo": "La ley nombra a ANSES como quien paga y al Ministerio de Salud por el programa donde se acredita el embarazo, y no dice dónde ni cómo se solicita la prestación. Poner el canal desde el conocimiento general sería afirmar sin evidencia algo que le cambia el viaje a una persona embarazada."
+    }
+  ]
 }

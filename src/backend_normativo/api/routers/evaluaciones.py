@@ -119,7 +119,13 @@ def _reglas_publicadas(conexion: Connection, beneficio_id: uuid.UUID) -> list[Re
                 "  JOIN beneficio_versiones bv "
                 "    ON bv.registro_version_id = r.beneficio_version_id "
                 "  JOIN registro_versiones rv ON rv.id = bv.registro_version_id "
-                " WHERE bv.beneficio_id = :b AND rv.estado_revision = 'PUBLISHED'"
+                " WHERE bv.beneficio_id = :b AND rv.estado_revision = 'PUBLISHED' "
+                # Una regla que la lectura curada ya no contiene está SUPERSEDED y
+                # se conserva para explicar qué se afirmaba antes. Sin este filtro
+                # se seguía evaluando: como está marcada para revisión, caía en
+                # `no_ejecutables` y forzaba REQUIERE_REVISION para todo el
+                # beneficio. Una regla retirada no puede decidir nada.
+                "   AND r.estado_revision <> 'SUPERSEDED'"
             ),
             {"b": beneficio_id},
         )

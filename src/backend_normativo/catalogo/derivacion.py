@@ -144,16 +144,21 @@ def jurisdiccion_de(fuente: FuenteManifiesto) -> str | None:
 # cada número. Se declara acá, donde se revisa en el diff.
 COLUMNAS_DE_MONTOS: dict[str, list[str]] = {
     # Consejo del Salario: SMVM y los topes de la prestación por desempleo.
+    # Los códigos llevan prefijo de jurisdicción, como todos los demás
+    # (`AR.CBA`, `CABA.SUELDO-MINIMO`, `INDEC.CBT`). Iban sin prefijo y las
+    # lecturas curadas citaban `AR.SMVM`: eran la misma magnitud con dos
+    # nombres, y ninguna regla podía alcanzar el valor. Los unificó la
+    # migración 0022.
     "F12": [
-        "SMVM",
-        "PRESTACION_DESEMPLEO_MINIMO",
-        "PRESTACION_DESEMPLEO_MAXIMO",
+        "AR.SMVM",
+        "AR.PRESTACION-DESEMPLEO-MINIMO",
+        "AR.PRESTACION-DESEMPLEO-MAXIMO",
     ],
     # Progresar publica un solo monto y no dice desde cuándo rige. Declararlo
     # igual es lo que hace que el faltante se registre en vez de pasar
     # desapercibido: sin columna declarada, la incidencia diría que falta la
     # declaración; con ella, dice lo que realmente falta, que es la fecha.
-    "F52": ["BECA_PROGRESAR"],
+    "F52": ["AR.BECA-PROGRESAR"],
 }
 
 

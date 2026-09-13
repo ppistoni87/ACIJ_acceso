@@ -1,179 +1,215 @@
 {
- "schema_version": "1.0",
- "norma": {
-  "external_id": "infoleg:39880:actualizado",
-  "referencia": "Ley 24.714",
-  "rol": "CREA"
- },
- "nota": "Es una de las cuatro prestaciones de pago único de la Ley 24.714: se cobran una vez, contra un hecho o un acto acreditado, y no mes a mes mientras dure una situación. Cada una se cura por separado porque no comparten ni la antigüedad exigida, ni quién las cobra, ni la vía por la que se accede. Todo entra como candidato. La de nacimiento tiene además una segunda puerta: el artículo 14 septies se la da a los titulares del subsistema no contributivo, acreditando el hecho ante ANSES.",
- "beneficio": {
-  "codigo": "AR.ASIGNACION-POR-NACIMIENTO",
-  "nombre": "Asignación por nacimiento",
-  "familia": "SEGURIDAD_SOCIAL",
-  "linea": "ASIGNACION_FAMILIAR",
-  "jurisdiccion": "AR",
-  "naturaleza": "PRESTACION_MONETARIA",
-  "descripcion": "Suma de dinero que se abona una vez acreditado el nacimiento ante la Administración Nacional de la Seguridad Social.",
-  "unidad_beneficiaria": "PERSONA",
-  "modalidad": "TRANSFERENCIA",
-  "frecuencia": "UNICA",
-  "requiere_solicitud": true,
-  "ruta_evidencia": "articulo-12"
- },
- "poblaciones": [
-  {
-   "codigo": "AR.TRABAJADOR-EN-RELACION-DE-DEPENDENCIA",
-   "nombre": "Personas del subsistema contributivo",
-   "definicion": "Trabajadores que prestan servicios remunerados en relación de dependencia en la actividad privada, beneficiarios de la Ley sobre Riesgos del Trabajo y del Seguro de Desempleo, e inscriptos y aportantes al Régimen Simplificado para Pequeños Contribuyentes.",
-   "rol_persona": "TITULAR",
-   "alcance": "Es la misma población que la de la asignación por hijo. Acá es una de las dos puertas: el artículo 14 septies abre la otra.",
-   "ruta_evidencia": "articulo-1/inciso-a-3"
+  "schema_version": "1.0",
+  "norma": {
+    "external_id": "infoleg:39880:actualizado",
+    "referencia": "Ley 24.714",
+    "rol": "CREA"
   },
-  {
-   "codigo": "AR.TITULAR-DEL-SUBSISTEMA-NO-CONTRIBUTIVO",
-   "nombre": "Titulares del subsistema no contributivo",
-   "definicion": "Personas titulares de la Asignación Universal por Hijo y de la Asignación por Embarazo para Protección Social.",
-   "rol_persona": "TITULAR",
-   "alcance": "El artículo 14 septies les da esta asignación acreditando el hecho ante ANSES. Sin esta puerta, una lectura que sólo mire el artículo 12 le responde «no te corresponde» a quien cobra la AUH.",
-   "ruta_evidencia": "articulo-1/inciso-c-4"
-  }
- ],
- "reglas": [
-  {
-   "clave": "COMPRENDIDO-EN-EL-SUBSISTEMA-CONTRIBUTIVO",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-1/inciso-a-3",
-   "texto_literal": "a) Un subsistema contributivo fundado en los principios de reparto de aplicación a los trabajadores que presten servicios remunerados en relación de dependencia en la actividad privada, cualquiera sea la modalidad de contratación laboral, beneficiarios de la Ley sobre Riesgos de Trabajo y beneficiarios del Seguro de Desempleo, el que se financiará con los recursos previstos en el artículo 5° de la presente ley.",
-   "descripcion": "Estar comprendido en el subsistema contributivo.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "in",
-    "field": "situacion_laboral_del_titular",
-    "values": [
-     "RELACION_DE_DEPENDENCIA_PRIVADA",
-     "BENEFICIARIO_RIESGOS_DEL_TRABAJO",
-     "BENEFICIARIO_SEGURO_DE_DESEMPLEO",
-     "MONOTRIBUTISTA",
-     "SECTOR_PUBLICO",
-     "PENSION_NO_CONTRIBUTIVA"
-    ]
-   },
-   "requiere_revision": true,
-   "motivo_revision": "Es una de las dos puertas de entrada, no un requisito: el artículo 14 septies abre la otra para los titulares del subsistema no contributivo. Un evaluador que exija las dos juntas dejaría afuera a todo el mundo."
+  "nota": "Es una de las cuatro prestaciones de pago único de la Ley 24.714: se cobran una vez, contra un hecho o un acto acreditado, y no mes a mes mientras dure una situación. Cada una se cura por separado porque no comparten ni la antigüedad exigida, ni quién las cobra, ni la vía por la que se accede. Todo entra como candidato. La de nacimiento tiene además una segunda puerta: el artículo 14 septies se la da a los titulares del subsistema no contributivo, acreditando el hecho ante ANSES.",
+  "beneficio": {
+    "codigo": "AR.ASIGNACION-POR-NACIMIENTO",
+    "nombre": "Asignación por nacimiento",
+    "familia": "SEGURIDAD_SOCIAL",
+    "linea": "ASIGNACION_FAMILIAR",
+    "jurisdiccion": "AR",
+    "naturaleza": "PRESTACION_MONETARIA",
+    "descripcion": "Suma de dinero que se abona una vez acreditado el nacimiento ante la Administración Nacional de la Seguridad Social.",
+    "unidad_beneficiaria": "PERSONA",
+    "modalidad": "TRANSFERENCIA",
+    "frecuencia": "UNICA",
+    "requiere_solicitud": true,
+    "ruta_evidencia": "articulo-12"
   },
-  {
-   "clave": "NACIMIENTO-ACREDITADO",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-12",
-   "texto_literal": "La asignación por nacimiento de hijo consistirá en el pago de una suma de dinero que se abonará una vez acreditado tal hecho ante la Administración Nacional de la Seguridad Social (ANSES).",
-   "descripcion": "Acreditar el nacimiento ante ANSES.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "nacimiento_acreditado_ante_anses"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "Desde la Ley 27.611 el hecho se acredita ante ANSES y no ante el empleador, que es como lo pedía el texto anterior. La nota del boletín agrega que eso rige para hechos ocurridos a partir del 24 de enero de 2021: para un nacimiento anterior, la vía es la vieja, y esta lectura no distingue las dos épocas."
-  },
-  {
-   "clave": "POR-SER-TITULAR-DEL-NO-CONTRIBUTIVO",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-14-septies",
-   "texto_literal": "Las personas titulares comprendidas en el inciso c) del artículo 1º de la presente ley tendrán derecho a la percepción de las asignaciones por nacimiento y adopción establecidas en los incisos f) y g) del artículo 6º también de la presente. Para acceder a dichas prestaciones, las personas titulares deberán acreditar el hecho y/o el acto generador pertinente ante la Administración Nacional de la Seguridad Social (ANSES).",
-   "descripcion": "Los titulares del subsistema no contributivo tienen derecho a esta asignación, acreditando el hecho ante ANSES.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "titular_del_subsistema_no_contributivo"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "La otra puerta. El artículo dice «tendrán derecho», no «podrán solicitar». Queda pendiente si quien entra por acá está sujeto al tope de ingresos del artículo 3, que está escrito para el subsistema contributivo y mide una remuneración que esta persona no tiene registrada."
-  },
-  {
-   "clave": "REMUNERACION-ENTRE-EL-PISO-Y-EL-TECHO",
-   "categoria": "EXCLUSION",
-   "ruta_evidencia": "articulo-3",
-   "texto_literal": "Quedan excluidos de las prestaciones de esta ley, con excepción de las asignaciones familiares por maternidad y por hijos con discapacidad, los trabajadores que perciban una remuneración inferior a PESOS CIEN ($ 100) o igual o superior a PESOS CUATRO MIL CON UN CENTAVO ($ 4.000,01).",
-   "descripcion": "Queda excluido quien percibe una remuneración fuera del piso y el techo. La asignación por nacimiento no está entre las excepciones del artículo 3.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "all",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "compare",
-      "field": "remuneracion_del_titular",
-      "cmp": ">=",
-      "parameter": "AR.TOPE-MINIMO-ASIGNACIONES",
-      "unit": "ARS"
-     },
-     {
-      "schema_version": "1.0",
-      "op": "compare",
-      "field": "remuneracion_del_titular",
-      "cmp": "<",
-      "parameter": "AR.TOPE-MAXIMO-ASIGNACIONES",
-      "unit": "ARS"
-     }
-    ]
-   },
-   "parametros": [
+  "poblaciones": [
     {
-     "codigo": "AR.TOPE-MINIMO-ASIGNACIONES",
-     "rol": "UMBRAL"
+      "codigo": "AR.TRABAJADOR-EN-RELACION-DE-DEPENDENCIA",
+      "nombre": "Personas del subsistema contributivo",
+      "definicion": "Trabajadores que prestan servicios remunerados en relación de dependencia en la actividad privada, beneficiarios de la Ley sobre Riesgos del Trabajo y del Seguro de Desempleo, e inscriptos y aportantes al Régimen Simplificado para Pequeños Contribuyentes.",
+      "rol_persona": "TITULAR",
+      "alcance": "Es la misma población que la de la asignación por hijo. Acá es una de las dos puertas: el artículo 14 septies abre la otra.",
+      "ruta_evidencia": "articulo-1/inciso-a-3"
     },
     {
-     "codigo": "AR.TOPE-MAXIMO-ASIGNACIONES",
-     "rol": "UMBRAL"
+      "codigo": "AR.TITULAR-DEL-SUBSISTEMA-NO-CONTRIBUTIVO",
+      "nombre": "Titulares del subsistema no contributivo",
+      "definicion": "Personas titulares de la Asignación Universal por Hijo y de la Asignación por Embarazo para Protección Social.",
+      "rol_persona": "TITULAR",
+      "alcance": "El artículo 14 septies les da esta asignación acreditando el hecho ante ANSES. Sin esta puerta, una lectura que sólo mire el artículo 12 le responde «no te corresponde» a quien cobra la AUH.",
+      "ruta_evidencia": "articulo-1/inciso-c-4"
     }
-   ],
-   "requiere_revision": true,
-   "motivo_revision": "Los dos números del texto son de 2007 y no rigen: se comparan contra parámetros y, sin valor aprobado para el período consultado, la regla devuelve desconocido. En una prestación de pago único el tope se mide sobre la remuneración de un momento —el del hecho acreditado— y la ley no dice cuál, lo que en un sueldo variable cambia el resultado."
-  },
-  {
-   "clave": "INEMBARGABLE-Y-NO-REMUNERATIVA",
-   "categoria": "SALVAGUARDA",
-   "ruta_evidencia": "articulo-23",
-   "texto_literal": "Las Asignaciones Familiares dispuestas en la presente ley son inembargables, no constituyen remuneración ni están sujetas a gravámenes, atento su naturaleza jurídica, tampoco serán tenidas en cuenta para la determinación del sueldo anual complementario, ni para el pago de las indemnizaciones por despido, enfermedad, accidente o para cualquier otro efecto. No pueden ser enajenadas ni afectadas a terceros por derecho alguno.",
-   "descripcion": "La asignación es inembargable, no constituye remuneración y no puede ser enajenada ni afectada a terceros.",
-   "requiere_revision": true,
-   "motivo_revision": "Es una protección sobre lo cobrado y no una condición de acceso, así que no tiene AST."
-  }
- ],
- "cuantia": {
-  "tipo": "FORMULA",
-  "ruta_evidencia": "articulo-18/inciso-f-81",
-  "formula_version": "ley-24714-art18-f@1",
-  "unidad_beneficiaria": "PERSONA",
-  "descripcion": "Un monto único, sin tramos por remuneración, que el artículo 18 inciso f) fija en pesos.",
-  "parametros": [
-   {
-    "codigo": "AR.ASIGNACION-NACIMIENTO",
-    "rol": "REFERENCIA"
-   }
   ],
-  "requiere_revision": true,
-  "motivo_revision": "El artículo fija cuatrocientos pesos: es el valor nominal con el que la ley se sancionó en 1996 y hace casi treinta años que no es lo que se cobra. Los vigentes salen de resoluciones de ANSES que no están en el corpus."
- },
- "plazos": [],
- "campos_no_informados": [
-  {
-   "campo": "plazos",
-   "motivo": "La ley no fija plazo para acreditar el nacimiento: dice que se abona «una vez acreditado» el hecho. Si acreditar tarde hace perder el derecho, y desde cuándo, no sale de este texto."
+  "reglas": [
+    {
+      "clave": "COMPRENDIDO-EN-EL-SUBSISTEMA-CONTRIBUTIVO",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-1/inciso-a-3",
+      "texto_literal": "a) Un subsistema contributivo fundado en los principios de reparto de aplicación a los trabajadores que presten servicios remunerados en relación de dependencia en la actividad privada, cualquiera sea la modalidad de contratación laboral, beneficiarios de la Ley sobre Riesgos de Trabajo y beneficiarios del Seguro de Desempleo, el que se financiará con los recursos previstos en el artículo 5° de la presente ley.",
+      "descripcion": "Estar comprendido en el subsistema contributivo.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "in",
+        "field": "situacion_laboral_del_titular",
+        "values": [
+          "RELACION_DE_DEPENDENCIA_PRIVADA",
+          "BENEFICIARIO_RIESGOS_DEL_TRABAJO",
+          "BENEFICIARIO_SEGURO_DE_DESEMPLEO",
+          "MONOTRIBUTISTA",
+          "SECTOR_PUBLICO",
+          "PENSION_NO_CONTRIBUTIVA"
+        ]
+      },
+      "requiere_revision": true,
+      "motivo_revision": "Es una de las dos puertas de entrada, no un requisito: el artículo 14 septies abre la otra para los titulares del subsistema no contributivo. Un evaluador que exija las dos juntas dejaría afuera a todo el mundo."
+    },
+    {
+      "clave": "NACIMIENTO-ACREDITADO",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-12",
+      "texto_literal": "La asignación por nacimiento de hijo consistirá en el pago de una suma de dinero que se abonará una vez acreditado tal hecho ante la Administración Nacional de la Seguridad Social (ANSES).",
+      "descripcion": "Acreditar el nacimiento ante ANSES.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "nacimiento_acreditado_ante_anses"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "Desde la Ley 27.611 el hecho se acredita ante ANSES y no ante el empleador, que es como lo pedía el texto anterior. La nota del boletín agrega que eso rige para hechos ocurridos a partir del 24 de enero de 2021: para un nacimiento anterior, la vía es la vieja, y esta lectura no distingue las dos épocas."
+    },
+    {
+      "clave": "POR-SER-TITULAR-DEL-NO-CONTRIBUTIVO",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-14-septies",
+      "texto_literal": "Las personas titulares comprendidas en el inciso c) del artículo 1º de la presente ley tendrán derecho a la percepción de las asignaciones por nacimiento y adopción establecidas en los incisos f) y g) del artículo 6º también de la presente. Para acceder a dichas prestaciones, las personas titulares deberán acreditar el hecho y/o el acto generador pertinente ante la Administración Nacional de la Seguridad Social (ANSES).",
+      "descripcion": "Los titulares del subsistema no contributivo tienen derecho a esta asignación, acreditando el hecho ante ANSES.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "titular_del_subsistema_no_contributivo"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "La otra puerta. El artículo dice «tendrán derecho», no «podrán solicitar». Queda pendiente si quien entra por acá está sujeto al tope de ingresos del artículo 3, que está escrito para el subsistema contributivo y mide una remuneración que esta persona no tiene registrada."
+    },
+    {
+      "clave": "REMUNERACION-FUERA-DE-LA-BANDA",
+      "categoria": "EXCLUSION",
+      "ruta_evidencia": "articulo-3",
+      "texto_literal": "Quedan excluidos de las prestaciones de esta ley, con excepción de las asignaciones familiares por maternidad y por hijos con discapacidad, los trabajadores que perciban una remuneración inferior a PESOS CIEN ($ 100) o igual o superior a PESOS CUATRO MIL CON UN CENTAVO ($ 4.000,01).",
+      "descripcion": "Queda excluido quien percibe una remuneración inferior al piso o igual o superior al techo que fija el artículo 3.",
+      "ast": {
+        "op": "any",
+        "args": [
+          {
+            "op": "compare",
+            "cmp": "<",
+            "unit": "ARS",
+            "field": "remuneracion_del_titular",
+            "parameter": "AR.TOPE-MINIMO-ASIGNACIONES",
+            "schema_version": "1.0"
+          },
+          {
+            "op": "compare",
+            "cmp": ">=",
+            "unit": "ARS",
+            "field": "remuneracion_del_titular",
+            "parameter": "AR.TOPE-MAXIMO-ASIGNACIONES",
+            "schema_version": "1.0"
+          }
+        ],
+        "schema_version": "1.0"
+      },
+      "parametros": [
+        {
+          "codigo": "AR.TOPE-MINIMO-ASIGNACIONES",
+          "rol": "UMBRAL"
+        },
+        {
+          "codigo": "AR.TOPE-MAXIMO-ASIGNACIONES",
+          "rol": "UMBRAL"
+        }
+      ],
+      "requiere_revision": true,
+      "motivo_revision": "Los dos números del texto son de 2007 y no rigen: se comparan contra parámetros y, sin valor aprobado para el período consultado, la regla devuelve desconocido. En una prestación de pago único el tope se mide sobre la remuneración de un momento —el del hecho acreditado— y la ley no dice cuál, lo que en un sueldo variable cambia el resultado.",
+      "casos": [
+        {
+          "nombre": "cobra dentro de la banda",
+          "hechos": {
+            "remuneracion_del_titular": 2000
+          },
+          "parametros": {
+            "AR.TOPE-MINIMO-ASIGNACIONES": 100,
+            "AR.TOPE-MAXIMO-ASIGNACIONES": 4000.01
+          },
+          "espera": "FALSE"
+        },
+        {
+          "nombre": "cobra por debajo del piso",
+          "hechos": {
+            "remuneracion_del_titular": 50
+          },
+          "parametros": {
+            "AR.TOPE-MINIMO-ASIGNACIONES": 100,
+            "AR.TOPE-MAXIMO-ASIGNACIONES": 4000.01
+          },
+          "espera": "TRUE"
+        },
+        {
+          "nombre": "cobra igual o más que el techo",
+          "hechos": {
+            "remuneracion_del_titular": 4000.01
+          },
+          "parametros": {
+            "AR.TOPE-MINIMO-ASIGNACIONES": 100,
+            "AR.TOPE-MAXIMO-ASIGNACIONES": 4000.01
+          },
+          "espera": "TRUE"
+        }
+      ],
+      "correccion": "Corrección de polaridad (T-16, D-149): el árbol expresaba la condición de inclusión y la categoría dice EXCLUSION, así que el motor leía «queda excluido» exactamente al revés."
+    },
+    {
+      "clave": "INEMBARGABLE-Y-NO-REMUNERATIVA",
+      "categoria": "SALVAGUARDA",
+      "ruta_evidencia": "articulo-23",
+      "texto_literal": "Las Asignaciones Familiares dispuestas en la presente ley son inembargables, no constituyen remuneración ni están sujetas a gravámenes, atento su naturaleza jurídica, tampoco serán tenidas en cuenta para la determinación del sueldo anual complementario, ni para el pago de las indemnizaciones por despido, enfermedad, accidente o para cualquier otro efecto. No pueden ser enajenadas ni afectadas a terceros por derecho alguno.",
+      "descripcion": "La asignación es inembargable, no constituye remuneración y no puede ser enajenada ni afectada a terceros.",
+      "requiere_revision": true,
+      "motivo_revision": "Es una protección sobre lo cobrado y no una condición de acceso, así que no tiene AST."
+    }
+  ],
+  "cuantia": {
+    "tipo": "FORMULA",
+    "ruta_evidencia": "articulo-18/inciso-f-81",
+    "formula_version": "ley-24714-art18-f@1",
+    "unidad_beneficiaria": "PERSONA",
+    "descripcion": "Un monto único, sin tramos por remuneración, que el artículo 18 inciso f) fija en pesos.",
+    "parametros": [
+      {
+        "codigo": "AR.ASIGNACION-NACIMIENTO",
+        "rol": "REFERENCIA"
+      }
+    ],
+    "requiere_revision": true,
+    "motivo_revision": "El artículo fija cuatrocientos pesos: es el valor nominal con el que la ley se sancionó en 1996 y hace casi treinta años que no es lo que se cobra. Los vigentes salen de resoluciones de ANSES que no están en el corpus."
   },
-  {
-   "campo": "criterios_revocacion",
-   "motivo": "Al ser un pago único por un hecho ya ocurrido, la ley no declara causales de baja. Qué pasa si el hecho acreditado resulta falso, o si dos personas lo acreditan por el mismo nacimiento, no sale de este texto."
-  }
- ],
- "dependencias": [
-  {
-   "referencia": "Resoluciones de ANSES que fijan montos de la Ley 24.714",
-   "motivo": "El artículo 19 delega la cuantía en el Poder Ejecutivo. Sin la resolución vigente, el monto del inciso f) queda declarado y sin valor."
-  },
-  {
-   "referencia": "Resolución ANSES 265/2021",
-   "motivo": "La nota del boletín la cita para decir que la acreditación ante ANSES rige para hechos producidos a partir del 24 de enero de 2021. Sin ella, la lectura no puede distinguir la vía vieja de la nueva."
-  }
- ]
+  "plazos": [],
+  "campos_no_informados": [
+    {
+      "campo": "plazos",
+      "motivo": "La ley no fija plazo para acreditar el nacimiento: dice que se abona «una vez acreditado» el hecho. Si acreditar tarde hace perder el derecho, y desde cuándo, no sale de este texto."
+    },
+    {
+      "campo": "criterios_revocacion",
+      "motivo": "Al ser un pago único por un hecho ya ocurrido, la ley no declara causales de baja. Qué pasa si el hecho acreditado resulta falso, o si dos personas lo acreditan por el mismo nacimiento, no sale de este texto."
+    }
+  ],
+  "dependencias": [
+    {
+      "referencia": "Resoluciones de ANSES que fijan montos de la Ley 24.714",
+      "motivo": "El artículo 19 delega la cuantía en el Poder Ejecutivo. Sin la resolución vigente, el monto del inciso f) queda declarado y sin valor."
+    },
+    {
+      "referencia": "Resolución ANSES 265/2021",
+      "motivo": "La nota del boletín la cita para decir que la acreditación ante ANSES rige para hechos producidos a partir del 24 de enero de 2021. Sin ella, la lectura no puede distinguir la vía vieja de la nueva."
+    }
+  ]
 }

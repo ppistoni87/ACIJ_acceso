@@ -1164,6 +1164,14 @@ const MOTIVOS = {
   sin_reglas: "Tengo el programa publicado, pero todavía no tengo sus condiciones cargadas como para revisarlas una por una."
 };
 
+// Las de exclusión o las demás. La categoría viene en la respuesta desde
+// siempre; lo que faltaba era usarla para elegir las palabras.
+function deCategoria(condiciones, exclusiones){
+  return (condiciones || []).filter(function(c){
+    return (c.categoria === "EXCLUSION") === exclusiones;
+  });
+}
+
 function listaDeCondiciones(rotulo, clase, condiciones){
   if(!condiciones || !condiciones.length) return "";
   let html = '<div class="grupo"><span class="rotulo ' + clase + '">' + esc(rotulo) + "</span><ul>";
@@ -1364,8 +1372,19 @@ function bloqueOrientacion(o){
   let html = "<h3>Cómo va tu caso contra lo que pide la norma</h3>" +
     '<span class="programa">' + esc(o.beneficio || "") + "</span>" +
     "<p>" + esc(RESULTADOS[o.resultado] || "") + "</p>";
-  html += listaDeCondiciones("Se cumple con lo que me contaste", "r-cumple", o.condiciones_cumplidas);
-  html += listaDeCondiciones("No se cumple con lo que me contaste", "r-no", o.condiciones_no_cumplidas);
+  // Una exclusión y un requisito se leen al revés, y mezclarlos dice lo
+  // contrario de lo que pasa. Cuando la causal de exclusión NO se cumple, la
+  // persona está bien: bajo el rótulo «No se cumple» leía «Quedan excluidos los
+  // trabajadores que se desempeñen en la economía informal…» justo en el caso en
+  // que le corresponde. Van separadas y con las palabras que corresponden.
+  html += listaDeCondiciones("Se cumple con lo que me contaste", "r-cumple",
+                             deCategoria(o.condiciones_cumplidas, false));
+  html += listaDeCondiciones("Esto te dejaría afuera", "r-no",
+                             deCategoria(o.condiciones_cumplidas, true));
+  html += listaDeCondiciones("No se cumple con lo que me contaste", "r-no",
+                             deCategoria(o.condiciones_no_cumplidas, false));
+  html += listaDeCondiciones("Causales de exclusión que no te alcanzan", "r-cumple",
+                             deCategoria(o.condiciones_no_cumplidas, true));
   html += listaDeCondiciones("Todavía no lo sé", "r-falta", o.condiciones_desconocidas);
   html += bloqueDeSalidas(o.subsanaciones);
   html += listaDeCondiciones("A tener en cuenta igual", "r-falta", o.salvaguardas);

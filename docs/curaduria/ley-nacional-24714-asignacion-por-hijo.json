@@ -1,282 +1,329 @@
 {
- "schema_version": "1.0",
- "norma": {
-  "external_id": "infoleg:39880:actualizado",
-  "referencia": "Ley 24.714",
-  "rol": "CREA"
- },
- "nota": "Lectura curada de la asignación por hijo del subsistema contributivo de la Ley 24.714. Es la tercera prestación de esta ley que se cura por separado, y la primera del subsistema contributivo: la cobra quien trabaja en relación de dependencia por cada hijo a cargo, y está condicionada a un piso y un techo de remuneración que el artículo 3 fija en pesos de 2007. Esos dos números son hoy letra muerta y curarlos como si rigieran habría excluido a todo el mundo por superar el tope. Todo entra como candidato.",
- "beneficio": {
-  "codigo": "AR.ASIGNACION-POR-HIJO",
-  "nombre": "Asignación por hijo",
-  "familia": "SEGURIDAD_SOCIAL",
-  "linea": "ASIGNACION_FAMILIAR",
-  "jurisdiccion": "AR",
-  "naturaleza": "PRESTACION_MONETARIA",
-  "descripcion": "Suma mensual que se paga a quien trabaja en relación de dependencia, o está comprendido en el subsistema contributivo, por cada hijo menor de dieciocho años a su cargo. El monto depende de la remuneración y de la zona, y la ley condiciona el derecho a que la remuneración esté entre un piso y un techo.",
-  "unidad_beneficiaria": "PERSONA",
-  "modalidad": "TRANSFERENCIA",
-  "frecuencia": "MENSUAL",
-  "requiere_solicitud": false,
-  "ruta_evidencia": "articulo-7"
- },
- "poblaciones": [
-  {
-   "codigo": "AR.TRABAJADOR-EN-RELACION-DE-DEPENDENCIA",
-   "nombre": "Personas del subsistema contributivo",
-   "definicion": "Trabajadores que prestan servicios remunerados en relación de dependencia en la actividad privada, beneficiarios de la Ley sobre Riesgos del Trabajo y del Seguro de Desempleo, e inscriptos y aportantes al Régimen Simplificado para Pequeños Contribuyentes.",
-   "rol_persona": "TITULAR",
-   "alcance": "Es quien cobra y sobre quien se miden la remuneración, la zona y la antigüedad. El artículo 24 extiende el régimen a trabajadores del sector público y a beneficiarios de pensiones no contributivas en cuanto a prestaciones, monto y topes.",
-   "ruta_evidencia": "articulo-1/inciso-a-3"
+  "schema_version": "1.0",
+  "norma": {
+    "external_id": "infoleg:39880:actualizado",
+    "referencia": "Ley 24.714",
+    "rol": "CREA"
   },
-  {
-   "codigo": "AR.HIJO-A-CARGO",
-   "nombre": "Hijo a cargo menor de dieciocho años",
-   "definicion": "Hijo menor de dieciocho años que se encuentra a cargo del trabajador, incluidos los menores cuya guarda, tenencia o tutela le fue acordada por autoridad competente.",
-   "rol_persona": "CAUSANTE",
-   "alcance": "Da lugar a la asignación y no la cobra. Su edad es la única condición que se mide sobre él; todo lo demás se mide sobre quien trabaja.",
-   "ruta_evidencia": "articulo-7"
-  }
- ],
- "reglas": [
-  {
-   "clave": "COMPRENDIDO-EN-EL-SUBSISTEMA-CONTRIBUTIVO",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-1/inciso-a-3",
-   "texto_literal": "a) Un subsistema contributivo fundado en los principios de reparto de aplicación a los trabajadores que presten servicios remunerados en relación de dependencia en la actividad privada, cualquiera sea la modalidad de contratación laboral, beneficiarios de la Ley sobre Riesgos de Trabajo y beneficiarios del Seguro de Desempleo, el que se financiará con los recursos previstos en el artículo 5° de la presente ley.",
-   "descripcion": "Estar comprendido en el subsistema contributivo: relación de dependencia en la actividad privada, Ley sobre Riesgos del Trabajo o Seguro de Desempleo.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "in",
-    "field": "situacion_laboral_del_titular",
-    "values": [
-     "RELACION_DE_DEPENDENCIA_PRIVADA",
-     "BENEFICIARIO_RIESGOS_DEL_TRABAJO",
-     "BENEFICIARIO_SEGURO_DE_DESEMPLEO",
-     "MONOTRIBUTISTA",
-     "SECTOR_PUBLICO",
-     "PENSION_NO_CONTRIBUTIVA"
-    ]
-   },
-   "requiere_revision": true,
-   "motivo_revision": "La lista junta cuatro situaciones del inciso a) y a’) con dos que entran por el artículo 24 —sector público y pensiones no contributivas—, que se rigen por este régimen «en cuanto a las prestaciones monto y topes» y no necesariamente en todo lo demás. Meterlas en la misma lista hace la regla usable y borra esa diferencia: qué del régimen les aplica y qué no es una lectura jurídica que hay que hacer."
+  "nota": "Lectura curada de la asignación por hijo del subsistema contributivo de la Ley 24.714. Es la tercera prestación de esta ley que se cura por separado, y la primera del subsistema contributivo: la cobra quien trabaja en relación de dependencia por cada hijo a cargo, y está condicionada a un piso y un techo de remuneración que el artículo 3 fija en pesos de 2007. Esos dos números son hoy letra muerta y curarlos como si rigieran habría excluido a todo el mundo por superar el tope. Todo entra como candidato.",
+  "beneficio": {
+    "codigo": "AR.ASIGNACION-POR-HIJO",
+    "nombre": "Asignación por hijo",
+    "familia": "SEGURIDAD_SOCIAL",
+    "linea": "ASIGNACION_FAMILIAR",
+    "jurisdiccion": "AR",
+    "naturaleza": "PRESTACION_MONETARIA",
+    "descripcion": "Suma mensual que se paga a quien trabaja en relación de dependencia, o está comprendido en el subsistema contributivo, por cada hijo menor de dieciocho años a su cargo. El monto depende de la remuneración y de la zona, y la ley condiciona el derecho a que la remuneración esté entre un piso y un techo.",
+    "unidad_beneficiaria": "PERSONA",
+    "modalidad": "TRANSFERENCIA",
+    "frecuencia": "MENSUAL",
+    "requiere_solicitud": false,
+    "ruta_evidencia": "articulo-7"
   },
-  {
-   "clave": "HIJO-MENOR-DE-18-A-CARGO",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-7",
-   "texto_literal": "La asignación por hijo consistirá en el pago de una suma mensual por cada hijo menor de 18 anos de edad que se encuentre a cargo del trabajador.",
-   "descripcion": "Tener a cargo un hijo menor de dieciocho años.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "all",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "compare",
-      "field": "edad_del_hijo",
-      "cmp": "<",
-      "value": 18,
-      "unit": "anios_cumplidos"
-     },
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "hijo_a_cargo_del_titular"
-     }
-    ]
-   }
-  },
-  {
-   "clave": "REMUNERACION-ENTRE-EL-PISO-Y-EL-TECHO",
-   "categoria": "EXCLUSION",
-   "ruta_evidencia": "articulo-3",
-   "texto_literal": "Quedan excluidos de las prestaciones de esta ley, con excepción de las asignaciones familiares por maternidad y por hijos con discapacidad, los trabajadores que perciban una remuneración inferior a PESOS CIEN ($ 100) o igual o superior a PESOS CUATRO MIL CON UN CENTAVO ($ 4.000,01).",
-   "descripcion": "Queda excluido quien percibe una remuneración inferior al piso o igual o superior al techo, con excepción de las asignaciones por maternidad y por hijo con discapacidad.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "all",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "compare",
-      "field": "remuneracion_del_titular",
-      "cmp": ">=",
-      "parameter": "AR.TOPE-MINIMO-ASIGNACIONES",
-      "unit": "ARS"
-     },
-     {
-      "schema_version": "1.0",
-      "op": "compare",
-      "field": "remuneracion_del_titular",
-      "cmp": "<",
-      "parameter": "AR.TOPE-MAXIMO-ASIGNACIONES",
-      "unit": "ARS"
-     }
-    ]
-   },
-   "parametros": [
+  "poblaciones": [
     {
-     "codigo": "AR.TOPE-MINIMO-ASIGNACIONES",
-     "rol": "UMBRAL"
+      "codigo": "AR.TRABAJADOR-EN-RELACION-DE-DEPENDENCIA",
+      "nombre": "Personas del subsistema contributivo",
+      "definicion": "Trabajadores que prestan servicios remunerados en relación de dependencia en la actividad privada, beneficiarios de la Ley sobre Riesgos del Trabajo y del Seguro de Desempleo, e inscriptos y aportantes al Régimen Simplificado para Pequeños Contribuyentes.",
+      "rol_persona": "TITULAR",
+      "alcance": "Es quien cobra y sobre quien se miden la remuneración, la zona y la antigüedad. El artículo 24 extiende el régimen a trabajadores del sector público y a beneficiarios de pensiones no contributivas en cuanto a prestaciones, monto y topes.",
+      "ruta_evidencia": "articulo-1/inciso-a-3"
     },
     {
-     "codigo": "AR.TOPE-MAXIMO-ASIGNACIONES",
-     "rol": "UMBRAL"
+      "codigo": "AR.HIJO-A-CARGO",
+      "nombre": "Hijo a cargo menor de dieciocho años",
+      "definicion": "Hijo menor de dieciocho años que se encuentra a cargo del trabajador, incluidos los menores cuya guarda, tenencia o tutela le fue acordada por autoridad competente.",
+      "rol_persona": "CAUSANTE",
+      "alcance": "Da lugar a la asignación y no la cobra. Su edad es la única condición que se mide sobre él; todo lo demás se mide sobre quien trabaja.",
+      "ruta_evidencia": "articulo-7"
     }
-   ],
-   "requiere_revision": true,
-   "motivo_revision": "Los dos números del texto —cien pesos de piso y cuatro mil con un centavo de techo— son de 2007 y hoy no rigen: las notas del artículo 26 registran una decena de resoluciones de ANSES que los fueron actualizando, y ninguna está en el corpus. Escribirlos como valores en el árbol habría excluido a todo el mundo por superar el tope, que es exactamente el error opuesto al que la norma quiere evitar. Se comparan contra parámetros: mientras no tengan valor aprobado para el período consultado, la regla devuelve desconocido en vez de excluir a alguien con un tope de hace dieciocho años."
-  },
-  {
-   "clave": "TOPE-ELEVADO-EN-ZONA-DESFAVORABLE",
-   "categoria": "EXCEPCION",
-   "ruta_evidencia": "articulo-3/parrafo-8",
-   "texto_literal": "Para los que trabajen en las Provincias de LA PAMPA, NEUQUEN, RIO NEGRO, CHUBUT, SANTA CRUZ, TIERRA DEL FUEGO, ANTARTIDA E ISLAS DEL ATLANTICO SUR; o en los Departamentos de Antofagasta de la Sierra (exclusivamente para los que se desempeñen en la actividad minera) de la Provincia de CATAMARCA; o en los Departamentos de Cochinoca, Humahuaca, Rinconada, Santa Catalina, Susques y Yavi de la Provincia de JUJUY; o en el Distrito Las Cuevas del Departamento de Las Heras, en los Distritos Potrerillos, Carrizal, Agrelo, Ugarteche, Perdriel y Las Compuertas del Departamento de Luján de Cuyo, en los Distritos de Santa Clara, Zapata, San José y Anchoris del Departamento Tupungato, en los Distritos de Los Arboles, Los Chacayes y Campo de los Andes del Departamento de Tunuyán, en el Distrito de Pareditas del Departamento San Carlos, en el Distrito de Cuadro Benegas del Departamento San Rafael, en los Distritos Malargüe, Río Grande, Río Barrancas, Agua Escondida del Departamento Malargüe, en los Distritos Russell, Cruz de Piedra, Las Barrancas y Lumlunta del Departamento Maipú, en los Distritos de El Mirador, Los Campamentos, Los Arboles, Reducción y Medrano del Departamento Rivadavia de la Provincia de MENDOZA; o en los Departamentos de General San Martín (excepto Ciudad de Tartagal y su ejido urbano), Rivadavia, Los Andes, Santa Victoria y Orán (excepto Ciudad de San Ramón de la Nueva Oran y su ejido urbano) de la Provincia de SALTA; o en los Departamentos Bermejo, Ramón Lista y Matacos de la Provincia de FORMOSA, la remuneración deberá ser inferior a PESOS CIEN ($100) o igual o superior a PESOS CUATRO MIL CON UN CENTAVO ($ 4.000,01) para excluir al trabajador del cobro de las prestaciones previstas en la presente ley (Tope máximo de remuneración sustituido por art. 1° del Decreto N° 1345/2007 B.O. 5/10/2007. Vigencia: a partir del 1º de julio de 2007)",
-   "descripcion": "Para quienes trabajan en las provincias y departamentos que el artículo enumera, el tope máximo de remuneración es más alto.",
-   "requiere_revision": true,
-   "motivo_revision": "El párrafo enumera provincias, departamentos y hasta distritos —Las Cuevas, Potrerillos, Cuadro Benegas— con un nivel de detalle que no se puede reducir a «zona desfavorable» sin perder cuál es cuál. Formalizarlo pide un catálogo de esas localidades que el corpus no tiene, y una lista escrita a ojo dejaría afuera a quien vive en un distrito que no se copió bien. Se conserva el texto entero.",
-   "excepcion_de": "REMUNERACION-ENTRE-EL-PISO-Y-EL-TECHO"
-  },
-  {
-   "clave": "QUE-CUENTA-COMO-REMUNERACION",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-4",
-   "texto_literal": "Se considerará remuneración a los efectos de esta ley, la definida por el Sistema Integrado de Jubilaciones y Pensiones (Ley Nº 24.241, artículos 6º y 9º) con excepción de las horas extras y el sueldo anual complementario (SAC).",
-   "descripcion": "Remuneración es la definida por la Ley 24.241 artículos 6 y 9, sin horas extras ni sueldo anual complementario.",
-   "requiere_revision": true,
-   "motivo_revision": "No es una condición sino la definición del dato con el que se miden las demás. Está acá porque cambia el resultado: quien hace horas extras puede quedar por encima del tope si se cuentan y por debajo si no, y la ley dice que no se cuentan. La definición remite a otra norma que no está en el corpus."
-  },
-  {
-   "clave": "PERSONAL-DE-CASAS-PARTICULARES-EXCLUIDO",
-   "categoria": "EXCLUSION",
-   "ruta_evidencia": "articulo-2",
-   "texto_literal": "Las empleadas/os del Régimen Especial de Contrato de Trabajo para el Personal de Casas Particulares se encuentran incluidas en el inciso c) del artículo 1°, siendo beneficiarias de la Asignación por Embarazo para Protección Social y de la Asignación Universal por Hijo para Protección Social, quedando excluidas de los incisos a) y b) del citado artículo con excepción del derecho a la percepción de la Asignación por Maternidad establecida por el inciso e) del artículo 6° de la presente ley.",
-   "descripcion": "El personal de casas particulares está en el subsistema no contributivo y queda excluido del contributivo, salvo la asignación por maternidad.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "not",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "titular_del_regimen_de_casas_particulares"
-     }
-    ]
-   },
-   "requiere_revision": true,
-   "motivo_revision": "No es una exclusión del sistema sino un reencauzamiento: quien trabaja en casas particulares no cobra esta asignación y sí cobra la Asignación Universal por Hijo y la Asignación por Embarazo, que están curadas aparte. Una respuesta que diga sólo «quedás excluida» sería cierta y engañosa. Cómo se enlaza una exclusión con la prestación que sí corresponde es la decisión que queda abierta."
-  },
-  {
-   "clave": "UN-SOLO-PROGENITOR-PERCIBE",
-   "categoria": "PRIORIDAD",
-   "ruta_evidencia": "articulo-20",
-   "texto_literal": "ARTICULO 20.- Cuando ambos progenitores estén comprendidos en el presente régimen, las prestaciones enumeradas en los artículos 6º y 15 serán percibidas por uno solo de ellos.",
-   "descripcion": "Cuando ambos progenitores están comprendidos en el régimen, la prestación la percibe uno solo de ellos.",
-   "requiere_revision": true,
-   "motivo_revision": "La ley dice que cobra uno solo y no dice cuál. No hay regla que formalizar: elegir un criterio sería inventar la parte que el legislador no escribió, y esa elección decide quién cobra."
-  },
-  {
-   "clave": "EMPLEO-CON-MAYOR-ANTIGUEDAD",
-   "categoria": "PRIORIDAD",
-   "ruta_evidencia": "articulo-21",
-   "texto_literal": "ARTICULO 21.- Cuando el trabajador se desempeñare en más de un empleo tendrá derecho a la percepción de las prestaciones de la presente ley en el que acredite mayor antigüedad, a excepción de la asignación por maternidad, que será percibida en cada uno de ellos.",
-   "descripcion": "Con más de un empleo, la prestación se percibe en el que acredite mayor antigüedad, salvo la asignación por maternidad.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "empleo_con_mayor_antiguedad"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "Es una regla de dónde se cobra, no de si se cobra, y el árbol guardado sólo puede decir si el empleo consultado es el de mayor antigüedad. Importa además para el tope del artículo 3: si la remuneración que se compara es la de ese empleo o la suma de los dos, la ley no lo dice acá y la diferencia decide quién queda afuera."
-  },
-  {
-   "clave": "GUARDA-TENENCIA-O-TUTELA-CUENTA-COMO-HIJO",
-   "categoria": "EXCEPCION",
-   "ruta_evidencia": "articulo-22",
-   "texto_literal": "serán considerados como hijos los menores o personas con discapacidad cuya guarda, tenencia o tutela haya sido acordada al trabajador por autoridad judicial o administrativa competente. En tales supuestos, los respectivos padres no tendrán, por ese hijo, derecho al cobro de las mencionadas asignaciones.",
-   "descripcion": "Cuentan como hijos los menores o personas con discapacidad cuya guarda, tenencia o tutela fue acordada al trabajador por autoridad judicial o administrativa; en ese caso los padres no cobran por ese hijo.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "hijo_a_cargo_del_titular"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "El artículo nombra expresamente a la asignación por hijo, así que acá sí aplica —a diferencia de la Asignación Universal por Hijo, que se incorporó trece años después y no está nombrada—. Amplía qué cuenta como hijo y a la vez saca el derecho a los padres: son dos efectos y el árbol guardado sólo alcanza el primero.",
-   "excepcion_de": "HIJO-MENOR-DE-18-A-CARGO"
-  },
-  {
-   "clave": "INEMBARGABLE-Y-NO-REMUNERATIVA",
-   "categoria": "SALVAGUARDA",
-   "ruta_evidencia": "articulo-23",
-   "texto_literal": "Las Asignaciones Familiares dispuestas en la presente ley son inembargables, no constituyen remuneración ni están sujetas a gravámenes, atento su naturaleza jurídica, tampoco serán tenidas en cuenta para la determinación del sueldo anual complementario, ni para el pago de las indemnizaciones por despido, enfermedad, accidente o para cualquier otro efecto. No pueden ser enajenadas ni afectadas a terceros por derecho alguno.",
-   "descripcion": "La asignación es inembargable, no constituye remuneración, no está sujeta a gravámenes ni se computa para el aguinaldo o las indemnizaciones.",
-   "requiere_revision": true,
-   "motivo_revision": "Es una protección sobre lo cobrado y no una condición de acceso, así que no tiene AST. Se conserva porque es lo que hay que poder responder cuando alguien pregunta si le pueden descontar la asignación por una deuda. El artículo tiene un tercer párrafo derogado en 2024: qué protege exactamente hoy es una lectura sobre el texto vigente."
-  }
- ],
- "cuantia": {
-  "tipo": "FORMULA",
-  "ruta_evidencia": "articulo-18/inciso-a-76",
-  "formula_version": "ley-24714-art18-a@1",
-  "unidad_beneficiaria": "CAUSANTE",
-  "descripcion": "Una suma mensual por cada hijo, en una escala decreciente por tramos de remuneración: a mayor remuneración, menor asignación. El artículo 18 inciso a) fija tres tramos y el artículo 19 faculta al Poder Ejecutivo a actualizar los montos, los topes y los coeficientes zonales.",
-  "parametros": [
-   {
-    "codigo": "AR.ASIGNACION-HIJO",
-    "rol": "REFERENCIA"
-   },
-   {
-    "codigo": "AR.TOPE-MAXIMO-ASIGNACIONES",
-    "rol": "UMBRAL"
-   }
   ],
-  "requiere_revision": true,
-  "motivo_revision": "La escala del artículo 18 va de cien a cincuenta pesos según la remuneración: son valores de 2007. Los vigentes salen de resoluciones de ANSES que no están en el corpus, y además el artículo 19 habilita coeficientes zonales, así que el monto depende también de dónde se trabaja. La cuantía queda declarada como fórmula con sus parámetros y sin valor: servir cien pesos como «lo que vas a cobrar» sería peor que decir que no se sabe."
- },
- "plazos": [],
- "campos_no_informados": [
-  {
-   "campo": "plazos",
-   "motivo": "La asignación se paga mes a mes mientras se cumplan las condiciones y la ley no fija plazo para pedirla ni para acreditar nada: no requiere solicitud como las prestaciones del subsistema no contributivo. Poner un plazo acá inventaría un vencimiento que no existe."
+  "reglas": [
+    {
+      "clave": "COMPRENDIDO-EN-EL-SUBSISTEMA-CONTRIBUTIVO",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-1/inciso-a-3",
+      "texto_literal": "a) Un subsistema contributivo fundado en los principios de reparto de aplicación a los trabajadores que presten servicios remunerados en relación de dependencia en la actividad privada, cualquiera sea la modalidad de contratación laboral, beneficiarios de la Ley sobre Riesgos de Trabajo y beneficiarios del Seguro de Desempleo, el que se financiará con los recursos previstos en el artículo 5° de la presente ley.",
+      "descripcion": "Estar comprendido en el subsistema contributivo: relación de dependencia en la actividad privada, Ley sobre Riesgos del Trabajo o Seguro de Desempleo.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "in",
+        "field": "situacion_laboral_del_titular",
+        "values": [
+          "RELACION_DE_DEPENDENCIA_PRIVADA",
+          "BENEFICIARIO_RIESGOS_DEL_TRABAJO",
+          "BENEFICIARIO_SEGURO_DE_DESEMPLEO",
+          "MONOTRIBUTISTA",
+          "SECTOR_PUBLICO",
+          "PENSION_NO_CONTRIBUTIVA"
+        ]
+      },
+      "requiere_revision": true,
+      "motivo_revision": "La lista junta cuatro situaciones del inciso a) y a’) con dos que entran por el artículo 24 —sector público y pensiones no contributivas—, que se rigen por este régimen «en cuanto a las prestaciones monto y topes» y no necesariamente en todo lo demás. Meterlas en la misma lista hace la regla usable y borra esa diferencia: qué del régimen les aplica y qué no es una lectura jurídica que hay que hacer."
+    },
+    {
+      "clave": "HIJO-MENOR-DE-18-A-CARGO",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-7",
+      "texto_literal": "La asignación por hijo consistirá en el pago de una suma mensual por cada hijo menor de 18 anos de edad que se encuentre a cargo del trabajador.",
+      "descripcion": "Tener a cargo un hijo menor de dieciocho años.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "all",
+        "args": [
+          {
+            "schema_version": "1.0",
+            "op": "compare",
+            "field": "edad_del_hijo",
+            "cmp": "<",
+            "value": 18,
+            "unit": "anios_cumplidos"
+          },
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "hijo_a_cargo_del_titular"
+          }
+        ]
+      }
+    },
+    {
+      "clave": "REMUNERACION-FUERA-DE-LA-BANDA",
+      "categoria": "EXCLUSION",
+      "ruta_evidencia": "articulo-3",
+      "texto_literal": "Quedan excluidos de las prestaciones de esta ley, con excepción de las asignaciones familiares por maternidad y por hijos con discapacidad, los trabajadores que perciban una remuneración inferior a PESOS CIEN ($ 100) o igual o superior a PESOS CUATRO MIL CON UN CENTAVO ($ 4.000,01).",
+      "descripcion": "Queda excluido quien percibe una remuneración inferior al piso o igual o superior al techo que fija el artículo 3.",
+      "ast": {
+        "op": "any",
+        "args": [
+          {
+            "op": "compare",
+            "cmp": "<",
+            "unit": "ARS",
+            "field": "remuneracion_del_titular",
+            "parameter": "AR.TOPE-MINIMO-ASIGNACIONES",
+            "schema_version": "1.0"
+          },
+          {
+            "op": "compare",
+            "cmp": ">=",
+            "unit": "ARS",
+            "field": "remuneracion_del_titular",
+            "parameter": "AR.TOPE-MAXIMO-ASIGNACIONES",
+            "schema_version": "1.0"
+          }
+        ],
+        "schema_version": "1.0"
+      },
+      "parametros": [
+        {
+          "codigo": "AR.TOPE-MINIMO-ASIGNACIONES",
+          "rol": "UMBRAL"
+        },
+        {
+          "codigo": "AR.TOPE-MAXIMO-ASIGNACIONES",
+          "rol": "UMBRAL"
+        }
+      ],
+      "requiere_revision": true,
+      "motivo_revision": "Los dos números del texto —cien pesos de piso y cuatro mil con un centavo de techo— son de 2007 y hoy no rigen: las notas del artículo 26 registran una decena de resoluciones de ANSES que los fueron actualizando, y ninguna está en el corpus. Escribirlos como valores en el árbol habría excluido a todo el mundo por superar el tope, que es exactamente el error opuesto al que la norma quiere evitar. Se comparan contra parámetros: mientras no tengan valor aprobado para el período consultado, la regla devuelve desconocido en vez de excluir a alguien con un tope de hace dieciocho años.",
+      "casos": [
+        {
+          "nombre": "cobra dentro de la banda",
+          "hechos": {
+            "remuneracion_del_titular": 2000
+          },
+          "parametros": {
+            "AR.TOPE-MINIMO-ASIGNACIONES": 100,
+            "AR.TOPE-MAXIMO-ASIGNACIONES": 4000.01
+          },
+          "espera": "FALSE"
+        },
+        {
+          "nombre": "cobra por debajo del piso",
+          "hechos": {
+            "remuneracion_del_titular": 50
+          },
+          "parametros": {
+            "AR.TOPE-MINIMO-ASIGNACIONES": 100,
+            "AR.TOPE-MAXIMO-ASIGNACIONES": 4000.01
+          },
+          "espera": "TRUE"
+        },
+        {
+          "nombre": "cobra igual o más que el techo",
+          "hechos": {
+            "remuneracion_del_titular": 4000.01
+          },
+          "parametros": {
+            "AR.TOPE-MINIMO-ASIGNACIONES": 100,
+            "AR.TOPE-MAXIMO-ASIGNACIONES": 4000.01
+          },
+          "espera": "TRUE"
+        }
+      ],
+      "correccion": "Corrección de polaridad (T-16, D-149): el árbol expresaba la condición de inclusión y la categoría dice EXCLUSION, así que el motor leía «queda excluido» exactamente al revés."
+    },
+    {
+      "clave": "TOPE-ELEVADO-EN-ZONA-DESFAVORABLE",
+      "categoria": "EXCEPCION",
+      "ruta_evidencia": "articulo-3/parrafo-8",
+      "texto_literal": "Para los que trabajen en las Provincias de LA PAMPA, NEUQUEN, RIO NEGRO, CHUBUT, SANTA CRUZ, TIERRA DEL FUEGO, ANTARTIDA E ISLAS DEL ATLANTICO SUR; o en los Departamentos de Antofagasta de la Sierra (exclusivamente para los que se desempeñen en la actividad minera) de la Provincia de CATAMARCA; o en los Departamentos de Cochinoca, Humahuaca, Rinconada, Santa Catalina, Susques y Yavi de la Provincia de JUJUY; o en el Distrito Las Cuevas del Departamento de Las Heras, en los Distritos Potrerillos, Carrizal, Agrelo, Ugarteche, Perdriel y Las Compuertas del Departamento de Luján de Cuyo, en los Distritos de Santa Clara, Zapata, San José y Anchoris del Departamento Tupungato, en los Distritos de Los Arboles, Los Chacayes y Campo de los Andes del Departamento de Tunuyán, en el Distrito de Pareditas del Departamento San Carlos, en el Distrito de Cuadro Benegas del Departamento San Rafael, en los Distritos Malargüe, Río Grande, Río Barrancas, Agua Escondida del Departamento Malargüe, en los Distritos Russell, Cruz de Piedra, Las Barrancas y Lumlunta del Departamento Maipú, en los Distritos de El Mirador, Los Campamentos, Los Arboles, Reducción y Medrano del Departamento Rivadavia de la Provincia de MENDOZA; o en los Departamentos de General San Martín (excepto Ciudad de Tartagal y su ejido urbano), Rivadavia, Los Andes, Santa Victoria y Orán (excepto Ciudad de San Ramón de la Nueva Oran y su ejido urbano) de la Provincia de SALTA; o en los Departamentos Bermejo, Ramón Lista y Matacos de la Provincia de FORMOSA, la remuneración deberá ser inferior a PESOS CIEN ($100) o igual o superior a PESOS CUATRO MIL CON UN CENTAVO ($ 4.000,01) para excluir al trabajador del cobro de las prestaciones previstas en la presente ley (Tope máximo de remuneración sustituido por art. 1° del Decreto N° 1345/2007 B.O. 5/10/2007. Vigencia: a partir del 1º de julio de 2007)",
+      "descripcion": "Para quienes trabajan en las provincias y departamentos que el artículo enumera, el tope máximo de remuneración es más alto.",
+      "requiere_revision": true,
+      "motivo_revision": "El párrafo enumera provincias, departamentos y hasta distritos —Las Cuevas, Potrerillos, Cuadro Benegas— con un nivel de detalle que no se puede reducir a «zona desfavorable» sin perder cuál es cuál. Formalizarlo pide un catálogo de esas localidades que el corpus no tiene, y una lista escrita a ojo dejaría afuera a quien vive en un distrito que no se copió bien. Se conserva el texto entero.",
+      "excepcion_de": "REMUNERACION-FUERA-DE-LA-BANDA"
+    },
+    {
+      "clave": "QUE-CUENTA-COMO-REMUNERACION",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-4",
+      "texto_literal": "Se considerará remuneración a los efectos de esta ley, la definida por el Sistema Integrado de Jubilaciones y Pensiones (Ley Nº 24.241, artículos 6º y 9º) con excepción de las horas extras y el sueldo anual complementario (SAC).",
+      "descripcion": "Remuneración es la definida por la Ley 24.241 artículos 6 y 9, sin horas extras ni sueldo anual complementario.",
+      "requiere_revision": true,
+      "motivo_revision": "No es una condición sino la definición del dato con el que se miden las demás. Está acá porque cambia el resultado: quien hace horas extras puede quedar por encima del tope si se cuentan y por debajo si no, y la ley dice que no se cuentan. La definición remite a otra norma que no está en el corpus."
+    },
+    {
+      "clave": "PERSONAL-DE-CASAS-PARTICULARES-EXCLUIDO",
+      "categoria": "EXCLUSION",
+      "ruta_evidencia": "articulo-2",
+      "texto_literal": "Las empleadas/os del Régimen Especial de Contrato de Trabajo para el Personal de Casas Particulares se encuentran incluidas en el inciso c) del artículo 1°, siendo beneficiarias de la Asignación por Embarazo para Protección Social y de la Asignación Universal por Hijo para Protección Social, quedando excluidas de los incisos a) y b) del citado artículo con excepción del derecho a la percepción de la Asignación por Maternidad establecida por el inciso e) del artículo 6° de la presente ley.",
+      "descripcion": "El personal de casas particulares está en el subsistema no contributivo y queda excluido del contributivo, salvo la asignación por maternidad.",
+      "ast": {
+        "op": "is_true",
+        "field": "titular_del_regimen_de_casas_particulares",
+        "schema_version": "1.0"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "No es una exclusión del sistema sino un reencauzamiento: quien trabaja en casas particulares no cobra esta asignación y sí cobra la Asignación Universal por Hijo y la Asignación por Embarazo, que están curadas aparte. Una respuesta que diga sólo «quedás excluida» sería cierta y engañosa. Cómo se enlaza una exclusión con la prestación que sí corresponde es la decisión que queda abierta.",
+      "casos": [
+        {
+          "nombre": "es personal de casas particulares",
+          "hechos": {
+            "titular_del_regimen_de_casas_particulares": true
+          },
+          "espera": "TRUE"
+        },
+        {
+          "nombre": "no lo es",
+          "hechos": {
+            "titular_del_regimen_de_casas_particulares": false
+          },
+          "espera": "FALSE"
+        }
+      ],
+      "correccion": "Corrección de polaridad (T-16, D-149): el árbol expresaba la condición de inclusión y la categoría dice EXCLUSION, así que el motor leía «queda excluido» exactamente al revés."
+    },
+    {
+      "clave": "UN-SOLO-PROGENITOR-PERCIBE",
+      "categoria": "PRIORIDAD",
+      "ruta_evidencia": "articulo-20",
+      "texto_literal": "ARTICULO 20.- Cuando ambos progenitores estén comprendidos en el presente régimen, las prestaciones enumeradas en los artículos 6º y 15 serán percibidas por uno solo de ellos.",
+      "descripcion": "Cuando ambos progenitores están comprendidos en el régimen, la prestación la percibe uno solo de ellos.",
+      "requiere_revision": true,
+      "motivo_revision": "La ley dice que cobra uno solo y no dice cuál. No hay regla que formalizar: elegir un criterio sería inventar la parte que el legislador no escribió, y esa elección decide quién cobra."
+    },
+    {
+      "clave": "EMPLEO-CON-MAYOR-ANTIGUEDAD",
+      "categoria": "PRIORIDAD",
+      "ruta_evidencia": "articulo-21",
+      "texto_literal": "ARTICULO 21.- Cuando el trabajador se desempeñare en más de un empleo tendrá derecho a la percepción de las prestaciones de la presente ley en el que acredite mayor antigüedad, a excepción de la asignación por maternidad, que será percibida en cada uno de ellos.",
+      "descripcion": "Con más de un empleo, la prestación se percibe en el que acredite mayor antigüedad, salvo la asignación por maternidad.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "empleo_con_mayor_antiguedad"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "Es una regla de dónde se cobra, no de si se cobra, y el árbol guardado sólo puede decir si el empleo consultado es el de mayor antigüedad. Importa además para el tope del artículo 3: si la remuneración que se compara es la de ese empleo o la suma de los dos, la ley no lo dice acá y la diferencia decide quién queda afuera."
+    },
+    {
+      "clave": "GUARDA-TENENCIA-O-TUTELA-CUENTA-COMO-HIJO",
+      "categoria": "EXCEPCION",
+      "ruta_evidencia": "articulo-22",
+      "texto_literal": "serán considerados como hijos los menores o personas con discapacidad cuya guarda, tenencia o tutela haya sido acordada al trabajador por autoridad judicial o administrativa competente. En tales supuestos, los respectivos padres no tendrán, por ese hijo, derecho al cobro de las mencionadas asignaciones.",
+      "descripcion": "Cuentan como hijos los menores o personas con discapacidad cuya guarda, tenencia o tutela fue acordada al trabajador por autoridad judicial o administrativa; en ese caso los padres no cobran por ese hijo.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "hijo_a_cargo_del_titular"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "El artículo nombra expresamente a la asignación por hijo, así que acá sí aplica —a diferencia de la Asignación Universal por Hijo, que se incorporó trece años después y no está nombrada—. Amplía qué cuenta como hijo y a la vez saca el derecho a los padres: son dos efectos y el árbol guardado sólo alcanza el primero.",
+      "excepcion_de": "HIJO-MENOR-DE-18-A-CARGO"
+    },
+    {
+      "clave": "INEMBARGABLE-Y-NO-REMUNERATIVA",
+      "categoria": "SALVAGUARDA",
+      "ruta_evidencia": "articulo-23",
+      "texto_literal": "Las Asignaciones Familiares dispuestas en la presente ley son inembargables, no constituyen remuneración ni están sujetas a gravámenes, atento su naturaleza jurídica, tampoco serán tenidas en cuenta para la determinación del sueldo anual complementario, ni para el pago de las indemnizaciones por despido, enfermedad, accidente o para cualquier otro efecto. No pueden ser enajenadas ni afectadas a terceros por derecho alguno.",
+      "descripcion": "La asignación es inembargable, no constituye remuneración, no está sujeta a gravámenes ni se computa para el aguinaldo o las indemnizaciones.",
+      "requiere_revision": true,
+      "motivo_revision": "Es una protección sobre lo cobrado y no una condición de acceso, así que no tiene AST. Se conserva porque es lo que hay que poder responder cuando alguien pregunta si le pueden descontar la asignación por una deuda. El artículo tiene un tercer párrafo derogado en 2024: qué protege exactamente hoy es una lectura sobre el texto vigente."
+    }
+  ],
+  "cuantia": {
+    "tipo": "FORMULA",
+    "ruta_evidencia": "articulo-18/inciso-a-76",
+    "formula_version": "ley-24714-art18-a@1",
+    "unidad_beneficiaria": "CAUSANTE",
+    "descripcion": "Una suma mensual por cada hijo, en una escala decreciente por tramos de remuneración: a mayor remuneración, menor asignación. El artículo 18 inciso a) fija tres tramos y el artículo 19 faculta al Poder Ejecutivo a actualizar los montos, los topes y los coeficientes zonales.",
+    "parametros": [
+      {
+        "codigo": "AR.ASIGNACION-HIJO",
+        "rol": "REFERENCIA"
+      },
+      {
+        "codigo": "AR.TOPE-MAXIMO-ASIGNACIONES",
+        "rol": "UMBRAL"
+      }
+    ],
+    "requiere_revision": true,
+    "motivo_revision": "La escala del artículo 18 va de cien a cincuenta pesos según la remuneración: son valores de 2007. Los vigentes salen de resoluciones de ANSES que no están en el corpus, y además el artículo 19 habilita coeficientes zonales, así que el monto depende también de dónde se trabaja. La cuantía queda declarada como fórmula con sus parámetros y sin valor: servir cien pesos como «lo que vas a cobrar» sería peor que decir que no se sabe."
   },
-  {
-   "campo": "criterios_revocacion",
-   "motivo": "La ley no declara causales de baja de esta asignación: se deja de percibir cuando dejan de cumplirse las condiciones —el hijo cumple dieciocho, la remuneración supera el tope, termina la relación laboral—, que es distinto de una revocación. Qué pasa con lo percibido de más cuando una condición deja de cumplirse a mitad de mes no sale de este texto."
-  }
- ],
- "dependencias": [
-  {
-   "referencia": "Resoluciones de ANSES que fijan montos y topes de la Ley 24.714",
-   "motivo": "El artículo 19 delega en el Poder Ejecutivo la cuantía, los topes y los coeficientes zonales, y las notas del artículo 26 listan una decena de resoluciones que los actualizaron. Sin la vigente, ni el monto ni el tope de esta asignación tienen valor."
-  },
-  {
-   "referencia": "Ley 24.241, artículos 6 y 9",
-   "motivo": "El artículo 4 remite a ellos para definir qué cuenta como remuneración, que es el dato con el que se mide el piso y el techo. Sin esa definición, la comparación se hace contra un dato cuyo alcance no está escrito acá."
-  },
-  {
-   "referencia": "Ley 26.844, Régimen Especial de Contrato de Trabajo para el Personal de Casas Particulares",
-   "motivo": "El artículo 2 la usa para excluir a ese personal del subsistema contributivo y reencauzarlo al no contributivo. Sin la norma, se sabe que hay un régimen especial y no quién queda comprendido en él."
-  },
-  {
-   "referencia": "Catálogo de provincias, departamentos y distritos de zona desfavorable",
-   "motivo": "El segundo párrafo del artículo 3 eleva el tope para una lista larga de localidades. Sin un catálogo que las identifique, la excepción queda declarada y no evaluable: una lista escrita a ojo dejaría afuera a quien vive en un distrito mal copiado."
-  }
- ],
- "vacios_declarados": [
-  {
-   "dato": "canales",
-   "motivo": "La ley no dice dónde se gestiona. El artículo 18 nombra el sistema de pagos de ANSES para las prestaciones del subsistema no contributivo y no para esta, que en el subsistema contributivo históricamente se liquidó por el empleador. Cuál es hoy el canal no sale de esta norma."
-  }
- ],
- "conflictos": [
-  {
-   "clave": "VIGENCIA-EXCEPTUADA-DE-LA-RESTITUCION-DE-2001",
-   "ruta_evidencia": "articulo-7",
-   "texto_literal": "La asignación por hijo consistirá en el pago de una suma mensual por cada hijo menor de 18 anos de edad que se encuentre a cargo del trabajador.",
-   "otra_norma": "Decreto nacional 1382/2001 (infoleg:69649:actualizado) y Decreto nacional 1604/2001 (infoleg:70499:original)",
-   "otra_ruta": "titulo-III/articulo-26/parrafo-103",
-   "descripcion": "La vigencia de la asignación por hijo quedó en duda en 2001 y el corpus no alcanza para despejarla. El Decreto 1382/01 derogó la Ley 24.714 y, en el tercer párrafo de su artículo 26, mantuvo cinco prestaciones —asignación por hijo, por hijo discapacitado, por maternidad, ayuda escolar primaria y por cónyuge del beneficiario del SIJP— «hasta la fecha de inicio de pago de las prestaciones equivalentes» del sistema que creaba. Tres días después el Decreto 1604/01 restituyó la vigencia de la Ley 24.714 desde la fecha de su derogación, pero «con excepción de las normas correspondientes a las prestaciones a las que refiere el tercer párrafo del artículo 26 del Decreto Nº 1382/01», que son exactamente esas cinco. Leído al pie, lo restituido excluye a esta prestación; leído por su finalidad, esta prestación nunca se derogó y por eso no necesitaba restitución. Las dos lecturas son posibles y dan resultados opuestos sobre si el artículo que la crea está vigente. El corpus tiene los tres textos y no alcanza para decidir: no consta que las prestaciones equivalentes del SIPROF se hayan empezado a pagar nunca. Las otras siete prestaciones de la ley no están alcanzadas por esta duda."
-  }
- ]
+  "plazos": [],
+  "campos_no_informados": [
+    {
+      "campo": "plazos",
+      "motivo": "La asignación se paga mes a mes mientras se cumplan las condiciones y la ley no fija plazo para pedirla ni para acreditar nada: no requiere solicitud como las prestaciones del subsistema no contributivo. Poner un plazo acá inventaría un vencimiento que no existe."
+    },
+    {
+      "campo": "criterios_revocacion",
+      "motivo": "La ley no declara causales de baja de esta asignación: se deja de percibir cuando dejan de cumplirse las condiciones —el hijo cumple dieciocho, la remuneración supera el tope, termina la relación laboral—, que es distinto de una revocación. Qué pasa con lo percibido de más cuando una condición deja de cumplirse a mitad de mes no sale de este texto."
+    }
+  ],
+  "dependencias": [
+    {
+      "referencia": "Resoluciones de ANSES que fijan montos y topes de la Ley 24.714",
+      "motivo": "El artículo 19 delega en el Poder Ejecutivo la cuantía, los topes y los coeficientes zonales, y las notas del artículo 26 listan una decena de resoluciones que los actualizaron. Sin la vigente, ni el monto ni el tope de esta asignación tienen valor."
+    },
+    {
+      "referencia": "Ley 24.241, artículos 6 y 9",
+      "motivo": "El artículo 4 remite a ellos para definir qué cuenta como remuneración, que es el dato con el que se mide el piso y el techo. Sin esa definición, la comparación se hace contra un dato cuyo alcance no está escrito acá."
+    },
+    {
+      "referencia": "Ley 26.844, Régimen Especial de Contrato de Trabajo para el Personal de Casas Particulares",
+      "motivo": "El artículo 2 la usa para excluir a ese personal del subsistema contributivo y reencauzarlo al no contributivo. Sin la norma, se sabe que hay un régimen especial y no quién queda comprendido en él."
+    },
+    {
+      "referencia": "Catálogo de provincias, departamentos y distritos de zona desfavorable",
+      "motivo": "El segundo párrafo del artículo 3 eleva el tope para una lista larga de localidades. Sin un catálogo que las identifique, la excepción queda declarada y no evaluable: una lista escrita a ojo dejaría afuera a quien vive en un distrito mal copiado."
+    }
+  ],
+  "vacios_declarados": [
+    {
+      "dato": "canales",
+      "motivo": "La ley no dice dónde se gestiona. El artículo 18 nombra el sistema de pagos de ANSES para las prestaciones del subsistema no contributivo y no para esta, que en el subsistema contributivo históricamente se liquidó por el empleador. Cuál es hoy el canal no sale de esta norma."
+    }
+  ],
+  "conflictos": [
+    {
+      "clave": "VIGENCIA-EXCEPTUADA-DE-LA-RESTITUCION-DE-2001",
+      "ruta_evidencia": "articulo-7",
+      "texto_literal": "La asignación por hijo consistirá en el pago de una suma mensual por cada hijo menor de 18 anos de edad que se encuentre a cargo del trabajador.",
+      "otra_norma": "Decreto nacional 1382/2001 (infoleg:69649:actualizado) y Decreto nacional 1604/2001 (infoleg:70499:original)",
+      "otra_ruta": "titulo-III/articulo-26/parrafo-103",
+      "descripcion": "La vigencia de la asignación por hijo quedó en duda en 2001 y el corpus no alcanza para despejarla. El Decreto 1382/01 derogó la Ley 24.714 y, en el tercer párrafo de su artículo 26, mantuvo cinco prestaciones —asignación por hijo, por hijo discapacitado, por maternidad, ayuda escolar primaria y por cónyuge del beneficiario del SIJP— «hasta la fecha de inicio de pago de las prestaciones equivalentes» del sistema que creaba. Tres días después el Decreto 1604/01 restituyó la vigencia de la Ley 24.714 desde la fecha de su derogación, pero «con excepción de las normas correspondientes a las prestaciones a las que refiere el tercer párrafo del artículo 26 del Decreto Nº 1382/01», que son exactamente esas cinco. Leído al pie, lo restituido excluye a esta prestación; leído por su finalidad, esta prestación nunca se derogó y por eso no necesitaba restitución. Las dos lecturas son posibles y dan resultados opuestos sobre si el artículo que la crea está vigente. El corpus tiene los tres textos y no alcanza para decidir: no consta que las prestaciones equivalentes del SIPROF se hayan empezado a pagar nunca. Las otras siete prestaciones de la ley no están alcanzadas por esta duda."
+    }
+  ]
 }

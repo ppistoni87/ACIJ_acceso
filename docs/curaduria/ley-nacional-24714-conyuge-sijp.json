@@ -1,155 +1,178 @@
 {
- "schema_version": "1.0",
- "norma": {
-  "external_id": "infoleg:39880:actualizado",
-  "referencia": "Ley 24.714",
-  "rol": "CREA"
- },
- "nota": "Es la prestación de la Ley 24.714 destinada a quienes ya no trabajan: la cobran los beneficiarios del Sistema Integrado de Jubilaciones y Pensiones por su cónyuge. Cada una se cura por separado porque no comparten ni la antigüedad exigida, ni quién las cobra, ni la vía por la que se accede. Todo entra como candidato. El artículo 16 la describe en una sola oración y no dice ni con qué periodicidad se paga ni qué hay que acreditar; el artículo 18 inciso i) agrega un tope propio, distinto del general.",
- "beneficio": {
-  "codigo": "AR.ASIGNACION-POR-CONYUGE-SIJP",
-  "nombre": "Asignación por cónyuge del beneficiario del SIJP",
-  "familia": "SEGURIDAD_SOCIAL",
-  "linea": "ASIGNACION_FAMILIAR",
-  "jurisdiccion": "AR",
-  "naturaleza": "PRESTACION_MONETARIA",
-  "descripcion": "Suma de dinero que se abona al beneficiario del Sistema Integrado de Jubilaciones y Pensiones por su cónyuge.",
-  "unidad_beneficiaria": "PERSONA",
-  "modalidad": "TRANSFERENCIA",
-  "frecuencia": "NO_INFORMADA",
-  "requiere_solicitud": true,
-  "ruta_evidencia": "articulo-16"
- },
- "poblaciones": [
-  {
-   "codigo": "AR.BENEFICIARIO-DEL-SIJP",
-   "nombre": "Beneficiarios del Sistema Integrado de Jubilaciones y Pensiones",
-   "definicion": "Personas que perciben una prestación del Sistema Integrado de Jubilaciones y Pensiones.",
-   "rol_persona": "TITULAR",
-   "alcance": "Es quien cobra. La ley los trata en un título aparte —el artículo 15 abre la lista de sus prestaciones— y no en el subsistema contributivo del artículo 1 inciso a).",
-   "ruta_evidencia": "articulo-15"
+  "schema_version": "1.0",
+  "norma": {
+    "external_id": "infoleg:39880:actualizado",
+    "referencia": "Ley 24.714",
+    "rol": "CREA"
   },
-  {
-   "codigo": "AR.CONYUGE-DEL-BENEFICIARIO",
-   "nombre": "Cónyuge del beneficiario",
-   "definicion": "Persona casada con quien percibe la prestación del Sistema Integrado de Jubilaciones y Pensiones.",
-   "rol_persona": "CAUSANTE",
-   "alcance": "Da lugar a la asignación y no la cobra. La ley dice «cónyuge» y no menciona a la persona conviviente, que en otros regímenes previsionales sí está equiparada: si acá lo está o no, no sale de este texto.",
-   "ruta_evidencia": "articulo-16"
-  }
- ],
- "reglas": [
-  {
-   "clave": "SER-BENEFICIARIO-DEL-SIJP",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-15",
-   "texto_literal": "ARTICULO 15.- Los beneficiarios del Sistema Integrado de Jubilaciones y Pensiones gozarán de las siguientes prestaciones:",
-   "descripcion": "Ser beneficiario del Sistema Integrado de Jubilaciones y Pensiones.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "titular_es_beneficiario_del_sijp"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "El artículo 15 abre una lista y el texto capturado la corta ahí: las prestaciones que enumera están en los artículos siguientes. La condición es clara; qué prestaciones exactas cubre esta puerta es lo que hay que leer completo antes de aprobarla."
+  "nota": "Es la prestación de la Ley 24.714 destinada a quienes ya no trabajan: la cobran los beneficiarios del Sistema Integrado de Jubilaciones y Pensiones por su cónyuge. Cada una se cura por separado porque no comparten ni la antigüedad exigida, ni quién las cobra, ni la vía por la que se accede. Todo entra como candidato. El artículo 16 la describe en una sola oración y no dice ni con qué periodicidad se paga ni qué hay que acreditar; el artículo 18 inciso i) agrega un tope propio, distinto del general.",
+  "beneficio": {
+    "codigo": "AR.ASIGNACION-POR-CONYUGE-SIJP",
+    "nombre": "Asignación por cónyuge del beneficiario del SIJP",
+    "familia": "SEGURIDAD_SOCIAL",
+    "linea": "ASIGNACION_FAMILIAR",
+    "jurisdiccion": "AR",
+    "naturaleza": "PRESTACION_MONETARIA",
+    "descripcion": "Suma de dinero que se abona al beneficiario del Sistema Integrado de Jubilaciones y Pensiones por su cónyuge.",
+    "unidad_beneficiaria": "PERSONA",
+    "modalidad": "TRANSFERENCIA",
+    "frecuencia": "NO_INFORMADA",
+    "requiere_solicitud": true,
+    "ruta_evidencia": "articulo-16"
   },
-  {
-   "clave": "TENER-CONYUGE",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-16",
-   "texto_literal": "La asignación por cónyuge del beneficiario del Sistema Integrado de Jubilaciones y Pensiones consistirá en el pago de una suma de dinero que se abonara al beneficiario por su cónyuge.",
-   "descripcion": "Tener cónyuge.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "titular_tiene_conyuge"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "El artículo no pide acreditar nada ni fija antigüedad: dice sólo que se abona «por su cónyuge». Es la prestación de la ley con menos condiciones escritas, y eso no significa que no haya requisitos sino que no están acá. Y dice «cónyuge», no «conviviente»."
-  },
-  {
-   "clave": "TOPE-PROPIO-DE-HABERES",
-   "categoria": "EXCLUSION",
-   "ruta_evidencia": "articulo-18/inciso-i-84",
-   "texto_literal": "i) Asignación por Cónyuge del beneficiario del SISTEMA INTEGRADO DE JUBILACIONES Y PENSIONES: la suma de PESOS TREINTA ($ 30) para los que perciban haberes inferiores a PESOS CUATRO MIL CON UN CENTAVO ($ 4.000,01).",
-   "descripcion": "El monto corresponde a quienes perciben haberes inferiores al tope que fija el propio inciso.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "compare",
-    "field": "haber_previsional_del_titular",
-    "cmp": "<",
-    "parameter": "AR.TOPE-MAXIMO-ASIGNACIONES",
-    "unit": "ARS"
-   },
-   "parametros": [
+  "poblaciones": [
     {
-     "codigo": "AR.TOPE-MAXIMO-ASIGNACIONES",
-     "rol": "UMBRAL"
+      "codigo": "AR.BENEFICIARIO-DEL-SIJP",
+      "nombre": "Beneficiarios del Sistema Integrado de Jubilaciones y Pensiones",
+      "definicion": "Personas que perciben una prestación del Sistema Integrado de Jubilaciones y Pensiones.",
+      "rol_persona": "TITULAR",
+      "alcance": "Es quien cobra. La ley los trata en un título aparte —el artículo 15 abre la lista de sus prestaciones— y no en el subsistema contributivo del artículo 1 inciso a).",
+      "ruta_evidencia": "articulo-15"
+    },
+    {
+      "codigo": "AR.CONYUGE-DEL-BENEFICIARIO",
+      "nombre": "Cónyuge del beneficiario",
+      "definicion": "Persona casada con quien percibe la prestación del Sistema Integrado de Jubilaciones y Pensiones.",
+      "rol_persona": "CAUSANTE",
+      "alcance": "Da lugar a la asignación y no la cobra. La ley dice «cónyuge» y no menciona a la persona conviviente, que en otros regímenes previsionales sí está equiparada: si acá lo está o no, no sale de este texto.",
+      "ruta_evidencia": "articulo-16"
     }
-   ],
-   "requiere_revision": true,
-   "motivo_revision": "El tope viaja en el inciso del monto y no en el artículo 3, que habla de remuneración y no de haberes previsionales. Se apunta al mismo parámetro de tope máximo porque el número escrito es el mismo, y eso es exactamente lo que hay que confirmar: si las resoluciones vigentes los actualizan juntos o por separado, apuntar al mismo parámetro sería un error que decide quién cobra."
-  },
-  {
-   "clave": "INEMBARGABLE-Y-NO-REMUNERATIVA",
-   "categoria": "SALVAGUARDA",
-   "ruta_evidencia": "articulo-23",
-   "texto_literal": "Las Asignaciones Familiares dispuestas en la presente ley son inembargables, no constituyen remuneración ni están sujetas a gravámenes, atento su naturaleza jurídica, tampoco serán tenidas en cuenta para la determinación del sueldo anual complementario, ni para el pago de las indemnizaciones por despido, enfermedad, accidente o para cualquier otro efecto. No pueden ser enajenadas ni afectadas a terceros por derecho alguno.",
-   "descripcion": "La asignación es inembargable, no constituye remuneración y no puede ser enajenada ni afectada a terceros.",
-   "requiere_revision": true,
-   "motivo_revision": "Es una protección sobre lo cobrado y no una condición de acceso, así que no tiene AST."
-  }
- ],
- "cuantia": {
-  "tipo": "FORMULA",
-  "ruta_evidencia": "articulo-18/inciso-i-84",
-  "formula_version": "ley-24714-art18-i@1",
-  "unidad_beneficiaria": "PERSONA",
-  "descripcion": "Un monto único para quienes perciben haberes por debajo del tope que fija el mismo inciso, con una suma más alta para quienes residen en las provincias del sur y el partido de Carmen de Patagones.",
-  "parametros": [
-   {
-    "codigo": "AR.ASIGNACION-CONYUGE",
-    "rol": "REFERENCIA"
-   }
   ],
-  "requiere_revision": true,
-  "motivo_revision": "El artículo fija treinta pesos, y sesenta para la zona austral: valores de 2007. Los vigentes salen de resoluciones de ANSES que no están en el corpus. El diferencial zonal no se formaliza por la misma razón que en la asignación por hijo: la lista de jurisdicciones pide un catálogo que el corpus no tiene."
- },
- "plazos": [],
- "campos_no_informados": [
-  {
-   "campo": "plazos",
-   "motivo": "La ley no dice con qué periodicidad se paga esta asignación ni fija plazo para nada. El artículo 16 la describe en una sola oración."
+  "reglas": [
+    {
+      "clave": "SER-BENEFICIARIO-DEL-SIJP",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-15",
+      "texto_literal": "ARTICULO 15.- Los beneficiarios del Sistema Integrado de Jubilaciones y Pensiones gozarán de las siguientes prestaciones:",
+      "descripcion": "Ser beneficiario del Sistema Integrado de Jubilaciones y Pensiones.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "titular_es_beneficiario_del_sijp"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "El artículo 15 abre una lista y el texto capturado la corta ahí: las prestaciones que enumera están en los artículos siguientes. La condición es clara; qué prestaciones exactas cubre esta puerta es lo que hay que leer completo antes de aprobarla."
+    },
+    {
+      "clave": "TENER-CONYUGE",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-16",
+      "texto_literal": "La asignación por cónyuge del beneficiario del Sistema Integrado de Jubilaciones y Pensiones consistirá en el pago de una suma de dinero que se abonara al beneficiario por su cónyuge.",
+      "descripcion": "Tener cónyuge.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "titular_tiene_conyuge"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "El artículo no pide acreditar nada ni fija antigüedad: dice sólo que se abona «por su cónyuge». Es la prestación de la ley con menos condiciones escritas, y eso no significa que no haya requisitos sino que no están acá. Y dice «cónyuge», no «conviviente»."
+    },
+    {
+      "clave": "TOPE-PROPIO-DE-HABERES",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-18/inciso-i-84",
+      "texto_literal": "i) Asignación por Cónyuge del beneficiario del SISTEMA INTEGRADO DE JUBILACIONES Y PENSIONES: la suma de PESOS TREINTA ($ 30) para los que perciban haberes inferiores a PESOS CUATRO MIL CON UN CENTAVO ($ 4.000,01).",
+      "descripcion": "El monto corresponde a quienes perciben haberes inferiores al tope que fija el propio inciso: es una condición de acceso, no una causal de exclusión.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "compare",
+        "field": "haber_previsional_del_titular",
+        "cmp": "<",
+        "parameter": "AR.TOPE-MAXIMO-ASIGNACIONES",
+        "unit": "ARS"
+      },
+      "parametros": [
+        {
+          "codigo": "AR.TOPE-MAXIMO-ASIGNACIONES",
+          "rol": "UMBRAL"
+        }
+      ],
+      "requiere_revision": true,
+      "motivo_revision": "El tope viaja en el inciso del monto y no en el artículo 3, que habla de remuneración y no de haberes previsionales. Se apunta al mismo parámetro de tope máximo porque el número escrito es el mismo, y eso es exactamente lo que hay que confirmar: si las resoluciones vigentes los actualizan juntos o por separado, apuntar al mismo parámetro sería un error que decide quién cobra.",
+      "casos": [
+        {
+          "nombre": "haber por debajo del tope",
+          "hechos": {
+            "haber_previsional_del_titular": 2000
+          },
+          "parametros": {
+            "AR.TOPE-MAXIMO-ASIGNACIONES": 4000.01
+          },
+          "espera": "TRUE"
+        },
+        {
+          "nombre": "haber igual o superior al tope",
+          "hechos": {
+            "haber_previsional_del_titular": 9000
+          },
+          "parametros": {
+            "AR.TOPE-MAXIMO-ASIGNACIONES": 4000.01
+          },
+          "espera": "FALSE"
+        }
+      ],
+      "correccion": "Corrección de polaridad (T-16, D-149): el árbol expresaba la condición de inclusión y la categoría dice EXCLUSION, así que el motor leía «queda excluido» exactamente al revés."
+    },
+    {
+      "clave": "INEMBARGABLE-Y-NO-REMUNERATIVA",
+      "categoria": "SALVAGUARDA",
+      "ruta_evidencia": "articulo-23",
+      "texto_literal": "Las Asignaciones Familiares dispuestas en la presente ley son inembargables, no constituyen remuneración ni están sujetas a gravámenes, atento su naturaleza jurídica, tampoco serán tenidas en cuenta para la determinación del sueldo anual complementario, ni para el pago de las indemnizaciones por despido, enfermedad, accidente o para cualquier otro efecto. No pueden ser enajenadas ni afectadas a terceros por derecho alguno.",
+      "descripcion": "La asignación es inembargable, no constituye remuneración y no puede ser enajenada ni afectada a terceros.",
+      "requiere_revision": true,
+      "motivo_revision": "Es una protección sobre lo cobrado y no una condición de acceso, así que no tiene AST."
+    }
+  ],
+  "cuantia": {
+    "tipo": "FORMULA",
+    "ruta_evidencia": "articulo-18/inciso-i-84",
+    "formula_version": "ley-24714-art18-i@1",
+    "unidad_beneficiaria": "PERSONA",
+    "descripcion": "Un monto único para quienes perciben haberes por debajo del tope que fija el mismo inciso, con una suma más alta para quienes residen en las provincias del sur y el partido de Carmen de Patagones.",
+    "parametros": [
+      {
+        "codigo": "AR.ASIGNACION-CONYUGE",
+        "rol": "REFERENCIA"
+      }
+    ],
+    "requiere_revision": true,
+    "motivo_revision": "El artículo fija treinta pesos, y sesenta para la zona austral: valores de 2007. Los vigentes salen de resoluciones de ANSES que no están en el corpus. El diferencial zonal no se formaliza por la misma razón que en la asignación por hijo: la lista de jurisdicciones pide un catálogo que el corpus no tiene."
   },
-  {
-   "campo": "criterios_revocacion",
-   "motivo": "La ley no declara causales de baja. Qué pasa al fallecer el cónyuge, o ante un divorcio, no sale de este texto."
-  }
- ],
- "dependencias": [
-  {
-   "referencia": "Resoluciones de ANSES que fijan montos y topes de la Ley 24.714",
-   "motivo": "El artículo 19 delega la cuantía y los topes. Sin la resolución vigente no se sabe ni el monto ni si el tope de este inciso se actualiza junto con el del artículo 3."
-  },
-  {
-   "referencia": "Ley 24.241, Sistema Integrado de Jubilaciones y Pensiones",
-   "motivo": "El artículo 16 la presupone para definir quién es beneficiario del sistema, que es la condición de acceso. La norma no está en el corpus."
-  }
- ],
- "vacios_declarados": [
-  {
-   "dato": "canales",
-   "motivo": "La ley no dice dónde se gestiona ni qué hay que presentar para acreditar el vínculo."
-  }
- ],
- "conflictos": [
-  {
-   "clave": "VIGENCIA-EXCEPTUADA-DE-LA-RESTITUCION-DE-2001",
-   "ruta_evidencia": "articulo-16",
-   "texto_literal": "La asignación por cónyuge del beneficiario del Sistema Integrado de Jubilaciones y Pensiones consistirá en el pago de una suma de dinero que se abonara al beneficiario por su cónyuge.",
-   "otra_norma": "Decreto nacional 1382/2001 (infoleg:69649:actualizado) y Decreto nacional 1604/2001 (infoleg:70499:original)",
-   "otra_ruta": "titulo-III/articulo-26/parrafo-103",
-   "descripcion": "La vigencia de la asignación por cónyuge del beneficiario del SIJP quedó en duda en 2001 y el corpus no alcanza para despejarla. El Decreto 1382/01 derogó la Ley 24.714 y, en el tercer párrafo de su artículo 26, mantuvo cinco prestaciones —asignación por hijo, por hijo discapacitado, por maternidad, ayuda escolar primaria y por cónyuge del beneficiario del SIJP— «hasta la fecha de inicio de pago de las prestaciones equivalentes» del sistema que creaba. Tres días después el Decreto 1604/01 restituyó la vigencia de la Ley 24.714 desde la fecha de su derogación, pero «con excepción de las normas correspondientes a las prestaciones a las que refiere el tercer párrafo del artículo 26 del Decreto Nº 1382/01», que son exactamente esas cinco. Leído al pie, lo restituido excluye a esta prestación; leído por su finalidad, esta prestación nunca se derogó y por eso no necesitaba restitución. Las dos lecturas son posibles y dan resultados opuestos sobre si el artículo que la crea está vigente. El corpus tiene los tres textos y no alcanza para decidir: no consta que las prestaciones equivalentes del SIPROF se hayan empezado a pagar nunca. Las otras siete prestaciones de la ley no están alcanzadas por esta duda."
-  }
- ]
+  "plazos": [],
+  "campos_no_informados": [
+    {
+      "campo": "plazos",
+      "motivo": "La ley no dice con qué periodicidad se paga esta asignación ni fija plazo para nada. El artículo 16 la describe en una sola oración."
+    },
+    {
+      "campo": "criterios_revocacion",
+      "motivo": "La ley no declara causales de baja. Qué pasa al fallecer el cónyuge, o ante un divorcio, no sale de este texto."
+    }
+  ],
+  "dependencias": [
+    {
+      "referencia": "Resoluciones de ANSES que fijan montos y topes de la Ley 24.714",
+      "motivo": "El artículo 19 delega la cuantía y los topes. Sin la resolución vigente no se sabe ni el monto ni si el tope de este inciso se actualiza junto con el del artículo 3."
+    },
+    {
+      "referencia": "Ley 24.241, Sistema Integrado de Jubilaciones y Pensiones",
+      "motivo": "El artículo 16 la presupone para definir quién es beneficiario del sistema, que es la condición de acceso. La norma no está en el corpus."
+    }
+  ],
+  "vacios_declarados": [
+    {
+      "dato": "canales",
+      "motivo": "La ley no dice dónde se gestiona ni qué hay que presentar para acreditar el vínculo."
+    }
+  ],
+  "conflictos": [
+    {
+      "clave": "VIGENCIA-EXCEPTUADA-DE-LA-RESTITUCION-DE-2001",
+      "ruta_evidencia": "articulo-16",
+      "texto_literal": "La asignación por cónyuge del beneficiario del Sistema Integrado de Jubilaciones y Pensiones consistirá en el pago de una suma de dinero que se abonara al beneficiario por su cónyuge.",
+      "otra_norma": "Decreto nacional 1382/2001 (infoleg:69649:actualizado) y Decreto nacional 1604/2001 (infoleg:70499:original)",
+      "otra_ruta": "titulo-III/articulo-26/parrafo-103",
+      "descripcion": "La vigencia de la asignación por cónyuge del beneficiario del SIJP quedó en duda en 2001 y el corpus no alcanza para despejarla. El Decreto 1382/01 derogó la Ley 24.714 y, en el tercer párrafo de su artículo 26, mantuvo cinco prestaciones —asignación por hijo, por hijo discapacitado, por maternidad, ayuda escolar primaria y por cónyuge del beneficiario del SIJP— «hasta la fecha de inicio de pago de las prestaciones equivalentes» del sistema que creaba. Tres días después el Decreto 1604/01 restituyó la vigencia de la Ley 24.714 desde la fecha de su derogación, pero «con excepción de las normas correspondientes a las prestaciones a las que refiere el tercer párrafo del artículo 26 del Decreto Nº 1382/01», que son exactamente esas cinco. Leído al pie, lo restituido excluye a esta prestación; leído por su finalidad, esta prestación nunca se derogó y por eso no necesitaba restitución. Las dos lecturas son posibles y dan resultados opuestos sobre si el artículo que la crea está vigente. El corpus tiene los tres textos y no alcanza para decidir: no consta que las prestaciones equivalentes del SIPROF se hayan empezado a pagar nunca. Las otras siete prestaciones de la ley no están alcanzadas por esta duda."
+    }
+  ]
 }

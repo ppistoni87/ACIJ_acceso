@@ -1,242 +1,274 @@
 {
- "schema_version": "1.0",
- "norma": {
-  "external_id": "normativaba:830431:original",
-  "referencia": "Ley CABA 6935/2025",
-  "rol": "CREA"
- },
- "nota": "Lectura curada de la Ley CABA 6935. Cada afirmación apunta a la ruta de la unidad documental que la sostiene, para que se pueda discutir contra el texto y no contra el código. Todo entra como candidato: la evaluación de este beneficio no se sirve hasta que una persona con competencia jurídica apruebe cada pieza. Las decisiones difíciles están declaradas en `requiere_revision` con su motivo, no resueltas en silencio.",
- "beneficio": {
-  "codigo": "CABA.APOYO-VULNERABILIDAD-HABITACIONAL",
-  "nombre": "Programa de apoyo para personas en situación de vulnerabilidad habitacional",
-  "familia": "HABITACIONAL",
-  "linea": "PRESTACION_ECONOMICA",
-  "jurisdiccion": "AR-C",
-  "naturaleza": "PRESTACION_MONETARIA",
-  "descripcion": "Prestación económica no retributiva, intransferible e inembargable para el acceso a una solución habitacional transitoria, con dispositivos de abordaje y acompañamiento social. Continuador del programa del Decreto 690/06 y regido exclusivamente por esta Ley.",
-  "unidad_beneficiaria": "HOGAR",
-  "modalidad": "TRANSFERENCIA",
-  "frecuencia": "MENSUAL",
-  "requiere_solicitud": true,
-  "ruta_evidencia": "articulo-1"
- },
- "poblaciones": [
-  {
-   "codigo": "CABA.SITUACION-CALLE-EFECTIVA",
-   "nombre": "Personas en situación de calle efectiva",
-   "definicion": "Residentes en la Ciudad Autónoma de Buenos Aires en situación de calle efectiva, conforme la definición del artículo 2 inciso a) de la Ley 3706.",
-   "rol_persona": "TITULAR",
-   "alcance": "El texto remite a la Ley 3706 para la definición: mientras esa norma no esté en el corpus, la condición se conserva como declarada y no como evaluable.",
-   "ruta_evidencia": "articulo-2"
+  "schema_version": "1.0",
+  "norma": {
+    "external_id": "normativaba:830431:original",
+    "referencia": "Ley CABA 6935/2025",
+    "rol": "CREA"
   },
-  {
-   "codigo": "CABA.RIESGO-HABITACIONAL-INMINENTE",
-   "nombre": "Personas en riesgo habitacional inminente",
-   "definicion": "Residentes en la Ciudad Autónoma de Buenos Aires en riesgo habitacional inminente, conforme el artículo 2 inciso b) de la Ley 3706, incluidas expresamente las personas transitoriamente sin vivienda por desocupación administrativa, incendio, derrumbe o catástrofes naturales.",
-   "rol_persona": "TITULAR",
-   "alcance": "La inclusión expresa de las causas transitorias está en el propio artículo 2 y no depende de la Ley 3706.",
-   "ruta_evidencia": "articulo-2"
+  "nota": "Lectura curada de la Ley CABA 6935. Cada afirmación apunta a la ruta de la unidad documental que la sostiene, para que se pueda discutir contra el texto y no contra el código. Todo entra como candidato: la evaluación de este beneficio no se sirve hasta que una persona con competencia jurídica apruebe cada pieza. Las decisiones difíciles están declaradas en `requiere_revision` con su motivo, no resueltas en silencio.",
+  "beneficio": {
+    "codigo": "CABA.APOYO-VULNERABILIDAD-HABITACIONAL",
+    "nombre": "Programa de apoyo para personas en situación de vulnerabilidad habitacional",
+    "familia": "HABITACIONAL",
+    "linea": "PRESTACION_ECONOMICA",
+    "jurisdiccion": "AR-C",
+    "naturaleza": "PRESTACION_MONETARIA",
+    "descripcion": "Prestación económica no retributiva, intransferible e inembargable para el acceso a una solución habitacional transitoria, con dispositivos de abordaje y acompañamiento social. Continuador del programa del Decreto 690/06 y regido exclusivamente por esta Ley.",
+    "unidad_beneficiaria": "HOGAR",
+    "modalidad": "TRANSFERENCIA",
+    "frecuencia": "MENSUAL",
+    "requiere_solicitud": true,
+    "ruta_evidencia": "articulo-1"
   },
-  {
-   "codigo": "CABA.GRUPO-FAMILIAR-CONVIVIENTE",
-   "nombre": "Grupo familiar del titular",
-   "definicion": "Integrantes del hogar cuya composición determina la escala de montos y cuyo ingreso total se compara con la Canasta Básica Total.",
-   "rol_persona": "GRUPO_FAMILIAR",
-   "alcance": "La composición del hogar es la variable de la escala de montos (art. 3) y del requisito de ingresos (art. 6.b). Es un rol distinto del titular: la ley mide el ingreso del hogar, no el de quien solicita.",
-   "ruta_evidencia": "articulo-3"
-  }
- ],
- "reglas": [
-  {
-   "clave": "RESIDENCIA-2-ANIOS",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-6/inciso-a-11",
-   "texto_literal": "a) Acreditar identidad y residencia en la Ciudad Autónoma de Buenos Aires con una antigüedad mínima de dos (2) años.",
-   "descripcion": "Antigüedad de residencia en CABA de al menos dos años.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "compare",
-    "field": "antiguedad_residencia_caba",
-    "cmp": ">=",
-    "value": 2,
-    "unit": "anios_cumplidos"
-   }
-  },
-  {
-   "clave": "EXCEPCION-TRATA-VIOLENCIA",
-   "categoria": "EXCEPCION",
-   "excepcion_de": "RESIDENCIA-2-ANIOS",
-   "ruta_evidencia": "articulo-6/inciso-a-11",
-   "texto_literal": "Quedan exceptuadas de este requisito las personas víctimas de trata de personas o violencia de género, debidamente acreditadas por los organismos competentes.",
-   "descripcion": "La antigüedad de residencia no se exige a víctimas de trata o de violencia de género acreditadas por el organismo competente.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "any",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "acreditada_victima_trata"
-     },
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "acreditada_victima_violencia_genero"
-     }
-    ]
-   }
-  },
-  {
-   "clave": "INGRESO-BAJO-CBT",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-6/inciso-b-12",
-   "texto_literal": "b) No alcanzar el ingreso total de las familias, según su conformación, para cubrir la Canasta Básica Total (CBT) fijada por el Instituto Nacional de Estadísticas y Censos (INDEC), u organismo que en el futuro lo reemplace;",
-   "descripcion": "El ingreso total del hogar no alcanza a cubrir la Canasta Básica Total del INDEC correspondiente a su conformación.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "compare",
-    "field": "ingreso_total_hogar",
-    "cmp": "<",
-    "parameter": "INDEC.CBT",
-    "unit": "ARS"
-   },
-   "parametros": [
+  "poblaciones": [
     {
-     "codigo": "INDEC.CBT",
-     "rol": "UMBRAL"
+      "codigo": "CABA.SITUACION-CALLE-EFECTIVA",
+      "nombre": "Personas en situación de calle efectiva",
+      "definicion": "Residentes en la Ciudad Autónoma de Buenos Aires en situación de calle efectiva, conforme la definición del artículo 2 inciso a) de la Ley 3706.",
+      "rol_persona": "TITULAR",
+      "alcance": "El texto remite a la Ley 3706 para la definición: mientras esa norma no esté en el corpus, la condición se conserva como declarada y no como evaluable.",
+      "ruta_evidencia": "articulo-2"
+    },
+    {
+      "codigo": "CABA.RIESGO-HABITACIONAL-INMINENTE",
+      "nombre": "Personas en riesgo habitacional inminente",
+      "definicion": "Residentes en la Ciudad Autónoma de Buenos Aires en riesgo habitacional inminente, conforme el artículo 2 inciso b) de la Ley 3706, incluidas expresamente las personas transitoriamente sin vivienda por desocupación administrativa, incendio, derrumbe o catástrofes naturales.",
+      "rol_persona": "TITULAR",
+      "alcance": "La inclusión expresa de las causas transitorias está en el propio artículo 2 y no depende de la Ley 3706.",
+      "ruta_evidencia": "articulo-2"
+    },
+    {
+      "codigo": "CABA.GRUPO-FAMILIAR-CONVIVIENTE",
+      "nombre": "Grupo familiar del titular",
+      "definicion": "Integrantes del hogar cuya composición determina la escala de montos y cuyo ingreso total se compara con la Canasta Básica Total.",
+      "rol_persona": "GRUPO_FAMILIAR",
+      "alcance": "La composición del hogar es la variable de la escala de montos (art. 3) y del requisito de ingresos (art. 6.b). Es un rol distinto del titular: la ley mide el ingreso del hogar, no el de quien solicita.",
+      "ruta_evidencia": "articulo-3"
     }
-   ],
-   "requiere_revision": true,
-   "motivo_revision": "La CBT varía según la conformación del hogar y el parámetro cargado no está segmentado por composición. Comparar contra un valor único daría por debajo o por encima del umbral a hogares que no corresponden."
-  },
-  {
-   "clave": "SIN-INMUEBLE",
-   "categoria": "EXCLUSION",
-   "ruta_evidencia": "articulo-6/inciso-c-13",
-   "texto_literal": "c) No ser titular de bienes inmuebles",
-   "descripcion": "Ser titular de un bien inmueble excluye del programa.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "titular_de_bien_inmueble"
-   }
-  },
-  {
-   "clave": "SIN-OTRO-SUBSIDIO-HABITACIONAL",
-   "categoria": "EXCLUSION",
-   "ruta_evidencia": "articulo-6/inciso-c-13",
-   "texto_literal": "ni percibir otros subsidios económicos de carácter habitacional de origen nacional, provincial o municipal.",
-   "descripcion": "Percibir otro subsidio habitacional de cualquier jurisdicción excluye del programa.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "percibe_otro_subsidio_habitacional"
-   }
-  },
-  {
-   "clave": "SUBSANACION-DOCUMENTAL",
-   "categoria": "SUBSANACION",
-   "ruta_evidencia": "articulo-6/parrafo-15",
-   "texto_literal": "La reglamentación podrá establecer mecanismos de interoperabilidad de datos para eximir a los solicitantes de presentar documentación que ya obrare en poder del Estado, y mecanismos flexibles para la acreditación de requisitos en casos de extrema vulnerabilidad o falta de documentación, admitiendo el ingreso provisorio.",
-   "descripcion": "La falta de documentación admite acreditación flexible e ingreso provisorio; no es por sí sola un motivo de rechazo.",
-   "ast": null,
-   "requiere_revision": true,
-   "motivo_revision": "La ley habilita el mecanismo y lo remite a la reglamentación, que no está en el corpus. No se puede formalizar qué documentación se subsana ni en qué plazo, y afirmar que algo es subsanable sin saber el plazo puede hacer que alguien pierda el suyo."
-  },
-  {
-   "clave": "SALVAGUARDA-INGRESO-PROVISORIO",
-   "categoria": "SALVAGUARDA",
-   "ruta_evidencia": "articulo-8",
-   "texto_literal": "En casos de urgencia social o situación de calle efectiva, la Autoridad de Aplicación podrá disponer el ingreso provisorio al programa y liquidar la primera cuota de la prestación como pago de emergencia, aun cuando el hogar no cuente con la totalidad de la documentación requerida.",
-   "descripcion": "La urgencia social o la situación de calle efectiva habilitan el ingreso provisorio aunque falte documentación. Nunca excluye: siempre se informa.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "any",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "urgencia_social"
-     },
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "situacion_calle_efectiva"
-     }
-    ]
-   }
-  },
-  {
-   "clave": "INCOMPATIBILIDAD-PAGO-UNICO",
-   "categoria": "COMPATIBILIDAD",
-   "ruta_evidencia": "articulo-5/parrafo-9",
-   "texto_literal": "El ejercicio de la opción por parte del beneficiario de percibir la prestación económica alternativa en una (1) cuota única por solución habitacional estable resulta excluyente de la percepción de toda otra suma de dinero dispuesta en la presente Ley por el término que fije la reglamentación.",
-   "descripcion": "Optar por el pago único excluye percibir otras sumas de esta Ley durante el término que fije la reglamentación.",
-   "ast": null,
-   "requiere_revision": true,
-   "motivo_revision": "El término de la incompatibilidad lo fija la reglamentación, que no está en el corpus. Sin ese plazo no se puede decir hasta cuándo dura la exclusión, y decir «para siempre» o «por un año» serían las dos invenciones posibles."
-  },
-  {
-   "clave": "CONTINUIDAD-CORRESPONSABILIDADES",
-   "categoria": "CESE",
-   "ruta_evidencia": "articulo-7",
-   "texto_literal": "La continuidad de la prestación estará sujeta al cumplimiento de las corresponsabilidades definidas por la reglamentación.",
-   "descripcion": "El incumplimiento de las corresponsabilidades puede interrumpir la continuidad de la prestación.",
-   "ast": null,
-   "requiere_revision": true,
-   "motivo_revision": "La ley sujeta la continuidad a corresponsabilidades que define la reglamentación, y esa norma no está en el corpus. Cuáles son, cómo se acreditan y qué consecuencia tiene incumplirlas —suspensión, cese o revocación— no surge del texto: son tres efectos distintos y la ley no elige."
-  }
- ],
- "cuantia": {
-  "tipo": "FORMULA",
-  "ruta_evidencia": "articulo-3",
-  "formula_version": "ley-6935-art3@1",
-  "descripcion": "Escala de montos diferenciada según composición del hogar. Para grupos de cuatro o más integrantes no puede ser inferior al componente alquiler de la Canasta de Consumo para Hogares «tipo 5» del IDECBA, con valor inicial el de octubre de 2025 y actualización semestral en abril y octubre.",
-  "parametros": [
-   {
-    "codigo": "IDECBA.CANASTA-TIPO5-ALQUILER",
-    "rol": "PISO"
-   }
   ],
-  "requiere_revision": true,
-  "motivo_revision": "La ley fija un piso para hogares de cuatro o más integrantes y remite el resto de la escala a la Autoridad de Aplicación. El piso es computable en cuanto se cargue el valor del IDECBA; la escala completa no está en esta norma, así que servir el piso como «el monto» diría que todos cobran lo mismo."
- },
- "plazos": [
-  {
-   "clave": "DURACION-INICIAL",
-   "tipo": "DURACION_BENEFICIO",
-   "ruta_evidencia": "articulo-7",
-   "texto_literal": "La prestación económica se otorgará por un plazo inicial de hasta DOCE (12) meses.",
-   "cantidad": 12,
-   "unidad": "meses",
-   "tipo_dia": "NO_INFORMADO",
-   "evento_inicio": "otorgamiento de la prestación",
-   "requiere_revision": true,
-   "motivo_revision": "«Hasta doce meses» es un máximo, no una duración: la ley no dice cuánto dura cada otorgamiento concreto. Y no declara si el plazo corre en días corridos o hábiles, que en meses no suele importar pero acá tampoco está dicho."
-  }
- ],
- "campos_no_informados": [
-  {
-   "campo": "criterios_revocacion",
-   "motivo": "La ley menciona la continuidad sujeta a corresponsabilidades (art. 7) y la condiciona a la regularización documental y la persistencia de la vulnerabilidad (art. 8), pero remite a la reglamentación para definirlas. Suspensión, cese y revocación son tres efectos distintos y el texto no elige entre ellos. Que no consten no significa que no existan."
+  "reglas": [
+    {
+      "clave": "RESIDENCIA-2-ANIOS",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-6/inciso-a-11",
+      "texto_literal": "a) Acreditar identidad y residencia en la Ciudad Autónoma de Buenos Aires con una antigüedad mínima de dos (2) años.",
+      "descripcion": "Antigüedad de residencia en CABA de al menos dos años.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "compare",
+        "field": "antiguedad_residencia_caba",
+        "cmp": ">=",
+        "value": 2,
+        "unit": "anios_cumplidos"
+      }
+    },
+    {
+      "clave": "EXCEPCION-TRATA-VIOLENCIA",
+      "categoria": "EXCEPCION",
+      "excepcion_de": "RESIDENCIA-2-ANIOS",
+      "ruta_evidencia": "articulo-6/inciso-a-11",
+      "texto_literal": "Quedan exceptuadas de este requisito las personas víctimas de trata de personas o violencia de género, debidamente acreditadas por los organismos competentes.",
+      "descripcion": "La antigüedad de residencia no se exige a víctimas de trata o de violencia de género acreditadas por el organismo competente.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "any",
+        "args": [
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "acreditada_victima_trata"
+          },
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "acreditada_victima_violencia_genero"
+          }
+        ]
+      }
+    },
+    {
+      "clave": "INGRESO-BAJO-CBT",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-6/inciso-b-12",
+      "texto_literal": "b) No alcanzar el ingreso total de las familias, según su conformación, para cubrir la Canasta Básica Total (CBT) fijada por el Instituto Nacional de Estadísticas y Censos (INDEC), u organismo que en el futuro lo reemplace;",
+      "descripcion": "El ingreso total del hogar no alcanza a cubrir la Canasta Básica Total del INDEC correspondiente a su conformación.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "compare",
+        "field": "ingreso_total_hogar",
+        "cmp": "<",
+        "parameter": "INDEC.CBT",
+        "unit": "ARS"
+      },
+      "parametros": [
+        {
+          "codigo": "INDEC.CBT",
+          "rol": "UMBRAL"
+        }
+      ],
+      "requiere_revision": true,
+      "motivo_revision": "La CBT varía según la conformación del hogar y el parámetro cargado no está segmentado por composición. Comparar contra un valor único daría por debajo o por encima del umbral a hogares que no corresponden."
+    },
+    {
+      "clave": "SIN-INMUEBLE",
+      "categoria": "EXCLUSION",
+      "ruta_evidencia": "articulo-6/inciso-c-13",
+      "texto_literal": "c) No ser titular de bienes inmuebles",
+      "descripcion": "Ser titular de un bien inmueble excluye del programa.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "titular_de_bien_inmueble"
+      },
+      "casos": [
+        {
+          "nombre": "es titular de un inmueble",
+          "hechos": {
+            "titular_de_bien_inmueble": true
+          },
+          "espera": "TRUE"
+        },
+        {
+          "nombre": "no lo es",
+          "hechos": {
+            "titular_de_bien_inmueble": false
+          },
+          "espera": "FALSE"
+        }
+      ]
+    },
+    {
+      "clave": "SIN-OTRO-SUBSIDIO-HABITACIONAL",
+      "categoria": "EXCLUSION",
+      "ruta_evidencia": "articulo-6/inciso-c-13",
+      "texto_literal": "ni percibir otros subsidios económicos de carácter habitacional de origen nacional, provincial o municipal.",
+      "descripcion": "Percibir otro subsidio habitacional de cualquier jurisdicción excluye del programa.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "percibe_otro_subsidio_habitacional"
+      },
+      "casos": [
+        {
+          "nombre": "percibe otro subsidio habitacional",
+          "hechos": {
+            "percibe_otro_subsidio_habitacional": true
+          },
+          "espera": "TRUE"
+        },
+        {
+          "nombre": "no percibe otro",
+          "hechos": {
+            "percibe_otro_subsidio_habitacional": false
+          },
+          "espera": "FALSE"
+        }
+      ]
+    },
+    {
+      "clave": "SUBSANACION-DOCUMENTAL",
+      "categoria": "SUBSANACION",
+      "ruta_evidencia": "articulo-6/parrafo-15",
+      "texto_literal": "La reglamentación podrá establecer mecanismos de interoperabilidad de datos para eximir a los solicitantes de presentar documentación que ya obrare en poder del Estado, y mecanismos flexibles para la acreditación de requisitos en casos de extrema vulnerabilidad o falta de documentación, admitiendo el ingreso provisorio.",
+      "descripcion": "La falta de documentación admite acreditación flexible e ingreso provisorio; no es por sí sola un motivo de rechazo.",
+      "ast": null,
+      "requiere_revision": true,
+      "motivo_revision": "La ley habilita el mecanismo y lo remite a la reglamentación, que no está en el corpus. No se puede formalizar qué documentación se subsana ni en qué plazo, y afirmar que algo es subsanable sin saber el plazo puede hacer que alguien pierda el suyo."
+    },
+    {
+      "clave": "SALVAGUARDA-INGRESO-PROVISORIO",
+      "categoria": "SALVAGUARDA",
+      "ruta_evidencia": "articulo-8",
+      "texto_literal": "En casos de urgencia social o situación de calle efectiva, la Autoridad de Aplicación podrá disponer el ingreso provisorio al programa y liquidar la primera cuota de la prestación como pago de emergencia, aun cuando el hogar no cuente con la totalidad de la documentación requerida.",
+      "descripcion": "La urgencia social o la situación de calle efectiva habilitan el ingreso provisorio aunque falte documentación. Nunca excluye: siempre se informa.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "any",
+        "args": [
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "urgencia_social"
+          },
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "situacion_calle_efectiva"
+          }
+        ]
+      }
+    },
+    {
+      "clave": "INCOMPATIBILIDAD-PAGO-UNICO",
+      "categoria": "COMPATIBILIDAD",
+      "ruta_evidencia": "articulo-5/parrafo-9",
+      "texto_literal": "El ejercicio de la opción por parte del beneficiario de percibir la prestación económica alternativa en una (1) cuota única por solución habitacional estable resulta excluyente de la percepción de toda otra suma de dinero dispuesta en la presente Ley por el término que fije la reglamentación.",
+      "descripcion": "Optar por el pago único excluye percibir otras sumas de esta Ley durante el término que fije la reglamentación.",
+      "ast": null,
+      "requiere_revision": true,
+      "motivo_revision": "El término de la incompatibilidad lo fija la reglamentación, que no está en el corpus. Sin ese plazo no se puede decir hasta cuándo dura la exclusión, y decir «para siempre» o «por un año» serían las dos invenciones posibles."
+    },
+    {
+      "clave": "CONTINUIDAD-CORRESPONSABILIDADES",
+      "categoria": "CESE",
+      "ruta_evidencia": "articulo-7",
+      "texto_literal": "La continuidad de la prestación estará sujeta al cumplimiento de las corresponsabilidades definidas por la reglamentación.",
+      "descripcion": "El incumplimiento de las corresponsabilidades puede interrumpir la continuidad de la prestación.",
+      "ast": null,
+      "requiere_revision": true,
+      "motivo_revision": "La ley sujeta la continuidad a corresponsabilidades que define la reglamentación, y esa norma no está en el corpus. Cuáles son, cómo se acreditan y qué consecuencia tiene incumplirlas —suspensión, cese o revocación— no surge del texto: son tres efectos distintos y la ley no elige."
+    }
+  ],
+  "cuantia": {
+    "tipo": "FORMULA",
+    "ruta_evidencia": "articulo-3",
+    "formula_version": "ley-6935-art3@1",
+    "descripcion": "Escala de montos diferenciada según composición del hogar. Para grupos de cuatro o más integrantes no puede ser inferior al componente alquiler de la Canasta de Consumo para Hogares «tipo 5» del IDECBA, con valor inicial el de octubre de 2025 y actualización semestral en abril y octubre.",
+    "parametros": [
+      {
+        "codigo": "IDECBA.CANASTA-TIPO5-ALQUILER",
+        "rol": "PISO"
+      }
+    ],
+    "requiere_revision": true,
+    "motivo_revision": "La ley fija un piso para hogares de cuatro o más integrantes y remite el resto de la escala a la Autoridad de Aplicación. El piso es computable en cuanto se cargue el valor del IDECBA; la escala completa no está en esta norma, así que servir el piso como «el monto» diría que todos cobran lo mismo."
   },
-  {
-   "campo": "plazos",
-   "motivo": "El único plazo que la ley declara es el máximo de doce meses de la prestación. Los plazos de solicitud, de subsanación documental y de la incompatibilidad del pago único los remite a la reglamentación, que no está en el corpus."
-  }
- ],
- "dependencias": [
-  {
-   "referencia": "Ley CABA 3706",
-   "motivo": "El artículo 2 remite a su artículo 2, incisos a) y b), para las definiciones de situación de calle efectiva y riesgo habitacional inminente. Sin esa norma en el corpus, la población destinataria queda declarada y no evaluable."
-  },
-  {
-   "referencia": "Decreto CABA 690/06",
-   "motivo": "El artículo 1 declara al programa continuador del establecido por ese decreto y aclara que se rige exclusivamente por esta Ley. La relación importa para el historial, no para las condiciones vigentes."
-  },
-  {
-   "referencia": "Reglamentación de la Ley 6935",
-   "motivo": "La ley remite a ella para los requisitos complementarios, las corresponsabilidades, el plazo de regularización documental, el término de la incompatibilidad del pago único y la escala de montos. Es la dependencia que más campos deja pendientes."
-  }
- ]
+  "plazos": [
+    {
+      "clave": "DURACION-INICIAL",
+      "tipo": "DURACION_BENEFICIO",
+      "ruta_evidencia": "articulo-7",
+      "texto_literal": "La prestación económica se otorgará por un plazo inicial de hasta DOCE (12) meses.",
+      "cantidad": 12,
+      "unidad": "meses",
+      "tipo_dia": "NO_INFORMADO",
+      "evento_inicio": "otorgamiento de la prestación",
+      "requiere_revision": true,
+      "motivo_revision": "«Hasta doce meses» es un máximo, no una duración: la ley no dice cuánto dura cada otorgamiento concreto. Y no declara si el plazo corre en días corridos o hábiles, que en meses no suele importar pero acá tampoco está dicho."
+    }
+  ],
+  "campos_no_informados": [
+    {
+      "campo": "criterios_revocacion",
+      "motivo": "La ley menciona la continuidad sujeta a corresponsabilidades (art. 7) y la condiciona a la regularización documental y la persistencia de la vulnerabilidad (art. 8), pero remite a la reglamentación para definirlas. Suspensión, cese y revocación son tres efectos distintos y el texto no elige entre ellos. Que no consten no significa que no existan."
+    },
+    {
+      "campo": "plazos",
+      "motivo": "El único plazo que la ley declara es el máximo de doce meses de la prestación. Los plazos de solicitud, de subsanación documental y de la incompatibilidad del pago único los remite a la reglamentación, que no está en el corpus."
+    }
+  ],
+  "dependencias": [
+    {
+      "referencia": "Ley CABA 3706",
+      "motivo": "El artículo 2 remite a su artículo 2, incisos a) y b), para las definiciones de situación de calle efectiva y riesgo habitacional inminente. Sin esa norma en el corpus, la población destinataria queda declarada y no evaluable."
+    },
+    {
+      "referencia": "Decreto CABA 690/06",
+      "motivo": "El artículo 1 declara al programa continuador del establecido por ese decreto y aclara que se rige exclusivamente por esta Ley. La relación importa para el historial, no para las condiciones vigentes."
+    },
+    {
+      "referencia": "Reglamentación de la Ley 6935",
+      "motivo": "La ley remite a ella para los requisitos complementarios, las corresponsabilidades, el plazo de regularización documental, el término de la incompatibilidad del pago único y la escala de montos. Es la dependencia que más campos deja pendientes."
+    }
+  ]
 }

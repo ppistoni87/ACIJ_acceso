@@ -3737,3 +3737,74 @@ puede contestar veintiún preguntas y recibir «requiere revisión».
 para los cuatro— es la estimación menos confiable del plan. Se cura primero uno
 solo, el de menor volumen, y se recalibra con esa medición antes de comprometer
 nada. Los doce restantes no salen del compromiso: quedan diferidos y escritos.
+
+## D-149
+
+**Doce de catorce reglas de exclusión estaban al revés, y lo que faltaba no era
+revisarlas: era poder revisarlas.**
+
+El inciso i) del artículo 18 de la Ley 24.714 dice «$30 para los que perciban
+haberes **inferiores** a $4.000,01». Estaba cargado como `EXCLUSION` con el árbol
+`haber < tope`, y el motor lee una exclusión cumplida como bloqueo. Es decir que
+a quien cobra por debajo del tope —exactamente quien accede— le iba a contestar
+que una regla explícita lo excluye. Al comprobar las catorce con casos leídos del
+texto, **doce estaban invertidas**. Las dos correctas son las de la Ley 6935, las
+únicas que se habían curado a mano.
+
+Un barrido por palabras sobre las descripciones había encontrado una sola. Se
+quedó corto por un factor de doce, y eso es el argumento entero: **un árbol no se
+revisa contra una ley leyéndolo**. Las pruebas del motor comprueban que `all`,
+`any` y `not` se evalúen bien, y se evaluaban bien; el error estaba en la
+traducción, que ninguna prueba de unidad puede mirar.
+
+**Lo que se decide.** Cada regla ejecutable de acceso declara sus casos junto al
+árbol, en la misma lectura curada, en castellano y con el veredicto esperado, y
+el cargador se niega a entrar una regla cuyos casos no den lo que dicen. Para una
+`EXCLUSION`, «TRUE» significa «queda excluida»; para una `APLICABILIDAD`, «cumple
+la condición». Los valores de parámetro los pone el caso y no la base: un caso
+que dependiera del corte dejaría de comprobar la regla el día que cambie un
+monto, que es justo cuando hace falta.
+
+**Los casos son obligatorios en `EXCLUSION` y todavía no en `APLICABILIDAD`.** No
+por criterio sino por cantidad: 66 reglas de acceso no los tienen, y escribir 66
+lecturas legales de una sentada para que el cargador deje de quejarse sería meter
+interpretaciones sin revisar en el único lugar que existe para revisarlas. Hay un
+trinquete que fija el número y falla si sube. Solo puede bajar.
+
+**Tres cosas más que aparecieron tirando de este hilo, y que eran la razón de que
+el error sobreviviera.** Corregir una lectura curada no corregía la regla ya
+cargada: el cargador la reconocía por su texto literal y descartaba en silencio
+la categoría y el árbol. Las rutas de cita llevan la posición de la unidad en el
+documento, así que una resegmentación las renumera y tres lecturas habían dejado
+de cargar —informado como «aviso», con la corrida terminando en cero—. Y diez
+reglas que la curación ya había retirado se seguían evaluando, porque el filtro
+miraba el estado de la versión del beneficio y nunca el de la regla.
+
+## D-150
+
+**Un parámetro, un código.**
+
+Las 99 reglas ejecutables citan ocho códigos de parámetro. Los únicos tres
+parámetros con valores cargados son otros tres. La intersección era vacía:
+**ninguna regla podía resolver su umbral en ninguna fecha**, y una condición sin
+umbral queda en desconocido. Eso, y no la falta de curación, es lo que dejaba a
+los beneficios de la Ley 24.714 sin poder concluir.
+
+El importador de montos escribía `SMVM` y las lecturas curadas citaban `AR.SMVM`.
+La misma magnitud con dos nombres y ninguno de los dos lados sabía del otro. Se
+unifica en la forma con prefijo de jurisdicción, que es la que usan todas las
+demás y la que distingue un salario mínimo nacional de uno provincial.
+
+No se inventó ningún monto: los valores que se movieron son los tres que ya
+estaban capturados del Consejo del Salario, con su evidencia. Lo que cambia es
+que ahora una regla puede alcanzarlos.
+
+**Con eso, la Asignación por Cuidado de Salud Integral es el primer beneficio que
+llega a un veredicto sobre datos reales**, y llega a los cuatro: le corresponde,
+no le corresponde por edad, no le corresponde por la exclusión, y falta un dato
+—diciendo cuál—. Queda fijado en `scripts/verificar_dictamen.py`.
+
+**Lo que sigue faltando, dicho:** los topes de asignaciones familiares no tienen
+valor en ninguna fecha y la única fuente que los publica es M05 (ANSES), con
+acceso limitado. Y el salario mínimo está publicado desde el 1/10/2026: para el
+mes corriente no hay valor. Son huecos de fuente, no de código.

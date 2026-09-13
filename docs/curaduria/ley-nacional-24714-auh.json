@@ -1,465 +1,516 @@
 {
- "schema_version": "1.0",
- "norma": {
-  "external_id": "infoleg:39880:actualizado",
-  "referencia": "Ley 24.714",
-  "rol": "CREA"
- },
- "nota": "Lectura curada de la Asignación Universal por Hijo para Protección Social, tal como la define la Ley 24.714 en su texto actualizado. Es una sola de las prestaciones del artículo 6: la ley regula catorce, y curar el régimen entero como si fuera un beneficio haría que las condiciones de una se aplicaran a otra. Cada afirmación apunta a la ruta de la unidad documental que la sostiene, para que se pueda discutir contra el texto y no contra el código. Todo entra como candidato: nada de esto se sirve hasta que una persona con competencia jurídica lo apruebe. Las decisiones difíciles están declaradas en `requiere_revision` con su motivo, no resueltas en silencio.",
- "beneficio": {
-  "codigo": "AR.AUH",
-  "nombre": "Asignación Universal por Hijo para Protección Social",
-  "familia": "SEGURIDAD_SOCIAL",
-  "linea": "ASIGNACION_FAMILIAR",
-  "jurisdiccion": "AR",
-  "naturaleza": "PRESTACION_MONETARIA",
-  "descripcion": "Prestación monetaria no retributiva y mensual del subsistema no contributivo del Régimen de Asignaciones Familiares. Se abona a una sola persona —padre o madre, tutor o tutora, curador o curadora, o pariente por consanguinidad hasta el tercer grado— por cada niña, niño o adolescente menor de dieciocho años a su cargo, sin límite de edad cuando se trate de una persona con discapacidad. Se liquida el ochenta por ciento en forma mensual y se reserva el veinte por ciento restante hasta que se acrediten los controles de salud, la vacunación y, en edad escolar, el ciclo lectivo.",
-  "unidad_beneficiaria": "PERSONA",
-  "modalidad": "TRANSFERENCIA",
-  "frecuencia": "MENSUAL",
-  "requiere_solicitud": true,
-  "ruta_evidencia": "articulo-14-bis"
- },
- "poblaciones": [
-  {
-   "codigo": "AR.NNA-A-CARGO",
-   "nombre": "Niñas, niños y adolescentes a cargo",
-   "definicion": "Niña, niño o adolescente menor de dieciocho años que se encuentra a cargo de la persona titular, o persona con discapacidad sin límite de edad, siempre que no esté empleada, emancipada ni percibiendo alguna de las prestaciones de esta ley.",
-   "rol_persona": "CAUSANTE",
-   "alcance": "Es quien da lugar a la asignación y sobre quien se miden la edad, la escolaridad y los controles de salud, pero no es quien cobra. Confundir causante con titular haría que las condiciones del titular —residencia, identidad, vínculo— se le pidieran a un menor.",
-   "ruta_evidencia": "articulo-14-bis"
+  "schema_version": "1.0",
+  "norma": {
+    "external_id": "infoleg:39880:actualizado",
+    "referencia": "Ley 24.714",
+    "rol": "CREA"
   },
-  {
-   "codigo": "AR.TITULAR-AUH",
-   "nombre": "Persona titular de la asignación",
-   "definicion": "Padre o madre, tutor o tutora, curador o curadora, o pariente por consanguinidad hasta el tercer grado que tiene a su cargo a la niña, niño, adolescente o persona con discapacidad y que percibe la prestación.",
-   "rol_persona": "TITULAR",
-   "alcance": "Una sola persona por causante: el artículo 14 bis dice «a uno solo o una sola» y el artículo 20 lo repite para el caso de que ambos progenitores estén comprendidos en el régimen. La ley no dice cuál de los dos, y este modelo tampoco lo elige.",
-   "ruta_evidencia": "articulo-14-bis"
-  }
- ],
- "reglas": [
-  {
-   "clave": "EDAD-MENOR-DE-18-O-DISCAPACIDAD",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-14-bis",
-   "texto_literal": "por cada niña, niño y/o adolescente menor de DIECIOCHO (18) años que se encuentre a su cargo, o sin límite de edad cuando se trate de una persona con discapacidad; en ambos casos",
-   "descripcion": "El causante es menor de dieciocho años, o de cualquier edad si es persona con discapacidad.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "any",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "compare",
-      "field": "edad_del_causante",
-      "cmp": "<",
-      "value": 18,
-      "unit": "anios_cumplidos"
-     },
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "causante_con_discapacidad_certificada"
-     }
-    ]
-   }
+  "nota": "Lectura curada de la Asignación Universal por Hijo para Protección Social, tal como la define la Ley 24.714 en su texto actualizado. Es una sola de las prestaciones del artículo 6: la ley regula catorce, y curar el régimen entero como si fuera un beneficio haría que las condiciones de una se aplicaran a otra. Cada afirmación apunta a la ruta de la unidad documental que la sostiene, para que se pueda discutir contra el texto y no contra el código. Todo entra como candidato: nada de esto se sirve hasta que una persona con competencia jurídica lo apruebe. Las decisiones difíciles están declaradas en `requiere_revision` con su motivo, no resueltas en silencio.",
+  "beneficio": {
+    "codigo": "AR.AUH",
+    "nombre": "Asignación Universal por Hijo para Protección Social",
+    "familia": "SEGURIDAD_SOCIAL",
+    "linea": "ASIGNACION_FAMILIAR",
+    "jurisdiccion": "AR",
+    "naturaleza": "PRESTACION_MONETARIA",
+    "descripcion": "Prestación monetaria no retributiva y mensual del subsistema no contributivo del Régimen de Asignaciones Familiares. Se abona a una sola persona —padre o madre, tutor o tutora, curador o curadora, o pariente por consanguinidad hasta el tercer grado— por cada niña, niño o adolescente menor de dieciocho años a su cargo, sin límite de edad cuando se trate de una persona con discapacidad. Se liquida el ochenta por ciento en forma mensual y se reserva el veinte por ciento restante hasta que se acrediten los controles de salud, la vacunación y, en edad escolar, el ciclo lectivo.",
+    "unidad_beneficiaria": "PERSONA",
+    "modalidad": "TRANSFERENCIA",
+    "frecuencia": "MENSUAL",
+    "requiere_solicitud": true,
+    "ruta_evidencia": "articulo-14-bis"
   },
-  {
-   "clave": "VINCULO-DEL-TITULAR",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-14-bis",
-   "texto_literal": "que se abonará a uno solo o una sola de los padres o de las madres, tutor o tutora, curador o curadora o pariente por consanguinidad hasta el tercer grado",
-   "descripcion": "Quien percibe es padre, madre, tutor, tutora, curador, curadora o pariente por consanguinidad hasta el tercer grado.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "in",
-    "field": "vinculo_del_titular_con_el_causante",
-    "values": [
-     "PADRE",
-     "MADRE",
-     "TUTOR",
-     "CURADOR",
-     "PARIENTE_CONSANGUINEO_HASTA_TERCER_GRADO"
-    ]
-   }
-  },
-  {
-   "clave": "CAUSANTE-A-CARGO",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-14-ter",
-   "texto_literal": "c. Acreditar que la persona que percibirá el beneficio tiene a su cargo a la niña, al niño, adolescente y/o persona con discapacidad, en función de las disposiciones del Código Civil y Comercial de la Nación y de conformidad con la documentación que la ADMINISTRACIÓN NACIONAL DE LA SEGURIDAD SOCIAL (ANSES) disponga a estos fines.",
-   "descripcion": "El titular tiene a su cargo al causante, según el Código Civil y Comercial y la documentación que ANSES disponga.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "causante_a_cargo_del_titular"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "«A cargo» remite al Código Civil y Comercial y a documentación que fija ANSES por vía reglamentaria. El campo guarda si el vínculo de cuidado está acreditado, no reconstruye el criterio: decidir por cuenta propia qué convivencia o qué guarda de hecho cuenta como «a cargo» sería resolver un conflicto jurídico con una heurística."
-  },
-  {
-   "clave": "CAUSANTE-NO-EMPLEADO-NI-EMANCIPADO",
-   "categoria": "EXCLUSION",
-   "ruta_evidencia": "articulo-14-bis",
-   "texto_literal": "siempre que no estuviere empleado o empleada, emancipado o emancipada o percibiendo alguna de las prestaciones previstas en la presente Ley.",
-   "descripcion": "El causante no está empleado, ni emancipado, ni percibe otra prestación de esta misma ley.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "not",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "any",
-      "args": [
-       {
-        "schema_version": "1.0",
-        "op": "is_true",
-        "field": "causante_empleado"
-       },
-       {
-        "schema_version": "1.0",
-        "op": "is_true",
-        "field": "causante_emancipado"
-       },
-       {
-        "schema_version": "1.0",
-        "op": "is_true",
-        "field": "causante_percibe_otra_prestacion_de_esta_ley"
-       }
-      ]
-     }
-    ]
-   },
-   "requiere_revision": true,
-   "motivo_revision": "La oración admite dos lecturas: que las tres condiciones se midan sobre el causante, o que «percibiendo alguna de las prestaciones» se refiera al titular. Se leyó sobre el causante porque es el sujeto de la oración y porque el artículo 14 sexies da a los titulares de AUH derecho a otra prestación de esta misma ley, lo que haría contradictoria la otra lectura. Queda dicho porque la diferencia decide accesos."
-  },
-  {
-   "clave": "NACIONALIDAD-O-RESIDENCIA-LEGAL",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-14-ter",
-   "texto_literal": "a. Que la niña, el niño, adolescente y/o la persona con discapacidad sea argentino o argentina nativo o nativa, naturalizado o naturalizada o por opción. Cuando la niña, el niño, adolescente y/o la persona con discapacidad y sus progenitores o sus progenitoras o las personas que los o las tengan a cargo sean extranjeros o extranjeras, deberán acreditar tanto la niña, el niño, adolescente y/o la persona con discapacidad como el o la titular que percibirá la Asignación, DOS (2) años de residencia legal en el país.",
-   "descripcion": "El causante es argentino nativo, naturalizado o por opción; si tanto el causante como quien lo tiene a cargo son extranjeros, ambos acreditan dos años de residencia legal.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "any",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "causante_argentino"
-     },
-     {
-      "schema_version": "1.0",
-      "op": "all",
-      "args": [
-       {
-        "schema_version": "1.0",
-        "op": "compare",
-        "field": "residencia_legal_del_causante",
-        "cmp": ">=",
-        "value": 2,
-        "unit": "anios_cumplidos"
-       },
-       {
-        "schema_version": "1.0",
-        "op": "compare",
-        "field": "residencia_legal_del_titular",
-        "cmp": ">=",
-        "value": 2,
-        "unit": "anios_cumplidos"
-       }
-      ]
-     }
-    ]
-   },
-   "requiere_revision": true,
-   "motivo_revision": "El texto condiciona los dos años a que el causante «y sus progenitores o sus progenitoras o las personas que los o las tengan a cargo sean extranjeros»: en su letra, la exigencia aparece cuando ambos son extranjeros, y no dice qué pasa cuando el causante es argentino y quien lo tiene a cargo no. Se formalizó la letra —causante argentino alcanza— y no la lectura más restrictiva, porque exigir de más deja gente afuera de un derecho. La diferencia hay que resolverla con criterio jurídico, no con la que suene más prolija."
-  },
-  {
-   "clave": "IDENTIDAD-CON-DNI",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-14-ter",
-   "texto_literal": "b. Acreditar la identidad del o de la titular del beneficio y de la niña, del niño, adolescente y/o persona con discapacidad, mediante Documento Nacional de Identidad.",
-   "descripcion": "Titular y causante acreditan identidad con Documento Nacional de Identidad.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "all",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "titular_acredita_identidad_con_dni"
-     },
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "causante_acredita_identidad_con_dni"
-     }
-    ]
-   }
-  },
-  {
-   "clave": "DISCAPACIDAD-CERTIFICADA",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-14-ter",
-   "texto_literal": "d. La acreditación de la condición de discapacidad será determinada en los términos del artículo 2º de la Ley Nº 22.431, certificada por autoridad competente.",
-   "descripcion": "Cuando se invoca discapacidad, se acredita en los términos del artículo 2 de la Ley 22.431 y con certificación de autoridad competente.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "any",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "not",
-      "args": [
-       {
-        "schema_version": "1.0",
-        "op": "is_true",
-        "field": "se_invoca_discapacidad_del_causante"
-       }
-      ]
-     },
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "causante_con_discapacidad_certificada"
-     }
-    ]
-   },
-   "requiere_revision": true,
-   "motivo_revision": "El requisito solo muerde cuando se invoca la discapacidad —para levantar el límite de edad o para acceder al monto del inciso b) del artículo 18—. Formalizarlo como condición general haría que un trámite sin discapacidad invocada fallara por no acreditar una discapacidad que nadie alegó. La condición «se invoca» no está en el texto de la ley: es la forma de acotar el alcance del requisito, y por eso queda a revisión."
-  },
-  {
-   "clave": "CONTROLES-DE-SALUD-HASTA-LOS-4",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-14-ter",
-   "texto_literal": "e. Hasta los CUATRO (4) años de edad -inclusive-, deberá acreditarse el cumplimiento de los controles sanitarios y del plan de vacunación obligatorio.",
-   "descripcion": "Hasta los cuatro años inclusive se acredita el cumplimiento de los controles sanitarios y del plan de vacunación obligatorio.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "any",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "compare",
-      "field": "edad_del_causante",
-      "cmp": ">",
-      "value": 4,
-      "unit": "anios_cumplidos"
-     },
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "causante_acredita_controles_sanitarios_y_vacunacion"
-     }
-    ]
-   }
-  },
-  {
-   "clave": "ESCOLARIDAD-DESDE-LOS-5",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-14-ter",
-   "texto_literal": "Desde los CINCO (5) años de edad y hasta los DIECIOCHO (18) años, deberá acreditarse además la concurrencia de las niñas, los niños y adolescentes obligatoriamente a establecimientos educativos públicos.",
-   "descripcion": "Desde los cinco y hasta los dieciocho años se acredita además la concurrencia obligatoria a establecimientos educativos públicos.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "any",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "compare",
-      "field": "edad_del_causante",
-      "cmp": "<",
-      "value": 5,
-      "unit": "anios_cumplidos"
-     },
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "causante_acredita_concurrencia_a_escuela_publica"
-     }
-    ]
-   },
-   "requiere_revision": true,
-   "motivo_revision": "El texto vigente dice «establecimientos educativos públicos», y el campo lo refleja tal cual. Si en la práctica la escolaridad en gestión privada también acredita, eso no surge de esta norma sino de la reglamentación, que no está en el corpus. Ampliarlo por cuenta propia sería servir como derecho algo que el texto no dice; restringirlo sin verificar dejaría afuera a quien sí cumple."
-  },
-  {
-   "clave": "RESIDENCIA-EN-EL-PAIS",
-   "categoria": "APLICABILIDAD",
-   "ruta_evidencia": "articulo-14-ter",
-   "texto_literal": "f. Acreditar que el o la titular del beneficio y la niña, el niño, adolescente y/o persona con discapacidad residen en el país.",
-   "descripcion": "Titular y causante residen en el país.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "all",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "titular_reside_en_el_pais"
-     },
-     {
-      "schema_version": "1.0",
-      "op": "is_true",
-      "field": "causante_reside_en_el_pais"
-     }
-    ]
-   }
-  },
-  {
-   "clave": "EXCLUSION-INFORMAL-SOBRE-EL-SMVM",
-   "categoria": "EXCLUSION",
-   "ruta_evidencia": "articulo-3/parrafo-9",
-   "texto_literal": "Quedan excluidos del beneficio previsto en el artículo 1° inciso c) de la presente los trabajadores que se desempeñen en la economía informal, que perciban una remuneración superior al salario mínimo, vital y móvil.",
-   "descripcion": "Queda excluido quien se desempeñe en la economía informal y perciba una remuneración superior al salario mínimo, vital y móvil.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "not",
-    "args": [
-     {
-      "schema_version": "1.0",
-      "op": "all",
-      "args": [
-       {
-        "schema_version": "1.0",
-        "op": "is_true",
-        "field": "titular_se_desempena_en_la_economia_informal"
-       },
-       {
-        "schema_version": "1.0",
-        "op": "compare",
-        "field": "ingreso_mensual_del_titular",
-        "cmp": ">",
-        "parameter": "AR.SMVM",
-        "unit": "ARS"
-       }
-      ]
-     }
-    ]
-   },
-   "parametros": [
+  "poblaciones": [
     {
-     "codigo": "AR.SMVM",
-     "rol": "UMBRAL"
+      "codigo": "AR.NNA-A-CARGO",
+      "nombre": "Niñas, niños y adolescentes a cargo",
+      "definicion": "Niña, niño o adolescente menor de dieciocho años que se encuentra a cargo de la persona titular, o persona con discapacidad sin límite de edad, siempre que no esté empleada, emancipada ni percibiendo alguna de las prestaciones de esta ley.",
+      "rol_persona": "CAUSANTE",
+      "alcance": "Es quien da lugar a la asignación y sobre quien se miden la edad, la escolaridad y los controles de salud, pero no es quien cobra. Confundir causante con titular haría que las condiciones del titular —residencia, identidad, vínculo— se le pidieran a un menor.",
+      "ruta_evidencia": "articulo-14-bis"
+    },
+    {
+      "codigo": "AR.TITULAR-AUH",
+      "nombre": "Persona titular de la asignación",
+      "definicion": "Padre o madre, tutor o tutora, curador o curadora, o pariente por consanguinidad hasta el tercer grado que tiene a su cargo a la niña, niño, adolescente o persona con discapacidad y que percibe la prestación.",
+      "rol_persona": "TITULAR",
+      "alcance": "Una sola persona por causante: el artículo 14 bis dice «a uno solo o una sola» y el artículo 20 lo repite para el caso de que ambos progenitores estén comprendidos en el régimen. La ley no dice cuál de los dos, y este modelo tampoco lo elige.",
+      "ruta_evidencia": "articulo-14-bis"
     }
-   ],
-   "requiere_revision": true,
-   "motivo_revision": "La exclusión pide dos cosas a la vez: informalidad y remuneración sobre el salario mínimo. Quien trabaja en la economía informal no tiene una remuneración registrada contra la cual medir, así que el dato con el que se evalúa es declarado y no verificable contra un recibo. Además el umbral es un parámetro que se actualiza fuera de esta ley: mientras no tenga valor aprobado para el período que se consulta, la regla devuelve desconocido en vez de excluir a alguien con un tope viejo."
-  },
-  {
-   "clave": "UN-SOLO-PERCEPTOR-ENTRE-PROGENITORES",
-   "categoria": "PRIORIDAD",
-   "ruta_evidencia": "articulo-20",
-   "texto_literal": "ARTICULO 20.- Cuando ambos progenitores estén comprendidos en el presente régimen, las prestaciones enumeradas en los artículos 6º y 15 serán percibidas por uno solo de ellos.",
-   "descripcion": "Cuando ambos progenitores están comprendidos en el régimen, la prestación la percibe uno solo de ellos.",
-   "requiere_revision": true,
-   "motivo_revision": "La ley dice que cobra uno solo y no dice cuál. No hay AST porque no hay regla que formalizar: elegir un criterio —la madre, quien tenga mayor antigüedad, quien solicite primero— sería inventar la parte que el legislador no escribió, y esa elección decide quién cobra. Se guarda el texto literal y queda para la revisión."
-  },
-  {
-   "clave": "COMPATIBLE-CON-ASIGNACION-POR-EMBARAZO",
-   "categoria": "COMPATIBILIDAD",
-   "ruta_evidencia": "articulo-14-quater/parrafo-52",
-   "texto_literal": "La percepción de esta asignación no será incompatible con la Asignación Universal por Hijo para Protección Social por cada menor de DIECIOCHO (18) años, o sin límite de edad cuando se trate de un discapacitado, a cargo de la mujer embarazada.",
-   "descripcion": "Percibir la Asignación por Embarazo para Protección Social no es incompatible con percibir la AUH por cada causante a cargo.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "compatible_con_asignacion_por_embarazo"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "La compatibilidad es una afirmación de la ley, no una condición que la persona cumpla o deje de cumplir, y meterla como hecho a evaluar la vuelve una pregunta que no tiene sentido hacerle a nadie. Está acá porque una regla de compatibilidad omitida se lee como incompatibilidad, que es peor; cómo se representa una compatibilidad declarada es la decisión que la revisión tiene que tomar."
-  },
-  {
-   "clave": "DERECHO-A-AYUDA-ESCOLAR-ANUAL",
-   "categoria": "COMPATIBILIDAD",
-   "ruta_evidencia": "articulo-14-sexies",
-   "texto_literal": "Los titulares de la Asignación Universal por Hijo para Protección Social establecida en el artículo 1°, inciso c) de la presente Ley tendrán derecho a la Asignación por Ayuda Escolar Anual prevista en el artículo 6°, inciso d) y definida por el artículo 10 de esta ley.",
-   "descripcion": "Los titulares de la AUH tienen derecho a la Asignación por Ayuda Escolar Anual del artículo 6 inciso d).",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "titular_percibe_auh"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "Es un derecho a otra prestación, no una condición de esta. Formalizarlo como regla de la AUH la deja donde se puede encontrar, pero la Ayuda Escolar Anual merece su propia lectura curada con su propio monto y su propia evidencia. Hasta que exista, esto informa que el derecho está y no lo liquida."
-  },
-  {
-   "clave": "DERECHO-A-NACIMIENTO-Y-ADOPCION",
-   "categoria": "COMPATIBILIDAD",
-   "ruta_evidencia": "articulo-14-septies",
-   "texto_literal": "Las personas titulares comprendidas en el inciso c) del artículo 1º de la presente ley tendrán derecho a la percepción de las asignaciones por nacimiento y adopción establecidas en los incisos f) y g) del artículo 6º también de la presente. Para acceder a dichas prestaciones, las personas titulares deberán acreditar el hecho y/o el acto generador pertinente ante la Administración Nacional de la Seguridad Social (ANSES).",
-   "descripcion": "Los titulares del subsistema no contributivo tienen derecho a las asignaciones por nacimiento y adopción, acreditando el hecho o acto generador ante ANSES.",
-   "ast": {
-    "schema_version": "1.0",
-    "op": "is_true",
-    "field": "titular_percibe_auh"
-   },
-   "requiere_revision": true,
-   "motivo_revision": "Mismo caso que la ayuda escolar: es un derecho a otras dos prestaciones, cada una con su monto y su acreditación. Queda declarado para que no se pierda, no formalizado como si esta lectura pudiera liquidarlas."
-  },
-  {
-   "clave": "GUARDA-TENENCIA-O-TUTELA-ACORDADA",
-   "categoria": "PRIORIDAD",
-   "ruta_evidencia": "articulo-22",
-   "texto_literal": "serán considerados como hijos los menores o personas con discapacidad cuya guarda, tenencia o tutela haya sido acordada al trabajador por autoridad judicial o administrativa competente. En tales supuestos, los respectivos padres no tendrán, por ese hijo, derecho al cobro de las mencionadas asignaciones.",
-   "descripcion": "Cuando la guarda, tenencia o tutela fue acordada por autoridad judicial o administrativa, el causante cuenta como hijo de quien la tiene y los padres pierden por ese hijo el derecho al cobro.",
-   "requiere_revision": true,
-   "motivo_revision": "El artículo 22 nombra las asignaciones por hijo, por hijo con discapacidad y por ayuda escolar anual, y no nombra la AUH, que se incorporó trece años después. Aplicarla por analogía resolvería un conflicto de titularidad —quién cobra, el progenitor o el guardador— que el texto no resolvió para esta prestación. Queda el texto y la pregunta."
-  }
- ],
- "cuantia": {
-  "tipo": "FORMULA",
-  "ruta_evidencia": "articulo-18/inciso-k-97",
-  "formula_version": "ley-24714-art18-k@1",
-  "unidad_beneficiaria": "CAUSANTE",
-  "descripcion": "La mayor suma fijada en los incisos a) o b) del artículo 18, según corresponda a hijo o a hijo con discapacidad. El ochenta por ciento se abona mensualmente por el sistema de pagos de ANSES; el veinte por ciento restante queda reservado y se cobra cuando se acreditan los controles sanitarios y la vacunación hasta los cuatro años inclusive y, en edad escolar, además el cumplimiento del ciclo lectivo. La falta de acreditación hace perder el derecho al cobro de ese veinte por ciento.",
-  "parametros": [
-   {
-    "codigo": "AR.ASIGNACION-HIJO",
-    "rol": "REFERENCIA"
-   },
-   {
-    "codigo": "AR.ASIGNACION-HIJO-DISCAPACIDAD",
-    "rol": "REFERENCIA"
-   }
   ],
-  "requiere_revision": true,
-  "motivo_revision": "El artículo 18 sigue diciendo cien pesos por hijo y cuatrocientos por hijo con discapacidad: son los valores nominales de 2007 y hace años que no son los que se cobran. El artículo 19 faculta al Poder Ejecutivo a fijar la cuantía, y los montos vigentes salen de resoluciones de ANSES que no están en el corpus. Servir el número del artículo 18 como «lo que vas a cobrar» sería decirle a alguien que va a cobrar cien pesos. La cuantía queda declarada como fórmula con sus dos parámetros de referencia y sin valor: mientras esos parámetros no tengan valor aprobado para el período consultado, la respuesta es que no se sabe el monto, no un monto viejo."
- },
- "plazos": [],
- "campos_no_informados": [
-  {
-   "campo": "plazos",
-   "motivo": "La ley no fija plazo para solicitar la AUH ni para acreditar los controles que liberan el veinte por ciento reservado. El artículo 18 inciso k) dice que la falta de acreditación hace perder ese derecho, pero no dice desde cuándo ni hasta cuándo: el período lo fija ANSES por resolución, que no está en el corpus. Poner un plazo acá sería inventar la fecha a partir de la cual alguien pierde plata. Para contraste, el artículo 14 octies sí acota la Asignación por Cuidado de Salud Integral al año calendario, lo que muestra que la omisión en el inciso k) no es una forma de redactar sino una diferencia real."
+  "reglas": [
+    {
+      "clave": "EDAD-MENOR-DE-18-O-DISCAPACIDAD",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-14-bis",
+      "texto_literal": "por cada niña, niño y/o adolescente menor de DIECIOCHO (18) años que se encuentre a su cargo, o sin límite de edad cuando se trate de una persona con discapacidad; en ambos casos",
+      "descripcion": "El causante es menor de dieciocho años, o de cualquier edad si es persona con discapacidad.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "any",
+        "args": [
+          {
+            "schema_version": "1.0",
+            "op": "compare",
+            "field": "edad_del_causante",
+            "cmp": "<",
+            "value": 18,
+            "unit": "anios_cumplidos"
+          },
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "causante_con_discapacidad_certificada"
+          }
+        ]
+      }
+    },
+    {
+      "clave": "VINCULO-DEL-TITULAR",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-14-bis",
+      "texto_literal": "que se abonará a uno solo o una sola de los padres o de las madres, tutor o tutora, curador o curadora o pariente por consanguinidad hasta el tercer grado",
+      "descripcion": "Quien percibe es padre, madre, tutor, tutora, curador, curadora o pariente por consanguinidad hasta el tercer grado.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "in",
+        "field": "vinculo_del_titular_con_el_causante",
+        "values": [
+          "PADRE",
+          "MADRE",
+          "TUTOR",
+          "CURADOR",
+          "PARIENTE_CONSANGUINEO_HASTA_TERCER_GRADO"
+        ]
+      }
+    },
+    {
+      "clave": "CAUSANTE-A-CARGO",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-14-ter",
+      "texto_literal": "c. Acreditar que la persona que percibirá el beneficio tiene a su cargo a la niña, al niño, adolescente y/o persona con discapacidad, en función de las disposiciones del Código Civil y Comercial de la Nación y de conformidad con la documentación que la ADMINISTRACIÓN NACIONAL DE LA SEGURIDAD SOCIAL (ANSES) disponga a estos fines.",
+      "descripcion": "El titular tiene a su cargo al causante, según el Código Civil y Comercial y la documentación que ANSES disponga.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "causante_a_cargo_del_titular"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "«A cargo» remite al Código Civil y Comercial y a documentación que fija ANSES por vía reglamentaria. El campo guarda si el vínculo de cuidado está acreditado, no reconstruye el criterio: decidir por cuenta propia qué convivencia o qué guarda de hecho cuenta como «a cargo» sería resolver un conflicto jurídico con una heurística."
+    },
+    {
+      "clave": "CAUSANTE-NO-EMPLEADO-NI-EMANCIPADO",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-14-bis",
+      "texto_literal": "siempre que no estuviere empleado o empleada, emancipado o emancipada o percibiendo alguna de las prestaciones previstas en la presente Ley.",
+      "descripcion": "El causante no está empleado, ni emancipado, ni percibe otra prestación de esta misma ley. El artículo 14 bis lo dice como salvedad de la propia asignación, no como causal de exclusión aparte.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "not",
+        "args": [
+          {
+            "schema_version": "1.0",
+            "op": "any",
+            "args": [
+              {
+                "schema_version": "1.0",
+                "op": "is_true",
+                "field": "causante_empleado"
+              },
+              {
+                "schema_version": "1.0",
+                "op": "is_true",
+                "field": "causante_emancipado"
+              },
+              {
+                "schema_version": "1.0",
+                "op": "is_true",
+                "field": "causante_percibe_otra_prestacion_de_esta_ley"
+              }
+            ]
+          }
+        ]
+      },
+      "requiere_revision": true,
+      "motivo_revision": "La oración admite dos lecturas: que las tres condiciones se midan sobre el causante, o que «percibiendo alguna de las prestaciones» se refiera al titular. Se leyó sobre el causante porque es el sujeto de la oración y porque el artículo 14 sexies da a los titulares de AUH derecho a otra prestación de esta misma ley, lo que haría contradictoria la otra lectura. Queda dicho porque la diferencia decide accesos.",
+      "casos": [
+        {
+          "nombre": "no está en ninguno de los tres supuestos",
+          "hechos": {
+            "causante_empleado": false,
+            "causante_emancipado": false,
+            "causante_percibe_otra_prestacion_de_esta_ley": false
+          },
+          "espera": "TRUE"
+        },
+        {
+          "nombre": "el causante está empleado",
+          "hechos": {
+            "causante_empleado": true,
+            "causante_emancipado": false,
+            "causante_percibe_otra_prestacion_de_esta_ley": false
+          },
+          "espera": "FALSE"
+        }
+      ],
+      "correccion": "Corrección de polaridad (T-16, D-149): el árbol expresaba la condición de inclusión y la categoría dice EXCLUSION, así que el motor leía «queda excluido» exactamente al revés."
+    },
+    {
+      "clave": "NACIONALIDAD-O-RESIDENCIA-LEGAL",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-14-ter",
+      "texto_literal": "a. Que la niña, el niño, adolescente y/o la persona con discapacidad sea argentino o argentina nativo o nativa, naturalizado o naturalizada o por opción. Cuando la niña, el niño, adolescente y/o la persona con discapacidad y sus progenitores o sus progenitoras o las personas que los o las tengan a cargo sean extranjeros o extranjeras, deberán acreditar tanto la niña, el niño, adolescente y/o la persona con discapacidad como el o la titular que percibirá la Asignación, DOS (2) años de residencia legal en el país.",
+      "descripcion": "El causante es argentino nativo, naturalizado o por opción; si tanto el causante como quien lo tiene a cargo son extranjeros, ambos acreditan dos años de residencia legal.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "any",
+        "args": [
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "causante_argentino"
+          },
+          {
+            "schema_version": "1.0",
+            "op": "all",
+            "args": [
+              {
+                "schema_version": "1.0",
+                "op": "compare",
+                "field": "residencia_legal_del_causante",
+                "cmp": ">=",
+                "value": 2,
+                "unit": "anios_cumplidos"
+              },
+              {
+                "schema_version": "1.0",
+                "op": "compare",
+                "field": "residencia_legal_del_titular",
+                "cmp": ">=",
+                "value": 2,
+                "unit": "anios_cumplidos"
+              }
+            ]
+          }
+        ]
+      },
+      "requiere_revision": true,
+      "motivo_revision": "El texto condiciona los dos años a que el causante «y sus progenitores o sus progenitoras o las personas que los o las tengan a cargo sean extranjeros»: en su letra, la exigencia aparece cuando ambos son extranjeros, y no dice qué pasa cuando el causante es argentino y quien lo tiene a cargo no. Se formalizó la letra —causante argentino alcanza— y no la lectura más restrictiva, porque exigir de más deja gente afuera de un derecho. La diferencia hay que resolverla con criterio jurídico, no con la que suene más prolija."
+    },
+    {
+      "clave": "IDENTIDAD-CON-DNI",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-14-ter",
+      "texto_literal": "b. Acreditar la identidad del o de la titular del beneficio y de la niña, del niño, adolescente y/o persona con discapacidad, mediante Documento Nacional de Identidad.",
+      "descripcion": "Titular y causante acreditan identidad con Documento Nacional de Identidad.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "all",
+        "args": [
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "titular_acredita_identidad_con_dni"
+          },
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "causante_acredita_identidad_con_dni"
+          }
+        ]
+      }
+    },
+    {
+      "clave": "DISCAPACIDAD-CERTIFICADA",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-14-ter",
+      "texto_literal": "d. La acreditación de la condición de discapacidad será determinada en los términos del artículo 2º de la Ley Nº 22.431, certificada por autoridad competente.",
+      "descripcion": "Cuando se invoca discapacidad, se acredita en los términos del artículo 2 de la Ley 22.431 y con certificación de autoridad competente.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "any",
+        "args": [
+          {
+            "schema_version": "1.0",
+            "op": "not",
+            "args": [
+              {
+                "schema_version": "1.0",
+                "op": "is_true",
+                "field": "se_invoca_discapacidad_del_causante"
+              }
+            ]
+          },
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "causante_con_discapacidad_certificada"
+          }
+        ]
+      },
+      "requiere_revision": true,
+      "motivo_revision": "El requisito solo muerde cuando se invoca la discapacidad —para levantar el límite de edad o para acceder al monto del inciso b) del artículo 18—. Formalizarlo como condición general haría que un trámite sin discapacidad invocada fallara por no acreditar una discapacidad que nadie alegó. La condición «se invoca» no está en el texto de la ley: es la forma de acotar el alcance del requisito, y por eso queda a revisión."
+    },
+    {
+      "clave": "CONTROLES-DE-SALUD-HASTA-LOS-4",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-14-ter",
+      "texto_literal": "e. Hasta los CUATRO (4) años de edad -inclusive-, deberá acreditarse el cumplimiento de los controles sanitarios y del plan de vacunación obligatorio.",
+      "descripcion": "Hasta los cuatro años inclusive se acredita el cumplimiento de los controles sanitarios y del plan de vacunación obligatorio.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "any",
+        "args": [
+          {
+            "schema_version": "1.0",
+            "op": "compare",
+            "field": "edad_del_causante",
+            "cmp": ">",
+            "value": 4,
+            "unit": "anios_cumplidos"
+          },
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "causante_acredita_controles_sanitarios_y_vacunacion"
+          }
+        ]
+      }
+    },
+    {
+      "clave": "ESCOLARIDAD-DESDE-LOS-5",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-14-ter",
+      "texto_literal": "Desde los CINCO (5) años de edad y hasta los DIECIOCHO (18) años, deberá acreditarse además la concurrencia de las niñas, los niños y adolescentes obligatoriamente a establecimientos educativos públicos.",
+      "descripcion": "Desde los cinco y hasta los dieciocho años se acredita además la concurrencia obligatoria a establecimientos educativos públicos.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "any",
+        "args": [
+          {
+            "schema_version": "1.0",
+            "op": "compare",
+            "field": "edad_del_causante",
+            "cmp": "<",
+            "value": 5,
+            "unit": "anios_cumplidos"
+          },
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "causante_acredita_concurrencia_a_escuela_publica"
+          }
+        ]
+      },
+      "requiere_revision": true,
+      "motivo_revision": "El texto vigente dice «establecimientos educativos públicos», y el campo lo refleja tal cual. Si en la práctica la escolaridad en gestión privada también acredita, eso no surge de esta norma sino de la reglamentación, que no está en el corpus. Ampliarlo por cuenta propia sería servir como derecho algo que el texto no dice; restringirlo sin verificar dejaría afuera a quien sí cumple."
+    },
+    {
+      "clave": "RESIDENCIA-EN-EL-PAIS",
+      "categoria": "APLICABILIDAD",
+      "ruta_evidencia": "articulo-14-ter",
+      "texto_literal": "f. Acreditar que el o la titular del beneficio y la niña, el niño, adolescente y/o persona con discapacidad residen en el país.",
+      "descripcion": "Titular y causante residen en el país.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "all",
+        "args": [
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "titular_reside_en_el_pais"
+          },
+          {
+            "schema_version": "1.0",
+            "op": "is_true",
+            "field": "causante_reside_en_el_pais"
+          }
+        ]
+      }
+    },
+    {
+      "clave": "EXCLUSION-INFORMAL-SOBRE-EL-SMVM",
+      "categoria": "EXCLUSION",
+      "ruta_evidencia": "articulo-3/parrafo-9",
+      "texto_literal": "Quedan excluidos del beneficio previsto en el artículo 1° inciso c) de la presente los trabajadores que se desempeñen en la economía informal, que perciban una remuneración superior al salario mínimo, vital y móvil.",
+      "descripcion": "Queda excluido quien se desempeñe en la economía informal y perciba una remuneración superior al salario mínimo, vital y móvil.",
+      "ast": {
+        "op": "all",
+        "args": [
+          {
+            "op": "is_true",
+            "field": "titular_se_desempena_en_la_economia_informal",
+            "schema_version": "1.0"
+          },
+          {
+            "op": "compare",
+            "cmp": ">",
+            "unit": "ARS",
+            "field": "ingreso_mensual_del_titular",
+            "parameter": "AR.SMVM",
+            "schema_version": "1.0"
+          }
+        ],
+        "schema_version": "1.0"
+      },
+      "parametros": [
+        {
+          "codigo": "AR.SMVM",
+          "rol": "UMBRAL"
+        }
+      ],
+      "requiere_revision": true,
+      "motivo_revision": "La exclusión pide dos cosas a la vez: informalidad y remuneración sobre el salario mínimo. Quien trabaja en la economía informal no tiene una remuneración registrada contra la cual medir, así que el dato con el que se evalúa es declarado y no verificable contra un recibo. Además el umbral es un parámetro que se actualiza fuera de esta ley: mientras no tenga valor aprobado para el período que se consulta, la regla devuelve desconocido en vez de excluir a alguien con un tope viejo.",
+      "casos": [
+        {
+          "nombre": "informal y cobra más que el salario mínimo",
+          "hechos": {
+            "titular_se_desempena_en_la_economia_informal": true,
+            "ingreso_mensual_del_titular": 900000
+          },
+          "parametros": {
+            "AR.SMVM": 300000
+          },
+          "espera": "TRUE"
+        },
+        {
+          "nombre": "informal y cobra menos que el salario mínimo",
+          "hechos": {
+            "titular_se_desempena_en_la_economia_informal": true,
+            "ingreso_mensual_del_titular": 100
+          },
+          "parametros": {
+            "AR.SMVM": 300000
+          },
+          "espera": "FALSE"
+        },
+        {
+          "nombre": "no se desempeña en la economía informal",
+          "hechos": {
+            "titular_se_desempena_en_la_economia_informal": false,
+            "ingreso_mensual_del_titular": 900000
+          },
+          "parametros": {
+            "AR.SMVM": 300000
+          },
+          "espera": "FALSE"
+        }
+      ],
+      "correccion": "Corrección de polaridad (T-16, D-149): el árbol expresaba la condición de inclusión y la categoría dice EXCLUSION, así que el motor leía «queda excluido» exactamente al revés."
+    },
+    {
+      "clave": "UN-SOLO-PERCEPTOR-ENTRE-PROGENITORES",
+      "categoria": "PRIORIDAD",
+      "ruta_evidencia": "articulo-20",
+      "texto_literal": "ARTICULO 20.- Cuando ambos progenitores estén comprendidos en el presente régimen, las prestaciones enumeradas en los artículos 6º y 15 serán percibidas por uno solo de ellos.",
+      "descripcion": "Cuando ambos progenitores están comprendidos en el régimen, la prestación la percibe uno solo de ellos.",
+      "requiere_revision": true,
+      "motivo_revision": "La ley dice que cobra uno solo y no dice cuál. No hay AST porque no hay regla que formalizar: elegir un criterio —la madre, quien tenga mayor antigüedad, quien solicite primero— sería inventar la parte que el legislador no escribió, y esa elección decide quién cobra. Se guarda el texto literal y queda para la revisión."
+    },
+    {
+      "clave": "COMPATIBLE-CON-ASIGNACION-POR-EMBARAZO",
+      "categoria": "COMPATIBILIDAD",
+      "ruta_evidencia": "articulo-14-quater/parrafo-52",
+      "texto_literal": "La percepción de esta asignación no será incompatible con la Asignación Universal por Hijo para Protección Social por cada menor de DIECIOCHO (18) años, o sin límite de edad cuando se trate de un discapacitado, a cargo de la mujer embarazada.",
+      "descripcion": "Percibir la Asignación por Embarazo para Protección Social no es incompatible con percibir la AUH por cada causante a cargo.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "compatible_con_asignacion_por_embarazo"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "La compatibilidad es una afirmación de la ley, no una condición que la persona cumpla o deje de cumplir, y meterla como hecho a evaluar la vuelve una pregunta que no tiene sentido hacerle a nadie. Está acá porque una regla de compatibilidad omitida se lee como incompatibilidad, que es peor; cómo se representa una compatibilidad declarada es la decisión que la revisión tiene que tomar."
+    },
+    {
+      "clave": "DERECHO-A-AYUDA-ESCOLAR-ANUAL",
+      "categoria": "COMPATIBILIDAD",
+      "ruta_evidencia": "articulo-14-sexies",
+      "texto_literal": "Los titulares de la Asignación Universal por Hijo para Protección Social establecida en el artículo 1°, inciso c) de la presente Ley tendrán derecho a la Asignación por Ayuda Escolar Anual prevista en el artículo 6°, inciso d) y definida por el artículo 10 de esta ley.",
+      "descripcion": "Los titulares de la AUH tienen derecho a la Asignación por Ayuda Escolar Anual del artículo 6 inciso d).",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "titular_percibe_auh"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "Es un derecho a otra prestación, no una condición de esta. Formalizarlo como regla de la AUH la deja donde se puede encontrar, pero la Ayuda Escolar Anual merece su propia lectura curada con su propio monto y su propia evidencia. Hasta que exista, esto informa que el derecho está y no lo liquida."
+    },
+    {
+      "clave": "DERECHO-A-NACIMIENTO-Y-ADOPCION",
+      "categoria": "COMPATIBILIDAD",
+      "ruta_evidencia": "articulo-14-septies",
+      "texto_literal": "Las personas titulares comprendidas en el inciso c) del artículo 1º de la presente ley tendrán derecho a la percepción de las asignaciones por nacimiento y adopción establecidas en los incisos f) y g) del artículo 6º también de la presente. Para acceder a dichas prestaciones, las personas titulares deberán acreditar el hecho y/o el acto generador pertinente ante la Administración Nacional de la Seguridad Social (ANSES).",
+      "descripcion": "Los titulares del subsistema no contributivo tienen derecho a las asignaciones por nacimiento y adopción, acreditando el hecho o acto generador ante ANSES.",
+      "ast": {
+        "schema_version": "1.0",
+        "op": "is_true",
+        "field": "titular_percibe_auh"
+      },
+      "requiere_revision": true,
+      "motivo_revision": "Mismo caso que la ayuda escolar: es un derecho a otras dos prestaciones, cada una con su monto y su acreditación. Queda declarado para que no se pierda, no formalizado como si esta lectura pudiera liquidarlas."
+    },
+    {
+      "clave": "GUARDA-TENENCIA-O-TUTELA-ACORDADA",
+      "categoria": "PRIORIDAD",
+      "ruta_evidencia": "articulo-22",
+      "texto_literal": "serán considerados como hijos los menores o personas con discapacidad cuya guarda, tenencia o tutela haya sido acordada al trabajador por autoridad judicial o administrativa competente. En tales supuestos, los respectivos padres no tendrán, por ese hijo, derecho al cobro de las mencionadas asignaciones.",
+      "descripcion": "Cuando la guarda, tenencia o tutela fue acordada por autoridad judicial o administrativa, el causante cuenta como hijo de quien la tiene y los padres pierden por ese hijo el derecho al cobro.",
+      "requiere_revision": true,
+      "motivo_revision": "El artículo 22 nombra las asignaciones por hijo, por hijo con discapacidad y por ayuda escolar anual, y no nombra la AUH, que se incorporó trece años después. Aplicarla por analogía resolvería un conflicto de titularidad —quién cobra, el progenitor o el guardador— que el texto no resolvió para esta prestación. Queda el texto y la pregunta."
+    }
+  ],
+  "cuantia": {
+    "tipo": "FORMULA",
+    "ruta_evidencia": "articulo-18/inciso-k-97",
+    "formula_version": "ley-24714-art18-k@1",
+    "unidad_beneficiaria": "CAUSANTE",
+    "descripcion": "La mayor suma fijada en los incisos a) o b) del artículo 18, según corresponda a hijo o a hijo con discapacidad. El ochenta por ciento se abona mensualmente por el sistema de pagos de ANSES; el veinte por ciento restante queda reservado y se cobra cuando se acreditan los controles sanitarios y la vacunación hasta los cuatro años inclusive y, en edad escolar, además el cumplimiento del ciclo lectivo. La falta de acreditación hace perder el derecho al cobro de ese veinte por ciento.",
+    "parametros": [
+      {
+        "codigo": "AR.ASIGNACION-HIJO",
+        "rol": "REFERENCIA"
+      },
+      {
+        "codigo": "AR.ASIGNACION-HIJO-DISCAPACIDAD",
+        "rol": "REFERENCIA"
+      }
+    ],
+    "requiere_revision": true,
+    "motivo_revision": "El artículo 18 sigue diciendo cien pesos por hijo y cuatrocientos por hijo con discapacidad: son los valores nominales de 2007 y hace años que no son los que se cobran. El artículo 19 faculta al Poder Ejecutivo a fijar la cuantía, y los montos vigentes salen de resoluciones de ANSES que no están en el corpus. Servir el número del artículo 18 como «lo que vas a cobrar» sería decirle a alguien que va a cobrar cien pesos. La cuantía queda declarada como fórmula con sus dos parámetros de referencia y sin valor: mientras esos parámetros no tengan valor aprobado para el período consultado, la respuesta es que no se sabe el monto, no un monto viejo."
   },
-  {
-   "campo": "criterios_revocacion",
-   "motivo": "Lo único que la ley declara perder por falta de acreditación es el veinte por ciento reservado, no la prestación. No dice qué pasa con la asignación cuando los controles no se acreditan nunca, ni si lo perdido se puede recuperar acreditando después, ni qué ocurre ante una declaración falsa —eso el artículo 14 quinquies inciso d) lo dice para la Asignación por Embarazo y no para esta—. Cese, suspensión y revocación tienen efectos distintos sobre lo ya percibido y el texto no elige entre ellos."
-  }
- ],
- "dependencias": [
-  {
-   "referencia": "Resoluciones de ANSES que fijan montos y topes de la Ley 24.714",
-   "motivo": "El artículo 19 delega la cuantía en el Poder Ejecutivo y las notas del artículo 26 listan una decena de resoluciones que la fueron actualizando. Sin la vigente en el corpus, la fórmula del inciso k) queda declarada y sin monto: es la diferencia entre no saber cuánto se cobra y afirmar un importe que no se cobra."
-  },
-  {
-   "referencia": "Ley 22.431, artículo 2",
-   "motivo": "El artículo 14 ter inciso d) remite a esa norma para la condición de discapacidad, que levanta el límite de edad y habilita el monto mayor. Sin ella en el corpus, el criterio queda como un hecho acreditado por certificación y no como una definición citable."
-  },
-  {
-   "referencia": "Código Civil y Comercial de la Nación",
-   "motivo": "El artículo 14 ter inciso c) remite a sus disposiciones para determinar qué significa tener a cargo. Sin esa remisión resuelta, la regla evalúa un hecho declarado y no el criterio legal que lo define."
-  },
-  {
-   "referencia": "Salario mínimo, vital y móvil",
-   "motivo": "El último párrafo del artículo 3 lo usa como umbral de la exclusión por economía informal. El parámetro existe en el corpus; mientras no tenga valor aprobado para el período consultado, la regla que lo compara devuelve desconocido en vez de excluir a alguien."
-  }
- ],
- "vacios_declarados": [
-  {
-   "dato": "canales",
-   "motivo": "La ley nombra a ANSES como quien paga y quien fija la documentación, pero no dice dónde ni cómo se solicita la prestación. El canal concreto —oficina, aplicación, atención telefónica— no está en esta norma, y ponerlo desde el conocimiento general sería afirmar sin evidencia algo que le cambia el viaje a una persona."
-  }
- ]
+  "plazos": [],
+  "campos_no_informados": [
+    {
+      "campo": "plazos",
+      "motivo": "La ley no fija plazo para solicitar la AUH ni para acreditar los controles que liberan el veinte por ciento reservado. El artículo 18 inciso k) dice que la falta de acreditación hace perder ese derecho, pero no dice desde cuándo ni hasta cuándo: el período lo fija ANSES por resolución, que no está en el corpus. Poner un plazo acá sería inventar la fecha a partir de la cual alguien pierde plata. Para contraste, el artículo 14 octies sí acota la Asignación por Cuidado de Salud Integral al año calendario, lo que muestra que la omisión en el inciso k) no es una forma de redactar sino una diferencia real."
+    },
+    {
+      "campo": "criterios_revocacion",
+      "motivo": "Lo único que la ley declara perder por falta de acreditación es el veinte por ciento reservado, no la prestación. No dice qué pasa con la asignación cuando los controles no se acreditan nunca, ni si lo perdido se puede recuperar acreditando después, ni qué ocurre ante una declaración falsa —eso el artículo 14 quinquies inciso d) lo dice para la Asignación por Embarazo y no para esta—. Cese, suspensión y revocación tienen efectos distintos sobre lo ya percibido y el texto no elige entre ellos."
+    }
+  ],
+  "dependencias": [
+    {
+      "referencia": "Resoluciones de ANSES que fijan montos y topes de la Ley 24.714",
+      "motivo": "El artículo 19 delega la cuantía en el Poder Ejecutivo y las notas del artículo 26 listan una decena de resoluciones que la fueron actualizando. Sin la vigente en el corpus, la fórmula del inciso k) queda declarada y sin monto: es la diferencia entre no saber cuánto se cobra y afirmar un importe que no se cobra."
+    },
+    {
+      "referencia": "Ley 22.431, artículo 2",
+      "motivo": "El artículo 14 ter inciso d) remite a esa norma para la condición de discapacidad, que levanta el límite de edad y habilita el monto mayor. Sin ella en el corpus, el criterio queda como un hecho acreditado por certificación y no como una definición citable."
+    },
+    {
+      "referencia": "Código Civil y Comercial de la Nación",
+      "motivo": "El artículo 14 ter inciso c) remite a sus disposiciones para determinar qué significa tener a cargo. Sin esa remisión resuelta, la regla evalúa un hecho declarado y no el criterio legal que lo define."
+    },
+    {
+      "referencia": "Salario mínimo, vital y móvil",
+      "motivo": "El último párrafo del artículo 3 lo usa como umbral de la exclusión por economía informal. El parámetro existe en el corpus; mientras no tenga valor aprobado para el período consultado, la regla que lo compara devuelve desconocido en vez de excluir a alguien."
+    }
+  ],
+  "vacios_declarados": [
+    {
+      "dato": "canales",
+      "motivo": "La ley nombra a ANSES como quien paga y quien fija la documentación, pero no dice dónde ni cómo se solicita la prestación. El canal concreto —oficina, aplicación, atención telefónica— no está en esta norma, y ponerlo desde el conocimiento general sería afirmar sin evidencia algo que le cambia el viaje a una persona."
+    }
+  ]
 }

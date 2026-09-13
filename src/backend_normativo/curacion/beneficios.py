@@ -26,6 +26,7 @@ import datetime as dt
 import hashlib
 import json
 import pathlib
+import re
 import uuid
 from dataclasses import dataclass, field
 
@@ -42,6 +43,7 @@ from backend_normativo.db.vocabularios import (
 )
 from backend_normativo.plazos.calendarios import derivar_jurisdiccional
 from backend_normativo.reglas.ast import ErrorDeContrato, validar_ast
+from backend_normativo.reglas.casos import CasoInvalido, exigir
 
 RUTA_CURADURIA = pathlib.Path("docs/curaduria")
 
@@ -166,6 +168,41 @@ class CuradorDeBeneficios:
             )
         return fila["doc_version_id"], fila["registro_version_id"]
 
+    @staticmethod
+    def _resolver_ruta(unidades: dict[str, dict], ruta: str) -> dict | None:
+        """La ruta que la lectura cita, aunque la segmentación la haya renumerado.
+
+        El último tramo de una ruta lleva la posición de la unidad en el
+        documento: el inciso c) del artículo 1 de la Ley 24.714 es
+        `articulo-1/inciso-c-4` en una captura de 172 unidades y
+        `articulo-1/inciso-c-6` en otra de 201. Agregar una unidad corre el
+        número de todas las siguientes, así que **una recaptura invalida todas
+        las citas** de todas las lecturas curadas, sin que el texto haya
+        cambiado una coma. Tres lecturas ya habían dejado de cargar por esto y
+        el comando lo informaba como un aviso.
+
+        Primero se busca la ruta exacta, que es lo que corresponde cuando la
+        captura no se movió. Si no está, se busca por el tramo estable —el
+        inciso c) del artículo 1, sin el ordinal— y **sólo se acepta si hay una
+        sola unidad que corresponda**. Un `parrafo` suelto del artículo 18, del
+        que hay veinte, no se resuelve por parecido: ahí el ordinal es lo único
+        que distingue y la ambigüedad se informa en vez de adivinarse.
+        """
+        exacta = unidades.get(ruta)
+        if exacta is not None:
+            return exacta
+        tramos = ruta.split("/")
+        estable = re.sub(r"-\d+$", "", tramos[-1])
+        if estable == tramos[-1]:
+            return None  # No terminaba en ordinal: no hay nada que aflojar.
+        prefijo = "/".join([*tramos[:-1], estable])
+        iguales = [
+            u
+            for r, u in unidades.items()
+            if r == prefijo or re.fullmatch(re.escape(prefijo) + r"-\d+", r)
+        ]
+        return iguales[0] if len(iguales) == 1 else None
+
     def _unidades(self, doc_version_id: uuid.UUID) -> dict[str, dict]:
         return {
             fila["ruta"]: dict(fila)
@@ -192,7 +229,7 @@ class CuradorDeBeneficios:
         cita resume, elide con puntos suspensivos o corrige una errata de la
         fuente, deja de ser una cita del texto capturado y falla acá.
         """
-        unidad = unidades.get(ruta)
+        unidad = CuradorDeBeneficios._resolver_ruta(unidades, ruta)
         if unidad is None:
             return  # `_evidencia` da un error mejor para una ruta que no existe.
         buscado = " ".join(literal.split())
@@ -221,11 +258,12 @@ class CuradorDeBeneficios:
         ruta: str,
         literal: str | None = None,
     ) -> uuid.UUID:
-        unidad = unidades.get(ruta)
+        unidad = self._resolver_ruta(unidades, ruta)
         if unidad is None:
             raise LecturaInvalida(
                 f"La lectura cita la unidad {ruta!r} y esa ruta no existe en el texto "
-                f"capturado. Rutas disponibles de primer nivel: "
+                f"capturado, ni hay una sola que le corresponda sin el ordinal. Rutas "
+                f"disponibles de primer nivel: "
                 f"{sorted(r for r in unidades if '/' not in r)[:12]}"
             )
         # Una unidad puede tener más de una evidencia: la curación de
@@ -412,13 +450,27 @@ class CuradorDeBeneficios:
                 raise LecturaInvalida(
                     f"El AST de la regla {datos['clave']!r} no cumple el contrato: {exc}"
                 ) from exc
+        # Que el árbol cumpla el contrato no dice nada sobre si dice lo que la
+        # norma dice. Los casos sí, y por eso se corren antes de escribir nada.
+        try:
+            exigir(datos["clave"], datos["categoria"], arbol, datos.get("casos"))
+        except CasoInvalido as exc:
+            raise LecturaInvalida(str(exc)) from exc
 
-        ya = self.conexion.execute(
-            text("SELECT id FROM reglas WHERE beneficio_version_id = :bv AND texto_literal = :t"),
-            {"bv": version_id, "t": datos["texto_literal"]},
-        ).scalar_one_or_none()
+        ya = (
+            self.conexion.execute(
+                text(
+                    "SELECT id, categoria, ast, descripcion, estado_revision FROM reglas "
+                    " WHERE beneficio_version_id = :bv AND texto_literal = :t"
+                ),
+                {"bv": version_id, "t": datos["texto_literal"]},
+            )
+            .mappings()
+            .one_or_none()
+        )
         if ya is not None:
-            return ya, sin_formalizar
+            self._actualizar_si_la_lectura_cambio(ya, datos, arbol)
+            return ya["id"], sin_formalizar
 
         self._verificar_cita(
             unidades, datos["ruta_evidencia"], datos["texto_literal"], f"regla {datos['clave']!r}"
@@ -465,6 +517,62 @@ class CuradorDeBeneficios:
                 },
             )
         return regla_id, sin_formalizar
+
+    def _actualizar_si_la_lectura_cambio(self, ya, datos: dict, arbol: dict | None) -> None:
+        """Corregir la lectura tiene que corregir la regla, y no lo hacía.
+
+        Las reglas se reconocen por su texto literal. Mientras el texto no
+        cambie, el cargador devolvía la fila que ya estaba y descartaba en
+        silencio todo lo demás: la categoría, el árbol y la descripción. Es
+        decir que un error de interpretación, una vez cargado, era permanente
+        —corregir el JSON no hacía nada— y así fue como doce reglas de exclusión
+        con la polaridad invertida sobrevivieron a varias corridas de curación.
+
+        Cambiar lo que una regla afirma la devuelve a CANDIDATE y a pendiente de
+        revisión, aunque estuviera aprobada. No es un castigo: lo que alguien
+        aprobó fue la regla anterior, y seguir sirviendo la nueva con la firma
+        de la vieja sería peor que el error que se está corrigiendo.
+        """
+        nuevo = {
+            "categoria": datos["categoria"],
+            "ast": arbol,
+            "descripcion": datos.get("descripcion"),
+        }
+        actual = {"categoria": ya["categoria"], "ast": ya["ast"], "descripcion": ya["descripcion"]}
+        if nuevo == actual:
+            return
+        cambiados = [c for c in nuevo if nuevo[c] != actual[c]]
+        self.conexion.execute(
+            text(
+                "UPDATE reglas SET categoria = :cat, ast = CAST(:ast AS jsonb), "
+                "       ast_schema_version = :ver, descripcion = :desc, "
+                "       requiere_revision = true, estado_revision = :estado "
+                " WHERE id = :id"
+            ),
+            {
+                "cat": nuevo["categoria"],
+                "ast": json.dumps(arbol, ensure_ascii=False) if arbol else None,
+                "ver": arbol.get("schema_version") if arbol else None,
+                "desc": nuevo["descripcion"],
+                "estado": EstadoRevision.CANDIDATE.value,
+                "id": ya["id"],
+            },
+        )
+        self.conexion.execute(
+            text(
+                "INSERT INTO auditoria_eventos (actor, accion, objeto, objeto_id, motivo) "
+                "VALUES (:a, 'CORREGIR_REGLA', 'regla', CAST(:o AS text), :m)"
+            ),
+            {
+                "a": "curacion_juridica:agente (sin firma jurídica designada, D-130)",
+                "o": str(ya["id"]),
+                "m": (
+                    f"La lectura curada cambió {', '.join(sorted(cambiados))}. "
+                    f"Vuelve a CANDIDATE desde {ya['estado_revision']}: lo que se había "
+                    "revisado era la regla anterior."
+                ),
+            },
+        )
 
     def _retirar_reglas_que_la_lectura_ya_no_tiene(
         self,
