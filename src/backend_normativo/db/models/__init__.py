@@ -1,6 +1,6 @@
 """Modelo relacional del backend normativo.
 
-Importar este paquete registra las 53 tablas en `Base.metadata`. El orden de
+Importar este paquete registra las 61 tablas en `Base.metadata`. El orden de
 importación no expresa dependencias: las claves foráneas se declaran por nombre
 de tabla y SQLAlchemy resuelve el grafo al crear el esquema.
 """
@@ -53,6 +53,11 @@ from backend_normativo.db.models.normas import (
     RegistroVersion,
     RelacionNormativa,
 )
+from backend_normativo.db.models.operacion import (
+    Arrendamiento,
+    CredencialRevocada,
+    SesionConversacion,
+)
 from backend_normativo.db.models.operativo import (
     BarrioRenabap,
     Canal,
@@ -67,12 +72,17 @@ from backend_normativo.db.models.publicacion import (
     AuditoriaEvento,
     Chunk,
     ConsultaAuditada,
+    Devolucion,
     EventoOutbox,
+    FragmentoVector,
+    IndiceSemantico,
     Release,
+    ReleaseVersion,
 )
 
 __all__ = [
     "Afirmacion",
+    "Arrendamiento",
     "AuditoriaEvento",
     "BarrioRenabap",
     "Base",
@@ -90,20 +100,24 @@ __all__ = [
     "ConsultaAuditada",
     "ControlCalidad",
     "CorridaIngesta",
+    "CredencialRevocada",
     "CuantiaParametro",
     "Derivacion",
     "DerivacionInsumo",
+    "Devolucion",
     "Documento",
     "DocumentoVersion",
     "EquivalenciaUnidad",
     "EvaluacionCompletitud",
     "EventoOutbox",
     "Evidencia",
+    "FragmentoVector",
     "Fuente",
     "FuenteCandidata",
     "FuenteConfigVersion",
     "FuenteUrl",
     "IncidenciaRevision",
+    "IndiceSemantico",
     "Jurisdiccion",
     "Norma",
     "NormaIdentificador",
@@ -122,6 +136,8 @@ __all__ = [
     "ReglaParametro",
     "RelacionNormativa",
     "Release",
+    "ReleaseVersion",
+    "SesionConversacion",
     "Tramite",
     "TramitePaso",
     "TramiteVersion",

@@ -499,9 +499,9 @@ def responder_consulta(
         "cobertura": cobertura_del_corte(contexto.conexion, contexto.release_id),
         "sesion_vencida": sesion_vencida,
         "orientacion": (
-            _orientacion(
-                turno, sesion_actual, contexto.conexion, contexto.release_id
-            ).model_dump(mode="json")
+            _orientacion(turno, sesion_actual, contexto.conexion, contexto.release_id).model_dump(
+                mode="json"
+            )
             if sesion_actual
             else None
         ),

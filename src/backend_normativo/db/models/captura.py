@@ -249,7 +249,16 @@ class UnidadDocumental(Base):
     fin: Mapped[int | None] = mapped_column(Integer)
     pagina_desde: Mapped[int | None] = mapped_column(Integer)
     pagina_hasta: Mapped[int | None] = mapped_column(Integer)
-    rol_contenido: Mapped[str] = mapped_column(String(16), nullable=False)
+    rol_contenido: Mapped[str] = mapped_column(
+        String(16),
+        nullable=False,
+        comment=(
+            "Qué es esta unidad dentro de su documento. INFORMATIVO es lo que un "
+            "organismo publica sobre un derecho —sedes, canales, cronogramas—: se cita "
+            "como dicho del organismo y nunca entra a un corte como texto de la norma, "
+            "porque el publicador filtra por DISPOSITIVO."
+        ),
+    )
 
     __table_args__ = (
         check_vocabulario("tipo", voc.TipoUnidad),

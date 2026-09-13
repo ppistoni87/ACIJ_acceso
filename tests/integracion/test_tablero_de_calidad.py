@@ -60,12 +60,13 @@ def test_el_numero_y_las_filas_salen_de_la_misma_consulta(conexion: Connection) 
         assert len(medicion.filas) == medicion.cuantos, indicador.clave
 
 
-def test_el_limite_recorta_lo_mostrado_y_no_lo_contado(conexion: Connection) -> None:
+def test_el_limite_recorta_lo_mostrado_y_no_lo_contado(
+    conexion: Connection, regla_candidata: str
+) -> None:
     """Un tablero que dijera «2» porque mostró dos mediría su propia paginación."""
     indicador = tablero.POR_CLAVE["reglas_sin_firmar"]
     completo = tablero.medir(conexion, indicador)
-    if completo.cuantos < 2:
-        pytest.skip("El corpus de prueba no tiene suficientes reglas candidatas.")
+    assert completo.cuantos >= 2, "la fixture deja dos reglas candidatas sin firmar"
     recortado = tablero.medir(conexion, indicador, limite=1)
     assert recortado.cuantos == completo.cuantos
     assert len(recortado.filas) == 1

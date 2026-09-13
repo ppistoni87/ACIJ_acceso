@@ -85,14 +85,13 @@ def test_acepta_json_ademas_de_csv() -> None:
 
 
 def test_la_decision_transcripta_queda_con_el_actor_de_quien_reviso(
-    conexion: Connection, corpus
+    conexion: Connection, corpus, regla_candidata: str
 ) -> None:
     """Lo que se registra es la firma de la persona, no la del proceso."""
     regla_id = conexion.execute(
         text("SELECT id FROM reglas WHERE estado_revision = 'CANDIDATE' LIMIT 1")
     ).scalar_one_or_none()
-    if regla_id is None:
-        pytest.skip("El corpus de prueba no trae reglas candidatas.")
+    assert regla_id is not None, "la fixture deja reglas candidatas"
 
     filas = transcripcion.leer(
         _csv([(str(regla_id), "APROBAR", "Coincide con el artículo citado.")])
@@ -103,7 +102,8 @@ def test_la_decision_transcripta_queda_con_el_actor_de_quien_reviso(
     actor, motivo = conexion.execute(
         text(
             "SELECT actor, motivo FROM auditoria_eventos "
-            " WHERE objeto_id = :r AND accion = 'APROBAR_REGLA' ORDER BY ocurrido_en DESC LIMIT 1"
+            " WHERE objeto_id = CAST(:r AS text) AND accion = 'APROBAR_REGLA' "
+            " ORDER BY ocurrido_en DESC LIMIT 1"
         ),
         {"r": regla_id},
     ).one()

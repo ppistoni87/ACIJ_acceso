@@ -8,6 +8,7 @@ las ejecutaría.
 from __future__ import annotations
 
 import contextlib
+import hashlib as _hashlib
 import os
 import uuid
 from collections.abc import Iterator
@@ -353,15 +354,15 @@ def corpus_publicado(conexion: Connection, corpus):
 
 
 @pytest.fixture
-def regla_candidata(conexion: Connection, corpus) -> str:
-    """Una regla candidata con su beneficio, su evidencia y su dependencia.
+def beneficio_candidato(conexion: Connection, corpus) -> str:
+    """Una versión candidata con su fila de subtipo, lista para revisar.
 
-    El corpus mínimo no trae reglas: las de las otras pruebas entran por las
-    lecturas curadas, que son otro camino. Acá hace falta una sola, con lo que
-    el expediente tiene que mostrar.
+    El corpus mínimo trae normas y no beneficios, así que las pruebas del
+    circuito de aprobación se salteaban por falta de material. Un salteo cuenta
+    como éxito: seis capacidades del backoffice —aprobar en bloque, comparar
+    versiones, el tablero y la transcripción de decisiones— no se estaban
+    probando y nadie lo había decidido.
     """
-    import uuid as _uuid
-
     beneficio = conexion.execute(
         text(
             "INSERT INTO beneficios (codigo, nombre, linea, familia) "
@@ -386,6 +387,55 @@ def regla_candidata(conexion: Connection, corpus) -> str:
         ),
         {"rv": version, "b": beneficio},
     )
+    return str(version)
+
+
+@pytest.fixture
+def documento_con_dos_versiones(conexion: Connection, corpus) -> str:
+    """El mismo documento capturado dos veces, con el texto cambiado.
+
+    Es lo que el backoffice compara: no dos documentos distintos sino dos
+    versiones del mismo, que es donde se ve qué cambió una reforma.
+    """
+    anterior = conexion.execute(
+        text(
+            "SELECT id, documento_id, captura_id, version, texto_extraido "
+            "  FROM documento_versiones ORDER BY version DESC LIMIT 1"
+        )
+    ).one()
+    texto = (anterior.texto_extraido or "Texto de la versión anterior.").replace(
+        "una suma mensual", "una suma mensual actualizada por movilidad"
+    )
+    conexion.execute(
+        text(
+            "INSERT INTO documento_versiones (documento_id, captura_id, version, "
+            " tipo_version, tipo_fecha, texto_extraido, hash_texto, modo_extraccion, "
+            " extractor_version) "
+            "VALUES (:d, :c, :v, 'ACTUALIZADO', 'PUBLICACION', :t, :h, 'HTML', "
+            " 'prueba@1')"
+        ),
+        {
+            "d": anterior.documento_id,
+            "c": anterior.captura_id,
+            "v": anterior.version + 1,
+            "t": texto,
+            "h": _hashlib.sha256(texto.encode()).hexdigest(),
+        },
+    )
+    return str(anterior.documento_id)
+
+
+@pytest.fixture
+def regla_candidata(conexion: Connection, corpus, beneficio_candidato) -> str:
+    """Una regla candidata con su beneficio, su evidencia y su dependencia.
+
+    El corpus mínimo no trae reglas: las de las otras pruebas entran por las
+    lecturas curadas, que son otro camino. Acá hace falta una sola, con lo que
+    el expediente tiene que mostrar.
+    """
+    import uuid as _uuid
+
+    version = beneficio_candidato
     unidad = conexion.execute(
         text(
             "SELECT u.id, u.doc_version_id, u.texto FROM unidades_documentales u "

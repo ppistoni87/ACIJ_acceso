@@ -62,7 +62,7 @@ novedades opcionales (P-035), su evaluación (P-036) y su despliegue (P-038).
 
 | Propuesta | Consecuencia si se acepta | Consecuencia si se rechaza |
 | --- | --- | --- |
-| **D-P1.** Curar a fondo **4 beneficios** (AUH, asignación por hijo, Ley 6935, becas estudiantiles) en vez de los 16 | El MVP concluye de verdad en los cuatro caminos más consultados; los otros 12 siguen ofreciéndose con evidencia y sin dictamen, dicho en pantalla | Curar 176 reglas antes de cerrar: es el camino crítico entero y no hay capacidad declarada para sostenerlo |
+| **D-P1 — ACEPTADA el 13/09/2026 (D-148).** Curar a fondo **4 beneficios** (AUH, asignación por hijo, Ley 6935, becas estudiantiles) en vez de los 16 | El MVP concluye de verdad en los cuatro caminos más consultados; los otros 12 siguen ofreciéndose con evidencia y sin dictamen, dicho en pantalla | Curar 176 reglas antes de cerrar: es el camino crítico entero y no hay capacidad declarada para sostenerlo |
 | **D-P2.** Piloto **interno** antes que público | Se valida con personas de ACIJ, sin exponer orientación a quien depende de ella | Salir a público con la gate DQ18 sin cumplir |
 | **D-P3.** Cubrir los **montos del período corriente** solamente (no la serie histórica) | Se puede contestar «cuánto cobro»; la serie queda para después | Hoy no hay ningún monto vigente (H-08) |
 
@@ -311,7 +311,7 @@ En paralelo y sin bloquear a nadie: **rotar la credencial de `neondb_owner`**
 
 | # | Decisión | Quién debería resolverla | Qué se necesita | Qué sigue disponible mientras tanto | Cómo se verifica el desbloqueo |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **D-P1**: ¿4 beneficios curados a fondo o los 16? | Producto (ACIJ) | Criterio de prioridad por demanda real | T-04, T-02, T-14, T-15, T-06 | Alcance escrito y firmado en el plan |
+| ~~1~~ | ~~**D-P1**: ¿4 beneficios o los 16?~~ | — | — | — | **Resuelta el 13/09/2026: cuatro (D-148).** |
 | 2 | **Infraestructura**: cuenta de nube, base persistente, bucket, HTTPS, scheduler | Responsable del proyecto | Presupuesto y titularidad de la cuenta | Todo el trabajo local | Existe un destino y `bn operacion` restaura contra él |
 | 3 | **Proveedor de modelo**: cuál, con qué límites y qué costo por consulta se acepta | Responsable del proyecto | Clave y presupuesto | Modo `EXTRACTO`, que ya funciona | `GENERADA` con costo medido y ensayo de reversión |
 | 4 | **Quién atiende las derivaciones** | ACIJ | Persona o equipo, horario y canal | La señal ya se cuenta | Una derivación con acuse y respuesta |

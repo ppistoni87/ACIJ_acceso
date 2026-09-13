@@ -36,11 +36,12 @@ def test_sin_fundamento_no_se_aprueba(conexion: Connection) -> None:
         op.aprobar(conexion, actor="alguien", fundamento="")
 
 
-def test_una_version_con_incidencia_abierta_queda_afuera(conexion: Connection) -> None:
+def test_una_version_con_incidencia_abierta_queda_afuera(
+    conexion: Connection, beneficio_candidato: str
+) -> None:
     """Aprobar en bloque algo que el sistema marcó es enterrar la marca."""
     version = _una_version_candidata(conexion)
-    if version is None:
-        pytest.skip("El corpus de prueba no tiene versiones candidatas.")
+    assert version is not None, "la fixture deja una versión candidata para revisar"
 
     antes = op.revisar(conexion)
     conexion.execute(
@@ -70,10 +71,9 @@ def test_una_version_sin_vigencia_nunca_entra(conexion: Connection) -> None:
     assert seleccion.sin_vigencia >= 0
 
 
-def test_aprobar_deja_un_evento_por_version(conexion: Connection) -> None:
+def test_aprobar_deja_un_evento_por_version(conexion: Connection, beneficio_candidato: str) -> None:
     """Lo que se firma una vez tiene que poder auditarse una por una."""
-    if _una_version_candidata(conexion) is None:
-        pytest.skip("El corpus de prueba no tiene versiones candidatas.")
+    assert _una_version_candidata(conexion) is not None
 
     antes = conexion.execute(
         text("SELECT count(*) FROM auditoria_eventos WHERE accion = 'APROBAR_VERSION'")

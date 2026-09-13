@@ -3710,3 +3710,30 @@ del sistema está construido para impedir.
 ningún corte y sólo 3 las cita un beneficio publicado. La consecuencia de
 apurarlas sí sería concreta: que alguien pregunte por un monto y se lleve el de
 2013.
+
+## D-148
+
+**El alcance de cierre son cuatro beneficios curados a fondo, no dieciséis.**
+
+Decidido por Pedro el 13/09/2026, sobre la propuesta D-P1 de
+`docs/plan/CIERRE_MVP.md`, después de la auditoría que midió el problema: con
+todos los campos contestados a favor, **ninguno de los 16 beneficios publicados
+alcanza un resultado positivo**. La causa no es el motor —hay una prueba que
+obtiene un dictamen positivo con datos sintéticos— sino que los 16 tienen al
+menos una regla sin AST o sin validar, y `reglas/beneficio.py` resuelve
+`REQUIERE_REVISION` en cuanto queda una.
+
+Se curan a fondo **AUH, asignación por hijo, Ley 6935/2025 de CABA y becas
+estudiantiles**. Los otros doce se siguen ofreciendo con su evidencia y sus
+citas, y sin dictamen: eso ya lo sabe decir la pantalla.
+
+**Lo que se está eligiendo, dicho sin adornos.** Curar los dieciséis es el camino
+crítico entero y no hay capacidad declarada para sostenerlo. Un producto que
+concluye en cuatro programas y lo dice es mejor que uno que ofrece dieciséis y no
+concluye en ninguno; lo que no es aceptable es la situación de hoy, donde alguien
+puede contestar veintiún preguntas y recibir «requiere revisión».
+
+**Lo que no se decide acá.** El rango de esfuerzo —8 a 15 jornadas de curaduría
+para los cuatro— es la estimación menos confiable del plan. Se cura primero uno
+solo, el de menor volumen, y se recalibra con esa medición antes de comprometer
+nada. Los doce restantes no salen del compromiso: quedan diferidos y escritos.

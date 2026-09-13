@@ -55,7 +55,9 @@ def test_se_busca_por_numero_y_por_titulo(cliente_api, corpus, revisor: str) -> 
     assert "normas" in por_numero
 
 
-def test_comparar_dos_versiones_cualesquiera(conexion: Connection) -> None:
+def test_comparar_dos_versiones_cualesquiera(
+    conexion: Connection, documento_con_dos_versiones: str
+) -> None:
     """No sólo contra la inmediata anterior, que es lo que mira el monitoreo."""
     par = conexion.execute(
         text(
@@ -66,23 +68,21 @@ def test_comparar_dos_versiones_cualesquiera(conexion: Connection) -> None:
             "    GROUP BY documento_id HAVING count(*) > 1 LIMIT 1)"
         )
     ).scalar_one_or_none()
-    if not par:
-        pytest.skip("El corpus de prueba no tiene un documento con dos versiones.")
+    assert par, "la fixture deja un documento con dos versiones para comparar"
     a, b = par.split()
     diferencia = diff.comparar_dos(conexion, a, b)
     assert diferencia is not None
     assert diferencia.version_anterior is not None
 
 
-def test_comparar_con_una_version_inexistente_no_inventa_nada(conexion: Connection) -> None:
+def test_comparar_con_una_version_inexistente_no_inventa_nada(conexion: Connection, corpus) -> None:
     """Devolver una diferencia vacía haría creer que las dos versiones son iguales."""
     import uuid
 
     alguna = conexion.execute(
         text("SELECT id FROM documento_versiones LIMIT 1")
     ).scalar_one_or_none()
-    if alguna is None:
-        pytest.skip("Sin versiones documentales en el corpus de prueba.")
+    assert alguna is not None, "el corpus deja al menos una versión documental"
     assert diff.comparar_dos(conexion, alguna, uuid.uuid4()) is None
 
 
