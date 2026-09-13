@@ -221,6 +221,14 @@ def servidor(base_e2e: str) -> Iterator[str]:
     # `tests/integracion/test_limites_de_uso.py` y bajo carga real en
     # `bn calidad carga`.
     entorno["BN_LIMITE_CONSULTAS_POR_MINUTO"] = "0"
+    # El modelo de embeddings se carga al arrancar y no en medio de la primera
+    # consulta que lo necesite. Sin esto, esa carga —segundos y unos cientos de
+    # megas— la paga el caso que le toque, contra un `wait_for_selector` de 20 s
+    # que no la contempla: en esta máquina el modelo ya está tibio y nunca se
+    # nota, y en el ejecutor de CI hacía fallar un caso distinto cada corrida.
+    # La espera de arranque de acá abajo sí la contempla, porque el ciclo de
+    # vida no deja contestar `/salud` hasta que terminó de cargar.
+    entorno["BN_PRECARGAR_MODELO"] = "1"
     proceso = subprocess.Popen(
         [
             sys.executable,
@@ -251,7 +259,11 @@ def servidor(base_e2e: str) -> Iterator[str]:
             except Exception:
                 time.sleep(0.4)
         else:
-            pytest.fail("el servidor no llegó a contestar /salud en 60 s", pytrace=False)
+            pytest.fail(
+                "el servidor no llegó a contestar /salud en 60 s (incluye la carga del "
+                "modelo de embeddings, que se precarga a propósito)",
+                pytrace=False,
+            )
         yield base
     finally:
         proceso.terminate()
