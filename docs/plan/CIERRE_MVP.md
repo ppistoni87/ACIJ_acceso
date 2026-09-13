@@ -89,7 +89,19 @@ plataforma.**
 | **M4 · Está en un lugar al que se entra** | M0, y **espera externa** | Front y API por HTTPS sobre base persistente, scheduler corriendo, restauración ensayada |
 | **M5 · Alguien lo usó** | M1–M4 | Gate DQ18 cumplida y piloto interno con recorridos aprobados |
 
-**Camino crítico:** `T-04 → T-01 → T-01b → T-12 → T-13`.
+**Camino crítico:** `T-04 ✔ → T-16 → T-15 → T-01 → T-01b → T-12 → T-13`.
+
+> **Cambio del 13/09, con la evidencia que lo obliga.** Al abrir T-01 apareció que
+> tres beneficios no tienen ninguna regla bloqueante y que lo único que los deja
+> sin concluir es un parámetro sin valor vigente. Con un tope de prueba,
+> `AR.ASIGNACION-POR-CONYUGE-SIJP` **llega a los tres veredictos sobre datos
+> reales**. El camino más corto al primer beneficio que concluye pasó a ser T-15
+> —cargar los montos del período corriente— y no T-01.
+>
+> Pero **T-15 no puede ir primero**: la regla del inciso i) está registrada como
+> `EXCLUSION` cuando su propia descripción dice que el monto *corresponde* a quien
+> cobra por debajo del tope (H-17). Hoy eso no se ve porque el parámetro está
+> vacío; cargarlo lo activa. Por eso entra **T-16 antes que T-15**.
 El cuello de botella real no es de ingeniería sino de **curaduría jurídica**:
 `T-01` es la tarea más larga y **todo M1, M2 y M5 dependen de ella**.
 
@@ -114,7 +126,11 @@ cuántas personas hay. Se separa el esfuerzo técnico de las esperas externas.
 
 ### PRIMER BLOQUE DE TRABAJO — detallado
 
-#### T-04 · Dejar el CI en verde de punta a punta
+#### T-04 · Dejar el CI en verde de punta a punta — **CERRADA el 13/09/2026**
+> Evidencia de cierre: corrida **78** de CI, `conclusion: success`, con los cinco
+> pasos ejecutados —Ruff, migraciones y `alembic check`, 1.510 pruebas, verificador
+> de salteos y `docker build`—.
+> https://github.com/ppistoni87/ACIJ_acceso/actions/runs/34732959209
 * **IDs originales:** P-018 · resuelve **H-03, H-04, H-05**, habilita comprobar **H-14**
 * **Objetivo de usuario:** ninguno directo. Es la condición para que todo lo demás
   se pueda afirmar: hoy los mensajes de commit dicen «1.504 pruebas en verde» y en
@@ -256,8 +272,9 @@ cuántas personas hay. Se separa el esfuerzo técnico de las esperas externas.
 
 | ID | IDs orig. | Objetivo de usuario | Alcance y pasos | Dependencias | Rol | Esfuerzo | Aceptación / prueba |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| **T-16** | P-014 · **H-17, H-18** | Que ninguna regla conteste al revés | Revisar **una por una** las 14 reglas `EXCLUSION` ejecutables contra su texto literal y su descripción, y corregir la categoría donde la polaridad esté invertida; registrar cada decisión con su actor. Agregar un estado `RETIRADA` que el cargador excluya, en vez de la nota en prosa de `alcance` | T-04 ✔ | curaduría jurídica + backend | **2–4 j** | Las 14 revisadas con decisión registrada; prueba de aceptación que fija los dos extremos del inciso i); las 10 reglas retiradas dejan de bloquear. **Bloquea a T-15.** |
 | **T-14** | P-011 · H-09 | Que nada publicado deje de servirse en silencio | Invariante `PUBLISHED ≡ miembro del corte vigente`; consulta en la publicación que lo reporte; reparar la membresía de la Ley 6935; prueba que falle si vuelve a pasar | T-04 | backend | **1–2 j** | La diferencia entre 14.476 y las membresías del corte es 0, o está reportada. `bn publicacion publicar --simular` lo declara |
-| **T-15** | P-007 · H-08, H-10, H-11, H-13 | Que la respuesta traiga montos vigentes, el estado de vigencia y las normas que cita | (a) cargar y aprobar los valores del período corriente; (b) normalizar el texto en curación y rechazar marcado en la publicación; (c) proyectar `valid_tipo`/intervalo en cada cita; (d) resolver referencias cruzadas del corte como enlaces | T-04 | curaduría + backend | **4–7 j** | `GET /v1/valores` devuelve SMVM y AUH con período que contiene hoy; 0 fragmentos con etiquetas; una consulta sobre norma con derogación parcial lo declara; una cita a otra norma del corte es navegable |
+| **T-15** | P-007 · H-08, H-10, H-11, H-13 | Que la respuesta traiga montos vigentes, el estado de vigencia y las normas que cita | (a) cargar y aprobar los valores del período corriente; (b) normalizar el texto en curación y rechazar marcado en la publicación; (c) proyectar `valid_tipo`/intervalo en cada cita; (d) resolver referencias cruzadas del corte como enlaces. **Con (a) hecho, `AR.ASIGNACION-POR-CONYUGE-SIJP` pasa a concluir: es el primer beneficio que cierra el recorrido.** | T-04 ✔, **T-16** | curaduría + backend | **4–7 j** | `GET /v1/valores` devuelve SMVM y AUH con período que contiene hoy; 0 fragmentos con etiquetas; una consulta sobre norma con derogación parcial lo declara; una cita a otra norma del corte es navegable |
 | **T-03** | P-012, P-026 · R-04 | Que lo que se recupera sea lo pertinente | Reranker acotado sobre el conjunto congelado; se aprueba **sólo con mejora demostrada** | T-02 | datos/RAG | **5–8 j** | Recall@5 ≥ 90 % sin perder precisión; medición antes/después |
 | **T-02b** | P-031 | Que quien no encuentre respuesta llegue a una persona | Cola de derivación con acuse y contexto; directorio con fecha de verificación. **Nunca se inventa un teléfono**: sólo se ofrece lo capturado, con su fecha | T-02; destino → T-11 | producto + backend + front | **4–6 j** técnicas + **espera** de la decisión de ACIJ sobre quién atiende | Una derivación deja registro con contexto y acuse; la pantalla dice qué pasa después |
 | **T-07** | P-028 | Que cada afirmación tenga su fuente, no la respuesta entera | `evidence_ids` por afirmación, criticidad, verificación de respaldo semántico, retención de la afirmación afectada y no de la respuesta | T-05 para el modo generado | backend | **5–8 j** | Una afirmación sin respaldo se retiene sola; el resto de la respuesta se sirve |
@@ -274,21 +291,27 @@ cuántas personas hay. Se separa el esfuerzo técnico de las esperas externas.
 
 ## 4. Primeras diez acciones, en orden
 
-1. `ruff format .` y confirmar que `ruff format --check .` pasa. *(T-04)*
-2. Declarar las 6 tablas y 2 columnas en los modelos ORM y borrar las 2 fantasma;
-   `alembic check` en verde. *(T-04)*
-3. Ampliar el corpus de prueba para que las 6 pruebas salteadas corran. *(T-04)*
-4. Empujar y **verificar una corrida de CI en verde**, incluido `docker build`. *(T-04)*
-5. Curar el beneficio semilla hasta 0 reglas no ejecutables y **recalibrar con eso
-   la estimación de T-01**. *(T-01)*
-6. Publicar el corte y probar los tres resultados del dictamen con una prueba de
-   aceptación. *(T-01)*
-7. Instrumentar el puntaje de recuperación y barrer el umbral sobre las 150
+~~1 a 4~~ · **T-04, hecha el 13/09**: formato, seis tablas y dos columnas en los
+modelos, corpus de prueba ampliado y **corrida 78 de CI en verde** con los cinco
+pasos ejecutados.
+
+1. Revisar las **14 reglas `EXCLUSION` ejecutables** una por una contra su texto y
+   corregir la del inciso i), que está invertida. *(T-16 · H-17)*
+2. Agregar el estado `RETIRADA` y que el cargador excluya las diez reglas que la
+   curación ya retiró. *(T-16 · H-18)*
+3. Cargar y aprobar los **valores de parámetro del período corriente**. *(T-15)*
+4. Publicar el corte y comprobar que `AR.ASIGNACION-POR-CONYUGE-SIJP` da los tres
+   veredictos, con una prueba de aceptación que los fije. *(T-15 + T-01)*
+5. Instrumentar el puntaje de recuperación y barrer el umbral sobre las 150
    consultas, midiendo las dos direcciones. *(T-02)*
-8. Emitir `SIN_EVIDENCIA_SUFICIENTE` y mostrarlo como abstención con derivación. *(T-02)*
-9. Reemplazar `motivo_sin_evaluar="varios_beneficios"` por una pregunta de elección
+6. Emitir `SIN_EVIDENCIA_SUFICIENTE` y mostrarlo como abstención con derivación. *(T-02)*
+7. Reemplazar `motivo_sin_evaluar="varios_beneficios"` por una pregunta de elección
    y usar la elección para acotar los turnos siguientes. *(T-01b)*
-10. Cargar y aprobar los valores de parámetro del período corriente. *(T-15)*
+8. Curar el primero de los cuatro beneficios de D-148 —el de menor volumen es la
+   Ley 6935, con 2 reglas bloqueantes— y **recalibrar con eso la estimación**. *(T-01)*
+9. Normalizar los dos fragmentos con `<p>` y rechazar marcado en la publicación. *(T-15)*
+10. Invariante «publicado ≡ servido» con su prueba, y reparar la membresía de la
+    Ley 6935. *(T-14)*
 
 En paralelo y sin bloquear a nadie: **rotar la credencial de `neondb_owner`**
 (R-03) y **pedir la decisión de infraestructura** que desbloquea T-11 y T-05.
@@ -297,7 +320,12 @@ En paralelo y sin bloquear a nadie: **rotar la credencial de `neondb_owner`**
 
 ## 5. La primera historia lista para implementar
 
-> **T-04 · Dejar el CI en verde de punta a punta.**
+> ~~**T-04 · Dejar el CI en verde de punta a punta.**~~ **Hecha el 13/09/2026.**
+> La siguiente es **T-16 · Que ninguna regla conteste al revés**, y es urgente por
+> orden: T-15 la activa. Está especificada arriba, no depende de ninguna decisión
+> pendiente ni de ningún acceso externo.
+>
+> Lo que decía de T-04, que se cumplió:
 > Está completamente especificada en §3: archivos y líneas exactas, los seis
 > nombres de tabla, las dos columnas a agregar y las dos a borrar, las cuatro
 > pruebas cuyo corpus hay que ampliar, el comando de validación y la evidencia de

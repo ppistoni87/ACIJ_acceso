@@ -290,6 +290,33 @@ sin contención · **P1** falla de recorrido esencial o requisito obligatorio ·
   `POTENCIALMENTE_APLICABLE` con hechos favorables y `NO_CUMPLE_REGLA_EXPLICITA`
   con un hecho bloqueante, con una prueba de aceptación que lo fije.
 
+##### Precisión del 13/09, al empezar T-01 — la causa no es la que parecía
+Al abrir las 77 reglas no ejecutables apareció que **ninguna es «nadie la miró
+todavía»: las 77 tienen un motivo escrito**. Diez dicen que la curación ya las
+retiró (H-18) y 67 explican por qué no se pudieron formalizar —el caso típico:
+«el término de la incompatibilidad lo fija la reglamentación, que no está en el
+corpus»—. Es una decisión tomada que el motor no puede leer.
+
+Y hay tres beneficios —`AR.ASIGNACION-POR-CONYUGE-SIJP`,
+`AR.ASIGNACION-POR-NACIMIENTO`, `AR.ASIGNACION-POR-ADOPCION`— **sin ninguna regla
+bloqueante**. Lo único que los deja en `REQUIERE_DATOS` es una condición que
+compara contra un parámetro **sin valor vigente** (H-08). Con un valor de prueba
+para el tope, `AR.ASIGNACION-POR-CONYUGE-SIJP` llega a los **tres** veredictos
+sobre datos reales del corpus, con cero condiciones desconocidas:
+`POTENCIALMENTE_APLICABLE`, `NO_CUMPLE_REGLA_EXPLICITA` y `REQUIERE_DATOS` según
+lo que la persona conteste.
+
+**Qué cambia y qué no.** Cambia el camino más corto al primer beneficio que
+concluye: no es curar reglas sino **cargar los montos del período corriente**
+(T-15), que costaba mucho menos. No cambia el fondo: para los otros 13 el trabajo
+de formalización sigue siendo el que la estimación de T-01 describe, y la
+hipótesis de que retirar las reglas retiradas destrabaría varios beneficios
+**se probó y es falsa** —destraba uno—.
+
+Y aparece una condición nueva de orden: **cargar los montos sin revisar antes la
+polaridad de las reglas de exclusión activa H-17**, que es peor que el estado
+actual.
+
 #### H-02 · El backend responde con evidencia cuando debería abstenerse — **P0, bloquea el MVP**
 * **Componente:** recuperación híbrida y `api/routers/recuperacion.py`
 * **Evidencia:** `bn calidad consultas` → **54 de 72 fallos son
@@ -451,6 +478,53 @@ NO_INICIADA 2», pero sus nueve filas (P-025…P-032 y P-037) son 1
 LISTA_PARA_ACEPTACION y 8 EN_CURSO, ninguna NO_INICIADA. El total de 38 cierra
 igual porque los errores se compensan. Es un defecto de documentación, no de
 producto, y conviene corregirlo antes de usar ese recuento para planificar.
+
+#### H-17 · Una regla con la polaridad invertida daría una orientación materialmente falsa — **P0 latente, bloquea el MVP**
+* **Componente:** `reglas`, `AR.ASIGNACION-POR-CONYUGE-SIJP`, regla de categoría `EXCLUSION`
+* **Evidencia:** el texto literal es el inciso i) del art. 18 de la Ley 24.714 —«la
+  suma de PESOS TREINTA ($ 30) para los que perciban haberes inferiores a PESOS
+  CUATRO MIL CON UN CENTAVO»— y la propia `descripcion` de la regla dice:
+  «El monto **corresponde** a quienes perciben haberes inferiores al tope que fija
+  el propio inciso.» Está registrada como **`EXCLUSION`** con
+  `{"op":"compare","cmp":"<","field":"haber_previsional_del_titular","parameter":"AR.TOPE-MAXIMO-ASIGNACIONES"}`.
+  El motor lee una exclusión cumplida como bloqueo, así que **«cobra menos que el
+  tope» se convierte en «una regla explícita lo excluye»**. Debería ser
+  `APLICABILIDAD`.
+* **Reproducción** (con un valor hipotético para el tope, porque hoy no hay ninguno vigente):
+
+  | hechos | resultado que da | resultado correcto |
+  | --- | --- | --- |
+  | haber **por debajo** del tope | `NO_CUMPLE_REGLA_EXPLICITA` | corresponde |
+  | haber **por encima** del tope | `POTENCIALMENTE_APLICABLE` | no corresponde |
+
+* **Por qué es latente y por qué eso lo empeora:** hoy no se ve porque el
+  parámetro no tiene valor vigente (H-08), así que la regla queda en
+  `UNKNOWN` y nunca se llega a la conclusión. **En el momento en que se carguen
+  los montos del período corriente, este beneficio empieza a contestar al revés**,
+  y le diría exactamente a quien califica que una regla explícita lo excluye.
+* **Consecuencia para el plan: T-15 no puede entrar antes que la revisión de
+  polaridad.** Cargar los montos sin revisar las reglas es habilitar el error.
+* **Alcance del hallazgo, dicho con honestidad:** un barrido por palabras sobre
+  las `descripcion` de las 14 reglas `EXCLUSION` ejecutables encontró **una sola**
+  coincidencia, que es ésta. Un barrido por palabras **no prueba** que las otras
+  13 estén bien: hace falta leer cada una contra su texto literal.
+* **Criterio de resolución:** las 14 reglas `EXCLUSION` ejecutables revisadas una
+  por una contra su texto, con su decisión registrada; y una prueba de aceptación
+  que fije los dos extremos de esta regla.
+
+#### H-18 · Diez reglas retiradas siguen bloqueando — **P2**
+* **Evidencia:** `reglas.alcance` de diez filas dice «La lectura curada ya no
+  contiene esta regla: su cita se corrigió o se quitó. Se conserva el texto para
+  poder explicar qué se afirmaba antes.» Siguen `PUBLISHED` y marcadas
+  `requiere_revision`, así que caen en `no_ejecutables` y fuerzan
+  `REQUIERE_REVISION`. La decisión de retirarlas está tomada y escrita **en prosa**,
+  donde el motor no la lee.
+* **Efecto medido, sin exagerarlo:** ignorarlas cambia el resultado de **un solo**
+  beneficio (`AR.CUIDADO-DE-SALUD-INTEGRAL`, de `REQUIERE_REVISION` a
+  `REQUIERE_DATOS`). No es la solución de H-01; es una regla que no debería
+  bloquear nada.
+* **Recomendación mínima:** un estado de revisión `RETIRADA` que el cargador de
+  reglas excluya, en vez de una nota en `alcance`.
 
 ### Riesgos fundamentados (no son defectos comprobados)
 
